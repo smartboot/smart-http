@@ -82,6 +82,13 @@ public class HttpBootstrap {
         }
     }
 
+    /**
+     * keytool -genkey -alias smart-http -keyalg RSA -keysize 4096 -keypass keypass -keystore server.jks -storepass storepass -dname "cn=三刀,ou=smartboot,o=smartboot,l=hangzhou,st=hangzhou,c=cn" -storetype JKS -validity 36500
+     * keytool -export -alias smart-http -file trustedCerts.jks -keystore server.jks -storetype JKS -storepass storepass
+     * keytool -import -v -file trustedCerts.jks -keystore server.jks -storepass storepass
+     *
+     * @param processor
+     */
     static void https(MessageProcessor<Http11Request> processor) {
         // 定义服务器接受的消息类型以及各类消息对应的处理器
         AioSSLQuickServer<Http11Request> server = new AioSSLQuickServer<Http11Request>(8889, new HttpRequestProtocol(), processor);

@@ -53,9 +53,10 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
 
     public static void main(String[] args) {
         System.setProperty("smart-socket.server.pageSize", (1024 * 1024 * 5) + "");
+//        System.setProperty("smart-socket.bufferPool.pageNum", 512 + "");
         System.setProperty("smart-socket.server.page.isDirect", "true");
 //        System.setProperty("sun.nio.ch.maxCompletionHandlersOnStack","4");
-//        System.setProperty("smart-socket.session.writeChunkSize", (4096*2)+"");
+        System.setProperty("smart-socket.session.writeChunkSize", (1024 * 3) + "");
         HttpMessageProcessor processor = new HttpMessageProcessor("./");
         processor.route("/plaintext", new HttpHandle() {
             byte[] body = "Hello World!".getBytes();
@@ -67,7 +68,7 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
             }
         });
         AioQuickServer<Http11Request> server = new AioQuickServer<Http11Request>(8080, new HttpRequestProtocol(), processor);
-        server.setReadBufferSize(1024 * 4);
+        server.setReadBufferSize(1024 * 3);
 //        server.setBannerEnabled(false);
 //        server.setThreadNum(36);
 //        server.setFairIO(true);
@@ -81,11 +82,13 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
     @Override
     public void process(AioSession<Http11Request> session, Http11Request request) {
         try {
-//            if (true) {
+            if (true) {
+                session.writeBuffer().write(b);
 //                session.writeBuffer().write(b);
-//                request.rest();
-//                return;
-//            }
+//                session.writeBuffer().write(b);
+                request.rest();
+                return;
+            }
             DefaultHttpResponse httpResponse = RESPONSE_THREAD_LOCAL.get();
             httpResponse.init(session.writeBuffer());
 //            boolean isKeepAlive = StringUtils.equalsIgnoreCase(HttpHeaderConstant.Values.KEEPALIVE, request.getHeader(HttpHeaderConstant.Names.CONNECTION));
@@ -127,14 +130,9 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
         }
         switch (stateMachineEnum) {
             case NEW_SESSION:
-//                LOGGER.info("new connection:{}", session);
+//                LOGGER.info("new connection:{}");
+//                System.out.println("newSession");
                 session.setAttachment(new Http11Request());
-                break;
-            case FLOW_CONTROL:
-                LOGGER.warn("流控");
-                break;
-            case RELEASE_FLOW_CONTROL:
-                LOGGER.warn("释放流控");
                 break;
             case PROCESS_EXCEPTION:
                 LOGGER.error("process request exception", throwable);
@@ -144,11 +142,14 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
                 LOGGER.error("", throwable);
                 break;
             case SESSION_CLOSED:
-//                LOGGER.info("connection closed:{}", session);
+//                System.out.println("closeSession");
+//                LOGGER.info("connection closed:{}");
                 break;
             case DECODE_EXCEPTION:
                 throwable.printStackTrace();
                 break;
+//                default:
+//                    System.out.println(stateMachineEnum);
         }
     }
 
