@@ -10,10 +10,10 @@ package org.smartboot.http.server.http11;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.smartboot.http.server.HttpHeader;
-import org.smartboot.http.server.AbstractHttpEntity;
-import org.smartboot.http.server.enums.MethodEnum;
-import org.smartboot.http.server.utils.EmptyInputStream;
+import org.smartboot.http.common.HttpEntity;
+import org.smartboot.http.common.HttpHeader;
+import org.smartboot.http.common.enums.MethodEnum;
+import org.smartboot.http.common.utils.EmptyInputStream;
 
 import java.io.InputStream;
 import java.util.HashMap;
@@ -22,7 +22,7 @@ import java.util.Map;
 /**
  * Created by 三刀 on 2017/6/20.
  */
-public class Http11Request extends AbstractHttpEntity {
+public class Http11Request extends HttpEntity {
 
 
     private InputStream inputStream = null;

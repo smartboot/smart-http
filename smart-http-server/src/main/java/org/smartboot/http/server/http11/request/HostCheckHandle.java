@@ -8,11 +8,11 @@
 
 package org.smartboot.http.server.http11.request;
 
-import org.smartboot.http.server.http11.HttpResponse;
-import org.smartboot.http.server.enums.HttpStatus;
+import org.smartboot.http.common.enums.HttpStatus;
+import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.http.server.handle.HttpHandle;
 import org.smartboot.http.server.http11.Http11Request;
-import org.smartboot.http.server.utils.HttpHeaderConstant;
+import org.smartboot.http.server.http11.HttpResponse;
 
 import java.io.IOException;
 

@@ -11,12 +11,14 @@ package org.smartboot.http.server;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.smartboot.http.server.enums.HttpPartEnum;
-import org.smartboot.http.server.enums.MethodEnum;
+import org.smartboot.http.common.HttpEntity;
+import org.smartboot.http.common.HttpHeader;
+import org.smartboot.http.common.enums.HttpPartEnum;
+import org.smartboot.http.common.enums.MethodEnum;
+import org.smartboot.http.common.utils.Consts;
+import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.http.server.http11.Http11ContentDecoder;
 import org.smartboot.http.server.http11.Http11Request;
-import org.smartboot.http.server.utils.Consts;
-import org.smartboot.http.server.utils.HttpHeaderConstant;
 import org.smartboot.http.server.websocket.DataFraming;
 import org.smartboot.http.server.websocket.WebsocketDecoder;
 import org.smartboot.socket.Protocol;
@@ -32,7 +34,7 @@ import java.nio.ByteBuffer;
  * Http消息解析器,仅解析Header部分即可
  * Created by 三刀 on 2017/6/20.
  */
-final class HttpServerProtocol implements Protocol<AbstractHttpEntity> {
+final class HttpServerProtocol implements Protocol<HttpEntity> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpServerProtocol.class);
     private static final int READ_BUFFER = 128;
@@ -40,13 +42,13 @@ final class HttpServerProtocol implements Protocol<AbstractHttpEntity> {
     private static final AttachKey<HttpPartEnum> HTTP_PART_ENUM_ATTACH_KEY = AttachKey.valueOf("httpPartEnum");
     private static final AttachKey<DelimiterFrameDecoder> DELIMITER_FRAME_DECODER_ATTACH_KEY = AttachKey.valueOf("httpHeaderDecoder");
     private static final AttachKey<String> HEAD_KEY_NAME = AttachKey.valueOf("headKeyName");
-    private static final AttachKey<Protocol<AbstractHttpEntity>> CONTENT_DECODER = AttachKey.valueOf("contentDecoder");
-    private static final AttachKey<AbstractHttpEntity> ENTITY = AttachKey.valueOf("entity");
+    private static final AttachKey<Protocol<HttpEntity>> CONTENT_DECODER = AttachKey.valueOf("contentDecoder");
+    private static final AttachKey<HttpEntity> ENTITY = AttachKey.valueOf("entity");
     private WebsocketDecoder websocketDecoder = new WebsocketDecoder();
     private Http11ContentDecoder http11ContentDecoder = new Http11ContentDecoder();
 
     @Override
-    public AbstractHttpEntity decode(ByteBuffer buffer, AioSession<AbstractHttpEntity> session, boolean eof) {
+    public HttpEntity decode(ByteBuffer buffer, AioSession<HttpEntity> session, boolean eof) {
         Attachment attachment = getHttpDecodeUnit(session);
         HttpPartEnum startPart = attachment.get(HTTP_PART_ENUM_ATTACH_KEY);
         HttpPartEnum currentPart = startPart;
@@ -370,7 +372,7 @@ final class HttpServerProtocol implements Protocol<AbstractHttpEntity> {
                         }
                         currentPart = HttpPartEnum.CONTENT;
                     case CONTENT: {
-                        AbstractHttpEntity request = attachment.get(CONTENT_DECODER).decode(buffer, session, eof);
+                        HttpEntity request = attachment.get(CONTENT_DECODER).decode(buffer, session, eof);
                         if (request != null) {
                             currentPart = HttpPartEnum.END;
                         }
@@ -403,7 +405,7 @@ final class HttpServerProtocol implements Protocol<AbstractHttpEntity> {
      * @param session
      * @return
      */
-    private Attachment getHttpDecodeUnit(AioSession<AbstractHttpEntity> session) {
+    private Attachment getHttpDecodeUnit(AioSession<HttpEntity> session) {
         Attachment attachment = null;
         if (session.getAttachment() == null) {
             attachment = new Attachment();
@@ -419,8 +421,7 @@ final class HttpServerProtocol implements Protocol<AbstractHttpEntity> {
             httpHeader.setHttpVersion(null);
             httpHeader.setMethod(null);
             httpHeader.setOriginalUri(null);
-            httpHeader.headerMap.clear();
-            httpHeader.b_headerMap.clear();
+            httpHeader.reset();
             attachment.put(HTTP_PART_ENUM_ATTACH_KEY, HttpPartEnum.REQUEST_LINE_METHOD);
             attachment.get(DELIMITER_FRAME_DECODER_ATTACH_KEY).reset(Consts.SP_ARRAY);
         }
@@ -428,7 +429,7 @@ final class HttpServerProtocol implements Protocol<AbstractHttpEntity> {
     }
 
     @Override
-    public ByteBuffer encode(AbstractHttpEntity httpRequest, AioSession<AbstractHttpEntity> session) {
+    public ByteBuffer encode(HttpEntity httpRequest, AioSession<HttpEntity> session) {
         return null;
     }
 

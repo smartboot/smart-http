@@ -11,13 +11,14 @@ package org.smartboot.http.server;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.smartboot.http.server.enums.HttpStatus;
+import org.smartboot.http.common.HttpEntity;
+import org.smartboot.http.common.enums.HttpStatus;
+import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.http.server.handle.HttpHandle;
 import org.smartboot.http.server.http11.DefaultHttpResponse;
 import org.smartboot.http.server.http11.Http11HandleGroup;
 import org.smartboot.http.server.http11.Http11Request;
 import org.smartboot.http.server.http11.HttpResponse;
-import org.smartboot.http.server.utils.HttpHeaderConstant;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.transport.AioSession;
@@ -29,7 +30,7 @@ import java.io.IOException;
  *
  * @author 三刀
  */
-public class HttpMessageProcessor implements MessageProcessor<AbstractHttpEntity> {
+public class HttpMessageProcessor implements MessageProcessor<HttpEntity> {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpMessageProcessor.class);
     private Http11HandleGroup http11HandleGroup = null;
 
@@ -39,7 +40,7 @@ public class HttpMessageProcessor implements MessageProcessor<AbstractHttpEntity
 
 
     @Override
-    public void process(final AioSession<AbstractHttpEntity> session, final AbstractHttpEntity entry) {
+    public void process(final AioSession<HttpEntity> session, final HttpEntity entry) {
         if (entry instanceof Http11Request) {
             final Http11Request request = (Http11Request) entry;
             try {
@@ -51,13 +52,13 @@ public class HttpMessageProcessor implements MessageProcessor<AbstractHttpEntity
     }
 
     @Override
-    public void stateEvent(AioSession<AbstractHttpEntity> session, StateMachineEnum stateMachineEnum, Throwable throwable) {
+    public void stateEvent(AioSession<HttpEntity> session, StateMachineEnum stateMachineEnum, Throwable throwable) {
         if (throwable != null) {
             throwable.printStackTrace();
         }
     }
 
-    private void processHttp11(final AioSession<AbstractHttpEntity> session, Http11Request request) throws IOException {
+    private void processHttp11(final AioSession<HttpEntity> session, Http11Request request) throws IOException {
         HttpResponse httpResponse = new DefaultHttpResponse(session, request, http11HandleGroup);
         try {
             http11HandleGroup.getPreHandle().doHandle(request, httpResponse);

@@ -10,7 +10,7 @@ package org.smartboot.http;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.smartboot.http.server.AbstractHttpEntity;
+import org.smartboot.http.common.HttpEntity;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.transport.AioSession;
@@ -23,7 +23,7 @@ import java.nio.ByteBuffer;
  *
  * @author 三刀
  */
-public final class HttpPerformanceProcessor implements MessageProcessor<AbstractHttpEntity> {
+public final class HttpPerformanceProcessor implements MessageProcessor<HttpEntity> {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpPerformanceProcessor.class);
     private static String b = "HTTP/1.1 200 OK\r\n" +
             "Server:smart-socket\r\n" +
@@ -34,7 +34,7 @@ public final class HttpPerformanceProcessor implements MessageProcessor<Abstract
             "Hello smart-socket http server!";
 
     @Override
-    public void process(final AioSession<AbstractHttpEntity> session, final AbstractHttpEntity entry) {
+    public void process(final AioSession<HttpEntity> session, final HttpEntity entry) {
         try {
             session.write(ByteBuffer.wrap(b.getBytes()));
         } catch (IOException e) {
@@ -43,7 +43,7 @@ public final class HttpPerformanceProcessor implements MessageProcessor<Abstract
     }
 
     @Override
-    public void stateEvent(AioSession<AbstractHttpEntity> session, StateMachineEnum stateMachineEnum, Throwable throwable) {
+    public void stateEvent(AioSession<HttpEntity> session, StateMachineEnum stateMachineEnum, Throwable throwable) {
         if (throwable != null) {
             throwable.printStackTrace();
         }

@@ -11,10 +11,10 @@ package org.smartboot.http.server.http11.request;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.smartboot.http.server.http11.HttpResponse;
-import org.smartboot.http.server.enums.HttpStatus;
+import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.server.handle.HttpHandle;
 import org.smartboot.http.server.http11.Http11Request;
+import org.smartboot.http.server.http11.HttpResponse;
 
 import java.io.IOException;
 

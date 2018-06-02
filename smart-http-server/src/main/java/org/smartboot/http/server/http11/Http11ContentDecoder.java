@@ -10,10 +10,10 @@ package org.smartboot.http.server.http11;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
-import org.smartboot.http.server.AbstractHttpEntity;
-import org.smartboot.http.server.enums.MethodEnum;
-import org.smartboot.http.server.utils.EmptyInputStream;
-import org.smartboot.http.server.utils.HttpHeaderConstant;
+import org.smartboot.http.common.HttpEntity;
+import org.smartboot.http.common.enums.MethodEnum;
+import org.smartboot.http.common.utils.EmptyInputStream;
+import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.socket.Protocol;
 import org.smartboot.socket.extension.decoder.FixedLengthFrameDecoder;
 import org.smartboot.socket.transport.AioSession;
@@ -27,7 +27,7 @@ import java.nio.ByteBuffer;
  * @author 三刀
  * @version V1.0 , 2018/2/16
  */
-public class Http11ContentDecoder implements Protocol<AbstractHttpEntity> {
+public class Http11ContentDecoder implements Protocol<HttpEntity> {
     private static final AttachKey<Http11Request> ENTITY = AttachKey.valueOf("entity");
     private static final AttachKey<FixedLengthFrameDecoder> FIXED_LENGTH_FRAME_DECODER_ATTACH_KEY = AttachKey.valueOf("fixLengthFrameDecoder");
 
@@ -40,7 +40,7 @@ public class Http11ContentDecoder implements Protocol<AbstractHttpEntity> {
     }
 
     @Override
-    public AbstractHttpEntity decode(ByteBuffer buffer, AioSession<AbstractHttpEntity> session, boolean eof) {
+    public HttpEntity decode(ByteBuffer buffer, AioSession<HttpEntity> session, boolean eof) {
         Attachment attachment = session.getAttachment();
         if (attachment == null) {
             throw new RuntimeException("decodeUnit is null");
@@ -81,7 +81,7 @@ public class Http11ContentDecoder implements Protocol<AbstractHttpEntity> {
     }
 
     @Override
-    public ByteBuffer encode(AbstractHttpEntity msg, AioSession<AbstractHttpEntity> session) {
+    public ByteBuffer encode(HttpEntity msg, AioSession<HttpEntity> session) {
         return null;
     }
 }

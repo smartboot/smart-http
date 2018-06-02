@@ -9,10 +9,11 @@
 package org.smartboot.http.server;
 
 import org.apache.commons.lang.math.NumberUtils;
+import org.smartboot.http.common.HttpEntity;
+import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.http.server.handle.HttpHandle;
 import org.smartboot.http.server.http11.Http11Request;
 import org.smartboot.http.server.http11.HttpResponse;
-import org.smartboot.http.server.utils.HttpHeaderConstant;
 import org.smartboot.socket.Filter;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.extension.ssl.ClientAuth;
@@ -55,15 +56,15 @@ public class HttpBootstrap {
 //        https(processor);
     }
 
-    public static void http(MessageProcessor<AbstractHttpEntity> processor) {
+    public static void http(MessageProcessor<HttpEntity> processor) {
         // 定义服务器接受的消息类型以及各类消息对应的处理器
         int port = NumberUtils.toInt(System.getProperty("port"), 8888);
-        AioQuickServer<AbstractHttpEntity> server = new AioQuickServer<AbstractHttpEntity>(port, new HttpServerProtocol(), processor);
+        AioQuickServer<HttpEntity> server = new AioQuickServer<HttpEntity>(port, new HttpServerProtocol(), processor);
 //        server.setDirectBuffer(true);
         server.setWriteQueueSize(0);
 //        server.setReadBufferSize(10);
 //        server.setThreadNum(8);
-        server.setFilters(new Filter[]{new QuickMonitorTimer<AbstractHttpEntity>()});
+        server.setFilters(new Filter[]{new QuickMonitorTimer<HttpEntity>()});
         try {
             server.start();
         } catch (IOException e) {
@@ -73,7 +74,7 @@ public class HttpBootstrap {
 
     static void https(HttpMessageProcessor processor) {
         // 定义服务器接受的消息类型以及各类消息对应的处理器
-        AioSSLQuickServer<? extends AbstractHttpEntity> server = new AioSSLQuickServer<AbstractHttpEntity>(8889, new HttpServerProtocol(), processor);
+        AioSSLQuickServer<? extends HttpEntity> server = new AioSSLQuickServer<HttpEntity>(8889, new HttpServerProtocol(), processor);
         server
                 .setClientAuth(ClientAuth.OPTIONAL)
                 .setKeyStore(ClassLoader.getSystemClassLoader().getResource("server.jks").getFile(), "storepass")

@@ -8,8 +8,8 @@
 
 package org.smartboot.http.server.http11;
 
-import org.smartboot.http.server.AbstractHttpEntity;
-import org.smartboot.http.server.enums.HttpStatus;
+import org.smartboot.http.common.HttpEntity;
+import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
@@ -33,8 +33,8 @@ public class DefaultHttpResponse implements HttpResponse {
 
     private HttpOutputStream outputStream;
 
-    public DefaultHttpResponse(AioSession<AbstractHttpEntity> session, Http11Request request, Http11HandleGroup http11HandleGroup) {
-        this.outputStream = new HttpOutputStream(session, this, request,http11HandleGroup);
+    public DefaultHttpResponse(AioSession<HttpEntity> session, Http11Request request, Http11HandleGroup http11HandleGroup) {
+        this.outputStream = new HttpOutputStream(session, this, request, http11HandleGroup);
     }
 
     public OutputStream getOutputStream() {

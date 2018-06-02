@@ -6,11 +6,11 @@
  * Author: sandao
  */
 
-package org.smartboot.http.server;
+package org.smartboot.http.common;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.smartboot.http.server.enums.MethodEnum;
+import org.smartboot.http.common.enums.MethodEnum;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -119,6 +119,11 @@ public class HttpHeader {
         val = new String(b);
         headerMap.put(key, val);
         return val;
+    }
+
+    public void reset(){
+        headerMap.clear();
+        b_headerMap.clear();
     }
     @Override
     public String toString() {

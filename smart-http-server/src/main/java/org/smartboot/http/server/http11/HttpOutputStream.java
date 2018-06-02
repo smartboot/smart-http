@@ -9,8 +9,8 @@
 package org.smartboot.http.server.http11;
 
 import org.apache.commons.lang.StringUtils;
-import org.smartboot.http.server.utils.Consts;
-import org.smartboot.http.server.utils.HttpHeaderConstant;
+import org.smartboot.http.common.utils.Consts;
+import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
