@@ -11,14 +11,12 @@ package org.smartboot.http.server.http11;
 import org.smartboot.http.common.HttpEntity;
 import org.smartboot.http.common.HttpHeader;
 import org.smartboot.http.common.enums.HttpStatus;
-import org.smartboot.http.server.handle.HttpHandle;
+import org.smartboot.http.server.handle.http11.ResponseHandle;
 import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author 三刀
@@ -37,7 +35,7 @@ public class DefaultHttpResponse extends HttpEntity implements HttpResponse {
         super(header);
     }
 
-    public DefaultHttpResponse(AioSession<HttpEntity> session, Http11Request request, HttpHandle responseHandle) {
+    public DefaultHttpResponse(AioSession<HttpEntity> session, Http11Request request, ResponseHandle responseHandle) {
         this(new HttpHeader());
         this.outputStream = new HttpOutputStream(session, this, request, responseHandle);
     }

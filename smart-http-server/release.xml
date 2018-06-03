@@ -40,10 +40,10 @@
     </fileSets>
 
     <!--<files>-->
-        <!--<file>-->
-            <!--<source>README.txt</source>-->
-            <!--<outputDirectory>/</outputDirectory>-->
-        <!--</file>-->
+    <!--<file>-->
+    <!--<source>README.txt</source>-->
+    <!--<outputDirectory>/</outputDirectory>-->
+    <!--</file>-->
     <!--</files>-->
 
 </assembly>

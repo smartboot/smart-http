@@ -15,12 +15,12 @@ import org.smartboot.http.common.HttpEntity;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.http.server.handle.HttpHandle;
+import org.smartboot.http.server.handle.RouteHandle;
+import org.smartboot.http.server.handle.http11.RFC2612RequestHandle;
+import org.smartboot.http.server.handle.http11.ResponseHandle;
 import org.smartboot.http.server.http11.DefaultHttpResponse;
 import org.smartboot.http.server.http11.Http11Request;
 import org.smartboot.http.server.http11.HttpResponse;
-import org.smartboot.http.server.handle.http11.RFC2612RequestHandle;
-import org.smartboot.http.server.handle.RouteHandle;
-import org.smartboot.http.server.handle.http11.ResponseHandle;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.transport.AioSession;
@@ -42,7 +42,7 @@ public class HttpMessageProcessor implements MessageProcessor<HttpEntity> {
 
     private RouteHandle routeHandle;
 
-    private HttpHandle responseHandle;
+    private ResponseHandle responseHandle;
 
     public HttpMessageProcessor(String baseDir) {
         processHandle = new RFC2612RequestHandle();

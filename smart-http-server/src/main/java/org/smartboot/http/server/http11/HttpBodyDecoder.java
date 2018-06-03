@@ -42,7 +42,7 @@ public class HttpBodyDecoder implements Protocol<HttpEntity> {
             throw new RuntimeException("request is null");
         }
         //非Post请求，解码完成
-        if (httpRequest.getHeader().getMethod() != MethodEnum.POST) {
+        if (httpRequest.getMethod() != MethodEnum.POST) {
             return httpRequest;
         }
 

@@ -1,38 +1,44 @@
-			<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
-	<meta charset="utf-8">
-  	<title>smart-socket_V1.1.0</title>
-  	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-	<style>
-		        body {
+    <meta charset="utf-8">
+    <title>smart-socket_V1.1.0</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <style>
+        body {
             color: #666666;
-            font-family: 微软雅黑,Verdana,sans-serif,宋体;
+            font-family: 微软雅黑, Verdana, sans-serif, 宋体;
             font-size: 14px;
             margin: 0;
             padding: 0;
         }
+
         a {
             color: #999999;
             text-decoration: none;
         }
+
         a:hover {
             color: #16B28F;
         }
+
         .sin_navi ul {
             list-style: none outside none;
             margin: 0;
             padding: 0 0 0 10px;
         }
+
         .sin_navi ul li {
             line-height: 30px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
+
         li {
             line-height: 24px;
         }
+
         table {
             border-left: 1px solid #CCCCCC;
             border-top: 1px solid #CCCCCC;
@@ -40,81 +46,98 @@
             text-align: left;
             width: 678px;
         }
+
         table th {
             background-color: #EEEEEE;
             border-bottom: 1px solid #CCCCCC;
             border-right: 1px solid #CCCCCC;
             padding: 10px;
         }
+
         table td {
             border-bottom: 1px solid #CCCCCC;
             border-right: 1px solid #CCCCCC;
         }
+
         p {
             line-height: 24px;
             margin: 10px;
         }
+
         h1, h2, h3, h4, h5, h6 {
             color: #111111;
             font-weight: normal;
             margin: 0;
             padding: 0;
         }
+
         h1 {
             font-size: 26px;
         }
+
         h2 {
             border-bottom: 1px dashed #CCCCCC;
             font-size: 24px;
             padding: 10px 0;
         }
+
         h3 {
             font-size: 20px;
             padding: 8px 0;
         }
+
         h4 {
             font-size: 18px;
             margin-left: 10px;
             padding: 5px 0;
         }
+
         h5 {
             font-size: 16px;
             margin-left: 10px;
             padding: 5px 0;
         }
+
         h6 {
             font-size: 16px;
             margin-left: 10px;
             padding: 5px 0;
         }
+
         blockquote {
             background: url("../../../img/blockquote.gif") no-repeat scroll left top #F4F5F7;
             margin: 5px 10px;
             padding: 10px 10px 10px 30px;
         }
+
         pre {
             background: none repeat scroll 0 0 #EEEEEE;
             margin: 5px 10px;
             padding: 10px;
         }
+
         .sin_callout {
             margin: 5px 10px;
         }
+
         .sin_header {
             background-color: #F7F7F7;
             border-bottom: 1px solid #CCCCCC;
             height: 80px;
             width: 100%;
         }
+
         .sin_title {
             margin: 0 auto;
             width: 1000px;
         }
+
         .sin_title_text {
             color: #000000;
             float: left;
             line-height: 80px;
         }
+
         .sin_version {
             color: #999999;
             float: left;
@@ -122,10 +145,12 @@
             padding-top: 25px;
             margin-left: 10px;
         }
+
         .sin_main {
             margin: 0 auto;
             width: 1000px;
         }
+
         .sin_navi {
             float: left;
             margin-bottom: 20px;
@@ -135,22 +160,28 @@
             width: 279px;
             z-index: 1;
         }
+
         .sin_navi_nomove {
             position: fixed;
             top: 0;
         }
+
         .sin_navi_ca a {
             color: #333333;
         }
+
         .sin_navi_ca a:hover {
             color: #16B28F;
         }
+
         .sin_navi_current {
             border-right: 3px solid #16B28F;
         }
+
         .sin_navi_current a {
             color: #16B28F;
         }
+
         .sin_content {
             background-color: #FFFFFF;
             border-left: 1px solid #CCCCCC;
@@ -161,9 +192,11 @@
             width: 699px;
             z-index: 2;
         }
+
         .sin_content_mar {
             margin-left: 259px;
         }
+
         .sin_footer {
             border-top: 1px solid #CCCCCC;
             color: #999999;
@@ -172,6 +205,7 @@
             margin: 0 auto;
             text-align: center;
         }
+
         .sin_info {
             background: none repeat scroll 0 0 #FFFFCC;
             border: 1px solid #D5D4D4;
@@ -180,196 +214,218 @@
             margin: 10px 0;
             padding: 14px;
         }
+
         .sin_link_logo {
             color: #16B28F;
             font-size: 12px;
             margin-left: 10px;
         }
+
         .sin_text {
             margin-bottom: 10px;
         }
+
         .d_callout {
             margin-bottom: 10px;
         }
+
         .d_callout_info {
             background: none repeat scroll 0 0 #F4F8FA;
             border-left: 4px solid #5BC0DE;
             padding: 10px;
         }
+
         .d_callout_warn {
             background: none repeat scroll 0 0 #FCF8F2;
             border-left: 4px solid #F0AD4E;
             padding: 10px;
         }
+
         .d_callout_danger {
             background: none repeat scroll 0 0 #FDF7F7;
             border-left: 4px solid #D9534F;
             padding: 10px;
         }
+
         .d_callout_success {
             background: none repeat scroll 0 0 #F3F8F3;
             border-left: 4px solid #50AF51;
             padding: 10px;
         }
+
         .d_callout input {
             background-color: rgba(0, 0, 0, 0);
             font-size: 15px;
             margin-bottom: 5px;
             padding: 10px 5px 0 10px;
         }
+
         .d_callout textarea {
             background-color: rgba(0, 0, 0, 0);
         }
+
         .d_callout_icons a {
             color: #AAAAAA;
             margin-left: 10px;
         }
+
         a.d_callout_icon_info {
             color: #5BC0DE;
         }
+
         a.d_callout_icon_warn {
             color: #F0AD4E;
         }
+
         a.d_callout_icon_danger {
             color: #D9534F;
         }
+
         a.d_callout_icon_success {
             color: #50AF51;
         }
+
         .clear {
             clear: both;
         }
 
-	</style>
+    </style>
 </head>
 <body>
-	<div class="sin_header">
-		<div class="sin_title">
-			<h1 class="sin_title_text">smart-socket</h1>
-			<span class="sin_version">V1.1.0</span>
-			<div class="clear"></div>
-		</div>
-		<div id="top_end"></div>
-	</div>
-	<div class="sin_main">
-		<div class="sin_navi" id="sin_navi_id">
-			<ul style="margin: 20px 0;">
-				    																																													<li style="width: 246px;" id="navi_text_260338">
-									<a href="#text_260338">
-										前言
-									</a>	
-								</li>
-																																															<li style="width: 246px;" id="navi_text_262747">
-									<a href="#text_262747">
-										快速上手
-									</a>	
-								</li>
-																															<li class="sin_navi_ca" style="width: 246px;" id="navi_category_56126">
-								<a href="#category_56126">
-									基础篇
-								</a>
-							</li>
-										<ul>
-																			<li style="width:236px" id="navi_text_229635">
-						<a href="#text_229635">
-							一、准备工作
-						</a>	
-					</li>
-																										<li style="width:236px" id="navi_text_229636">
-						<a href="#text_229636">
-							二、核心接口
-						</a>	
-					</li>
-																										<li style="width:236px" id="navi_text_229637">
-						<a href="#text_229637">
-							三、状态枚举
-						</a>	
-					</li>
-																										<li style="width:236px" id="navi_text_229638">
-						<a href="#text_229638">
-							四、服务配置IoServerConfig
-						</a>	
-					</li>
-																										<li style="width:236px" id="navi_text_229640">
-						<a href="#text_229640">
-							五、服务端AioQuickServer
-						</a>	
-					</li>
-																										<li style="width:236px" id="navi_text_229641">
-						<a href="#text_229641">
-							六、客户端AioQuickClient
-						</a>	
-					</li>
-																										<li style="width:236px" id="navi_text_229642">
-						<a href="#text_229642">
-							七、通信会话AioSession
-						</a>	
-					</li>
-																										<li style="width:236px" id="navi_text_229643">
-						<a href="#text_229643">
-							八、读写回调
-						</a>	
-					</li>
-											</ul>
-																									<li class="sin_navi_ca" style="width: 246px;" id="navi_category_63715">
-								<a href="#category_63715">
-									进阶篇
-								</a>
-							</li>
-																																<li class="sin_navi_ca" style="width: 246px;" id="navi_category_63717">
-								<a href="#category_63717">
-									高级篇
-								</a>
-							</li>
-																																																<li style="width: 246px;" id="navi_text_264139">
-									<a href="#text_264139">
-										FAQ
-									</a>	
-								</li>
-																																							<li style="width: 246px;">
-									<a href="https://gitee.com/smartboot/smart-socket" target="_blank">
-										项目地址
-									</a>
-									<em class="fa fa-link sin_link_logo"></em>
-								</li>
-																									</ul>
-		</div>
-		<div class="sin_content" id="sin_content_id">
-																													<h2 id="text_260338" class="sin_target">前言</h2>
-<div class="sin_text">
-    					<h2>smart-socket是什么</h2>
-<p>smart（百度翻译：聪明的;敏捷的;漂亮的;整齐的），从为项目起名开始，便对其寄予了厚望。专注于通信组件的研究与发展，摒弃一切大而全的解决方案，仅提供小而美的基础服务。无论您是从事IOT、IM、RPC，还是其余通信领域的开发工作，相信smart-socket都是非常酷的选择。如果要用一句话来为smart-socket打call,那就是：遇见smart-socket，你就已经赢在起跑线了。<br><img src="https://static.oschina.net/uploads/img/201802/01204916_ydvf.png" alt="输入图片说明" title="在这里输入图片标题"></p>
-<h2>关于开源</h2>
-<p>JDK7虽然已经发布很长一段时间了，但开源社区对于其AIO的新特性貌似并不热情。对于通信方面的技术诉求，似乎大家都习惯于Netty、Mina。“Stop Trying to Reinvent the Wheel”不要重复造轮子，几乎每个程序员都被灌输过这个概念，理所当然的沉浸在各自的舒适区，享受着开源社区提供的各项技术支撑。举个跟本文相契合的例子，如果工作中遇到通信相关的需求，广大Java程序员脑海里首先想到的必然是Netty或Mina，即便从未接触过Netty/Mina，但在心里认定只有这两个框架才能解决自己面临的问题。这样的现状可能归咎于现在我们太急躁，工作的压力致使没时间给自己充电，尤其是那种不常用且稍微有点深度的技术点，已经没心力再去细细琢磨了。所幸还有一批好学的程序员在工作之余做着一些看似平凡的事，踏踏实实专研这些技术点并作出一些小小的作品，同时为开源社区注入新鲜血液。目前码云上已知的Java AIO项目有tio、Voovan、baseio以及本文的主角：smart-socket，这几个作品还无任何一款能形成足够的影响力被广大Javaer认可，但通过开源的推广与磨练，相信未来AIO的开源环境会比现在更加繁荣。</p>
-<p>smart-socket立项之初便已严苛的要求进行开发，追求各方面都达到极致。首先，smart-socket是个非常轻量级的项目，只有依赖log4j2作为项目的日志组件。smart-socket发布的jar包仅仅20KB，简洁的接口设计可以非常方便的在业务中接入通信服务。不过我们更期望看到的是接触到smart-socket的朋友可以将其作为学习Java Socket编程的素材，如果smart-socket能在这方面给予您一丝帮助，那我便会绝对自己做了一件有意义的事。</p>
-			</div>
+<div class="sin_header">
+    <div class="sin_title">
+        <h1 class="sin_title_text">smart-socket</h1>
+        <span class="sin_version">V1.1.0</span>
+        <div class="clear"></div>
+    </div>
+    <div id="top_end"></div>
+</div>
+<div class="sin_main">
+    <div class="sin_navi" id="sin_navi_id">
+        <ul style="margin: 20px 0;">
+            <li style="width: 246px;" id="navi_text_260338">
+                <a href="#text_260338">
+                    前言
+                </a>
+            </li>
+            <li style="width: 246px;" id="navi_text_262747">
+                <a href="#text_262747">
+                    快速上手
+                </a>
+            </li>
+            <li class="sin_navi_ca" style="width: 246px;" id="navi_category_56126">
+                <a href="#category_56126">
+                    基础篇
+                </a>
+            </li>
+            <ul>
+                <li style="width:236px" id="navi_text_229635">
+                    <a href="#text_229635">
+                        一、准备工作
+                    </a>
+                </li>
+                <li style="width:236px" id="navi_text_229636">
+                    <a href="#text_229636">
+                        二、核心接口
+                    </a>
+                </li>
+                <li style="width:236px" id="navi_text_229637">
+                    <a href="#text_229637">
+                        三、状态枚举
+                    </a>
+                </li>
+                <li style="width:236px" id="navi_text_229638">
+                    <a href="#text_229638">
+                        四、服务配置IoServerConfig
+                    </a>
+                </li>
+                <li style="width:236px" id="navi_text_229640">
+                    <a href="#text_229640">
+                        五、服务端AioQuickServer
+                    </a>
+                </li>
+                <li style="width:236px" id="navi_text_229641">
+                    <a href="#text_229641">
+                        六、客户端AioQuickClient
+                    </a>
+                </li>
+                <li style="width:236px" id="navi_text_229642">
+                    <a href="#text_229642">
+                        七、通信会话AioSession
+                    </a>
+                </li>
+                <li style="width:236px" id="navi_text_229643">
+                    <a href="#text_229643">
+                        八、读写回调
+                    </a>
+                </li>
+            </ul>
+            <li class="sin_navi_ca" style="width: 246px;" id="navi_category_63715">
+                <a href="#category_63715">
+                    进阶篇
+                </a>
+            </li>
+            <li class="sin_navi_ca" style="width: 246px;" id="navi_category_63717">
+                <a href="#category_63717">
+                    高级篇
+                </a>
+            </li>
+            <li style="width: 246px;" id="navi_text_264139">
+                <a href="#text_264139">
+                    FAQ
+                </a>
+            </li>
+            <li style="width: 246px;">
+                <a href="https://gitee.com/smartboot/smart-socket" target="_blank">
+                    项目地址
+                </a>
+                <em class="fa fa-link sin_link_logo"></em>
+            </li>
+        </ul>
+    </div>
+    <div class="sin_content" id="sin_content_id">
+        <h2 id="text_260338" class="sin_target">前言</h2>
+        <div class="sin_text">
+            <h2>smart-socket是什么</h2>
+            <p>
+                smart（百度翻译：聪明的;敏捷的;漂亮的;整齐的），从为项目起名开始，便对其寄予了厚望。专注于通信组件的研究与发展，摒弃一切大而全的解决方案，仅提供小而美的基础服务。无论您是从事IOT、IM、RPC，还是其余通信领域的开发工作，相信smart-socket都是非常酷的选择。如果要用一句话来为smart-socket打call,那就是：遇见smart-socket，你就已经赢在起跑线了。<br><img
+                    src="https://static.oschina.net/uploads/img/201802/01204916_ydvf.png" alt="输入图片说明"
+                    title="在这里输入图片标题"></p>
+            <h2>关于开源</h2>
+            <p>JDK7虽然已经发布很长一段时间了，但开源社区对于其AIO的新特性貌似并不热情。对于通信方面的技术诉求，似乎大家都习惯于Netty、Mina。“Stop Trying to Reinvent the
+                Wheel”不要重复造轮子，几乎每个程序员都被灌输过这个概念，理所当然的沉浸在各自的舒适区，享受着开源社区提供的各项技术支撑。举个跟本文相契合的例子，如果工作中遇到通信相关的需求，广大Java程序员脑海里首先想到的必然是Netty或Mina，即便从未接触过Netty/Mina，但在心里认定只有这两个框架才能解决自己面临的问题。这样的现状可能归咎于现在我们太急躁，工作的压力致使没时间给自己充电，尤其是那种不常用且稍微有点深度的技术点，已经没心力再去细细琢磨了。所幸还有一批好学的程序员在工作之余做着一些看似平凡的事，踏踏实实专研这些技术点并作出一些小小的作品，同时为开源社区注入新鲜血液。目前码云上已知的Java
+                AIO项目有tio、Voovan、baseio以及本文的主角：smart-socket，这几个作品还无任何一款能形成足够的影响力被广大Javaer认可，但通过开源的推广与磨练，相信未来AIO的开源环境会比现在更加繁荣。</p>
+            <p>
+                smart-socket立项之初便已严苛的要求进行开发，追求各方面都达到极致。首先，smart-socket是个非常轻量级的项目，只有依赖log4j2作为项目的日志组件。smart-socket发布的jar包仅仅20KB，简洁的接口设计可以非常方便的在业务中接入通信服务。不过我们更期望看到的是接触到smart-socket的朋友可以将其作为学习Java
+                Socket编程的素材，如果smart-socket能在这方面给予您一丝帮助，那我便会绝对自己做了一件有意义的事。</p>
+        </div>
 
-																																		<h2 id="text_262747" class="sin_target">快速上手</h2>
-<div class="sin_text">
-    					<blockquote>
- <p>官方指南假设您已了解ByteBuffer，并对Socket编程具备一定基础。如果您刚开始接触Socket，将smart-socket作为您的第一步可能不是个好的决定。</p> 
-</blockquote>
-<h2>Maven依赖</h2>
-<p>smart-socket已上传至Maven仓库，使用前需要向其引入您的项目工程中。<br> </p>
-<pre><code><br>&lt;!-- https://mvnrepository.com/artifact/org.smartboot.socket/aio-core --&gt;
+        <h2 id="text_262747" class="sin_target">快速上手</h2>
+        <div class="sin_text">
+            <blockquote>
+                <p>官方指南假设您已了解ByteBuffer，并对Socket编程具备一定基础。如果您刚开始接触Socket，将smart-socket作为您的第一步可能不是个好的决定。</p>
+            </blockquote>
+            <h2>Maven依赖</h2>
+            <p>smart-socket已上传至Maven仓库，使用前需要向其引入您的项目工程中。<br></p>
+            <pre><code><br>&lt;!-- https://mvnrepository.com/artifact/org.smartboot.socket/aio-core --&gt;
 &lt;dependency&gt;
     &lt;groupId&gt;org.smartboot.socket&lt;/groupId&gt;
     &lt;artifactId&gt;aio-core&lt;/artifactId&gt;
     &lt;version&gt;1.3.2&lt;/version&gt;
 &lt;/dependency&gt;
 </code></pre>
-<p></p>
-<h2>通信开发</h2>
-<p>基于smart-socket进行通信服务的开发，主要有三个步骤：</p> 
-<ol> 
- <li>协议编解码</li> 
- <li>消息处理</li> 
- <li>启动服务</li> 
-</ol>
-<p>接下来我们会通过一个简单例子来演示如何通过smart-socket开发服务端与客户端程序。为简化操作，服务端与客户端交互的数据为一个整型数据。</p>
-<h3>一、协议编解码</h3>
-<p>正常情况下服务端与客户端通信共用同一套协议规则，因此我们只需编写一份协议编解码实现即可。如下所示，协议编解码的需要实现接口Protocol。<br> </p>
-<pre><code><br>public class IntegerProtocol implements Protocol&lt;Integer&gt; {
+            <p></p>
+            <h2>通信开发</h2>
+            <p>基于smart-socket进行通信服务的开发，主要有三个步骤：</p>
+            <ol>
+                <li>协议编解码</li>
+                <li>消息处理</li>
+                <li>启动服务</li>
+            </ol>
+            <p>接下来我们会通过一个简单例子来演示如何通过smart-socket开发服务端与客户端程序。为简化操作，服务端与客户端交互的数据为一个整型数据。</p>
+            <h3>一、协议编解码</h3>
+            <p>正常情况下服务端与客户端通信共用同一套协议规则，因此我们只需编写一份协议编解码实现即可。如下所示，协议编解码的需要实现接口Protocol。<br></p>
+            <pre><code><br>public class IntegerProtocol implements Protocol&lt;Integer&gt; {
 
     private static final int INT_LENGTH = 4;
 
@@ -389,12 +445,13 @@
     }
 }
 </code></pre>
-<br>上述代码很简单，一个整数的长度为4byte，所以只要长度大于等于4，我们就能解析到一个整数。
-<p></p>
-<h3>二、消息处理</h3>
-<p>业务消息的处理需要实现接口<code>MessageProcessor</code>，该接口只有两个方法：<code>process</code>,<code>stateEvent</code>。其中 <strong>stateEvent</strong>用于定义AioSession状态机的监控与处理。**process**则会处理每一个接收到的业务消息。</p>
-<h4>服务端</h4> 
-<pre><code>public class IntegerServerProcessor implements MessageProcessor&lt;Integer&gt; {
+            <br>上述代码很简单，一个整数的长度为4byte，所以只要长度大于等于4，我们就能解析到一个整数。
+            <p></p>
+            <h3>二、消息处理</h3>
+            <p>业务消息的处理需要实现接口<code>MessageProcessor</code>，该接口只有两个方法：<code>process</code>,<code>stateEvent</code>。其中
+                <strong>stateEvent</strong>用于定义AioSession状态机的监控与处理。**process**则会处理每一个接收到的业务消息。</p>
+            <h4>服务端</h4>
+            <pre><code>public class IntegerServerProcessor implements MessageProcessor&lt;Integer&gt; {
     @Override
     public void process(AioSession&lt;Integer&gt; session, Integer msg) {
         Integer respMsg = msg + 1;
@@ -412,8 +469,8 @@
     }
 }
 </code></pre>
-<h4>客户端</h4> 
-<pre><code>public class IntegerClientProcessor implements MessageProcessor&lt;Integer&gt; {
+            <h4>客户端</h4>
+            <pre><code>public class IntegerClientProcessor implements MessageProcessor&lt;Integer&gt; {
     private AioSession&lt;Integer&gt; session;
 
     @Override
@@ -438,9 +495,9 @@
     }
 }
 </code></pre>
-<h3>三、启动服务</h3>
-<h4>服务端</h4> 
-<pre><code>	public class IntegerServer {
+            <h3>三、启动服务</h3>
+            <h4>服务端</h4>
+            <pre><code>	public class IntegerServer {
 	    public static void main(String[] args) {
 	        AioQuickServer server = new AioQuickServer()
 	                .bind(8888)
@@ -454,8 +511,8 @@
 	    }
 	}
 </code></pre>
-<h4>客户端</h4> 
-<pre><code>	public class IntegerClient {
+            <h4>客户端</h4>
+            <pre><code>	public class IntegerClient {
 	    public static void main(String[] args) throws Exception {
 	        IntegerClientProcessor processor=new IntegerClientProcessor();
 	        AioQuickClient aioQuickClient=new AioQuickClient()
@@ -469,108 +526,118 @@
 	    }
 	}
 </code></pre>
-			</div>
+        </div>
 
-																										<h2 id="category_56126">基础篇</h2>
-																								<h3 id="text_229635" class="sin_target">一、准备工作</h3>
-<div class="sin_text">
-    					<p>本章节作为基础篇，旨在表达smart-socket灵魂部分的实现原理，这将有助于您更好的运用smart-socket写出高效的程序。本手册描述的内容仅限于smart-socket，不涉及到Java Socket基础知识，所以在阅读之前请确认你已具备初步的socket开发经验并对JDK AIO相关的类/接口有所了解：<code>AsynchronousChannelGroup</code>、<code>AsynchronousServerSocketChannel</code>、<code>AsynchronousSocketChannel</code>、<code>CompletionHandler</code>。</p>
-<p>smart-socket为自己贴的标签是：极简、易用、高性能。文字无法表达的它的“高性能”程度，以您的亲测结果为准。至于“极简”、“易用”的特性，希望通过本文的阐述让你切身感受到。smart-socket代码总量不到600行（撰写手册之时仅573行），源码文件数也才区区10个。引用smart-socket的服务很简单，直接通过maven将其引入到您的工程中即可。<br> </p>
-<pre><code><br>&lt;!-- https://mvnrepository.com/artifact/org.smartboot.socket/aio-core --&gt;
+        <h2 id="category_56126">基础篇</h2>
+        <h3 id="text_229635" class="sin_target">一、准备工作</h3>
+        <div class="sin_text">
+            <p>本章节作为基础篇，旨在表达smart-socket灵魂部分的实现原理，这将有助于您更好的运用smart-socket写出高效的程序。本手册描述的内容仅限于smart-socket，不涉及到Java
+                Socket基础知识，所以在阅读之前请确认你已具备初步的socket开发经验并对JDK AIO相关的类/接口有所了解：<code>AsynchronousChannelGroup</code>、<code>AsynchronousServerSocketChannel</code>、<code>AsynchronousSocketChannel</code>、<code>CompletionHandler</code>。
+            </p>
+            <p>
+                smart-socket为自己贴的标签是：极简、易用、高性能。文字无法表达的它的“高性能”程度，以您的亲测结果为准。至于“极简”、“易用”的特性，希望通过本文的阐述让你切身感受到。smart-socket代码总量不到600行（撰写手册之时仅573行），源码文件数也才区区10个。引用smart-socket的服务很简单，直接通过maven将其引入到您的工程中即可。<br>
+            </p>
+            <pre><code><br>&lt;!-- https://mvnrepository.com/artifact/org.smartboot.socket/aio-core --&gt;
 &lt;dependency&gt;
     &lt;groupId&gt;org.smartboot.socket&lt;/groupId&gt;
     &lt;artifactId&gt;aio-core&lt;/artifactId&gt;
     &lt;version&gt;1.3.2&lt;/version&gt;
 &lt;/dependency&gt;
 </code></pre>
-<p></p>
-<h3>smart-socket代码清单</h3> 
-<table>  
- <tbody><tr> 
-  <th>名称 </th> 
-  <th>类型 </th> 
-  <th>可见性</th> 
-  <th>说明</th> 
- </tr>  
- </tbody><tbody> 
-  <tr> 
-   <td>Protocol</td> 
-   <td>interface</td> 
-   <td>public</td> 
-   <td>协议接口</td> 
-  </tr> 
-  <tr> 
-   <td>MessageProcessor</td> 
-   <td>interface</td> 
-   <td>public</td> 
-   <td>消息处理器接口</td> 
-  </tr> 
-  <tr> 
-   <td>Filter</td> 
-   <td>interface</td> 
-   <td>public</td> 
-   <td>过滤器接口</td> 
-  </tr> 
-  <tr> 
-   <td>StateMachineEnum</td> 
-   <td>enum</td> 
-   <td>public</td> 
-   <td>服务状态机枚举</td> 
-  </tr> 
-  <tr> 
-   <td>AioQuickClient</td> 
-   <td>class</td> 
-   <td>public</td> 
-   <td>AIO客户端</td> 
-  </tr> 
-  <tr> 
-   <td>AioQuickServer</td> 
-   <td>class</td> 
-   <td>public</td> 
-   <td>AIO服务端</td> 
-  </tr> 
-  <tr> 
-   <td>AioSession</td> 
-   <td>class</td> 
-   <td>public</td> 
-   <td>AIO传输会话</td> 
-  </tr> 
-  <tr> 
-   <td>IoServerConfig</td> 
-   <td>class</td> 
-   <td>package</td> 
-   <td>AIO服务配置</td> 
-  </tr> 
-  <tr> 
-   <td>ReadCompletionHandler</td> 
-   <td>class</td> 
-   <td>package</td> 
-   <td>AIO读操作CompletionHandler实现类</td> 
-  </tr> 
-  <tr> 
-   <td>WriteCompletionHandler</td> 
-   <td>class</td> 
-   <td>package</td> 
-   <td>AIO写操作CompletionHandler实现类</td> 
-  </tr> 
- </tbody> 
-</table> 
-<hr>
-<h3>smart-socket执行流程</h3> 
-<ul> 
- <li><p>读操作<br><img src="https://static.oschina.net/uploads/img/201709/29143826_tWuF.png" alt="输入图片说明" title="在这里输入图片标题"></p></li> 
- <li><p>写操作<br><img src="https://static.oschina.net/uploads/img/201709/29143838_25RX.png" alt="输入图片说明" title="在这里输入图片标题"></p></li> 
-</ul>
-			</div>
+            <p></p>
+            <h3>smart-socket代码清单</h3>
+            <table>
+                <tbody>
+                <tr>
+                    <th>名称</th>
+                    <th>类型</th>
+                    <th>可见性</th>
+                    <th>说明</th>
+                </tr>
+                </tbody>
+                <tbody>
+                <tr>
+                    <td>Protocol</td>
+                    <td>interface</td>
+                    <td>public</td>
+                    <td>协议接口</td>
+                </tr>
+                <tr>
+                    <td>MessageProcessor</td>
+                    <td>interface</td>
+                    <td>public</td>
+                    <td>消息处理器接口</td>
+                </tr>
+                <tr>
+                    <td>Filter</td>
+                    <td>interface</td>
+                    <td>public</td>
+                    <td>过滤器接口</td>
+                </tr>
+                <tr>
+                    <td>StateMachineEnum</td>
+                    <td>enum</td>
+                    <td>public</td>
+                    <td>服务状态机枚举</td>
+                </tr>
+                <tr>
+                    <td>AioQuickClient</td>
+                    <td>class</td>
+                    <td>public</td>
+                    <td>AIO客户端</td>
+                </tr>
+                <tr>
+                    <td>AioQuickServer</td>
+                    <td>class</td>
+                    <td>public</td>
+                    <td>AIO服务端</td>
+                </tr>
+                <tr>
+                    <td>AioSession</td>
+                    <td>class</td>
+                    <td>public</td>
+                    <td>AIO传输会话</td>
+                </tr>
+                <tr>
+                    <td>IoServerConfig</td>
+                    <td>class</td>
+                    <td>package</td>
+                    <td>AIO服务配置</td>
+                </tr>
+                <tr>
+                    <td>ReadCompletionHandler</td>
+                    <td>class</td>
+                    <td>package</td>
+                    <td>AIO读操作CompletionHandler实现类</td>
+                </tr>
+                <tr>
+                    <td>WriteCompletionHandler</td>
+                    <td>class</td>
+                    <td>package</td>
+                    <td>AIO写操作CompletionHandler实现类</td>
+                </tr>
+                </tbody>
+            </table>
+            <hr>
+            <h3>smart-socket执行流程</h3>
+            <ul>
+                <li><p>读操作<br><img src="https://static.oschina.net/uploads/img/201709/29143826_tWuF.png" alt="输入图片说明"
+                                   title="在这里输入图片标题"></p></li>
+                <li><p>写操作<br><img src="https://static.oschina.net/uploads/img/201709/29143838_25RX.png" alt="输入图片说明"
+                                   title="在这里输入图片标题"></p></li>
+            </ul>
+        </div>
 
-																						<h3 id="text_229636" class="sin_target">二、核心接口</h3>
-<div class="sin_text">
-    					<p>作为一款框架，需要具备支持各类业务场景的能力，但框架本身又无法知晓实际业务场景如何，因此需要设计一套扩展性强且优雅的接口。smart-socket中核心的接口仅3个，用户在使用smart-socket进行二次开发时，也只需熟练掌握这三个接口的运用即可。接下来先介绍一下这三个接口<code>Protocol</code>、<code>MessageProcessor</code>、<code>Filter</code>中定义的方法，后续会详细说明smart-socket如何运用接口设计提供通信服务能力。</p> 
-<blockquote>
- <p>剧透：在基础篇中可无需关注Filter，您对smart-socket的使用不受其影响，在进阶篇中另有讲解。</p> 
-</blockquote>
-<h4>Protocol</h4> 
-<pre><code>public interface Protocol&lt;T&gt; {
+        <h3 id="text_229636" class="sin_target">二、核心接口</h3>
+        <div class="sin_text">
+            <p>
+                作为一款框架，需要具备支持各类业务场景的能力，但框架本身又无法知晓实际业务场景如何，因此需要设计一套扩展性强且优雅的接口。smart-socket中核心的接口仅3个，用户在使用smart-socket进行二次开发时，也只需熟练掌握这三个接口的运用即可。接下来先介绍一下这三个接口<code>Protocol</code>、<code>MessageProcessor</code>、<code>Filter</code>中定义的方法，后续会详细说明smart-socket如何运用接口设计提供通信服务能力。
+            </p>
+            <blockquote>
+                <p>剧透：在基础篇中可无需关注Filter，您对smart-socket的使用不受其影响，在进阶篇中另有讲解。</p>
+            </blockquote>
+            <h4>Protocol</h4>
+            <pre><code>public interface Protocol&lt;T&gt; {
     /**
      * 对于从Socket流中获取到的数据采用当前Protocol的实现类协议进行解析
      *
@@ -592,10 +659,13 @@
     public ByteBuffer encode(T msg, AioSession&lt;T&gt; session);
 }
 </code></pre>
-<p>Protocol是一个泛型接口，<code>&lt;T&gt;</code>指的是业务消息实体类，smart-socket中不少地方都运用了泛型设计，其含义都代表消息类型。Protocol定义了消息编解码的接口，我们先来了解一下其中的两个方法<code>decode</code>、<code>encode</code>。<br>- decode<br>消息解码，AIO的数据传输是以ByteBuffer为媒介的。在读取到数据并填充到ByteBuffer后，smart-socket会调用Protocol实现类的decode方法，并将ByteBuffer作为第一个参数传入，而第二个参数AioSession为当前Socket连接的会话对象，后续会详解。<br>Protocol实现类从ByteBuffer中读取字节并按其协议规则进行消息解码，待解码完成后封装成业务对象并返回。不过实际情况下，已读取到并传入ByteBuffer的字节可能不足以完成消息解码（即所谓的：半包/拆包），Protocol实现类可根据其实际情况选择部分解码或等待ByteBuffer足以完成解码后再执行解码操作，不过在消息未完成解码的情况下必须返回<code>null</code>。<br>- encode<br>消息编码，业务消息在输出至网络对端前，需要将其编码成字节流，也是以ByteBuffer为载体的。该方法的第一个参数泛型<code>T</code>便是业务消息对象。Protocol的实现类也得按照业务规则，将T指代的对象转为ByteBuffer并返回，smart-socket会将编码后的ByteBuffer输出。</p>
-<p>—-</p>
-<h4>MessageProcessor</h4> 
-<pre><code>public interface MessageProcessor&lt;T&gt; {
+            <p>Protocol是一个泛型接口，<code>&lt;T&gt;</code>指的是业务消息实体类，smart-socket中不少地方都运用了泛型设计，其含义都代表消息类型。Protocol定义了消息编解码的接口，我们先来了解一下其中的两个方法<code>decode</code>、<code>encode</code>。<br>-
+                decode<br>消息解码，AIO的数据传输是以ByteBuffer为媒介的。在读取到数据并填充到ByteBuffer后，smart-socket会调用Protocol实现类的decode方法，并将ByteBuffer作为第一个参数传入，而第二个参数AioSession为当前Socket连接的会话对象，后续会详解。<br>Protocol实现类从ByteBuffer中读取字节并按其协议规则进行消息解码，待解码完成后封装成业务对象并返回。不过实际情况下，已读取到并传入ByteBuffer的字节可能不足以完成消息解码（即所谓的：半包/拆包），Protocol实现类可根据其实际情况选择部分解码或等待ByteBuffer足以完成解码后再执行解码操作，不过在消息未完成解码的情况下必须返回<code>null</code>。<br>-
+                encode<br>消息编码，业务消息在输出至网络对端前，需要将其编码成字节流，也是以ByteBuffer为载体的。该方法的第一个参数泛型<code>T</code>便是业务消息对象。Protocol的实现类也得按照业务规则，将T指代的对象转为ByteBuffer并返回，smart-socket会将编码后的ByteBuffer输出。
+            </p>
+            <p>—-</p>
+            <h4>MessageProcessor</h4>
+            <pre><code>public interface MessageProcessor&lt;T&gt; {
 
     /**
      * 处理接收到的消息
@@ -615,11 +685,13 @@
     void stateEvent(AioSession&lt;T&gt; session, StateMachineEnum stateMachineEnum, Throwable throwable);
 }
 </code></pre>
-<p>MessageProcessor定义了消息处理器接口，smart-socket在通过Protocol完成消息解码后，会将消息对象交由MessageProcessor实现类进行业务处理。<br>- process<br>消息处理器，smart-socket每接收到一个完整的业务消息，都会交由该处理器执行。<br>- stateEvent<br>执行状态机，smart-socket内置了状态枚举<code>StateMachineEnum</code>。<code>MessageProcessor</code>实现类可在此方法中处理其关注的事件。</p> 
-<hr>
-<h4>Filter</h4>
-<p><code>Filter</code>是框架提供的通信层过滤器接口，用户可基于该接口开发一些扩展性服务。这个接口不常用，但利用的好的话可以帮助你获悉服务器的运行状况。<br> </p>
-<pre><code><br>public interface Filter&lt;T&gt; {
+            <p>MessageProcessor定义了消息处理器接口，smart-socket在通过Protocol完成消息解码后，会将消息对象交由MessageProcessor实现类进行业务处理。<br>- process<br>消息处理器，smart-socket每接收到一个完整的业务消息，都会交由该处理器执行。<br>-
+                stateEvent<br>执行状态机，smart-socket内置了状态枚举<code>StateMachineEnum</code>。<code>MessageProcessor</code>实现类可在此方法中处理其关注的事件。
+            </p>
+            <hr>
+            <h4>Filter</h4>
+            <p><code>Filter</code>是框架提供的通信层过滤器接口，用户可基于该接口开发一些扩展性服务。这个接口不常用，但利用的好的话可以帮助你获悉服务器的运行状况。<br></p>
+            <pre><code><br>public interface Filter&lt;T&gt; {
 
     /**
      * 数据读取过滤,可用于统计流量
@@ -658,29 +730,30 @@
 
 }
 </code></pre>
-<br>- readFilter
-<br>读操作过滤，每当smart-socket发生读操作便会触发该方法。第一个参数AioSession为本次发生读事件的会话，第二个参数readSize为本次读取到的字节数
-<br>- processFilter
-<br>消息处理过滤器，每一个业务消息在执行
-<code>MessageProcessor.process</code>之前都会先执行一遍
-<code>Filter.processFilter</code>
-<br>- processFailHandler
-<br>当业务消息执行
-<code>processFilter</code>出现运行时异常时，会触发
-<code>processFailHandler</code>
-<br>- writeFilter
-<br>写操作过滤，每当smart-socket发生写操作便会触发该方法。第一个参数AioSession为本次发生写事件的会话，第二个参数writeSize为本次输出的字节数
-<p></p> 
-<blockquote>
- <p>smart-socket的运行并非强依赖Filter，因此用户未定义Filter也不会影响使用，该接口只是框架的一项附加功能。</p> 
-</blockquote>
-			</div>
+            <br>- readFilter
+            <br>读操作过滤，每当smart-socket发生读操作便会触发该方法。第一个参数AioSession为本次发生读事件的会话，第二个参数readSize为本次读取到的字节数
+            <br>- processFilter
+            <br>消息处理过滤器，每一个业务消息在执行
+            <code>MessageProcessor.process</code>之前都会先执行一遍
+            <code>Filter.processFilter</code>
+            <br>- processFailHandler
+            <br>当业务消息执行
+            <code>processFilter</code>出现运行时异常时，会触发
+            <code>processFailHandler</code>
+            <br>- writeFilter
+            <br>写操作过滤，每当smart-socket发生写操作便会触发该方法。第一个参数AioSession为本次发生写事件的会话，第二个参数writeSize为本次输出的字节数
+            <p></p>
+            <blockquote>
+                <p>smart-socket的运行并非强依赖Filter，因此用户未定义Filter也不会影响使用，该接口只是框架的一项附加功能。</p>
+            </blockquote>
+        </div>
 
-																						<h3 id="text_229637" class="sin_target">三、状态枚举</h3>
-<div class="sin_text">
-    					<h3>状态机StateMachineEnum</h3>
-<p>smart-socket中引入了状态机的概念，框架会监控每个状态事件的发生并通知消息处理器<code>MessageProcessor</code>的实现类。因此在必要的情况下，用户需要在<code>stateEvent</code>实现自己所要关注的状态处理，例如：<br> </p>
-<pre><code><br>    public void stateEvent(AioSession&lt;BaseMessage&gt; session, StateMachineEnum stateMachineEnum, Throwable throwable) {
+        <h3 id="text_229637" class="sin_target">三、状态枚举</h3>
+        <div class="sin_text">
+            <h3>状态机StateMachineEnum</h3>
+            <p>smart-socket中引入了状态机的概念，框架会监控每个状态事件的发生并通知消息处理器<code>MessageProcessor</code>的实现类。因此在必要的情况下，用户需要在<code>stateEvent</code>实现自己所要关注的状态处理，例如：<br>
+            </p>
+            <pre><code><br>    public void stateEvent(AioSession&lt;BaseMessage&gt; session, StateMachineEnum stateMachineEnum, Throwable throwable) {
         switch (stateMachineEnum) {
             case NEW_SESSION:
                 newSession();
@@ -691,143 +764,169 @@
         }
     }
 </code></pre>
-<br>目前已有的状态枚举为：
-<p></p> 
-<table>  
- <tbody><tr> 
-  <th>状态枚举</th> 
-  <th>说明</th> 
- </tr>  
- </tbody><tbody> 
-  <tr> 
-   <td>NEW_SESSION</td> 
-   <td>网络连接建立时触发，连接建立时会构建传输层的AioSession，如果业务层面也需要维护一个会话，可在此状态机中处理</td> 
-  </tr> 
-  <tr> 
-   <td>INPUT_SHUTDOWN</td> 
-   <td>数据读取完毕时触发，即传统意义中的<code>read()==-1</code></td> 
-  </tr> 
-  <tr> 
-   <td>INPUT_EXCEPTION</td> 
-   <td>读数据过程中发生异常时触发此状态机</td> 
-  </tr> 
-  <tr> 
-   <td>OUTPUT_EXCEPTION</td> 
-   <td>写数据过程中发生异常时触发此状态机</td> 
-  </tr> 
-  <tr> 
-   <td>SESSION_CLOSING</td> 
-   <td>触发了AioSession.close方法，但由于当前AioSession还有未完成的事件，会进入SESSION_CLOSING状态</td> 
-  </tr> 
-  <tr> 
-   <td>SESSION_CLOSED</td> 
-   <td>AioSesson完成close操作后触发此状态机</td> 
-  </tr> 
- </tbody> 
-</table>
-			</div>
+            <br>目前已有的状态枚举为：
+            <p></p>
+            <table>
+                <tbody>
+                <tr>
+                    <th>状态枚举</th>
+                    <th>说明</th>
+                </tr>
+                </tbody>
+                <tbody>
+                <tr>
+                    <td>NEW_SESSION</td>
+                    <td>网络连接建立时触发，连接建立时会构建传输层的AioSession，如果业务层面也需要维护一个会话，可在此状态机中处理</td>
+                </tr>
+                <tr>
+                    <td>INPUT_SHUTDOWN</td>
+                    <td>数据读取完毕时触发，即传统意义中的<code>read()==-1</code></td>
+                </tr>
+                <tr>
+                    <td>INPUT_EXCEPTION</td>
+                    <td>读数据过程中发生异常时触发此状态机</td>
+                </tr>
+                <tr>
+                    <td>OUTPUT_EXCEPTION</td>
+                    <td>写数据过程中发生异常时触发此状态机</td>
+                </tr>
+                <tr>
+                    <td>SESSION_CLOSING</td>
+                    <td>触发了AioSession.close方法，但由于当前AioSession还有未完成的事件，会进入SESSION_CLOSING状态</td>
+                </tr>
+                <tr>
+                    <td>SESSION_CLOSED</td>
+                    <td>AioSesson完成close操作后触发此状态机</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
 
-																						<h3 id="text_229638" class="sin_target">四、服务配置IoServerConfig</h3>
-<div class="sin_text">
-    					<p><code>IoServerConfig</code>是个包可见级别的类，供smart-socket进行服务配置管理，用户无法直接对其操作。但是了解该类有助于更好的运用smart-socket开放的各个接口。</p> 
-<table>  
- <tbody><tr> 
-  <th>配置项</th> 
-  <th>类型</th> 
-  <th>默认值</th> 
-  <th>备注</th> 
- </tr>  
-</tbody></table>
-<p>|BANNER |String |-|控制台打印的启动banner|<br>|VERSION |String |v1.3.2 |当前smart-socket版本号|<br>|writeQueueSize|int |4 |AioSession中的输出缓存队列长度|<br>|readBufferSize|int |512 |AioSession进行数据读操作是ByteBuffer大小,单位：byte|<br>|host |String |null |客户端连接远程服务器的地址|<br>|filters |Filter数组|[ ]|定义过滤器数组|<br>|port |int |8888|服务端开放的端口号|<br>|processor |MessageProcessor|null|自定义消息处理器|<br>|protocol |Protocol |null|自定义协议编解码|<br>|threadNum |int |CPU Nums|smart-socket线程组大小|<br>|limitRate |float |0.9|流控系数，**该配置项由框架维护，无法修改**|<br>|releaseRate |float |0.6|解除流控系数，**该配置项由框架维护，无法修改**|<br>|flowLimitLine |int |limitRate*writeQueueSize|触发流控的阈值，**无法修改**|<br>|releaseLine |int |releaseRate*writeQueueSize|解除流控的阈值，**无法修改**|</p>
-			</div>
+        <h3 id="text_229638" class="sin_target">四、服务配置IoServerConfig</h3>
+        <div class="sin_text">
+            <p><code>IoServerConfig</code>是个包可见级别的类，供smart-socket进行服务配置管理，用户无法直接对其操作。但是了解该类有助于更好的运用smart-socket开放的各个接口。
+            </p>
+            <table>
+                <tbody>
+                <tr>
+                    <th>配置项</th>
+                    <th>类型</th>
+                    <th>默认值</th>
+                    <th>备注</th>
+                </tr>
+                </tbody>
+            </table>
+            <p>|BANNER |String |-|控制台打印的启动banner|<br>|VERSION |String |v1.3.2 |当前smart-socket版本号|<br>|writeQueueSize|int
+                |4 |AioSession中的输出缓存队列长度|<br>|readBufferSize|int |512 |AioSession进行数据读操作是ByteBuffer大小,单位：byte|<br>|host
+                |String |null |客户端连接远程服务器的地址|<br>|filters |Filter数组|[ ]|定义过滤器数组|<br>|port |int |8888|服务端开放的端口号|<br>|processor
+                |MessageProcessor|null|自定义消息处理器|<br>|protocol |Protocol |null|自定义协议编解码|<br>|threadNum |int |CPU
+                Nums|smart-socket线程组大小|<br>|limitRate |float |0.9|流控系数，**该配置项由框架维护，无法修改**|<br>|releaseRate |float
+                |0.6|解除流控系数，**该配置项由框架维护，无法修改**|<br>|flowLimitLine |int |limitRate*writeQueueSize|触发流控的阈值，**无法修改**|<br>|releaseLine
+                |int |releaseRate*writeQueueSize|解除流控的阈值，**无法修改**|</p>
+        </div>
 
-																						<h3 id="text_229640" class="sin_target">五、服务端AioQuickServer</h3>
-<div class="sin_text">
-    					<h3>成员属性</h3> 
-<table>  
- <tbody><tr> 
-  <th>属性名 </th> 
-  <th>类型 </th> 
-  <th>说明 </th> 
- </tr>  
- </tbody><tbody> 
-  <tr> 
-   <td>serverSocketChannel</td> 
-   <td>AsynchronousServerSocketChannel</td> 
-   <td>JDK提供的AIO服务端核心类</td> 
-  </tr> 
-  <tr> 
-   <td>asynchronousChannelGroup</td> 
-   <td>AsynchronousChannelGroup</td> 
-   <td>JDK为AIO提供的线程池服务</td> 
-  </tr> 
-  <tr> 
-   <td>config</td> 
-   <td>IoServerConfig</td> 
-   <td>存储AioQuickServer服务配置项</td> 
-  </tr> 
-  <tr> 
-   <td>aioReadCompletionHandler</td> 
-   <td>ReadCompletionHandler</td> 
-   <td>smart-socket提供的IO读回调处理类</td> 
-  </tr> 
-  <tr> 
-   <td>aioWriteCompletionHandler</td> 
-   <td>WriteCompletionHandler</td> 
-   <td>smart-socket提供的IO写回调处理类</td> 
-  </tr> 
- </tbody> 
-</table>
-<h3>配置型方法</h3> 
-<table>  
- <tbody><tr> 
-  <th>方法 </th> 
-  <th>说明 </th> 
- </tr>  
- </tbody><tbody> 
-  <tr> 
-   <td>public AioQuickServer bind(int port)</td> 
-   <td>Server服务绑定的端口号</td> 
-  </tr> 
-  <tr> 
-   <td>public AioQuickServer setThreadNum(int num)</td> 
-   <td>Server服务线程数</td> 
-  </tr> 
-  <tr> 
-   <td>public AioQuickServer setProtocol(Protocol protocol)</td> 
-   <td>注册协议编解码实现</td> 
-  </tr> 
-  <tr> 
-   <td>public AioQuickServer setFilters(Filter… filters)</td> 
-   <td>注册服务过滤器</td> 
-  </tr> 
-  <tr> 
-   <td>public AioQuickServer setProcessor(MessageProcessor processor)</td> 
-   <td>注册业务处理器</td> 
-  </tr> 
-  <tr> 
-   <td>public AioQuickServer setWriteQueueSize(int size)</td> 
-   <td>设置AioSession输出缓存区长度</td> 
-  </tr> 
-  <tr> 
-   <td>public AioQuickServer setReadBufferSize(int size)</td> 
-   <td>设置AioSession读缓存区长度</td> 
-  </tr> 
-  <tr> 
-   <td>public AioQuickServer setBannerEnabled(boolean bannerEnabled)</td> 
-   <td>服务启动时是否打印smart-socket banner</td> 
-  </tr> 
- </tbody> 
-</table>
-<h3>核心方法</h3>
-<h4>1、 start：启动AIO服务端</h4> 
-<ul> 
- <li><p>片段一<br>```<br>asynchronousChannelGroup = AsynchronousChannelGroup.withFixedThreadPool(config.getThreadNum(), new ThreadFactory() {<br> byte index = 0;</p><p>@Override<br> public Thread newThread(Runnable r) {<br> return new Thread(r, “AIO-Thread-” + (++index));<br> }<br>});<br>``<code> 初始化AIO服务的工作线程组并赋值于</code>AioQuickServer<code>成员属性</code>asynchronousChannelGroup`</p></li> 
- <li>片段二<br> <pre><code><br>this.serverSocketChannel = AsynchronousServerSocketChannel.open(asynchronousChannelGroup).bind(new InetSocketAddress(config.getPort()), 1000);
-</code></pre><br>这行代码很直观，打开AIO服务通道并绑定端口号，但要注意bind方法。<br><code>AsynchronousServerSocketChannel</code>提供了两个bind接口：**bind(SocketAddress local)**，**bind(SocketAddress local, int backlog)**<br>如果调用bind(SocketAddress local)方法，AsynchronousServerSocketChannel内部实际上执行的是bind(SocketAddress local, 0)。**然而backlog的值小于1时，JDK会将其默认设置为50**。<br>backlog维护了连接请求队列长度，如果队列满时收到连接指示，则拒绝该连接。举个例子：backlog设置为50，当前有50连接请求过来，服务端还未执行这些连接请求的accept方法。此时再有一个连接请求过来，则会被拒绝连接。除非请求队列中的某个连接完成accept操作并释放出队列资源，服务器才可接受新的连接。</li> 
- <li>片段三</li> 
-</ul> 
-<pre><code>serverSocketChannel.accept(null, new CompletionHandler&lt;AsynchronousSocketChannel, Object&gt;() {
+        <h3 id="text_229640" class="sin_target">五、服务端AioQuickServer</h3>
+        <div class="sin_text">
+            <h3>成员属性</h3>
+            <table>
+                <tbody>
+                <tr>
+                    <th>属性名</th>
+                    <th>类型</th>
+                    <th>说明</th>
+                </tr>
+                </tbody>
+                <tbody>
+                <tr>
+                    <td>serverSocketChannel</td>
+                    <td>AsynchronousServerSocketChannel</td>
+                    <td>JDK提供的AIO服务端核心类</td>
+                </tr>
+                <tr>
+                    <td>asynchronousChannelGroup</td>
+                    <td>AsynchronousChannelGroup</td>
+                    <td>JDK为AIO提供的线程池服务</td>
+                </tr>
+                <tr>
+                    <td>config</td>
+                    <td>IoServerConfig</td>
+                    <td>存储AioQuickServer服务配置项</td>
+                </tr>
+                <tr>
+                    <td>aioReadCompletionHandler</td>
+                    <td>ReadCompletionHandler</td>
+                    <td>smart-socket提供的IO读回调处理类</td>
+                </tr>
+                <tr>
+                    <td>aioWriteCompletionHandler</td>
+                    <td>WriteCompletionHandler</td>
+                    <td>smart-socket提供的IO写回调处理类</td>
+                </tr>
+                </tbody>
+            </table>
+            <h3>配置型方法</h3>
+            <table>
+                <tbody>
+                <tr>
+                    <th>方法</th>
+                    <th>说明</th>
+                </tr>
+                </tbody>
+                <tbody>
+                <tr>
+                    <td>public AioQuickServer bind(int port)</td>
+                    <td>Server服务绑定的端口号</td>
+                </tr>
+                <tr>
+                    <td>public AioQuickServer setThreadNum(int num)</td>
+                    <td>Server服务线程数</td>
+                </tr>
+                <tr>
+                    <td>public AioQuickServer setProtocol(Protocol protocol)</td>
+                    <td>注册协议编解码实现</td>
+                </tr>
+                <tr>
+                    <td>public AioQuickServer setFilters(Filter… filters)</td>
+                    <td>注册服务过滤器</td>
+                </tr>
+                <tr>
+                    <td>public AioQuickServer setProcessor(MessageProcessor processor)</td>
+                    <td>注册业务处理器</td>
+                </tr>
+                <tr>
+                    <td>public AioQuickServer setWriteQueueSize(int size)</td>
+                    <td>设置AioSession输出缓存区长度</td>
+                </tr>
+                <tr>
+                    <td>public AioQuickServer setReadBufferSize(int size)</td>
+                    <td>设置AioSession读缓存区长度</td>
+                </tr>
+                <tr>
+                    <td>public AioQuickServer setBannerEnabled(boolean bannerEnabled)</td>
+                    <td>服务启动时是否打印smart-socket banner</td>
+                </tr>
+                </tbody>
+            </table>
+            <h3>核心方法</h3>
+            <h4>1、 start：启动AIO服务端</h4>
+            <ul>
+                <li><p>片段一<br>```<br>asynchronousChannelGroup =
+                    AsynchronousChannelGroup.withFixedThreadPool(config.getThreadNum(), new ThreadFactory() {<br> byte
+                    index = 0;</p>
+                    <p>@Override<br> public Thread newThread(Runnable r) {<br> return new Thread(r, “AIO-Thread-” +
+                        (++index));<br> }<br>});<br>``<code> 初始化AIO服务的工作线程组并赋值于</code>AioQuickServer<code>成员属性</code>asynchronousChannelGroup`
+                    </p></li>
+                <li>片段二<br>
+                    <pre><code><br>this.serverSocketChannel = AsynchronousServerSocketChannel.open(asynchronousChannelGroup).bind(new InetSocketAddress(config.getPort()), 1000);
+</code></pre>
+                    <br>这行代码很直观，打开AIO服务通道并绑定端口号，但要注意bind方法。<br><code>AsynchronousServerSocketChannel</code>提供了两个bind接口：**bind(SocketAddress
+                    local)**，**bind(SocketAddress local, int backlog)**<br>如果调用bind(SocketAddress
+                    local)方法，AsynchronousServerSocketChannel内部实际上执行的是bind(SocketAddress local,
+                    0)。**然而backlog的值小于1时，JDK会将其默认设置为50**。<br>backlog维护了连接请求队列长度，如果队列满时收到连接指示，则拒绝该连接。举个例子：backlog设置为50，当前有50连接请求过来，服务端还未执行这些连接请求的accept方法。此时再有一个连接请求过来，则会被拒绝连接。除非请求队列中的某个连接完成accept操作并释放出队列资源，服务器才可接受新的连接。
+                </li>
+                <li>片段三</li>
+            </ul>
+            <pre><code>serverSocketChannel.accept(null, new CompletionHandler&lt;AsynchronousSocketChannel, Object&gt;() {
             @Override
             public void completed(final AsynchronousSocketChannel channel, Object attachment) {
                 serverSocketChannel.accept(attachment, this);
@@ -845,10 +944,12 @@ protected void createSession(AsynchronousSocketChannel channel) {
     session.initSession();
 }
 </code></pre>
-<p>AIO通道服务监听客户端连接请求，一旦客户端连接上来则触发<code>CompletionHandler</code>回调。CompletionHandler首先要做的便是继续下一个请求的监听<code>serverSocketChannel.accept(attachment, this);</code>，然后构建本次连接的会话对象AioSession。<br>所有的AioSession共用aioReadCompletionHandler、aioWriteCompletionHandler对象，这样可以减少服务端产生的对象数。<br>之所以定义createSession来实现AIOSession初始化，是为了预留扩展接口。后续进行TLS/SSL通讯时，createSession会有不同的实现。</p>
-<h4>2、 shutdown：停止AIO服务端</h4>
-<p>AIO服务停止的逻辑很简单，关闭Channel通道，停止线程组。<br> </p>
-<pre><code><br>public void shutdown() {
+            <p>AIO通道服务监听客户端连接请求，一旦客户端连接上来则触发<code>CompletionHandler</code>回调。CompletionHandler首先要做的便是继续下一个请求的监听<code>serverSocketChannel.accept(attachment,
+                this);</code>，然后构建本次连接的会话对象AioSession。<br>所有的AioSession共用aioReadCompletionHandler、aioWriteCompletionHandler对象，这样可以减少服务端产生的对象数。<br>之所以定义createSession来实现AIOSession初始化，是为了预留扩展接口。后续进行TLS/SSL通讯时，createSession会有不同的实现。
+            </p>
+            <h4>2、 shutdown：停止AIO服务端</h4>
+            <p>AIO服务停止的逻辑很简单，关闭Channel通道，停止线程组。<br></p>
+            <pre><code><br>public void shutdown() {
         try {
             serverSocketChannel.close();
         } catch (IOException e) {
@@ -857,72 +958,76 @@ protected void createSession(AsynchronousSocketChannel channel) {
         asynchronousChannelGroup.shutdown();
     }
 </code></pre>
-<p></p>
-			</div>
+            <p></p>
+        </div>
 
-																						<h3 id="text_229641" class="sin_target">六、客户端AioQuickClient</h3>
-<div class="sin_text">
-    					<h3>成员属性</h3> 
-<table>  
- <tbody><tr> 
-  <th>属性名 </th> 
-  <th>类型 </th> 
-  <th>说明 </th> 
- </tr>  
- </tbody><tbody> 
-  <tr> 
-   <td>socketChannel</td> 
-   <td>AsynchronousSocketChannel</td> 
-   <td>JDK提供的AIO客户端核心类</td> 
-  </tr> 
-  <tr> 
-   <td>asynchronousChannelGroup</td> 
-   <td>AsynchronousChannelGroup</td> 
-   <td>JDK为AIO提供的线程池服务</td> 
-  </tr> 
-  <tr> 
-   <td>config</td> 
-   <td>IoServerConfig</td> 
-   <td>存储AioQuickClient服务配置项</td> 
-  </tr> 
- </tbody> 
-</table>
-<h3>配置型方法</h3> 
-<table>  
- <tbody><tr> 
-  <th>方法 </th> 
-  <th>说明 </th> 
- </tr>  
- </tbody><tbody> 
-  <tr> 
-   <td>public AioQuickClient connect(String host, int port)</td> 
-   <td>设置远程连接的地址、端口</td> 
-  </tr> 
-  <tr> 
-   <td>public AioQuickClient setProtocol(Protocol protocol)</td> 
-   <td>注册协议编解码实现</td> 
-  </tr> 
-  <tr> 
-   <td>public AioQuickClient setFilters(Filter[] filters)</td> 
-   <td>注册服务过滤器</td> 
-  </tr> 
-  <tr> 
-   <td>public AioQuickClient setProcessor(MessageProcessor processor)</td> 
-   <td>注册业务处理器</td> 
-  </tr> 
-  <tr> 
-   <td>public AioQuickClient setReadBufferSize(int size)</td> 
-   <td>设置读缓冲区大小</td> 
-  </tr> 
-  <tr> 
-   <td>public AioQuickClient setWriteQueueSize(int size)</td> 
-   <td>设置AioSession输出缓存区队列长度</td> 
-  </tr> 
- </tbody> 
-</table>
-<h3>核心方法</h3>
-<h4>1、start(AsynchronousChannelGroup asynchronousChannelGroup)： 启动AIO客户端服务</h4> 
-<pre><code>public void start(AsynchronousChannelGroup asynchronousChannelGroup) throws IOException, ExecutionException, InterruptedException {
+        <h3 id="text_229641" class="sin_target">六、客户端AioQuickClient</h3>
+        <div class="sin_text">
+            <h3>成员属性</h3>
+            <table>
+                <tbody>
+                <tr>
+                    <th>属性名</th>
+                    <th>类型</th>
+                    <th>说明</th>
+                </tr>
+                </tbody>
+                <tbody>
+                <tr>
+                    <td>socketChannel</td>
+                    <td>AsynchronousSocketChannel</td>
+                    <td>JDK提供的AIO客户端核心类</td>
+                </tr>
+                <tr>
+                    <td>asynchronousChannelGroup</td>
+                    <td>AsynchronousChannelGroup</td>
+                    <td>JDK为AIO提供的线程池服务</td>
+                </tr>
+                <tr>
+                    <td>config</td>
+                    <td>IoServerConfig</td>
+                    <td>存储AioQuickClient服务配置项</td>
+                </tr>
+                </tbody>
+            </table>
+            <h3>配置型方法</h3>
+            <table>
+                <tbody>
+                <tr>
+                    <th>方法</th>
+                    <th>说明</th>
+                </tr>
+                </tbody>
+                <tbody>
+                <tr>
+                    <td>public AioQuickClient connect(String host, int port)</td>
+                    <td>设置远程连接的地址、端口</td>
+                </tr>
+                <tr>
+                    <td>public AioQuickClient setProtocol(Protocol protocol)</td>
+                    <td>注册协议编解码实现</td>
+                </tr>
+                <tr>
+                    <td>public AioQuickClient setFilters(Filter[] filters)</td>
+                    <td>注册服务过滤器</td>
+                </tr>
+                <tr>
+                    <td>public AioQuickClient setProcessor(MessageProcessor processor)</td>
+                    <td>注册业务处理器</td>
+                </tr>
+                <tr>
+                    <td>public AioQuickClient setReadBufferSize(int size)</td>
+                    <td>设置读缓冲区大小</td>
+                </tr>
+                <tr>
+                    <td>public AioQuickClient setWriteQueueSize(int size)</td>
+                    <td>设置AioSession输出缓存区队列长度</td>
+                </tr>
+                </tbody>
+            </table>
+            <h3>核心方法</h3>
+            <h4>1、start(AsynchronousChannelGroup asynchronousChannelGroup)： 启动AIO客户端服务</h4>
+            <pre><code>public void start(AsynchronousChannelGroup asynchronousChannelGroup) throws IOException, ExecutionException, InterruptedException {
         this.socketChannel = AsynchronousSocketChannel.open(asynchronousChannelGroup);
         socketChannel.connect(new InetSocketAddress(config.getHost(), config.getPort())).get();
         //连接成功则构造AIOSession对象
@@ -930,9 +1035,11 @@ protected void createSession(AsynchronousSocketChannel channel) {
         session.initSession();
 }
 </code></pre>
-<p>该方法支持外部传入服务线程组<code>AsynchronousChannelGroup</code>，当一个应用要启动多个客户端时，采用该方式有助于提升资源利用率。<br>客户端连接服务器的过程并没有采用<code>CompletionHandler</code>的方案，是因为作者认为作为客户端，采用<code>Future</code>模式可以降低代码复杂度，接口功能更直观。因为对于业务来说，一旦start方法执行完毕，连接就必须是建立成功的。<br>网络连接建立完毕之后，就会构建客户端的通信会话AioSession。</p>
-<h4>2、start()</h4> 
-<pre><code>  public void start() throws IOException, ExecutionException, InterruptedException {
+            <p>
+                该方法支持外部传入服务线程组<code>AsynchronousChannelGroup</code>，当一个应用要启动多个客户端时，采用该方式有助于提升资源利用率。<br>客户端连接服务器的过程并没有采用<code>CompletionHandler</code>的方案，是因为作者认为作为客户端，采用<code>Future</code>模式可以降低代码复杂度，接口功能更直观。因为对于业务来说，一旦start方法执行完毕，连接就必须是建立成功的。<br>网络连接建立完毕之后，就会构建客户端的通信会话AioSession。
+            </p>
+            <h4>2、start()</h4>
+            <pre><code>  public void start() throws IOException, ExecutionException, InterruptedException {
         this.asynchronousChannelGroup = AsynchronousChannelGroup.withFixedThreadPool(2, new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
@@ -942,10 +1049,12 @@ protected void createSession(AsynchronousSocketChannel channel) {
         start(asynchronousChannelGroup);
     }
 </code></pre>
-<p>如果客户端要使用私有的线程组，可调用不带参数的start方法。单客户端只有读、写两类操作，所以线程大小设置为2足矣。且私有的线程组需要赋值于成员属性<code>asynchronousChannelGroup</code>,以便客户端执行shutdown时可以进行资源释放。</p>
-<h4>3、shutdown()</h4>
-<p>代码简单，不解释<br> </p>
-<pre><code><br>public void shutdown() {
+            <p>
+                如果客户端要使用私有的线程组，可调用不带参数的start方法。单客户端只有读、写两类操作，所以线程大小设置为2足矣。且私有的线程组需要赋值于成员属性<code>asynchronousChannelGroup</code>,以便客户端执行shutdown时可以进行资源释放。
+            </p>
+            <h4>3、shutdown()</h4>
+            <p>代码简单，不解释<br></p>
+            <pre><code><br>public void shutdown() {
         if (socketChannel != null) {
             try {
                 socketChannel.close();
@@ -959,110 +1068,118 @@ protected void createSession(AsynchronousSocketChannel channel) {
         }
     }
 </code></pre>
-<p></p>
-			</div>
+            <p></p>
+        </div>
 
-																						<h3 id="text_229642" class="sin_target">七、通信会话AioSession</h3>
-<div class="sin_text">
-    					<blockquote>
- <p>AioSession是smart-socket中最核心、复杂度最高的类</p> 
-</blockquote>
-<h3>核心成员属性</h3> 
-<table>  
- <tbody><tr> 
-  <th>属性名 </th> 
-  <th>类型 </th> 
-  <th>说明 </th> 
- </tr>  
- </tbody><tbody> 
-  <tr> 
-   <td>NEXT_ID </td> 
-   <td>static int</td> 
-   <td>Session ID生成器</td> 
-  </tr> 
-  <tr> 
-   <td>sessionId</td> 
-   <td>final int</td> 
-   <td>Session ID，值取自++NEXT_ID</td> 
-  </tr> 
-  <tr> 
-   <td>status</td> 
-   <td>byte</td> 
-   <td>当前会话的状态，取值范围：SESSION_STATUS_CLOSED(1)，处于该状态的AioSession无法再进行读写操作；SESSION_STATUS_CLOSING(2)，AioSession状态从SESSION_STATUS_ENABLED到SESSION_STATUS_CLOSED的过渡状态。在SESSION_STATUS_CLOSING状态下，AioSession不接受新的读写请求，但会把缓存中待输出的数据进行写操作，输出完毕后更改状态至SESSION_STATUS_CLOSED；SESSION_STATUS_ENAB(3)，AioSessio的默认状态，表示当前会话状态可以进行正常的消息通信、协议编解码、业务处理业务处理</td> 
-  </tr> 
-  <tr> 
-   <td>attachment</td> 
-   <td>Object</td> 
-   <td>附件对象</td> 
-  </tr> 
-  <tr> 
-   <td>writeCacheQueue</td> 
-   <td>ArrayBlockingQueue</td> 
-   <td>输出缓冲队列</td> 
-  </tr> 
-  <tr> 
-   <td>serverFlowLimit</td> 
-   <td>Boolean</td> 
-   <td>限流标志，仅服务端有值，客户端为null</td> 
-  </tr> 
-  <tr> 
-   <td>readCompletionHandler</td> 
-   <td>ReadCompletionHandler</td> 
-   <td>读回调</td> 
-  </tr> 
-  <tr> 
-   <td>writeCompletionHandler</td> 
-   <td>WriteCompletionHandler</td> 
-   <td>写回调</td> 
-  </tr> 
-  <tr> 
-   <td>channel</td> 
-   <td>AsynchronousSocketChannel</td> 
-   <td>当前AioSession映射的网络通道</td> 
-  </tr> 
-  <tr> 
-   <td>semaphore</td> 
-   <td>Semaphore</td> 
-   <td>信号量，控制输出资源的竞争</td> 
-  </tr> 
-  <tr> 
-   <td>ioServerConfig</td> 
-   <td>IoServerConfig</td> 
-   <td>AioQuickClient\AioQuickServer透传过来的配置项</td> 
-  </tr> 
- </tbody> 
-</table>
-<h3>核心方法</h3> 
-<table>  
- <tbody><tr> 
-  <th>方法名 </th> 
-  <th>说明 </th> 
- </tr>  
- </tbody><tbody> 
-  <tr> 
-   <td>AioSession(AsynchronousSocketChannel, IoServerConfig, ReadCompletionHandler, WriteCompletionHandler, boolean serverSession)</td> 
-   <td>唯一的一个构造方法</td> 
-  </tr> 
-  <tr> 
-   <td>void readFromChannel()</td> 
-   <td>数据解码——&gt;业务处理——&gt;注册读事件</td> 
-  </tr> 
-  <tr> 
-   <td>public void write(final ByteBuffer buffer)</td> 
-   <td>将编码后的业务消息写入缓冲区，并触发<code>writeToChannel()</code></td> 
-  </tr> 
-  <tr> 
-   <td>void writeToChannel()</td> 
-   <td>将缓冲区的数据写入至网络通道</td> 
-  </tr> 
-  <tr> 
-   <td>public void close(boolean immediate)</td> 
-   <td>关闭会话</td> 
-  </tr> 
- </tbody> 
-</table>
-<h4>1、构造方法</h4> 
-<pre><code>AioSession(AsynchronousSocketChannel channel, IoServerConfig&lt;T&gt; config, ReadCompletionHandler readCompletionHandler, WriteCompletionHandler writeCompletionHandler, boolean serverSession) {
+        <h3 id="text_229642" class="sin_target">七、通信会话AioSession</h3>
+        <div class="sin_text">
+            <blockquote>
+                <p>AioSession是smart-socket中最核心、复杂度最高的类</p>
+            </blockquote>
+            <h3>核心成员属性</h3>
+            <table>
+                <tbody>
+                <tr>
+                    <th>属性名</th>
+                    <th>类型</th>
+                    <th>说明</th>
+                </tr>
+                </tbody>
+                <tbody>
+                <tr>
+                    <td>NEXT_ID</td>
+                    <td>static int</td>
+                    <td>Session ID生成器</td>
+                </tr>
+                <tr>
+                    <td>sessionId</td>
+                    <td>final int</td>
+                    <td>Session ID，值取自++NEXT_ID</td>
+                </tr>
+                <tr>
+                    <td>status</td>
+                    <td>byte</td>
+                    <td>
+                        当前会话的状态，取值范围：SESSION_STATUS_CLOSED(1)，处于该状态的AioSession无法再进行读写操作；SESSION_STATUS_CLOSING(2)，AioSession状态从SESSION_STATUS_ENABLED到SESSION_STATUS_CLOSED的过渡状态。在SESSION_STATUS_CLOSING状态下，AioSession不接受新的读写请求，但会把缓存中待输出的数据进行写操作，输出完毕后更改状态至SESSION_STATUS_CLOSED；SESSION_STATUS_ENAB(3)，AioSessio的默认状态，表示当前会话状态可以进行正常的消息通信、协议编解码、业务处理业务处理
+                    </td>
+                </tr>
+                <tr>
+                    <td>attachment</td>
+                    <td>Object</td>
+                    <td>附件对象</td>
+                </tr>
+                <tr>
+                    <td>writeCacheQueue</td>
+                    <td>ArrayBlockingQueue</td>
+                    <td>输出缓冲队列</td>
+                </tr>
+                <tr>
+                    <td>serverFlowLimit</td>
+                    <td>Boolean</td>
+                    <td>限流标志，仅服务端有值，客户端为null</td>
+                </tr>
+                <tr>
+                    <td>readCompletionHandler</td>
+                    <td>ReadCompletionHandler</td>
+                    <td>读回调</td>
+                </tr>
+                <tr>
+                    <td>writeCompletionHandler</td>
+                    <td>WriteCompletionHandler</td>
+                    <td>写回调</td>
+                </tr>
+                <tr>
+                    <td>channel</td>
+                    <td>AsynchronousSocketChannel</td>
+                    <td>当前AioSession映射的网络通道</td>
+                </tr>
+                <tr>
+                    <td>semaphore</td>
+                    <td>Semaphore</td>
+                    <td>信号量，控制输出资源的竞争</td>
+                </tr>
+                <tr>
+                    <td>ioServerConfig</td>
+                    <td>IoServerConfig</td>
+                    <td>AioQuickClient\AioQuickServer透传过来的配置项</td>
+                </tr>
+                </tbody>
+            </table>
+            <h3>核心方法</h3>
+            <table>
+                <tbody>
+                <tr>
+                    <th>方法名</th>
+                    <th>说明</th>
+                </tr>
+                </tbody>
+                <tbody>
+                <tr>
+                    <td>AioSession(AsynchronousSocketChannel, IoServerConfig, ReadCompletionHandler,
+                        WriteCompletionHandler, boolean serverSession)
+                    </td>
+                    <td>唯一的一个构造方法</td>
+                </tr>
+                <tr>
+                    <td>void readFromChannel()</td>
+                    <td>数据解码——&gt;业务处理——&gt;注册读事件</td>
+                </tr>
+                <tr>
+                    <td>public void write(final ByteBuffer buffer)</td>
+                    <td>将编码后的业务消息写入缓冲区，并触发<code>writeToChannel()</code></td>
+                </tr>
+                <tr>
+                    <td>void writeToChannel()</td>
+                    <td>将缓冲区的数据写入至网络通道</td>
+                </tr>
+                <tr>
+                    <td>public void close(boolean immediate)</td>
+                    <td>关闭会话</td>
+                </tr>
+                </tbody>
+            </table>
+            <h4>1、构造方法</h4>
+            <pre><code>AioSession(AsynchronousSocketChannel channel, IoServerConfig&lt;T&gt; config, ReadCompletionHandler readCompletionHandler, WriteCompletionHandler writeCompletionHandler, boolean serverSession) {
         this.channel = channel;
         this.readCompletionHandler = readCompletionHandler;
         this.writeCompletionHandler = writeCompletionHandler;
@@ -1072,17 +1189,22 @@ protected void createSession(AsynchronousSocketChannel channel) {
         config.getProcessor().stateEvent(this, StateMachineEnum.NEW_SESSION, null);//触发状态机
         this.readBuffer = ByteBuffer.allocate(config.getReadBufferSize());
 }
-</code></pre> 
-<ul> 
- <li>该构造方法是包可见的，所以只有smart-socket才可创建AioSession对象。对象的创建入口为<code>AioQuickServer</code>和<code>AioQuickClient</code>。</li> 
- <li>构造方法的5个入参分别代表，channe：当前连接通道对象；config：AioQuickServer/AioQuickClient服务器配置；readCompletionHandler/writeCompletionHandler：读写回调处理类；serverSession：true表示当前Session的由服务端创建，否则为客户端创建。</li> 
- <li>writeCacheQueue，创建输出缓冲区。该缓冲区大小请设置一个合理的值，以免造成资源浪费。</li> 
- <li>serverFlowLimit，流控标志。流控方案仅存在于服务端，所以只有AioQuickServer构建的AioSession对象会初始化该值。</li> 
- <li>触发状态机<code>StateMachineEnum.NEW_SESSION</code></li> 
-</ul>
-<h4>2、readFromChannel()</h4>
-<p>readFromChannel是专门用于处理<a href="http://smartsocket.mydoc.io?v=36765&amp;t=229643" rel="nofollow">读回调（ReadCompletionHandler）</a>的接口，使**读监控-&gt;数据读取-&gt;协议解码-&gt;业务处理-&gt;继续读监控** 形成一个良性的运作状态。且具体实现分为三部分：<br>- 片段一<br>解码已读取到数据，若解码成功则进行业务处理，直至当前剩余的数据无法解析成完整的业务消息为止。</p> 
-<pre><code>T dataEntry;
+</code></pre>
+            <ul>
+                <li>
+                    该构造方法是包可见的，所以只有smart-socket才可创建AioSession对象。对象的创建入口为<code>AioQuickServer</code>和<code>AioQuickClient</code>。
+                </li>
+                <li>
+                    构造方法的5个入参分别代表，channe：当前连接通道对象；config：AioQuickServer/AioQuickClient服务器配置；readCompletionHandler/writeCompletionHandler：读写回调处理类；serverSession：true表示当前Session的由服务端创建，否则为客户端创建。
+                </li>
+                <li>writeCacheQueue，创建输出缓冲区。该缓冲区大小请设置一个合理的值，以免造成资源浪费。</li>
+                <li>serverFlowLimit，流控标志。流控方案仅存在于服务端，所以只有AioQuickServer构建的AioSession对象会初始化该值。</li>
+                <li>触发状态机<code>StateMachineEnum.NEW_SESSION</code></li>
+            </ul>
+            <h4>2、readFromChannel()</h4>
+            <p>readFromChannel是专门用于处理<a href="http://smartsocket.mydoc.io?v=36765&amp;t=229643" rel="nofollow">读回调（ReadCompletionHandler）</a>的接口，使**读监控-&gt;数据读取-&gt;协议解码-&gt;业务处理-&gt;继续读监控**
+                形成一个良性的运作状态。且具体实现分为三部分：<br>- 片段一<br>解码已读取到数据，若解码成功则进行业务处理，直至当前剩余的数据无法解析成完整的业务消息为止。</p>
+            <pre><code>T dataEntry;
 while ((dataEntry = ioServerConfig.getProtocol().decode(readBuffer, this, eof)) != null) {
     //处理消息
     try {
@@ -1098,9 +1220,11 @@ while ((dataEntry = ioServerConfig.getProtocol().decode(readBuffer, this, eof)) 
     }
 
 }
-</code></pre> 
-<ul> 
- <li><p>片段二<br>通过**片段一**执行后的readBuffer有三种结果：1、数据刚好完全解析完，调用<code>clear()</code>重置；2、完成了解码操作，但还残留部分未解析的数据，则将剩余的数据转移至ByteBuffer的头部；3、原先已有的数据不满足解码条件，则恢复现场，继续读。<br> </p><pre><code><br>if (readBuffer.remaining() == 0) {
+</code></pre>
+            <ul>
+                <li><p>片段二<br>通过**片段一**执行后的readBuffer有三种结果：1、数据刚好完全解析完，调用<code>clear()</code>重置；2、完成了解码操作，但还残留部分未解析的数据，则将剩余的数据转移至ByteBuffer的头部；3、原先已有的数据不满足解码条件，则恢复现场，继续读。<br>
+                </p>
+                    <pre><code><br>if (readBuffer.remaining() == 0) {
   readBuffer.clear();
 } else if (readBuffer.position() &gt; 0) {
   readBuffer.compact();
@@ -1108,17 +1232,22 @@ while ((dataEntry = ioServerConfig.getProtocol().decode(readBuffer, this, eof)) 
   readBuffer.position(readBuffer.limit());
   readBuffer.limit(readBuffer.capacity());
 }
-</code></pre><p></p></li> 
- <li><p>片段三<br>如果触发了流控条件，则设置流控标志<code>serverFlowLimit = true</code>。否则继续新一轮的读操作，一旦读取到数据，会由aioCompletionHandler再次触发<code>readFromChannel()</code>方法<br> </p><pre><code><br>if (serverFlowLimit != null &amp;&amp; writeCacheQueue.size() &gt; ioServerConfig.getFlowLimitLine()) {
+</code></pre>
+                    <p></p></li>
+                <li><p>片段三<br>如果触发了流控条件，则设置流控标志<code>serverFlowLimit = true</code>。否则继续新一轮的读操作，一旦读取到数据，会由aioCompletionHandler再次触发<code>readFromChannel()</code>方法<br>
+                </p>
+                    <pre><code><br>if (serverFlowLimit != null &amp;&amp; writeCacheQueue.size() &gt; ioServerConfig.getFlowLimitLine()) {
  serverFlowLimit = true;
 } else {
  continueRead();
 }
-</code></pre><p></p></li> 
-</ul>
-<h4>3、write(ByteBuffer buffer)</h4>
-<p>先将数据存入缓冲区<code>writeCacheQueue</code>。采取尝试获取信号量<code>semaphore</code>，获取成功触发通道的输出操作。此处之所以引入了信号量<code>semaphore</code>，是因为<code>writeToChannel()</code>可能由业务线程通过<code>write</code>调用，也有可能由<code>WriteCompletionHandler</code>的回调触发，如果不处理好同步控制，会出现<code>WritePendingException</code>。<br> </p>
-<pre><code><br>public void write(final ByteBuffer buffer) throws IOException {
+</code></pre>
+                    <p></p></li>
+            </ul>
+            <h4>3、write(ByteBuffer buffer)</h4>
+            <p>先将数据存入缓冲区<code>writeCacheQueue</code>。采取尝试获取信号量<code>semaphore</code>，获取成功触发通道的输出操作。此处之所以引入了信号量<code>semaphore</code>，是因为<code>writeToChannel()</code>可能由业务线程通过<code>write</code>调用，也有可能由<code>WriteCompletionHandler</code>的回调触发，如果不处理好同步控制，会出现<code>WritePendingException</code>。<br>
+            </p>
+            <pre><code><br>public void write(final ByteBuffer buffer) throws IOException {
         if (isInvalid()) {
             return;
         }
@@ -1132,17 +1261,21 @@ while ((dataEntry = ioServerConfig.getProtocol().decode(readBuffer, this, eof)) 
         }
     }
 </code></pre>
-<p></p>
-<h4>4、writeToChannel</h4>
-<p><code>wrtie</code>只是面向业务的输出行为，真正执行数据输出的是<code>writeToChannel</code>。个人认为该方法是整个<code>smart-socket</code>复杂度最高的代码，需要具备一定程度的线程同步知识才能完全理解代码意义。**执行<code>writeToChannel</code>之前，必须持有信号量<code>semaphore</code>**</p> 
-<ul> 
- <li>片段一<br>若前一次输出操作还残留部分数据，继续执行输出，否则释放其内存空间。<br> <pre><code><br>if (writeAttach.buffer != null &amp;&amp; writeAttach.buffer.hasRemaining()) {
+            <p></p>
+            <h4>4、writeToChannel</h4>
+            <p><code>wrtie</code>只是面向业务的输出行为，真正执行数据输出的是<code>writeToChannel</code>。个人认为该方法是整个<code>smart-socket</code>复杂度最高的代码，需要具备一定程度的线程同步知识才能完全理解代码意义。**执行<code>writeToChannel</code>之前，必须持有信号量<code>semaphore</code>**
+            </p>
+            <ul>
+                <li>片段一<br>若前一次输出操作还残留部分数据，继续执行输出，否则释放其内存空间。<br>
+                    <pre><code><br>if (writeAttach.buffer != null &amp;&amp; writeAttach.buffer.hasRemaining()) {
  continueWrite();
  return;
 }
 writeAttach.buffer = null;//释放对象
-</code></pre></li> 
- <li>片段二<br>判断当前是否存在待输出的数据，若已无可输出的数据，则释放信号量资源。但是在释放信号量之后的瞬间可能有新的数据进入缓冲区，因此需要再次争抢信号量资源并重新触发<code>writeToChannel</code>。<br> <pre><code><br>if (writeCacheQueue.isEmpty()) {
+</code></pre>
+                </li>
+                <li>片段二<br>判断当前是否存在待输出的数据，若已无可输出的数据，则释放信号量资源。但是在释放信号量之后的瞬间可能有新的数据进入缓冲区，因此需要再次争抢信号量资源并重新触发<code>writeToChannel</code>。<br>
+                    <pre><code><br>if (writeCacheQueue.isEmpty()) {
         semaphore.release();
         if (isInvalid()) {//此时可能是Closing或Closed状态
             close();
@@ -1151,8 +1284,10 @@ writeAttach.buffer = null;//释放对象
         }
         return;
 }
-</code></pre></li> 
- <li><p>片段三<br>压缩缓冲区中待输出的数据，且最大的压缩字节长度为**32*1024**<br> </p><pre><code><br>Iterator&lt;ByteBuffer&gt; iterable = writeCacheQueue.iterator();
+</code></pre>
+                </li>
+                <li><p>片段三<br>压缩缓冲区中待输出的数据，且最大的压缩字节长度为**32*1024**<br></p>
+                    <pre><code><br>Iterator&lt;ByteBuffer&gt; iterable = writeCacheQueue.iterator();
 int totalSize = 0;
 while (iterable.hasNext() &amp;&amp; totalSize &lt;= MAX_WRITE_SIZE) {
    totalSize += iterable.next().remaining();
@@ -1165,22 +1300,27 @@ while (index &lt; data.length) {
    srcBuffer.get(data, index, remain);
    index += remain;
 }
-</code></pre><p></p></li> 
- <li>片段四<br>构建压缩后的ByteBuffer对象执行数据输出。<br> <pre><code><br>writeAttach.buffer = ByteBuffer.wrap(data);
+</code></pre>
+                    <p></p></li>
+                <li>片段四<br>构建压缩后的ByteBuffer对象执行数据输出。<br>
+                    <pre><code><br>writeAttach.buffer = ByteBuffer.wrap(data);
 continueWrite();
-</code></pre></li> 
-</ul>
-<h4>5、tryReleaseFlowLimit</h4>
-<p>判断当前AioSession是否处理限流状态，若符合解除限流条件，则释放流控，并重新进行数据读取。处于限流状态的AioSession必然不存在读操作，所以此处可放心的执行<code>channel.read();</code><br> </p>
-<pre><code><br>if (serverFlowLimit != null &amp;&amp; serverFlowLimit &amp;&amp; writeCacheQueue.size() &lt; ioServerConfig.getReleaseLine()) {
+</code></pre>
+                </li>
+            </ul>
+            <h4>5、tryReleaseFlowLimit</h4>
+            <p>判断当前AioSession是否处理限流状态，若符合解除限流条件，则释放流控，并重新进行数据读取。处于限流状态的AioSession必然不存在读操作，所以此处可放心的执行<code>channel.read();</code><br>
+            </p>
+            <pre><code><br>if (serverFlowLimit != null &amp;&amp; serverFlowLimit &amp;&amp; writeCacheQueue.size() &lt; ioServerConfig.getReleaseLine()) {
       serverFlowLimit = false;
       continueRead();
 }
 </code></pre>
-<p></p>
-<h4>6、close</h4>
-<p>关闭当前会话，当入参为<code>true</code>或缓冲区已清空时，直接关闭当前会话。否则切换会话状态为<code>SessionStatus.SESSION_STATUS_CLOSING</code>直至缓存区被清空再执行关闭。<br> </p>
-<pre><code><br>public void close(boolean immediate) {
+            <p></p>
+            <h4>6、close</h4>
+            <p>关闭当前会话，当入参为<code>true</code>或缓冲区已清空时，直接关闭当前会话。否则切换会话状态为<code>SessionStatus.SESSION_STATUS_CLOSING</code>直至缓存区被清空再执行关闭。<br>
+            </p>
+            <pre><code><br>public void close(boolean immediate) {
     if (status == SESSION_STATUS_CLOSED) {
         logger.warn("ignore, session:{} is closed:", getSessionID());//说明close方法被重复调用
         return;
@@ -1204,13 +1344,13 @@ continueWrite();
     }
 }
 </code></pre>
-<p></p>
-			</div>
+            <p></p>
+        </div>
 
-																						<h3 id="text_229643" class="sin_target">八、读写回调</h3>
-<div class="sin_text">
-    					<h3>读回调ReadCompletionHandler</h3> 
-<pre><code>class ReadCompletionHandler&lt;T&gt; implements CompletionHandler&lt;Integer, AioSession&lt;T&gt;&gt; {
+        <h3 id="text_229643" class="sin_target">八、读写回调</h3>
+        <div class="sin_text">
+            <h3>读回调ReadCompletionHandler</h3>
+            <pre><code>class ReadCompletionHandler&lt;T&gt; implements CompletionHandler&lt;Integer, AioSession&lt;T&gt;&gt; {
     private static final Logger LOGGER = LogManager.getLogger(ReadCompletionHandler.class);
 
     @Override
@@ -1247,11 +1387,15 @@ continueWrite();
     }
 }
 </code></pre>
-<p>执行读回调是为了处理当前从网络上读取到的字节流，在AIO通信中被封装为ByteBuffer对象。我们需要对这些数据进行解析，还原成消息实体并进行业务处理。<br>满足以下任何一个条件时，都会触发读回调：<br>1. 从网络上读取到新的数据，至少1个字节。<br>2. 对端服务完成输出并关闭write通道，即本通道的read操作已终止，此时<code>result==-1</code>。如图所示：<br><img src="https://static.oschina.net/uploads/img/201802/10115533_GGM4.png" alt="输入图片说明" title="在这里输入图片标题"></p>
-<p>当服务在进行数据读取、或者读回调处理过程中出现异常时，会触发ReadCompletionHandler的failed方法。框架会触发StateMachineEnum.INPUT_EXCEPTION状态机，业务自行决定是否处理。为了规避开发人员忽略此类异常导致资源无法释放，smart-socket会主动执行AioSession.close。</p>
-<p>—</p>
-<h3>写回调WriteCompletionHandler</h3> 
-<pre><code>class WriteCompletionHandler&lt;T&gt; implements CompletionHandler&lt;Integer, AioSession&lt;T&gt;&gt; {
+            <p>执行读回调是为了处理当前从网络上读取到的字节流，在AIO通信中被封装为ByteBuffer对象。我们需要对这些数据进行解析，还原成消息实体并进行业务处理。<br>满足以下任何一个条件时，都会触发读回调：<br>1.
+                从网络上读取到新的数据，至少1个字节。<br>2. 对端服务完成输出并关闭write通道，即本通道的read操作已终止，此时<code>result==-1</code>。如图所示：<br><img
+                        src="https://static.oschina.net/uploads/img/201802/10115533_GGM4.png" alt="输入图片说明"
+                        title="在这里输入图片标题"></p>
+            <p>
+                当服务在进行数据读取、或者读回调处理过程中出现异常时，会触发ReadCompletionHandler的failed方法。框架会触发StateMachineEnum.INPUT_EXCEPTION状态机，业务自行决定是否处理。为了规避开发人员忽略此类异常导致资源无法释放，smart-socket会主动执行AioSession.close。</p>
+            <p>—</p>
+            <h3>写回调WriteCompletionHandler</h3>
+            <pre><code>class WriteCompletionHandler&lt;T&gt; implements CompletionHandler&lt;Integer, AioSession&lt;T&gt;&gt; {
     private static final Logger LOGGER = LogManager.getLogger(WriteCompletionHandler.class);
 
     @Override
@@ -1281,146 +1425,154 @@ continueWrite();
     }
 }
 </code></pre>
-<p>业务实现中会通过AioSession.write给予对端响应消息，这个write操作是非阻塞的。当数据输出后会以写回调WriteCompletionHandler的方式告知框架，已经有一部分数据成功写出去了。每次触发回调后都需要检查是否还有待输出的数据，若有则继续执行write方法，并等待下一次写回调。自此数据输出操作便形式一个健康的执行闭环。<br>当然这个输出的过程会如同写操作一样出现不可预知的异常，此时同样会通过WriteCompletionHandler.failed方法触发状态机StateMachineEnum.OUTPUT_EXCEPTION，最后框架自动关闭连接释放资源。</p>
-			</div>
+            <p>
+                业务实现中会通过AioSession.write给予对端响应消息，这个write操作是非阻塞的。当数据输出后会以写回调WriteCompletionHandler的方式告知框架，已经有一部分数据成功写出去了。每次触发回调后都需要检查是否还有待输出的数据，若有则继续执行write方法，并等待下一次写回调。自此数据输出操作便形式一个健康的执行闭环。<br>当然这个输出的过程会如同写操作一样出现不可预知的异常，此时同样会通过WriteCompletionHandler.failed方法触发状态机StateMachineEnum.OUTPUT_EXCEPTION，最后框架自动关闭连接释放资源。
+            </p>
+        </div>
 
-																														<h2 id="category_63715">进阶篇</h2>
-																											<h2 id="category_63717">高级篇</h2>
-																																			<h2 id="text_264139" class="sin_target">FAQ</h2>
-<div class="sin_text">
-    					<h4>1. 为什么服务端AioSession引入流控机制？</h4>
-<p>流控是smart-socket的一种自我保护机制。假设Client/Server正常情况下按下图方式进行通信，客户端的每一个REQ消息，服务端都会返回对应的RSP消息，并且客户端可以批量发送多个REQ消息。<br><img src="https://static.oschina.net/uploads/img/201802/27103805_F5Cm.png" alt="输入图片说明" title="在这里输入图片标题"><br>但是因为某种原因导致客户端发送了大量的REQ消息，但是没有去接受服务端返回的RSP消息。此时会在服务端积压大量待发送的RSP消息，随着不断有新的REQ消息进来，服务端RSP消息积压情况的愈加严重，直至服务端崩盘。<br><strong>流控机制是服务端通过检测RSP消息的积压情况，在可控范围内及时暂停客户端REQ消息的读取。直至客户端接收RSP消息使服务端的积压量下降至安全阈值后，服务端才再次开放REQ消息的接收通道。</strong></p>
-			</div>
+        <h2 id="category_63715">进阶篇</h2>
+        <h2 id="category_63717">高级篇</h2>
+        <h2 id="text_264139" class="sin_target">FAQ</h2>
+        <div class="sin_text">
+            <h4>1. 为什么服务端AioSession引入流控机制？</h4>
+            <p>
+                流控是smart-socket的一种自我保护机制。假设Client/Server正常情况下按下图方式进行通信，客户端的每一个REQ消息，服务端都会返回对应的RSP消息，并且客户端可以批量发送多个REQ消息。<br><img
+                    src="https://static.oschina.net/uploads/img/201802/27103805_F5Cm.png" alt="输入图片说明"
+                    title="在这里输入图片标题"><br>但是因为某种原因导致客户端发送了大量的REQ消息，但是没有去接受服务端返回的RSP消息。此时会在服务端积压大量待发送的RSP消息，随着不断有新的REQ消息进来，服务端RSP消息积压情况的愈加严重，直至服务端崩盘。<br><strong>流控机制是服务端通过检测RSP消息的积压情况，在可控范围内及时暂停客户端REQ消息的读取。直至客户端接收RSP消息使服务端的积压量下降至安全阈值后，服务端才再次开放REQ消息的接收通道。</strong>
+            </p>
+        </div>
 
-																																									
-					</div>
-		<div class="clear"></div>
-	</div>
-	<div id="bottom_begin"></div>
-	<div class="sin_footer">
-		<div>
-			Powered by <a href="http://www.oschina.net" target="_blank">开源中国</a>
-		</div>
-	</div>
-	<script>
-		//计算图片的真实大小，如果超过编辑区域，则进行限制
-		var resizePicWidth = function(pic_width){
-			var imgs = document.getElementsByTagName("img");
-            var j=0;
-			for(var i=0;i<imgs.length;i++){
-                var realWidth;	//真实的宽度
-                var realHeight;		//真实的高度
-                //这里做下说明，$("<img/>")这里是创建一个临时的img标签，类似js创建一个new Image()对象！
-				var newImg = new Image();
-				newImg.onload=function() {
-                    realWidth = imgs[j].width;
-                    realHeight = imgs[j].height;
-                    //如果真实的宽度大于规定的宽度就按照100%显示
-                    if(realWidth>=pic_width){
-						imgs[j].style.width=(pic_width) + "px";
-                    } else{//如果小于浏览器的宽度按照原尺寸显示
-						imgs[j].style.width=realWidth+'px';
-                    }
-                    j++;
+
+    </div>
+    <div class="clear"></div>
+</div>
+<div id="bottom_begin"></div>
+<div class="sin_footer">
+    <div>
+        Powered by <a href="http://www.oschina.net" target="_blank">开源中国</a>
+    </div>
+</div>
+<script>
+    //计算图片的真实大小，如果超过编辑区域，则进行限制
+    var resizePicWidth = function (pic_width) {
+        var imgs = document.getElementsByTagName("img");
+        var j = 0;
+        for (var i = 0; i < imgs.length; i++) {
+            var realWidth;	//真实的宽度
+            var realHeight;		//真实的高度
+            //这里做下说明，$("<img/>")这里是创建一个临时的img标签，类似js创建一个new Image()对象！
+            var newImg = new Image();
+            newImg.onload = function () {
+                realWidth = imgs[j].width;
+                realHeight = imgs[j].height;
+                //如果真实的宽度大于规定的宽度就按照100%显示
+                if (realWidth >= pic_width) {
+                    imgs[j].style.width = (pic_width) + "px";
+                } else {//如果小于浏览器的宽度按照原尺寸显示
+                    imgs[j].style.width = realWidth + 'px';
                 }
-				newImg.src=imgs[j].src;
-			}
-
-		}
-		var currentNode = null;
-		window.onscroll=function(){
-            var h = document.getElementById("top_end").getBoundingClientRect().top;
-            if(h<=0){
-				document.getElementById("sin_navi_id").className='sin_navi sin_navi_nomove';
-				document.getElementById("sin_content_id").className='sin_content sin_content_mar';
-            }else{
-                document.getElementById("sin_navi_id").className='sin_navi';
-                document.getElementById("sin_content_id").className='sin_content';
+                j++;
             }
-            comLayout();
-            var arr= new Array();
-            var index = 0;
-			var sinTargets = getClass("h2","sin_target");
-			for(var i=0;i<sinTargets.length;i++){
-                var th = sinTargets[i].getBoundingClientRect().top - 80;	                if(th<=0){
-                    arr[index] = new Array();
-                    arr[index][0] = sinTargets[i].getAttribute("id");
-                    arr[index][1] = th;
-                    index++;
-                }
-			}
+            newImg.src = imgs[j].src;
+        }
 
-            var curr = bubbleSort(arr);
-            if(curr!=null && curr!=currentNode){
-				var oldCurrIds = getClass("li","sin_navi_current");
-                if(oldCurrIds && oldCurrIds[0]){
-                    var oid=oldCurrIds[0].getAttribute("id");
-                    document.getElementById(oid).className=" ";
-                }
-				document.getElementById("navi_"+curr).className="sin_navi_current";
-                currentNode = curr;
+    }
+    var currentNode = null;
+    window.onscroll = function () {
+        var h = document.getElementById("top_end").getBoundingClientRect().top;
+        if (h <= 0) {
+            document.getElementById("sin_navi_id").className = 'sin_navi sin_navi_nomove';
+            document.getElementById("sin_content_id").className = 'sin_content sin_content_mar';
+        } else {
+            document.getElementById("sin_navi_id").className = 'sin_navi';
+            document.getElementById("sin_content_id").className = 'sin_content';
+        }
+        comLayout();
+        var arr = new Array();
+        var index = 0;
+        var sinTargets = getClass("h2", "sin_target");
+        for (var i = 0; i < sinTargets.length; i++) {
+            var th = sinTargets[i].getBoundingClientRect().top - 80;
+            if (th <= 0) {
+                arr[index] = new Array();
+                arr[index][0] = sinTargets[i].getAttribute("id");
+                arr[index][1] = th;
+                index++;
             }
         }
-		
-		
-	    window.onresize = function(){
-            comLayout();
-		}
 
-        var ch = document.getElementById("sin_navi_id").offsetHeight;
-
-	    function comLayout() {
-	        var h = document.documentElement.clientHeight;
-	    	if(ch<h){
-	    		return;
-	    	}
-		    var i = document.getElementById("bottom_begin").getBoundingClientRect().top;
-	        if(i<h){
-                document.getElementById("sin_navi_id").style.height=(i+"px");
-		   	}else{
-                document.getElementById("sin_navi_id").style.height=(h+"px");
-		   	}
-	    }
-	    
-	    function bubbleSort(arr){
-	    	var i= arr.length;
-	    	if(i<=0){
-	    		return null;
-	    	}
-	    	var j;
-			var tempExchangVal;
-			while(i>0){
-				for(j=0;j<i-1;j++){
-					if(arr[j][1] < arr[j+1][1]){
-						tempExchangVal=arr[j];
-						arr[j]=arr[j+1];
-						arr[j+1]=tempExchangVal;
-					}
-				}
-				i--;
-			}
-			return arr[0][0];
-		}
-	    comLayout();
-	    resizePicWidth(680);
-
-        function getClass(tagname, className) { //tagname指元素，className指class的值
-            //判断浏览器是否支持getElementsByClassName，如果支持就直接的用
-            if (document.getElementsByClassName) {
-                return document.getElementsByClassName(className);
+        var curr = bubbleSort(arr);
+        if (curr != null && curr != currentNode) {
+            var oldCurrIds = getClass("li", "sin_navi_current");
+            if (oldCurrIds && oldCurrIds[0]) {
+                var oid = oldCurrIds[0].getAttribute("id");
+                document.getElementById(oid).className = " ";
             }
-            else {    //当浏览器不支持getElementsByClassName的时候用下面的方法
-                var tagname = document.getElementsByTagName(tagname);  //获取指定元素
-                var tagnameAll = [];     //这个数组用于存储所有符合条件的元素
-                for (var i = 0; i < tagname.length; i++) {     //遍历获得的元素
-                    if (tagname[i].className == className) {     //如果获得的元素中的class的值等于指定的类名，就赋值给tagnameAll
-                        tagnameAll[tagnameAll.length] = tagname[i];
-                    }
-                }
-                return tagnameAll;
-            }
+            document.getElementById("navi_" + curr).className = "sin_navi_current";
+            currentNode = curr;
         }
-	</script>
+    }
+
+
+    window.onresize = function () {
+        comLayout();
+    }
+
+    var ch = document.getElementById("sin_navi_id").offsetHeight;
+
+    function comLayout() {
+        var h = document.documentElement.clientHeight;
+        if (ch < h) {
+            return;
+        }
+        var i = document.getElementById("bottom_begin").getBoundingClientRect().top;
+        if (i < h) {
+            document.getElementById("sin_navi_id").style.height = (i + "px");
+        } else {
+            document.getElementById("sin_navi_id").style.height = (h + "px");
+        }
+    }
+
+    function bubbleSort(arr) {
+        var i = arr.length;
+        if (i <= 0) {
+            return null;
+        }
+        var j;
+        var tempExchangVal;
+        while (i > 0) {
+            for (j = 0; j < i - 1; j++) {
+                if (arr[j][1] < arr[j + 1][1]) {
+                    tempExchangVal = arr[j];
+                    arr[j] = arr[j + 1];
+                    arr[j + 1] = tempExchangVal;
+                }
+            }
+            i--;
+        }
+        return arr[0][0];
+    }
+
+    comLayout();
+    resizePicWidth(680);
+
+    function getClass(tagname, className) { //tagname指元素，className指class的值
+        //判断浏览器是否支持getElementsByClassName，如果支持就直接的用
+        if (document.getElementsByClassName) {
+            return document.getElementsByClassName(className);
+        }
+        else {    //当浏览器不支持getElementsByClassName的时候用下面的方法
+            var tagname = document.getElementsByTagName(tagname);  //获取指定元素
+            var tagnameAll = [];     //这个数组用于存储所有符合条件的元素
+            for (var i = 0; i < tagname.length; i++) {     //遍历获得的元素
+                if (tagname[i].className == className) {     //如果获得的元素中的class的值等于指定的类名，就赋值给tagnameAll
+                    tagnameAll[tagnameAll.length] = tagname[i];
+                }
+            }
+            return tagnameAll;
+        }
+    }
+</script>
 </body>
-</html>	
+</html>
 <!-- Generated by OsChina.NET (init:1[ms],page:91[ms],ip:115.196.134.126) -->
