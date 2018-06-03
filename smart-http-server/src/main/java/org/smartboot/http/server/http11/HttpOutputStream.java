@@ -82,7 +82,7 @@ final class HttpOutputStream extends OutputStream {
                 .put(getBytes(String.valueOf(response.getHttpStatus().value())))
                 .put(Consts.SP)
                 .put(getBytes(response.getHttpStatus().getReasonPhrase()))
-                .put(Consts.CR).put(Consts.LF);
+                .put(Consts.CRLF);
 
 
         for (Map.Entry<String, String> entry : response.getHeaders().entrySet()) {
@@ -98,10 +98,10 @@ final class HttpOutputStream extends OutputStream {
             headBuffer.put(headKey)
                     .put(Consts.COLON)
                     .put(headVal)
-                    .put(Consts.CR).put(Consts.LF);
+                    .put(Consts.CRLF);
         }
         if (headBuffer.remaining() >= 2) {
-            headBuffer.put(Consts.CR).put(Consts.LF);
+            headBuffer.put(Consts.CRLF);
             headBuffer.flip();
             aioSession.write(headBuffer);
         } else {
