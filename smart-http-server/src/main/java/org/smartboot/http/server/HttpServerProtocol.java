@@ -17,7 +17,7 @@ import org.smartboot.http.common.enums.HttpPartEnum;
 import org.smartboot.http.common.enums.MethodEnum;
 import org.smartboot.http.common.utils.Consts;
 import org.smartboot.http.common.utils.HttpHeaderConstant;
-import org.smartboot.http.server.http11.Http11ContentDecoder;
+import org.smartboot.http.server.http11.HttpBodyDecoder;
 import org.smartboot.http.server.http11.Http11Request;
 import org.smartboot.http.server.websocket.DataFraming;
 import org.smartboot.http.server.websocket.WebsocketDecoder;
@@ -45,7 +45,7 @@ final class HttpServerProtocol implements Protocol<HttpEntity> {
     private static final AttachKey<Protocol<HttpEntity>> CONTENT_DECODER = AttachKey.valueOf("contentDecoder");
     private static final AttachKey<HttpEntity> ENTITY = AttachKey.valueOf("entity");
     private WebsocketDecoder websocketDecoder = new WebsocketDecoder();
-    private Http11ContentDecoder http11ContentDecoder = new Http11ContentDecoder();
+    private HttpBodyDecoder httpBodyDecoder = new HttpBodyDecoder();
 
     @Override
     public HttpEntity decode(ByteBuffer buffer, AioSession<HttpEntity> session, boolean eof) {
@@ -366,7 +366,7 @@ final class HttpServerProtocol implements Protocol<HttpEntity> {
                         }
                         //Http1.1协议
                         else {
-                            attachment.put(CONTENT_DECODER, http11ContentDecoder);
+                            attachment.put(CONTENT_DECODER, httpBodyDecoder);
                             Http11Request request = new Http11Request(httpHeader);
                             attachment.put(ENTITY, request);
                         }

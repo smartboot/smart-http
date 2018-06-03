@@ -27,17 +27,9 @@ import java.nio.ByteBuffer;
  * @author 三刀
  * @version V1.0 , 2018/2/16
  */
-public class Http11ContentDecoder implements Protocol<HttpEntity> {
+public class HttpBodyDecoder implements Protocol<HttpEntity> {
     private static final AttachKey<Http11Request> ENTITY = AttachKey.valueOf("entity");
     private static final AttachKey<FixedLengthFrameDecoder> FIXED_LENGTH_FRAME_DECODER_ATTACH_KEY = AttachKey.valueOf("fixLengthFrameDecoder");
-
-    private void decodeBodyForm(FixedLengthFrameDecoder decoder, Http11Request request) {
-        ByteBuffer buffer = decoder.getBuffer();
-        String[] paramArray = StringUtils.split(new String(buffer.array(), buffer.position(), buffer.remaining()), "&");
-        for (int i = 0; i < paramArray.length; i++) {
-            request.setParam(StringUtils.substringBefore(paramArray[i], "=").trim(), StringUtils.substringAfter(paramArray[i], "=").trim());
-        }
-    }
 
     @Override
     public HttpEntity decode(ByteBuffer buffer, AioSession<HttpEntity> session, boolean eof) {
@@ -77,6 +69,14 @@ public class Http11ContentDecoder implements Protocol<HttpEntity> {
             return httpRequest;
         } else {
             return null;
+        }
+    }
+
+    private void decodeBodyForm(FixedLengthFrameDecoder decoder, Http11Request request) {
+        ByteBuffer buffer = decoder.getBuffer();
+        String[] paramArray = StringUtils.split(new String(buffer.array(), buffer.position(), buffer.remaining()), "&");
+        for (int i = 0; i < paramArray.length; i++) {
+            request.setParam(StringUtils.substringBefore(paramArray[i], "=").trim(), StringUtils.substringAfter(paramArray[i], "=").trim());
         }
     }
 
