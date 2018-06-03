@@ -9,6 +9,7 @@
 package org.smartboot.http.server.http11;
 
 import org.smartboot.http.common.HttpEntity;
+import org.smartboot.http.common.HttpHeader;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.server.handle.HttpHandle;
 import org.smartboot.socket.transport.AioSession;
@@ -23,18 +24,21 @@ import java.util.Map;
  * @author 三刀
  * @version V1.0 , 2018/2/3
  */
-public class DefaultHttpResponse implements HttpResponse {
+public class DefaultHttpResponse extends HttpEntity implements HttpResponse {
 
     /**
      * http响应码
      */
     private HttpStatus httpStatus;
 
-    private Map<String, String> headMap = new HashMap<String, String>();
-
     private HttpOutputStream outputStream;
 
+    private DefaultHttpResponse(HttpHeader header) {
+        super(header);
+    }
+
     public DefaultHttpResponse(AioSession<HttpEntity> session, Http11Request request, HttpHandle responseHandle) {
+        this(new HttpHeader());
         this.outputStream = new HttpOutputStream(session, this, request, responseHandle);
     }
 
@@ -48,18 +52,6 @@ public class DefaultHttpResponse implements HttpResponse {
 
     public void setHttpStatus(HttpStatus httpStatus) {
         this.httpStatus = httpStatus;
-    }
-
-    Map<String, String> getHeadMap() {
-        return headMap;
-    }
-
-    public void setHeader(String name, String value) {
-        headMap.put(name, value);
-    }
-
-    public String getHeader(String name) {
-        return headMap.get(name);
     }
 
     public void write(ByteBuffer buffer) throws IOException {

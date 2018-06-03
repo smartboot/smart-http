@@ -11,6 +11,8 @@ package org.smartboot.http.common;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
+import java.util.Map;
+
 /**
  * Http消息体，兼容请求与响应
  *
@@ -27,6 +29,18 @@ public abstract class HttpEntity {
 
     public HttpHeader getHeader() {
         return header;
+    }
+
+    public void setHeader(String name, String value) {
+        header.setHeader(name, value);
+    }
+
+    public String getHeader(String name) {
+        return header.getHeader(name);
+    }
+
+    public Map<String, String> getHeaders() {
+        return header.headerMap;
     }
 
     @Override

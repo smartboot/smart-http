@@ -56,8 +56,8 @@ public class Http11ContentDecoder implements Protocol<HttpEntity> {
 
         FixedLengthFrameDecoder formDecoder = attachment.get(FIXED_LENGTH_FRAME_DECODER_ATTACH_KEY);
         if (formDecoder == null) {
-            if (StringUtils.startsWith(httpRequest.getHeader().getHeader(HttpHeaderConstant.Names.CONTENT_TYPE), HttpHeaderConstant.Values.MULTIPART_FORM_DATA)) {
-                int contentLength = NumberUtils.toInt(httpRequest.getHeader().getHeader(HttpHeaderConstant.Names.CONTENT_LENGTH), -1);
+            if (StringUtils.startsWith(httpRequest.getHeader(HttpHeaderConstant.Names.CONTENT_TYPE), HttpHeaderConstant.Values.MULTIPART_FORM_DATA)) {
+                int contentLength = NumberUtils.toInt(httpRequest.getHeader(HttpHeaderConstant.Names.CONTENT_LENGTH), -1);
                 try {
                     httpRequest.setInputStream(session.getInputStream(contentLength));
                 } catch (IOException e) {
@@ -65,7 +65,7 @@ public class Http11ContentDecoder implements Protocol<HttpEntity> {
                 }
                 return httpRequest;
             } else {
-                int contentLength = NumberUtils.toInt(httpRequest.getHeader().getHeader(HttpHeaderConstant.Names.CONTENT_LENGTH), -1);
+                int contentLength = NumberUtils.toInt(httpRequest.getHeader(HttpHeaderConstant.Names.CONTENT_LENGTH), -1);
                 formDecoder = new FixedLengthFrameDecoder(contentLength);
                 attachment.put(FIXED_LENGTH_FRAME_DECODER_ATTACH_KEY, formDecoder);
                 httpRequest.setInputStream(new EmptyInputStream());

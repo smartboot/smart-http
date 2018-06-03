@@ -85,7 +85,7 @@ final class HttpOutputStream extends OutputStream {
                 .put(Consts.CR).put(Consts.LF);
 
 
-        for (Map.Entry<String, String> entry : response.getHeadMap().entrySet()) {
+        for (Map.Entry<String, String> entry : response.getHeaders().entrySet()) {
             byte[] headKey = getBytes(entry.getKey());
             byte[] headVal = getBytes(entry.getValue());
 
