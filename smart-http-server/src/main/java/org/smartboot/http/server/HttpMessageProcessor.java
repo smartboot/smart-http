@@ -16,9 +16,11 @@ import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.http.server.handle.HttpHandle;
 import org.smartboot.http.server.http11.DefaultHttpResponse;
-import org.smartboot.http.server.http11.Http11HandleGroup;
 import org.smartboot.http.server.http11.Http11Request;
 import org.smartboot.http.server.http11.HttpResponse;
+import org.smartboot.http.server.handle.http11.RFC2612RequestHandle;
+import org.smartboot.http.server.handle.RouteHandle;
+import org.smartboot.http.server.handle.http11.ResponseHandle;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.transport.AioSession;
@@ -32,10 +34,22 @@ import java.io.IOException;
  */
 public class HttpMessageProcessor implements MessageProcessor<HttpEntity> {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpMessageProcessor.class);
-    private Http11HandleGroup http11HandleGroup = null;
+
+    /**
+     * Http消息处理器
+     */
+    private HttpHandle processHandle;
+
+    private RouteHandle routeHandle;
+
+    private HttpHandle responseHandle;
 
     public HttpMessageProcessor(String baseDir) {
-        http11HandleGroup = new Http11HandleGroup(baseDir);
+        processHandle = new RFC2612RequestHandle();
+        routeHandle = new RouteHandle(baseDir);
+        processHandle.next(routeHandle);
+
+        responseHandle = new ResponseHandle();
     }
 
 
@@ -59,9 +73,9 @@ public class HttpMessageProcessor implements MessageProcessor<HttpEntity> {
     }
 
     private void processHttp11(final AioSession<HttpEntity> session, Http11Request request) throws IOException {
-        HttpResponse httpResponse = new DefaultHttpResponse(session, request, http11HandleGroup);
+        HttpResponse httpResponse = new DefaultHttpResponse(session, request, responseHandle);
         try {
-            http11HandleGroup.getPreHandle().doHandle(request, httpResponse);
+            processHandle.doHandle(request, httpResponse);
         } catch (Exception e) {
             LOGGER.debug("", e);
             httpResponse.setHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -76,6 +90,6 @@ public class HttpMessageProcessor implements MessageProcessor<HttpEntity> {
     }
 
     public void route(String urlPattern, HttpHandle httpHandle) {
-        http11HandleGroup.getRouteHandle().route(urlPattern, httpHandle);
+        routeHandle.route(urlPattern, httpHandle);
     }
 }

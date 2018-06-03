@@ -6,7 +6,7 @@
  * Author: sandao
  */
 
-package org.smartboot.http.server.http11.response;
+package org.smartboot.http.server.handle.http11;
 
 import org.apache.commons.lang.StringUtils;
 import org.smartboot.http.common.enums.HttpStatus;
@@ -25,7 +25,7 @@ import java.util.TimeZone;
  * @author 三刀
  * @version V1.0 , 2018/2/8
  */
-public class DefaultHandle extends HttpHandle {
+public class ResponseHandle extends HttpHandle {
     private ThreadLocal<SimpleDateFormat> simpleDateFormatThreadLocal = new ThreadLocal<SimpleDateFormat>() {
         @Override
         protected SimpleDateFormat initialValue() {

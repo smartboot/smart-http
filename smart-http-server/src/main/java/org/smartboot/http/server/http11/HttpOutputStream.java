@@ -11,6 +11,7 @@ package org.smartboot.http.server.http11;
 import org.apache.commons.lang.StringUtils;
 import org.smartboot.http.common.utils.Consts;
 import org.smartboot.http.common.utils.HttpHeaderConstant;
+import org.smartboot.http.server.handle.HttpHandle;
 import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
@@ -33,13 +34,13 @@ final class HttpOutputStream extends OutputStream {
     private Http11Request request;
     private ByteBuffer headBuffer = ByteBuffer.allocate(512);
     private byte[] endChunked = new byte[]{'0', Consts.CR, Consts.LF, Consts.CR, Consts.LF};
-    private Http11HandleGroup http11HandleGroup;
+    private HttpHandle responseHandle;
 
-    public HttpOutputStream(AioSession aioSession, DefaultHttpResponse response, Http11Request request, Http11HandleGroup http11HandleGroup) {
+    public HttpOutputStream(AioSession aioSession, DefaultHttpResponse response, Http11Request request, HttpHandle responseHandle) {
         this.aioSession = aioSession;
         this.response = response;
         this.request = request;
-        this.http11HandleGroup = http11HandleGroup;
+        this.responseHandle = responseHandle;
     }
 
     @Override
@@ -72,7 +73,7 @@ final class HttpOutputStream extends OutputStream {
     }
 
     private void writeHead() throws IOException {
-        http11HandleGroup.getLastHandle().doHandle(request, new NoneOutputHttpResponseWrap(response));//防止在handle中调用outputStream操作
+        responseHandle.doHandle(request, new NoneOutputHttpResponseWrap(response));//防止在handle中调用outputStream操作
         chunked = StringUtils.equals(HttpHeaderConstant.Values.CHUNKED, response.getHeader(HttpHeaderConstant.Names.TRANSFER_ENCODING));
 
         headBuffer.clear();
