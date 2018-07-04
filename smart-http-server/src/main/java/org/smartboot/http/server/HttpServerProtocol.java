@@ -59,15 +59,18 @@ final class HttpServerProtocol implements Protocol<HttpEntity> {
                 switch (currentPart) {
                     //解析请求行
                     case REQUEST_LINE_METHOD: {
-                        byte b = buffer.get();
-                        if (b == Consts.SP) {
-                            int p = buffer.position() - 1;
-                            buffer.reset();
-                            attachment.get(HTTP_HEADER_ATTACH_KEY).setMethod(MethodEnum.getByMethod(buffer.array(), buffer.position(), p - buffer.position()));
-                            buffer.position(p + 1);
-                            currentPart = HttpPartEnum.SPACES_BEFORE_URI;
+                        do {
+                            if (buffer.get() == Consts.SP) {
+                                int p = buffer.position() - 1;
+                                buffer.reset();
+                                httpHeader.setMethod(MethodEnum.getByMethod(buffer.array(), buffer.position(), p - buffer.position()));
+                                buffer.position(p + 1);
+                                currentPart = HttpPartEnum.SPACES_BEFORE_URI;
+                            }
+                        } while (buffer.hasRemaining());
+                        if (!buffer.hasRemaining() || startPart == currentPart) {
+                            break;
                         }
-                        break;
                     }
                     case SPACES_BEFORE_URI: {
                         byte b = buffer.get();
@@ -100,7 +103,7 @@ final class HttpServerProtocol implements Protocol<HttpEntity> {
                                 byte[] b_schema = new byte[p - buffer.position()];
                                 buffer.get(b_schema);
                                 httpHeader.setB_schema(b_schema);
-                                buffer.get();//读取":"
+                                buffer.position(p + 2);//读取":"
                                 currentPart = HttpPartEnum.SCHEMA_SLASH;
                                 break;
                             default:
@@ -186,7 +189,7 @@ final class HttpServerProtocol implements Protocol<HttpEntity> {
                                 buffer.get(b_port);
                                 httpHeader.setB_port(b_port);
 
-                                buffer.get();
+                                buffer.position(p + 2);
                                 buffer.mark();
                                 currentPart = HttpPartEnum.AFTER_SLASH_IN_URI;
                                 break;
@@ -198,7 +201,7 @@ final class HttpServerProtocol implements Protocol<HttpEntity> {
                                 buffer.get(b_port);
                                 httpHeader.setB_port(b_port);
 
-                                buffer.get();
+                                buffer.position(p + 2);
                                 buffer.mark();
                                 System.out.println("set uri /");
                                 currentPart = HttpPartEnum.HOST_HTTP_09;
@@ -424,6 +427,7 @@ final class HttpServerProtocol implements Protocol<HttpEntity> {
             httpHeader.reset();
             attachment.put(HTTP_PART_ENUM_ATTACH_KEY, HttpPartEnum.REQUEST_LINE_METHOD);
             attachment.get(DELIMITER_FRAME_DECODER_ATTACH_KEY).reset(Consts.SP_ARRAY);
+            attachment.remove(ENTITY);
         }
         return attachment;
     }
