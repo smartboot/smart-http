@@ -6,17 +6,16 @@
  * Author: sandao
  */
 
-package org.smartboot.http.server;
+package org.smartboot.http.common;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.smartboot.http.common.BufferRange;
-import org.smartboot.http.common.HttpEntityV2;
-import org.smartboot.http.common.State;
+import org.smartboot.http.common.enums.MethodEnum;
 import org.smartboot.http.common.utils.Consts;
+import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.socket.Protocol;
+import org.smartboot.socket.extension.decoder.FixedLengthFrameDecoder;
 import org.smartboot.socket.transport.AioSession;
-import org.smartboot.socket.util.DecoderException;
 
 import java.nio.ByteBuffer;
 
@@ -24,18 +23,15 @@ import java.nio.ByteBuffer;
  * Http消息解析器,仅解析Header部分即可
  * Created by 三刀 on 2017/6/20.
  */
-final class HttpServerV2Protocol implements Protocol<HttpEntityV2> {
+public final class HttpRequestProtocol implements Protocol<HttpEntityV2> {
 
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(HttpServerV2Protocol.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(HttpRequestProtocol.class);
 
     @Override
     public HttpEntityV2 decode(ByteBuffer buffer, AioSession<HttpEntityV2> session, boolean eof) {
         if (!buffer.hasRemaining() || eof) {
             return null;
-        }
-        if (buffer.position() != 0) {
-            throw new DecoderException("decoder exception");
         }
         buffer.mark();
 
@@ -48,24 +44,25 @@ final class HttpServerV2Protocol implements Protocol<HttpEntityV2> {
         do {
             flag = false;
             switch (curState) {
-                case verb:
+                case method:
                     entityV2.initPosition = buffer.position();
-                    scanUntil(buffer, Consts.SP, entityV2.verb);
-                    if (entityV2.verb.isOk) {
+                    scanUntil(buffer, Consts.SP, entityV2.methodRange);
+                    if (entityV2.methodRange.isOk) {
                         curState = State.uri;
+                        entityV2.buffer = buffer;
                     } else {
                         break;
                     }
                 case uri:
-                    scanUntil(buffer, Consts.SP, entityV2.uri);
-                    if (entityV2.uri.isOk) {
+                    scanUntil(buffer, Consts.SP, entityV2.uriRange);
+                    if (entityV2.uriRange.isOk) {
                         curState = State.protocol;
                     } else {
                         break;
                     }
                 case protocol:
-                    scanUntil(buffer, Consts.CR, entityV2.protocol);
-                    if (entityV2.protocol.isOk) {
+                    scanUntil(buffer, Consts.CR, entityV2.protocolRange);
+                    if (entityV2.protocolRange.isOk) {
                         curState = State.request_line_end;
                     } else {
                         break;
@@ -74,7 +71,7 @@ final class HttpServerV2Protocol implements Protocol<HttpEntityV2> {
                     if (buffer.remaining() >= 2) {
                         if (buffer.get() != Consts.LF) {
                             LOGGER.error(buffer.toString());
-                            throw new DecoderException("");
+                            throw new RuntimeException("");
                         }
                         if (buffer.get(buffer.position()) == Consts.CR) {
                             curState = State.head_line_end;
@@ -85,7 +82,7 @@ final class HttpServerV2Protocol implements Protocol<HttpEntityV2> {
                         break;
                     }
                 case head_line:
-                    BufferRange headRange = entityV2.header.getReadableRange();
+                    BufferRange headRange = entityV2.headerRanges.getReadableRange();
                     scanUntil(buffer, Consts.CR, headRange);
                     if (headRange.isOk) {
                         curState = State.head_line_LF;
@@ -95,7 +92,7 @@ final class HttpServerV2Protocol implements Protocol<HttpEntityV2> {
                 case head_line_LF:
                     if (buffer.remaining() >= 2) {
                         if (buffer.get() != Consts.LF) {
-                            throw new DecoderException("");
+                            throw new RuntimeException("");
                         }
                         if (buffer.get(buffer.position()) == Consts.CR) {
                             curState = State.head_line_end;
@@ -112,13 +109,37 @@ final class HttpServerV2Protocol implements Protocol<HttpEntityV2> {
                         break;
                     }
                     if (buffer.get() == Consts.CR && buffer.get() == Consts.LF) {
+                        curState = State.head_finished;
+                    } else {
+                        throw new RuntimeException();
+                    }
+                case head_finished:
+                    //Post请求
+                    if (entityV2.getMethodRange() == MethodEnum.POST) {
+                        entityV2.decodeHead();
+                        buffer.mark();
+                        //文件上传
+                        if (HttpHeaderConstant.Values.MULTIPART_FORM_DATA.equals(entityV2.getContentType())) {
+                            curState = State.finished;
+                            break;
+                        } else {
+                            entityV2.setBodyForm(new FixedLengthFrameDecoder(entityV2.getContentLength()));
+                            curState = State.body;
+                        }
+                    } else {
                         curState = State.finished;
                         break;
-                    } else {
-                        throw new DecoderException();
                     }
+                case body:
+                    if (entityV2.getBodyForm().decode(buffer)) {
+                        curState = State.finished;
+                    }
+                    buffer.mark();
+                    break;
+                case finished:
+                    break;
                 default:
-                    throw new DecoderException("aa");
+                    throw new RuntimeException("aa");
             }
         } while (flag);
         if (curState == State.finished) {
@@ -128,8 +149,8 @@ final class HttpServerV2Protocol implements Protocol<HttpEntityV2> {
         entityV2.setCurrentPosition(buffer.position());
         entityV2.state = curState;
         buffer.reset();
-        if (buffer.limit() == buffer.capacity()) {
-            throw new DecoderException("buffer full");
+        if (curState != State.body && buffer.limit() == buffer.capacity()) {
+            throw new RuntimeException("buffer full");
         }
         return null;
     }
@@ -142,9 +163,9 @@ final class HttpServerV2Protocol implements Protocol<HttpEntityV2> {
     private void scanUntil(ByteBuffer buffer, byte split, BufferRange bufferRange) {
         int index = buffer.position();
         bufferRange.start = index;
-        int remaing = buffer.remaining();
+        int remaining = buffer.remaining();
         byte[] data = buffer.array();
-        while (remaing-- > 0) {
+        while (remaining-- > 0) {
             if (data[index] == split) {
                 bufferRange.length = index - bufferRange.start;
                 bufferRange.isOk = true;
@@ -155,7 +176,6 @@ final class HttpServerV2Protocol implements Protocol<HttpEntityV2> {
             }
         }
         bufferRange.start = -1;
-        System.out.println("sacnUntil");
     }
 
 

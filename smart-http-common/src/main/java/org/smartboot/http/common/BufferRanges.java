@@ -1,5 +1,6 @@
 package org.smartboot.http.common;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,4 +30,6 @@ public class BufferRanges {
     public void reset() {
         headers.clear();
     }
+
+
 }

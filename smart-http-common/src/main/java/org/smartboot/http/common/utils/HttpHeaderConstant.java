@@ -88,6 +88,11 @@ public interface HttpHeaderConstant {
 
         String WEBSOCKET = "websocket";
 
-        String KEEPALIVE="keep-alive";
+        String KEEPALIVE = "keep-alive";
+    }
+
+    interface HeaderBytes {
+        byte[] CONTENT_TYPE = Names.CONTENT_TYPE.getBytes();
+        byte[] CONTENT_LENGTH = Names.CONTENT_LENGTH.getBytes();
     }
 }

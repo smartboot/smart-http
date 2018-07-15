@@ -77,7 +77,7 @@ final class HttpOutputStream extends OutputStream {
         chunked = StringUtils.equals(HttpHeaderConstant.Values.CHUNKED, response.getHeader(HttpHeaderConstant.Names.TRANSFER_ENCODING));
 
         headBuffer.clear();
-        headBuffer.put(getBytes(request.getHeader().getHttpVersion()))
+        headBuffer.put(getBytes(request.getHttpVersion()))
                 .put(Consts.SP)
                 .put(getBytes(String.valueOf(response.getHttpStatus().value())))
                 .put(Consts.SP)

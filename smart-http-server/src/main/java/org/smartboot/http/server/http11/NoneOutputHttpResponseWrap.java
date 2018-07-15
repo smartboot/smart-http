@@ -13,6 +13,7 @@ import org.smartboot.http.common.enums.HttpStatus;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.util.Map;
 
 /**
  * @author 三刀
@@ -48,6 +49,11 @@ class NoneOutputHttpResponseWrap implements HttpResponse {
     @Override
     public String getHeader(String name) {
         return response.getHeader(name);
+    }
+
+    @Override
+    public Map<String, String> getHeaders() {
+        return response.getHeaders();
     }
 
     @Override

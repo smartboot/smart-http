@@ -39,7 +39,7 @@ public class RFC2612RequestHandle extends HttpHandle {
      * @param request
      */
     private void methodCheck(Http11Request request) {
-        MethodEnum methodEnum = request.getMethod();//大小写敏感
+        MethodEnum methodEnum = request.getMethodRange();//大小写敏感
         if (methodEnum == null) {
             throw new HttpException(HttpStatus.NOT_IMPLEMENTED);
         }

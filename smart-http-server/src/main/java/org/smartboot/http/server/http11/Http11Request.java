@@ -10,8 +10,7 @@ package org.smartboot.http.server.http11;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.smartboot.http.common.HttpEntity;
-import org.smartboot.http.common.HttpHeader;
+import org.smartboot.http.common.HttpEntityV2;
 import org.smartboot.http.common.enums.MethodEnum;
 import org.smartboot.http.common.utils.EmptyInputStream;
 
@@ -22,12 +21,13 @@ import java.util.Map;
 /**
  * Created by 三刀 on 2017/6/20.
  */
-public class Http11Request extends HttpEntity {
+public class Http11Request extends HttpEntityV2 {
 
 
     private InputStream inputStream = null;
     private int contentLength = -1;
     private String contentType;
+    private String httpVersion;
 
     private String requestURI;
     /**
@@ -37,10 +37,6 @@ public class Http11Request extends HttpEntity {
 
     //HTTP\HTTPS...
     private Map<String, String> paramMap = new HashMap<String, String>();
-
-    public Http11Request(HttpHeader header) {
-        super(header);
-    }
 
 
     public InputStream getInputStream() {
@@ -52,21 +48,22 @@ public class Http11Request extends HttpEntity {
     }
 
     public String getHeader(String key) {
-        return header.getHeader(key);
+        return null;
     }
 
 
-    public MethodEnum getMethod() {
-        return header.getMethod();
+    public MethodEnum getMethodRange() {
+        byte[] b = getBytes(methodRange);
+        return MethodEnum.getByMethod(b, 0, b.length);
     }
 
     public String getOriginalUri() {
-        return header.getOriginalUri();
+        return get(uriRange);
     }
 
 
     public String getHttpVersion() {
-        return header.getHttpVersion();
+        return httpVersion == null ? httpVersion = get(protocolRange) : httpVersion;
     }
 
 
@@ -105,7 +102,8 @@ public class Http11Request extends HttpEntity {
     }
 
     public String getProtocol() {
-        return header.getHttpVersion();
+        return get(protocolRange);
     }
+
 
 }

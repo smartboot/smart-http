@@ -13,6 +13,7 @@ import org.smartboot.http.common.enums.HttpStatus;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.util.Map;
 
 /**
  * @author 三刀
@@ -30,6 +31,8 @@ public interface HttpResponse {
     public void setHeader(String name, String value);
 
     public String getHeader(String name);
+
+    Map<String, String> getHeaders();
 
     public void write(ByteBuffer buffer) throws IOException;
 }

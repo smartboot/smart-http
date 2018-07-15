@@ -5,14 +5,18 @@ package org.smartboot.http.common;
  * @version V1.0 , 2018/6/9
  */
 public class BufferRange {
-    public int poolIndex;
     public int start = -1;
     public int length;
     public boolean isOk = false;
+
+    public boolean isMatching=false;
+
+
 
     public void reset() {
         start = -1;
         length = 0;
         isOk = false;
+        isMatching=false;
     }
 }

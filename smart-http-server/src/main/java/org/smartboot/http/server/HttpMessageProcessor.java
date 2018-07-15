@@ -11,7 +11,7 @@ package org.smartboot.http.server;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.smartboot.http.common.HttpEntity;
+import org.smartboot.http.common.HttpEntityV2;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.http.server.handle.HttpHandle;
@@ -32,7 +32,7 @@ import java.io.IOException;
  *
  * @author 三刀
  */
-public class HttpMessageProcessor implements MessageProcessor<HttpEntity> {
+public class HttpMessageProcessor implements MessageProcessor<HttpEntityV2> {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpMessageProcessor.class);
 
     /**
@@ -54,7 +54,7 @@ public class HttpMessageProcessor implements MessageProcessor<HttpEntity> {
 
 
     @Override
-    public void process(final AioSession<HttpEntity> session, final HttpEntity entry) {
+    public void process(final AioSession<HttpEntityV2> session, final HttpEntityV2 entry) {
         if (entry instanceof Http11Request) {
             final Http11Request request = (Http11Request) entry;
             try {
@@ -66,13 +66,13 @@ public class HttpMessageProcessor implements MessageProcessor<HttpEntity> {
     }
 
     @Override
-    public void stateEvent(AioSession<HttpEntity> session, StateMachineEnum stateMachineEnum, Throwable throwable) {
+    public void stateEvent(AioSession<HttpEntityV2> session, StateMachineEnum stateMachineEnum, Throwable throwable) {
         if (throwable != null) {
             throwable.printStackTrace();
         }
     }
 
-    private void processHttp11(final AioSession<HttpEntity> session, Http11Request request) throws IOException {
+    private void processHttp11(final AioSession<HttpEntityV2> session, Http11Request request) throws IOException {
         HttpResponse httpResponse = new DefaultHttpResponse(session, request, responseHandle);
         try {
             processHandle.doHandle(request, httpResponse);

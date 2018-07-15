@@ -9,7 +9,8 @@
 package org.smartboot.http.server;
 
 import org.apache.commons.lang.math.NumberUtils;
-import org.smartboot.http.common.HttpEntity;
+import org.smartboot.http.common.HttpEntityV2;
+import org.smartboot.http.common.HttpRequestProtocol;
 import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.http.server.handle.HttpHandle;
 import org.smartboot.http.server.http11.Http11Request;
@@ -56,15 +57,15 @@ public class HttpBootstrap {
 //        https(processor);
     }
 
-    public static void http(MessageProcessor<HttpEntity> processor) {
+    public static void http(MessageProcessor<HttpEntityV2> processor) {
         // 定义服务器接受的消息类型以及各类消息对应的处理器
         int port = NumberUtils.toInt(System.getProperty("port"), 8888);
-        AioQuickServer<HttpEntity> server = new AioQuickServer<HttpEntity>(port, new HttpServerProtocol(), processor);
+        AioQuickServer<HttpEntityV2> server = new AioQuickServer<HttpEntityV2>(port, new HttpRequestProtocol(), processor);
 //        server.setDirectBuffer(true);
         server.setWriteQueueSize(0);
 //        server.setReadBufferSize(10);
 //        server.setThreadNum(8);
-        server.setFilters(new Filter[]{new QuickMonitorTimer<HttpEntity>()});
+        server.setFilters(new Filter[]{new QuickMonitorTimer<HttpEntityV2>()});
         try {
             server.start();
         } catch (IOException e) {
@@ -74,7 +75,7 @@ public class HttpBootstrap {
 
     static void https(HttpMessageProcessor processor) {
         // 定义服务器接受的消息类型以及各类消息对应的处理器
-        AioSSLQuickServer<? extends HttpEntity> server = new AioSSLQuickServer<HttpEntity>(8889, new HttpServerProtocol(), processor);
+        AioSSLQuickServer<? extends HttpEntityV2> server = new AioSSLQuickServer<HttpEntityV2>(8889, new HttpRequestProtocol(), processor);
         server
                 .setClientAuth(ClientAuth.OPTIONAL)
                 .setKeyStore(ClassLoader.getSystemClassLoader().getResource("server.jks").getFile(), "storepass")

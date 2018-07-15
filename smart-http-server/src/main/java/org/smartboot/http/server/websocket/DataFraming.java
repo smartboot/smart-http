@@ -8,8 +8,7 @@
 
 package org.smartboot.http.server.websocket;
 
-import org.smartboot.http.common.HttpEntity;
-import org.smartboot.http.common.HttpHeader;
+import org.smartboot.http.common.HttpEntityV2;
 
 import java.nio.ByteBuffer;
 
@@ -17,7 +16,7 @@ import java.nio.ByteBuffer;
  * @author 三刀
  * @version V1.0 , 2018/2/10
  */
-public class DataFraming extends HttpEntity {
+public class DataFraming extends HttpEntityV2 {
 
     private State state = State.READING_FIRST;
     private boolean frameFinalFlag;
@@ -29,10 +28,6 @@ public class DataFraming extends HttpEntity {
     private byte[] maskingKey;
 
     private ByteBuffer data;
-
-    public DataFraming(HttpHeader header) {
-        super(header);
-    }
 
 
     public State getState() {
