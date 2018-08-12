@@ -9,14 +9,13 @@ public class BufferRange {
     public int length;
     public boolean isOk = false;
 
-    public boolean isMatching=false;
-
+    public boolean isMatching = false;
 
 
     public void reset() {
         start = -1;
         length = 0;
         isOk = false;
-        isMatching=false;
+        isMatching = false;
     }
 }

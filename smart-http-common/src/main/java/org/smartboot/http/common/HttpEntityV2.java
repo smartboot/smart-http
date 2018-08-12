@@ -14,6 +14,7 @@ import org.smartboot.http.common.enums.MethodEnum;
 import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.socket.extension.decoder.FixedLengthFrameDecoder;
 
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
@@ -24,7 +25,7 @@ import java.util.Map;
  *
  * @author 三刀 2018/06/02
  */
-public class HttpEntityV2 {
+public class HttpEntityV2 implements HttpRequest {
     protected final BufferRange methodRange = new BufferRange();
     protected final BufferRange uriRange = new BufferRange();
     protected final BufferRange protocolRange = new BufferRange();
@@ -37,17 +38,19 @@ public class HttpEntityV2 {
 
     private MethodEnum methodEnum;
 
-    private String uri;
+    private String originalUri;
+    private String requestUri;
     private String protocol;
     private String contentType;
     private int contentLength;
+    private String queryString;
 
     private Map<String, String> headMap = new HashMap<>();
 
 
     public void decodeHead() {
         getMethodRange();
-        uri = get(uriRange);
+        originalUri = get(uriRange);
         protocol = get(protocolRange);
         for (BufferRange bufferRange : headerRanges.headers) {
             if (!bufferRange.isOk || bufferRange.isMatching) {
@@ -81,7 +84,7 @@ public class HttpEntityV2 {
         return getBytes(range, 0);
     }
 
-    public byte[] getBytes(BufferRange range, int offset) {
+    byte[] getBytes(BufferRange range, int offset) {
         int p = buffer.position();
         byte[] b = new byte[range.length - offset];
         buffer.position(range.start + offset);
@@ -131,7 +134,7 @@ public class HttpEntityV2 {
         return contentLength;
     }
 
-    public BufferRange getAndRemove(byte[] contentType) {
+    BufferRange getAndRemove(byte[] contentType) {
         final List<BufferRange> headers = headerRanges.headers;
         for (BufferRange bufferRange : headers) {
             if (!bufferRange.isOk || bufferRange.length < contentType.length || bufferRange.isMatching) {
@@ -154,11 +157,62 @@ public class HttpEntityV2 {
         return null;
     }
 
-    public FixedLengthFrameDecoder getBodyForm() {
+    public String getProtocol() {
+        if (protocol != null) {
+            return protocol;
+        }
+        if (!protocolRange.isMatching) {
+            protocol = get(protocolRange);
+            protocolRange.isMatching = true;
+        }
+        return protocol;
+    }
+
+    FixedLengthFrameDecoder getBodyForm() {
         return bodyForm;
     }
 
-    public void setBodyForm(FixedLengthFrameDecoder bodyForm) {
+    void setBodyForm(FixedLengthFrameDecoder bodyForm) {
         this.bodyForm = bodyForm;
+    }
+
+    @Override
+    public String getHeader(String headName) {
+        if (headMap.containsKey(headName)) {
+            return headMap.get(headName);
+        }
+        BufferRange bufferRange = getAndRemove(headName.getBytes());
+        String val = null;
+        if (bufferRange != null) {
+            val = get(bufferRange);
+        }
+        headMap.put(headName, get(bufferRange));
+        return val;
+    }
+
+    @Override
+    public InputStream getInputStream() {
+        return null;
+    }
+
+    public String getOriginalUri() {
+        if (originalUri != null) {
+            return originalUri;
+        }
+        originalUri = get(uriRange);
+        uriRange.isMatching = true;
+        return originalUri;
+    }
+
+    public void setQueryString(String queryString) {
+        this.queryString = queryString;
+    }
+
+    public String getRequestURI() {
+        return requestUri;
+    }
+
+    public void setRequestURI(String requestUri) {
+        this.requestUri = requestUri;
     }
 }

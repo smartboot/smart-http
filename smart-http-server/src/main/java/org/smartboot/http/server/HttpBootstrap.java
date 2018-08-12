@@ -13,7 +13,6 @@ import org.smartboot.http.common.HttpEntityV2;
 import org.smartboot.http.common.HttpRequestProtocol;
 import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.http.server.handle.HttpHandle;
-import org.smartboot.http.server.http11.Http11Request;
 import org.smartboot.http.server.http11.HttpResponse;
 import org.smartboot.socket.Filter;
 import org.smartboot.socket.MessageProcessor;
@@ -29,12 +28,12 @@ import java.net.UnknownHostException;
 public class HttpBootstrap {
 
     public static void main(String[] args) throws UnknownHostException {
-        HttpMessageProcessor processor = new HttpMessageProcessor(System.getProperty("webapps.dir", "./"));
+        HttpV2MessageProcessor processor = new HttpV2MessageProcessor(System.getProperty("webapps.dir", "./"));
         processor.route("/", new HttpHandle() {
             byte[] body = "welcome to smart-socket http server!".getBytes();
 
             @Override
-            public void doHandle(Http11Request request, HttpResponse response) throws IOException {
+            public void doHandle(HttpEntityV2 request, HttpResponse response) throws IOException {
 
                 response.setHeader(HttpHeaderConstant.Names.CONTENT_LENGTH, body.length + "");
                 response.getOutputStream().write(body);
@@ -42,7 +41,7 @@ public class HttpBootstrap {
         });
         processor.route("/upload", new HttpHandle() {
             @Override
-            public void doHandle(Http11Request request, HttpResponse response) throws IOException {
+            public void doHandle(HttpEntityV2 request, HttpResponse response) throws IOException {
                 InputStream in = request.getInputStream();
                 byte[] buffer = new byte[1024];
                 int len = 0;
@@ -63,7 +62,7 @@ public class HttpBootstrap {
         AioQuickServer<HttpEntityV2> server = new AioQuickServer<HttpEntityV2>(port, new HttpRequestProtocol(), processor);
 //        server.setDirectBuffer(true);
         server.setWriteQueueSize(0);
-//        server.setReadBufferSize(10);
+        server.setReadBufferSize(1024);
 //        server.setThreadNum(8);
         server.setFilters(new Filter[]{new QuickMonitorTimer<HttpEntityV2>()});
         try {
@@ -73,7 +72,7 @@ public class HttpBootstrap {
         }
     }
 
-    static void https(HttpMessageProcessor processor) {
+    static void https(HttpV2MessageProcessor processor) {
         // 定义服务器接受的消息类型以及各类消息对应的处理器
         AioSSLQuickServer<? extends HttpEntityV2> server = new AioSSLQuickServer<HttpEntityV2>(8889, new HttpRequestProtocol(), processor);
         server

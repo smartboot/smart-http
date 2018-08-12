@@ -16,6 +16,7 @@ import org.smartboot.socket.transport.AioSession;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -24,6 +25,7 @@ import java.util.Map;
  */
 public class DefaultHttpResponse extends HttpEntityV2 implements HttpResponse {
 
+    private Map<String, String> headMap = new HashMap<>();
     /**
      * http响应码
      */
@@ -32,7 +34,7 @@ public class DefaultHttpResponse extends HttpEntityV2 implements HttpResponse {
     private HttpOutputStream outputStream;
 
 
-    public DefaultHttpResponse(AioSession<HttpEntityV2> session, Http11Request request, ResponseHandle responseHandle) {
+    public DefaultHttpResponse(AioSession<HttpEntityV2> session, HttpEntityV2 request, ResponseHandle responseHandle) {
 //        this(new HttpHeader());
         this.outputStream = new HttpOutputStream(session, this, request, responseHandle);
     }
@@ -51,17 +53,17 @@ public class DefaultHttpResponse extends HttpEntityV2 implements HttpResponse {
 
     @Override
     public void setHeader(String name, String value) {
-
+        headMap.put(name, value);
     }
 
     @Override
     public String getHeader(String name) {
-        return null;
+        return headMap.get(name);
     }
 
     @Override
     public Map<String, String> getHeaders() {
-        return null;
+        return headMap;
     }
 
     public void write(ByteBuffer buffer) throws IOException {

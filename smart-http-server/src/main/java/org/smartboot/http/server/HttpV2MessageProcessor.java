@@ -1,18 +1,23 @@
 package org.smartboot.http.server;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartboot.http.common.HttpEntityV2;
-import org.smartboot.http.common.HttpRequestProtocol;
-import org.smartboot.socket.Filter;
+import org.smartboot.http.common.enums.HttpStatus;
+import org.smartboot.http.common.exception.HttpException;
+import org.smartboot.http.common.utils.HttpHeaderConstant;
+import org.smartboot.http.server.handle.HttpHandle;
+import org.smartboot.http.server.handle.RouteHandle;
+import org.smartboot.http.server.handle.http11.RFC2612RequestHandle;
+import org.smartboot.http.server.handle.http11.ResponseHandle;
+import org.smartboot.http.server.http11.DefaultHttpResponse;
+import org.smartboot.http.server.http11.HttpResponse;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.StateMachineEnum;
-import org.smartboot.socket.extension.timer.QuickMonitorTimer;
-import org.smartboot.socket.transport.AioQuickServer;
 import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 /**
  * @author 三刀
@@ -28,37 +33,56 @@ public class HttpV2MessageProcessor implements MessageProcessor<HttpEntityV2> {
             "Date:Wed, 11 Apr 2018 12:35:01 GMT\r\n\r\n" +
             "Hello smart-socket http server!";
 
-    public static void main(String[] args) {
-        AioQuickServer<HttpEntityV2> server = new AioQuickServer<HttpEntityV2>(8888, new HttpRequestProtocol(), new HttpV2MessageProcessor());
-        server.setWriteQueueSize(0)
-                .setReadBufferSize(1280)
-//        .setDirectBuffer(true)
-        ;
+    /**
+     * Http消息处理器
+     */
+    private HttpHandle processHandle;
 
-        server.setFilters(new Filter[]{new QuickMonitorTimer<HttpEntityV2>()});
-        try {
-            server.start();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    private RouteHandle routeHandle;
+
+    private ResponseHandle responseHandle;
+
+    public HttpV2MessageProcessor(String baseDir) {
+        processHandle = new RFC2612RequestHandle();
+        routeHandle = new RouteHandle(baseDir);
+        processHandle.next(routeHandle);
+
+        responseHandle = new ResponseHandle();
     }
 
     @Override
-    public void process(AioSession<HttpEntityV2> session, HttpEntityV2 msg) {
+    public void process(AioSession<HttpEntityV2> session, HttpEntityV2 entry) {
         try {
-            LOGGER.info(msg.getContentType());
-//            msg.rest();
-            session.write(ByteBuffer.wrap(b.getBytes()));
+            processHttp11(session, entry);
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            msg.rest();
+        }
+        entry.rest();
+    }
+
+    private void processHttp11(final AioSession<HttpEntityV2> session, HttpEntityV2 request) throws IOException {
+        HttpResponse httpResponse = new DefaultHttpResponse(session, request, responseHandle);
+        try {
+            processHandle.doHandle(request, httpResponse);
+        } catch (HttpException e) {
+            httpResponse.setHttpStatus(HttpStatus.valueOf(e.getHttpCode()));
+            httpResponse.getOutputStream().write(e.getDesc().getBytes());
+        } catch (Exception e) {
+            e.printStackTrace();
+            httpResponse.setHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+            httpResponse.getOutputStream().write(e.fillInStackTrace().toString().getBytes());
+        }
+
+        httpResponse.getOutputStream().close();
+
+        if (!StringUtils.equalsIgnoreCase(HttpHeaderConstant.Values.KEEPALIVE, request.getHeader(HttpHeaderConstant.Names.CONNECTION)) || httpResponse.getHttpStatus() != HttpStatus.OK) {
+            session.close(false);
         }
     }
 
     @Override
     public void stateEvent(AioSession<HttpEntityV2> session, StateMachineEnum stateMachineEnum, Throwable throwable) {
-        if(throwable!=null){
+        if (throwable != null) {
             throwable.printStackTrace();
             System.exit(0);
             return;
@@ -71,5 +95,9 @@ public class HttpV2MessageProcessor implements MessageProcessor<HttpEntityV2> {
                 session.close();
                 break;
         }
+    }
+
+    public void route(String urlPattern, HttpHandle httpHandle) {
+        routeHandle.route(urlPattern, httpHandle);
     }
 }
