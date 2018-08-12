@@ -186,7 +186,7 @@ public class HttpEntityV2 implements HttpRequest {
         if (bufferRange != null) {
             val = get(bufferRange);
         }
-        headMap.put(headName, get(bufferRange));
+        headMap.put(headName, val);
         return val;
     }
 

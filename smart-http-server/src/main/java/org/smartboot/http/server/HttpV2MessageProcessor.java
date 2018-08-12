@@ -18,6 +18,7 @@ import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * @author 三刀
@@ -52,8 +53,11 @@ public class HttpV2MessageProcessor implements MessageProcessor<HttpEntityV2> {
 
     @Override
     public void process(AioSession<HttpEntityV2> session, HttpEntityV2 entry) {
+
         try {
+//            session.write(ByteBuffer.wrap(b.getBytes()));
             processHttp11(session, entry);
+//            session.write(ByteBuffer.wrap(b.getBytes()));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -75,17 +79,17 @@ public class HttpV2MessageProcessor implements MessageProcessor<HttpEntityV2> {
 
         httpResponse.getOutputStream().close();
 
-        if (!StringUtils.equalsIgnoreCase(HttpHeaderConstant.Values.KEEPALIVE, request.getHeader(HttpHeaderConstant.Names.CONNECTION)) || httpResponse.getHttpStatus() != HttpStatus.OK) {
-            session.close(false);
-        }
+//        if (!StringUtils.equalsIgnoreCase(HttpHeaderConstant.Values.KEEPALIVE, request.getHeader(HttpHeaderConstant.Names.CONNECTION)) || httpResponse.getHttpStatus() != HttpStatus.OK) {
+//            session.close(false);
+//        }
     }
 
     @Override
     public void stateEvent(AioSession<HttpEntityV2> session, StateMachineEnum stateMachineEnum, Throwable throwable) {
         if (throwable != null) {
             throwable.printStackTrace();
-            System.exit(0);
-            return;
+//            System.exit(0);
+//            return;
         }
         switch (stateMachineEnum) {
             case NEW_SESSION:

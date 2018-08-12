@@ -46,6 +46,7 @@ final class HttpOutputStream extends OutputStream {
 
     @Override
     public void write(int b) throws IOException {
+
         if (!cacheBuffer.hasRemaining()) {
             flush();
         }

@@ -61,7 +61,7 @@ public class HttpBootstrap {
         int port = NumberUtils.toInt(System.getProperty("port"), 8888);
         AioQuickServer<HttpEntityV2> server = new AioQuickServer<HttpEntityV2>(port, new HttpRequestProtocol(), processor);
 //        server.setDirectBuffer(true);
-        server.setWriteQueueSize(0);
+        server.setWriteQueueSize(128);
         server.setReadBufferSize(1024);
 //        server.setThreadNum(8);
         server.setFilters(new Filter[]{new QuickMonitorTimer<HttpEntityV2>()});
