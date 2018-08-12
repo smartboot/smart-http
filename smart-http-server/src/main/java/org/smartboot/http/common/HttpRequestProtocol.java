@@ -8,11 +8,11 @@
 
 package org.smartboot.http.common;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.smartboot.http.common.enums.MethodEnum;
 import org.smartboot.http.common.utils.Consts;
 import org.smartboot.http.common.utils.HttpHeaderConstant;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.smartboot.socket.Protocol;
 import org.smartboot.socket.extension.decoder.FixedLengthFrameDecoder;
 import org.smartboot.socket.transport.AioSession;

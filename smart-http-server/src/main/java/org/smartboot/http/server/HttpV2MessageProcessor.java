@@ -1,12 +1,10 @@
 package org.smartboot.http.server;
 
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartboot.http.common.HttpEntityV2;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.exception.HttpException;
-import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.http.server.handle.HttpHandle;
 import org.smartboot.http.server.handle.RouteHandle;
 import org.smartboot.http.server.handle.http11.RFC2612RequestHandle;
@@ -18,7 +16,6 @@ import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 /**
  * @author 三刀
