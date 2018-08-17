@@ -9,7 +9,7 @@
 package org.smartboot.http.server.handle.http11;
 
 import org.apache.commons.lang.StringUtils;
-import org.smartboot.http.common.HttpEntityV2;
+import org.smartboot.http.common.HttpEntity;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.http.server.handle.HttpHandle;
@@ -42,11 +42,12 @@ public class ResponseHandle extends HttpHandle {
     }
 
     @Override
-    public void doHandle(HttpEntityV2 request, HttpResponse response) throws IOException {
+    public void doHandle(HttpEntity request, HttpResponse response) throws IOException {
         if (response.getHttpStatus() == null) {
             response.setHttpStatus(HttpStatus.OK);
         }
-        if (response.getHeader(HttpHeaderConstant.Names.CONTENT_LENGTH) == null && response.getHeader(HttpHeaderConstant.Names.TRANSFER_ENCODING) == null
+        if (response.getHeader(HttpHeaderConstant.Names.CONTENT_LENGTH) == null
+                && response.getHeader(HttpHeaderConstant.Names.TRANSFER_ENCODING) == null
                 && response.getHttpStatus() == HttpStatus.OK) {
             response.setHeader(HttpHeaderConstant.Names.TRANSFER_ENCODING, HttpHeaderConstant.Values.CHUNKED);
         }

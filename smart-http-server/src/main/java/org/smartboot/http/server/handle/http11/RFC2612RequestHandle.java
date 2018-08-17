@@ -1,7 +1,7 @@
 package org.smartboot.http.server.handle.http11;
 
 import org.apache.commons.lang.StringUtils;
-import org.smartboot.http.common.HttpEntityV2;
+import org.smartboot.http.common.HttpEntity;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.enums.MethodEnum;
 import org.smartboot.http.common.exception.HttpException;
@@ -19,7 +19,7 @@ public class RFC2612RequestHandle extends HttpHandle {
     public static final int MAX_LENGTH = 255 * 1024;
 
     @Override
-    public void doHandle(HttpEntityV2 request, HttpResponse response) throws IOException {
+    public void doHandle(HttpEntity request, HttpResponse response) throws IOException {
         methodCheck(request);
         hostCheck(request);
         uriCheck(request);
@@ -38,7 +38,7 @@ public class RFC2612RequestHandle extends HttpHandle {
      *
      * @param request
      */
-    private void methodCheck(HttpEntityV2 request) {
+    private void methodCheck(HttpEntity request) {
         MethodEnum methodEnum = request.getMethodRange();//大小写敏感
         if (methodEnum == null) {
             throw new HttpException(HttpStatus.NOT_IMPLEMENTED);
@@ -57,7 +57,7 @@ public class RFC2612RequestHandle extends HttpHandle {
      *
      * @param request
      */
-    private void hostCheck(HttpEntityV2 request) {
+    private void hostCheck(HttpEntity request) {
         if (request.getHeader(HttpHeaderConstant.Names.HOST) == null) {
             throw new HttpException(HttpStatus.BAD_REQUEST);
         }
@@ -71,7 +71,7 @@ public class RFC2612RequestHandle extends HttpHandle {
      *
      * @param request
      */
-    private void uriCheck(HttpEntityV2 request) {
+    private void uriCheck(HttpEntity request) {
         if (StringUtils.length(request.getOriginalUri()) > MAX_LENGTH) {
             throw new HttpException(HttpStatus.URI_TOO_LONG);
         }

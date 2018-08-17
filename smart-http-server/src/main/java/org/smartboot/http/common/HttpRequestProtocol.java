@@ -23,19 +23,19 @@ import java.nio.ByteBuffer;
  * Http消息解析器,仅解析Header部分即可
  * Created by 三刀 on 2017/6/20.
  */
-public final class HttpRequestProtocol implements Protocol<HttpEntityV2> {
+public final class HttpRequestProtocol implements Protocol<HttpEntity> {
 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpRequestProtocol.class);
 
     @Override
-    public HttpEntityV2 decode(ByteBuffer buffer, AioSession<HttpEntityV2> session, boolean eof) {
+    public HttpEntity decode(ByteBuffer buffer, AioSession<HttpEntity> session, boolean eof) {
         if (!buffer.hasRemaining() || eof) {
             return null;
         }
         buffer.mark();
 
-        HttpEntityV2 entityV2 = session.getAttachment();
+        HttpEntity entityV2 = session.getAttachment();
         buffer.position(entityV2.getCurrentPosition());
 
 
@@ -156,7 +156,7 @@ public final class HttpRequestProtocol implements Protocol<HttpEntityV2> {
     }
 
     @Override
-    public ByteBuffer encode(HttpEntityV2 httpRequest, AioSession<HttpEntityV2> session) {
+    public ByteBuffer encode(HttpEntity httpRequest, AioSession<HttpEntity> session) {
         return null;
     }
 

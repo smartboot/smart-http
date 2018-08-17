@@ -8,7 +8,7 @@
 
 package org.smartboot.http.server.websocket;
 
-import org.smartboot.http.common.HttpEntityV2;
+import org.smartboot.http.common.HttpEntity;
 import org.smartboot.socket.Protocol;
 import org.smartboot.socket.transport.AioSession;
 import org.smartboot.socket.util.AttachKey;
@@ -20,7 +20,7 @@ import java.nio.ByteBuffer;
  * @author 三刀
  * @version V1.0 , 2018/2/11
  */
-public class WebsocketDecoder implements Protocol<HttpEntityV2> {
+public class WebsocketDecoder implements Protocol<HttpEntity> {
     private static final AttachKey<DataFraming> ENTITY = AttachKey.valueOf("entity");
 
     private void unmask(DataFraming framing, ByteBuffer payLoadBuffer) {
@@ -40,7 +40,7 @@ public class WebsocketDecoder implements Protocol<HttpEntityV2> {
     }
 
     @Override
-    public HttpEntityV2 decode(ByteBuffer buffer, AioSession<HttpEntityV2> session, boolean eof) {
+    public HttpEntity decode(ByteBuffer buffer, AioSession<HttpEntity> session, boolean eof) {
         Attachment attachment = session.getAttachment();
         if (attachment == null) {
             throw new RuntimeException("decodeUnit is null");
@@ -126,7 +126,7 @@ public class WebsocketDecoder implements Protocol<HttpEntityV2> {
     }
 
     @Override
-    public ByteBuffer encode(HttpEntityV2 msg, AioSession<HttpEntityV2> session) {
+    public ByteBuffer encode(HttpEntity msg, AioSession<HttpEntity> session) {
         return null;
     }
 }

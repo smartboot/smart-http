@@ -122,6 +122,7 @@
                 <configuration>
                     <source>1.7</source>
                     <target>1.7</target>
+                    <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
             <plugin>
@@ -170,8 +171,8 @@
                 <executions>
                     <execution>
                         <id>sign-artifacts</id>
-                        <!--<phase>verify</phase>-->
-                        <phase>deploy</phase>
+                        <phase>verify</phase>
+                        <!--<phase>deploy</phase>-->
                         <goals>
                             <goal>sign</goal>
                         </goals>
@@ -245,7 +246,7 @@
     </pluginRepositories>
     <modules>
         <module>smart-http-server</module>
-        <module>smart-http-client</module>
-        <module>smart-http-common</module>
+        <!--<module>smart-http-client</module>-->
+        <!--<module>smart-http-common</module>-->
     </modules>
 </project>

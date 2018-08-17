@@ -25,7 +25,7 @@ import java.util.Map;
  *
  * @author 三刀 2018/06/02
  */
-public class HttpEntityV2 implements HttpRequest {
+public class HttpEntity implements HttpRequest {
     protected final BufferRange methodRange = new BufferRange();
     protected final BufferRange uriRange = new BufferRange();
     protected final BufferRange protocolRange = new BufferRange();

@@ -1,25 +1,17 @@
-/*
- * Copyright (c) 2018, org.smartboot. All rights reserved.
- * project name: smart-socket
- * file name: HttpServerMessageProcessor.java
- * Date: 2018-01-23
- * Author: sandao
- */
-
 package org.smartboot.http.server;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.smartboot.http.common.HttpEntityV2;
+import org.smartboot.http.common.HttpEntity;
 import org.smartboot.http.common.enums.HttpStatus;
+import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.http.server.handle.HttpHandle;
 import org.smartboot.http.server.handle.RouteHandle;
 import org.smartboot.http.server.handle.http11.RFC2612RequestHandle;
 import org.smartboot.http.server.handle.http11.ResponseHandle;
 import org.smartboot.http.server.http11.DefaultHttpResponse;
-import org.smartboot.http.server.http11.Http11Request;
 import org.smartboot.http.server.http11.HttpResponse;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.StateMachineEnum;
@@ -28,12 +20,18 @@ import org.smartboot.socket.transport.AioSession;
 import java.io.IOException;
 
 /**
- * 服务器消息处理器,由服务器启动时构造
- *
  * @author 三刀
+ * @version V1.0 , 2018/6/10
  */
-public class HttpMessageProcessor implements MessageProcessor<HttpEntityV2> {
+public class HttpMessageProcessor implements MessageProcessor<HttpEntity> {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpMessageProcessor.class);
+    private static String b = "HTTP/1.1 200 OK\r\n" +
+            "Server:smart-socket\r\n" +
+            "Connection:keep-alive\r\n" +
+            "Host:localhost\r\n" +
+            "Content-Length:31\r\n" +
+            "Date:Wed, 11 Apr 2018 12:35:01 GMT\r\n\r\n" +
+            "Hello smart-socket http server!";
 
     /**
      * Http消息处理器
@@ -52,40 +50,54 @@ public class HttpMessageProcessor implements MessageProcessor<HttpEntityV2> {
         responseHandle = new ResponseHandle();
     }
 
-
     @Override
-    public void process(final AioSession<HttpEntityV2> session, final HttpEntityV2 entry) {
-        if (entry instanceof Http11Request) {
-            final Http11Request request = (Http11Request) entry;
-            try {
-                processHttp11(session, request);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+    public void process(AioSession<HttpEntity> session, HttpEntity entry) {
+
+        try {
+//            session.write(ByteBuffer.wrap(b.getBytes()));
+            processHttp11(session, entry);
+//            session.write(ByteBuffer.wrap(b.getBytes()));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        entry.rest();
     }
 
-    @Override
-    public void stateEvent(AioSession<HttpEntityV2> session, StateMachineEnum stateMachineEnum, Throwable throwable) {
-        if (throwable != null) {
-            throwable.printStackTrace();
-        }
-    }
-
-    private void processHttp11(final AioSession<HttpEntityV2> session, Http11Request request) throws IOException {
+    private void processHttp11(final AioSession<HttpEntity> session, HttpEntity request) throws IOException {
         HttpResponse httpResponse = new DefaultHttpResponse(session, request, responseHandle);
         try {
             processHandle.doHandle(request, httpResponse);
+        } catch (HttpException e) {
+            httpResponse.setHttpStatus(HttpStatus.valueOf(e.getHttpCode()));
+            httpResponse.getOutputStream().write(e.getDesc().getBytes());
         } catch (Exception e) {
-            LOGGER.debug("", e);
+            e.printStackTrace();
             httpResponse.setHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR);
             httpResponse.getOutputStream().write(e.fillInStackTrace().toString().getBytes());
         }
 
         httpResponse.getOutputStream().close();
 
+        //使用wrk压测时请注释一下代码
         if (!StringUtils.equalsIgnoreCase(HttpHeaderConstant.Values.KEEPALIVE, request.getHeader(HttpHeaderConstant.Names.CONNECTION)) || httpResponse.getHttpStatus() != HttpStatus.OK) {
             session.close(false);
+        }
+    }
+
+    @Override
+    public void stateEvent(AioSession<HttpEntity> session, StateMachineEnum stateMachineEnum, Throwable throwable) {
+        if (throwable != null) {
+            throwable.printStackTrace();
+//            System.exit(0);
+//            return;
+        }
+        switch (stateMachineEnum) {
+            case NEW_SESSION:
+                session.setAttachment(new HttpEntity());
+                break;
+            case PROCESS_EXCEPTION:
+                session.close();
+                break;
         }
     }
 

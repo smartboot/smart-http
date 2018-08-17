@@ -8,7 +8,7 @@
 
 package org.smartboot.http.server.http11;
 
-import org.smartboot.http.common.HttpEntityV2;
+import org.smartboot.http.common.HttpEntity;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.server.handle.http11.ResponseHandle;
 import org.smartboot.socket.transport.AioSession;
@@ -23,7 +23,7 @@ import java.util.Map;
  * @author 三刀
  * @version V1.0 , 2018/2/3
  */
-public class DefaultHttpResponse extends HttpEntityV2 implements HttpResponse {
+public class DefaultHttpResponse implements HttpResponse {
 
     private Map<String, String> headMap = new HashMap<>();
     /**
@@ -34,7 +34,7 @@ public class DefaultHttpResponse extends HttpEntityV2 implements HttpResponse {
     private HttpOutputStream outputStream;
 
 
-    public DefaultHttpResponse(AioSession<HttpEntityV2> session, HttpEntityV2 request, ResponseHandle responseHandle) {
+    public DefaultHttpResponse(AioSession<HttpEntity> session, HttpEntity request, ResponseHandle responseHandle) {
 //        this(new HttpHeader());
         this.outputStream = new HttpOutputStream(session, this, request, responseHandle);
     }
