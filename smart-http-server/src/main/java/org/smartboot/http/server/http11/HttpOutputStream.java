@@ -44,7 +44,7 @@ final class HttpOutputStream extends OutputStream {
     }
 
     @Override
-    public void write(int b) throws IOException {
+    public final void write(int b) throws IOException {
         if (!committed) {
             writeHead();
             committed = true;
@@ -58,7 +58,34 @@ final class HttpOutputStream extends OutputStream {
         }
     }
 
-    public void write(ByteBuffer buffer) throws IOException {
+    public final void write(byte b[], int off, int len) throws IOException {
+        if (b == null) {
+            throw new NullPointerException();
+        } else if ((off < 0) || (off > b.length) || (len < 0) ||
+                ((off + len) > b.length) || ((off + len) < 0)) {
+            throw new IndexOutOfBoundsException();
+        } else if (len == 0) {
+            return;
+        }
+        if (!committed) {
+            writeHead();
+            committed = true;
+        }
+        if (!cacheBuffer.hasRemaining()) {
+            flush();
+        }
+        do {
+            int min = len < cacheBuffer.remaining() ? len : cacheBuffer.remaining();
+            cacheBuffer.put(b, off, min);
+            off += min;
+            len -= min;
+            if (!cacheBuffer.hasRemaining()) {
+                flush();
+            }
+        } while (len > 0);
+    }
+
+    public final void write(ByteBuffer buffer) throws IOException {
         if (!committed) {
             writeHead();
             committed = true;
