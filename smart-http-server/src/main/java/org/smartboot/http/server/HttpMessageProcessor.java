@@ -79,9 +79,9 @@ public class HttpMessageProcessor implements MessageProcessor<HttpEntity> {
         httpResponse.getOutputStream().close();
 
         //使用wrk压测时请注释一下代码
-        if (!StringUtils.equalsIgnoreCase(HttpHeaderConstant.Values.KEEPALIVE, request.getHeader(HttpHeaderConstant.Names.CONNECTION)) || httpResponse.getHttpStatus() != HttpStatus.OK) {
-            session.close(false);
-        }
+//        if (!StringUtils.equalsIgnoreCase(HttpHeaderConstant.Values.KEEPALIVE, request.getHeader(HttpHeaderConstant.Names.CONNECTION)) || httpResponse.getHttpStatus() != HttpStatus.OK) {
+//            session.close(false);
+//        }
     }
 
     @Override
