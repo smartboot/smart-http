@@ -13,6 +13,7 @@ import org.apache.commons.lang.math.NumberUtils;
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.common.State;
 import org.smartboot.http.enums.MethodEnum;
+import org.smartboot.http.utils.EmptyInputStream;
 import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.socket.extension.decoder.FixedLengthFrameDecoder;
 
@@ -46,6 +47,7 @@ public class HttpEntity implements HttpRequest {
     private String contentType;
     private int contentLength;
     private String queryString;
+    private InputStream inputStream = null;
 
     private Map<String, String> headMap = new HashMap<>();
 
@@ -194,7 +196,7 @@ public class HttpEntity implements HttpRequest {
 
     @Override
     public InputStream getInputStream() {
-        return null;
+        return inputStream == null ? new EmptyInputStream() : inputStream;
     }
 
     public String getOriginalUri() {

@@ -10,7 +10,6 @@ package org.smartboot.http.server.http11;
 
 import org.smartboot.http.enums.HttpStatus;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.Map;
@@ -57,7 +56,7 @@ class NoneOutputHttpResponseWrap implements HttpResponse {
     }
 
     @Override
-    public void write(ByteBuffer buffer) throws IOException {
+    public void write(ByteBuffer buffer) {
         throw new UnsupportedOperationException();
     }
 }

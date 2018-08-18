@@ -20,7 +20,7 @@ public interface HttpRequest {
 
     String getProtocol();
 
-    public MethodEnum getMethodRange();
+    MethodEnum getMethodRange();
 
     String getOriginalUri();
 
