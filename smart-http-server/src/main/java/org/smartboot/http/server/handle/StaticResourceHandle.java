@@ -10,7 +10,7 @@ package org.smartboot.http.server.handle;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.smartboot.http.server.v1.decode.HttpEntity;
+import org.smartboot.http.HttpRequest;
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.server.http11.HttpResponse;
 
@@ -36,7 +36,7 @@ public class StaticResourceHandle extends HttpHandle {
     }
 
     @Override
-    public void doHandle(HttpEntity request, HttpResponse response) throws IOException {
+    public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
         File file = new File(baseDir + request.getRequestURI());
         if (!file.isFile()) {
             LOGGER.warn("file:{} not found!", request.getRequestURI());

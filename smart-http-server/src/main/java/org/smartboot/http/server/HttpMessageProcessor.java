@@ -2,7 +2,6 @@ package org.smartboot.http.server;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.smartboot.http.server.v1.decode.HttpEntity;
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.exception.HttpException;
 import org.smartboot.http.server.handle.HttpHandle;
@@ -11,6 +10,7 @@ import org.smartboot.http.server.handle.http11.RFC2612RequestHandle;
 import org.smartboot.http.server.handle.http11.ResponseHandle;
 import org.smartboot.http.server.http11.DefaultHttpResponse;
 import org.smartboot.http.server.http11.HttpResponse;
+import org.smartboot.http.server.v1.decode.HttpEntity;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.transport.AioSession;

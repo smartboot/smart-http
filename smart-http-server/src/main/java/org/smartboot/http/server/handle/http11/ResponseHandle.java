@@ -9,11 +9,11 @@
 package org.smartboot.http.server.handle.http11;
 
 import org.apache.commons.lang.StringUtils;
-import org.smartboot.http.server.v1.decode.HttpEntity;
+import org.smartboot.http.HttpRequest;
 import org.smartboot.http.enums.HttpStatus;
-import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.http.server.handle.HttpHandle;
 import org.smartboot.http.server.http11.HttpResponse;
+import org.smartboot.http.utils.HttpHeaderConstant;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -42,7 +42,7 @@ public class ResponseHandle extends HttpHandle {
     }
 
     @Override
-    public void doHandle(HttpEntity request, HttpResponse response) throws IOException {
+    public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
         if (response.getHttpStatus() == null) {
             response.setHttpStatus(HttpStatus.OK);
         }

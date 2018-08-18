@@ -8,7 +8,7 @@
 
 package org.smartboot.http.server.http11;
 
-import org.smartboot.http.server.v1.decode.HttpEntity;
+import org.smartboot.http.HttpRequest;
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.server.handle.http11.ResponseHandle;
 import org.smartboot.socket.transport.AioSession;
@@ -34,7 +34,7 @@ public class DefaultHttpResponse implements HttpResponse {
     private HttpOutputStream outputStream;
 
 
-    public DefaultHttpResponse(AioSession<HttpEntity> session, HttpEntity request, ResponseHandle responseHandle) {
+    public DefaultHttpResponse(AioSession<? extends HttpRequest> session, HttpRequest request, ResponseHandle responseHandle) {
 //        this(new HttpHeader());
         this.outputStream = new HttpOutputStream(session, this, request, responseHandle);
     }

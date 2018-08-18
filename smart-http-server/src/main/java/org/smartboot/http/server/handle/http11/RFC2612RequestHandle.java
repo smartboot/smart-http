@@ -1,13 +1,13 @@
 package org.smartboot.http.server.handle.http11;
 
 import org.apache.commons.lang.StringUtils;
-import org.smartboot.http.server.v1.decode.HttpEntity;
+import org.smartboot.http.HttpRequest;
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.enums.MethodEnum;
 import org.smartboot.http.exception.HttpException;
-import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.http.server.handle.HttpHandle;
 import org.smartboot.http.server.http11.HttpResponse;
+import org.smartboot.http.utils.HttpHeaderConstant;
 
 import java.io.IOException;
 
@@ -19,7 +19,7 @@ public class RFC2612RequestHandle extends HttpHandle {
     public static final int MAX_LENGTH = 255 * 1024;
 
     @Override
-    public void doHandle(HttpEntity request, HttpResponse response) throws IOException {
+    public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
         methodCheck(request);
         hostCheck(request);
         uriCheck(request);
@@ -38,7 +38,7 @@ public class RFC2612RequestHandle extends HttpHandle {
      *
      * @param request
      */
-    private void methodCheck(HttpEntity request) {
+    private void methodCheck(HttpRequest request) {
         MethodEnum methodEnum = request.getMethodRange();//大小写敏感
         if (methodEnum == null) {
             throw new HttpException(HttpStatus.NOT_IMPLEMENTED);
@@ -57,7 +57,7 @@ public class RFC2612RequestHandle extends HttpHandle {
      *
      * @param request
      */
-    private void hostCheck(HttpEntity request) {
+    private void hostCheck(HttpRequest request) {
         if (request.getHeader(HttpHeaderConstant.Names.HOST) == null) {
             throw new HttpException(HttpStatus.BAD_REQUEST);
         }
@@ -71,7 +71,7 @@ public class RFC2612RequestHandle extends HttpHandle {
      *
      * @param request
      */
-    private void uriCheck(HttpEntity request) {
+    private void uriCheck(HttpRequest request) {
         if (StringUtils.length(request.getOriginalUri()) > MAX_LENGTH) {
             throw new HttpException(HttpStatus.URI_TOO_LONG);
         }

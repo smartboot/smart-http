@@ -9,11 +9,12 @@
 package org.smartboot.http.server;
 
 import org.apache.commons.lang.math.NumberUtils;
+import org.smartboot.http.HttpRequest;
+import org.smartboot.http.server.handle.HttpHandle;
+import org.smartboot.http.server.http11.HttpResponse;
 import org.smartboot.http.server.v1.decode.HttpEntity;
 import org.smartboot.http.server.v1.decode.HttpRequestProtocol;
 import org.smartboot.http.utils.HttpHeaderConstant;
-import org.smartboot.http.server.handle.HttpHandle;
-import org.smartboot.http.server.http11.HttpResponse;
 import org.smartboot.socket.Filter;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.extension.ssl.ClientAuth;
@@ -33,7 +34,7 @@ public class HttpBootstrap {
             byte[] body = "welcome to smart-socket http server!".getBytes();
 
             @Override
-            public void doHandle(HttpEntity request, HttpResponse response) throws IOException {
+            public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
 
                 response.setHeader(HttpHeaderConstant.Names.CONTENT_LENGTH, body.length + "");
                 response.getOutputStream().write(body);
@@ -41,7 +42,7 @@ public class HttpBootstrap {
         });
         processor.route("/upload", new HttpHandle() {
             @Override
-            public void doHandle(HttpEntity request, HttpResponse response) throws IOException {
+            public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
                 InputStream in = request.getInputStream();
                 byte[] buffer = new byte[1024];
                 int len = 0;

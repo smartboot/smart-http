@@ -9,10 +9,10 @@
 package org.smartboot.http.server.http11;
 
 import org.apache.commons.lang.StringUtils;
-import org.smartboot.http.server.v1.decode.HttpEntity;
+import org.smartboot.http.HttpRequest;
+import org.smartboot.http.server.handle.http11.ResponseHandle;
 import org.smartboot.http.utils.Consts;
 import org.smartboot.http.utils.HttpHeaderConstant;
-import org.smartboot.http.server.handle.http11.ResponseHandle;
 import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
@@ -32,11 +32,11 @@ final class HttpOutputStream extends OutputStream {
     private ByteBuffer cacheBuffer = ByteBuffer.allocate(512);
     private boolean committed = false, closed = false;
     private boolean chunked = false;
-    private HttpEntity request;
+    private HttpRequest request;
     private byte[] endChunked = new byte[]{'0', Consts.CR, Consts.LF, Consts.CR, Consts.LF};
     private ResponseHandle responseHandle;
 
-    public HttpOutputStream(AioSession aioSession, DefaultHttpResponse response, HttpEntity request, ResponseHandle responseHandle) {
+    public HttpOutputStream(AioSession aioSession, DefaultHttpResponse response, HttpRequest request, ResponseHandle responseHandle) {
         this.aioSession = aioSession;
         this.response = response;
         this.request = request;

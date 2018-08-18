@@ -8,7 +8,7 @@
 
 package org.smartboot.http.server.handle;
 
-import org.smartboot.http.server.v1.decode.HttpEntity;
+import org.smartboot.http.HttpRequest;
 import org.smartboot.http.server.http11.HttpResponse;
 
 import java.io.IOException;
@@ -21,9 +21,9 @@ public abstract class HttpHandle {
 
     private HttpHandle nextHandle;
 
-    public abstract void doHandle(HttpEntity request, HttpResponse response) throws IOException;
+    public abstract void doHandle(HttpRequest request, HttpResponse response) throws IOException;
 
-    protected final void doNext(HttpEntity request, HttpResponse response) throws IOException {
+    protected final void doNext(HttpRequest request, HttpResponse response) throws IOException {
         if (nextHandle != null) {
             nextHandle.doHandle(request, response);
         }
