@@ -1,4 +1,4 @@
-package org.smartboot.http.common;
+package org.smartboot.http.server.v1.decode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,7 +7,7 @@ import java.util.List;
  * @author 三刀
  * @version V1.0 , 2018/6/10
  */
-public class BufferRanges {
+class BufferRanges {
 
     public List<BufferRange> headers = new ArrayList<>();
 

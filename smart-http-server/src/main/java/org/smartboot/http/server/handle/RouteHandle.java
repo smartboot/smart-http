@@ -1,6 +1,6 @@
 package org.smartboot.http.server.handle;
 
-import org.smartboot.http.common.HttpEntity;
+import org.smartboot.http.server.v1.decode.HttpEntity;
 import org.smartboot.http.server.http11.HttpResponse;
 
 import java.io.IOException;

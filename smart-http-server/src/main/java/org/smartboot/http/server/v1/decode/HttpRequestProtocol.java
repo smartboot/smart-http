@@ -6,11 +6,12 @@
  * Author: sandao
  */
 
-package org.smartboot.http.common;
+package org.smartboot.http.server.v1.decode;
 
-import org.smartboot.http.common.enums.MethodEnum;
-import org.smartboot.http.common.utils.Consts;
-import org.smartboot.http.common.utils.HttpHeaderConstant;
+import org.smartboot.http.common.State;
+import org.smartboot.http.enums.MethodEnum;
+import org.smartboot.http.utils.Consts;
+import org.smartboot.http.utils.HttpHeaderConstant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartboot.socket.Protocol;

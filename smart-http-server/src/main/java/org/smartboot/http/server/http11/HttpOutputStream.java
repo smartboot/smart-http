@@ -9,9 +9,9 @@
 package org.smartboot.http.server.http11;
 
 import org.apache.commons.lang.StringUtils;
-import org.smartboot.http.common.HttpEntity;
-import org.smartboot.http.common.utils.Consts;
-import org.smartboot.http.common.utils.HttpHeaderConstant;
+import org.smartboot.http.server.v1.decode.HttpEntity;
+import org.smartboot.http.utils.Consts;
+import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.http.server.handle.http11.ResponseHandle;
 import org.smartboot.socket.transport.AioSession;
 

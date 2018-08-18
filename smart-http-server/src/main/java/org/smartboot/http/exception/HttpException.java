@@ -1,6 +1,6 @@
-package org.smartboot.http.common.exception;
+package org.smartboot.http.exception;
 
-import org.smartboot.http.common.enums.HttpStatus;
+import org.smartboot.http.enums.HttpStatus;
 
 /**
  * @author 三刀

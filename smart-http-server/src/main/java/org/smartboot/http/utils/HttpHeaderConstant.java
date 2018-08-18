@@ -6,7 +6,7 @@
  * Author: sandao
  */
 
-package org.smartboot.http.common.utils;
+package org.smartboot.http.utils;
 
 /**
  * @author 三刀

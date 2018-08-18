@@ -6,12 +6,14 @@
  * Author: sandao
  */
 
-package org.smartboot.http.common;
+package org.smartboot.http.server.v1.decode;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
-import org.smartboot.http.common.enums.MethodEnum;
-import org.smartboot.http.common.utils.HttpHeaderConstant;
+import org.smartboot.http.HttpRequest;
+import org.smartboot.http.common.State;
+import org.smartboot.http.enums.MethodEnum;
+import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.socket.extension.decoder.FixedLengthFrameDecoder;
 
 import java.io.InputStream;

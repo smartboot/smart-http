@@ -8,7 +8,7 @@
 
 package org.smartboot.http.server.websocket;
 
-import org.smartboot.http.common.HttpEntity;
+import org.smartboot.http.server.v1.decode.HttpEntity;
 
 import java.nio.ByteBuffer;
 

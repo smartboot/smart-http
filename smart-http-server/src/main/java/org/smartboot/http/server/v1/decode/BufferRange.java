@@ -1,10 +1,10 @@
-package org.smartboot.http.common;
+package org.smartboot.http.server.v1.decode;
 
 /**
  * @author 三刀
  * @version V1.0 , 2018/6/9
  */
-public class BufferRange {
+class BufferRange {
     public int start = -1;
     public int length;
     public boolean isOk = false;

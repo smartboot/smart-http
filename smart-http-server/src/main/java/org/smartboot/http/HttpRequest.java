@@ -1,4 +1,4 @@
-package org.smartboot.http.common;
+package org.smartboot.http;
 
 import java.io.InputStream;
 

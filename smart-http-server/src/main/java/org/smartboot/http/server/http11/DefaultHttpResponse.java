@@ -8,8 +8,8 @@
 
 package org.smartboot.http.server.http11;
 
-import org.smartboot.http.common.HttpEntity;
-import org.smartboot.http.common.enums.HttpStatus;
+import org.smartboot.http.server.v1.decode.HttpEntity;
+import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.server.handle.http11.ResponseHandle;
 import org.smartboot.socket.transport.AioSession;
 

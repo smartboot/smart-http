@@ -6,7 +6,7 @@
  * Author: sandao
  */
 
-package org.smartboot.http.common.enums;
+package org.smartboot.http.enums;
 
 import org.apache.commons.lang.StringUtils;
 

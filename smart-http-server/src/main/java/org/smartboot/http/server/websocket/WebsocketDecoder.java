@@ -8,7 +8,7 @@
 
 package org.smartboot.http.server.websocket;
 
-import org.smartboot.http.common.HttpEntity;
+import org.smartboot.http.server.v1.decode.HttpEntity;
 import org.smartboot.socket.Protocol;
 import org.smartboot.socket.transport.AioSession;
 import org.smartboot.socket.util.AttachKey;
