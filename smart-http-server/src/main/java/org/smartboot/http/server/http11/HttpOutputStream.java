@@ -59,14 +59,6 @@ final class HttpOutputStream extends OutputStream {
     }
 
     public final void write(byte b[], int off, int len) throws IOException {
-        if (b == null) {
-            throw new NullPointerException();
-        } else if ((off < 0) || (off > b.length) || (len < 0) ||
-                ((off + len) > b.length) || ((off + len) < 0)) {
-            throw new IndexOutOfBoundsException();
-        } else if (len == 0) {
-            return;
-        }
         if (!committed) {
             writeHead();
             committed = true;
@@ -184,8 +176,8 @@ final class HttpOutputStream extends OutputStream {
     }
 
     private byte[] getBytes(String str) {
-//        return str.getBytes(Consts.DEFAULT_CHARSET);
-        return str.getBytes();
+        return str.getBytes(Consts.DEFAULT_CHARSET);
+//        return str.getBytes();
     }
 
 }
