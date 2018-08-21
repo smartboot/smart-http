@@ -1,7 +1,7 @@
 package org.smartboot.http.server.handle;
 
 import org.smartboot.http.HttpRequest;
-import org.smartboot.http.server.http11.HttpResponse;
+import org.smartboot.http.HttpResponse;
 
 import java.io.IOException;
 import java.util.HashMap;

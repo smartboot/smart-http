@@ -26,6 +26,7 @@ import java.util.Map;
  */
 final class HttpOutputStream extends OutputStream {
 
+    private static final byte[] endChunked = new byte[]{'0', Consts.CR, Consts.LF, Consts.CR, Consts.LF};
     boolean chunkedEnd = false;
     private AioSession aioSession;
     private DefaultHttpResponse response;
@@ -33,7 +34,6 @@ final class HttpOutputStream extends OutputStream {
     private boolean committed = false, closed = false;
     private boolean chunked = false;
     private HttpRequest request;
-    private byte[] endChunked = new byte[]{'0', Consts.CR, Consts.LF, Consts.CR, Consts.LF};
     private ResponseHandle responseHandle;
 
     public HttpOutputStream(AioSession aioSession, DefaultHttpResponse response, HttpRequest request, ResponseHandle responseHandle) {
@@ -161,12 +161,11 @@ final class HttpOutputStream extends OutputStream {
                 if (chunkedEnd) {
                     buffer.put(endChunked);
                 }
-
+                buffer.flip();
             } else {
-                buffer = ByteBuffer.allocate(cacheBuffer.remaining());
-                buffer.put(cacheBuffer);
+                buffer = cacheBuffer;
+                cacheBuffer = ByteBuffer.allocate(cacheBuffer.capacity());
             }
-            buffer.flip();
             aioSession.write(buffer);
         } else if (chunked && chunkedEnd) {
             aioSession.write(ByteBuffer.wrap(endChunked));

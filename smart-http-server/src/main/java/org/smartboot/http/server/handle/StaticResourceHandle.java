@@ -11,8 +11,8 @@ package org.smartboot.http.server.handle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartboot.http.HttpRequest;
+import org.smartboot.http.HttpResponse;
 import org.smartboot.http.enums.HttpStatus;
-import org.smartboot.http.server.http11.HttpResponse;
 
 import java.io.File;
 import java.io.FileInputStream;

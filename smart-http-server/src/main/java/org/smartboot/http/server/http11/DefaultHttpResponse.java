@@ -9,6 +9,7 @@
 package org.smartboot.http.server.http11;
 
 import org.smartboot.http.HttpRequest;
+import org.smartboot.http.HttpResponse;
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.server.handle.http11.ResponseHandle;
 import org.smartboot.socket.transport.AioSession;

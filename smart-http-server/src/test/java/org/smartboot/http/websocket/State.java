@@ -6,7 +6,7 @@
  * Author: sandao
  */
 
-package org.smartboot.http.server.websocket;
+package org.smartboot.http.websocket;
 
 enum State {
     READING_FIRST,

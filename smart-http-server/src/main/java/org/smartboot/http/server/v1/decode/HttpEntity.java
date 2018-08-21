@@ -11,8 +11,8 @@ package org.smartboot.http.server.v1.decode;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.smartboot.http.HttpRequest;
-import org.smartboot.http.common.State;
 import org.smartboot.http.enums.MethodEnum;
+import org.smartboot.http.enums.State;
 import org.smartboot.http.utils.EmptyInputStream;
 import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.socket.extension.decoder.FixedLengthFrameDecoder;
@@ -52,6 +52,25 @@ public class HttpEntity implements HttpRequest {
     private Map<String, String> headMap = new HashMap<>();
 
 
+    public void rest() {
+        methodRange.reset();
+        uriRange.reset();
+        protocolRange.reset();
+        headerRanges.reset();
+        buffer = null;
+        initPosition = 0;
+        setCurrentPosition(0);
+        state = State.method;
+        bodyForm = null;
+        originalUri = null;
+        requestUri = null;
+        protocol = null;
+        contentType = null;
+        contentLength = 0;
+        inputStream = null;
+        headMap.clear();
+    }
+
     public void decodeHead() {
         getMethodRange();
         originalUri = get(uriRange);
@@ -65,16 +84,6 @@ public class HttpEntity implements HttpRequest {
         }
     }
 
-    public void rest() {
-        methodRange.reset();
-        uriRange.reset();
-        protocolRange.reset();
-        headerRanges.reset();
-        buffer = null;
-        initPosition = 0;
-        setCurrentPosition(0);
-        state = State.method;
-    }
 
     public int getCurrentPosition() {
         return currentPosition;

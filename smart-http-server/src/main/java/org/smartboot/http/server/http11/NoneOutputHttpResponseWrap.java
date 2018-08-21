@@ -8,6 +8,7 @@
 
 package org.smartboot.http.server.http11;
 
+import org.smartboot.http.HttpResponse;
 import org.smartboot.http.enums.HttpStatus;
 
 import java.io.OutputStream;

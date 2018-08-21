@@ -6,7 +6,7 @@
  * Author: sandao
  */
 
-package org.smartboot.http.enums;
+package org.smartboot.http.websocket;
 
 /**
  * @author 三刀

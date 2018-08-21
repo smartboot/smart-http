@@ -6,12 +6,10 @@
  * Author: sandao
  */
 
-package org.smartboot.http.server;
+package org.smartboot.http;
 
 import org.apache.commons.lang.math.NumberUtils;
-import org.smartboot.http.HttpRequest;
 import org.smartboot.http.server.handle.HttpHandle;
-import org.smartboot.http.server.http11.HttpResponse;
 import org.smartboot.http.server.v1.HttpMessageProcessor;
 import org.smartboot.http.server.v1.decode.HttpEntity;
 import org.smartboot.http.server.v1.decode.HttpRequestProtocol;

@@ -6,7 +6,7 @@
  * Author: sandao
  */
 
-package org.smartboot.http.server.websocket;
+package org.smartboot.http.websocket;
 
 import org.smartboot.http.server.v1.decode.HttpEntity;
 

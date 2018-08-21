@@ -6,7 +6,7 @@
  * Author: sandao
  */
 
-package org.smartboot.http.server.http11;
+package org.smartboot.http;
 
 import org.smartboot.http.enums.HttpStatus;
 
@@ -22,17 +22,17 @@ import java.util.Map;
 public interface HttpResponse {
 
 
-    public OutputStream getOutputStream();
+    OutputStream getOutputStream();
 
-    public HttpStatus getHttpStatus();
+    HttpStatus getHttpStatus();
 
-    public void setHttpStatus(HttpStatus httpStatus);
+    void setHttpStatus(HttpStatus httpStatus);
 
-    public void setHeader(String name, String value);
+    void setHeader(String name, String value);
 
-    public String getHeader(String name);
+    String getHeader(String name);
 
     Map<String, String> getHeaders();
 
-    public void write(ByteBuffer buffer) throws IOException;
+    void write(ByteBuffer buffer) throws IOException;
 }
