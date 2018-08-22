@@ -23,13 +23,13 @@ import java.io.IOException;
  */
 public class HttpMessageProcessor implements MessageProcessor<HttpEntity> {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpMessageProcessor.class);
-    private static String b = "HTTP/1.1 200 OK\r\n" +
+    private static byte[] b = ("HTTP/1.1 200 OK\r\n" +
             "Server:smart-socket\r\n" +
             "Connection:keep-alive\r\n" +
             "Host:localhost\r\n" +
             "Content-Length:31\r\n" +
             "Date:Wed, 11 Apr 2018 12:35:01 GMT\r\n\r\n" +
-            "Hello smart-socket http server!";
+            "Hello smart-socket http server!").getBytes();
 
     /**
      * Http消息处理器
@@ -49,37 +49,31 @@ public class HttpMessageProcessor implements MessageProcessor<HttpEntity> {
     }
 
     @Override
-    public void process(AioSession<HttpEntity> session, HttpEntity entry) {
+    public void process(AioSession<HttpEntity> session, HttpEntity request) {
 
         try {
-//            session.write(ByteBuffer.wrap(b.getBytes()));
-            processHttp11(session, entry);
-//            session.write(ByteBuffer.wrap(b.getBytes()));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        entry.rest();
-    }
+            HttpResponse httpResponse = new DefaultHttpResponse(session, request, responseHandle);
+            try {
+                processHandle.doHandle(request, httpResponse);
+            } catch (HttpException e) {
+                httpResponse.setHttpStatus(HttpStatus.valueOf(e.getHttpCode()));
+                httpResponse.getOutputStream().write(e.getDesc().getBytes());
+            } catch (Exception e) {
+                e.printStackTrace();
+                httpResponse.setHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+                httpResponse.getOutputStream().write(e.fillInStackTrace().toString().getBytes());
+            }
 
-    private void processHttp11(final AioSession<HttpEntity> session, HttpEntity request) throws IOException {
-        HttpResponse httpResponse = new DefaultHttpResponse(session, request, responseHandle);
-        try {
-            processHandle.doHandle(request, httpResponse);
-        } catch (HttpException e) {
-            httpResponse.setHttpStatus(HttpStatus.valueOf(e.getHttpCode()));
-            httpResponse.getOutputStream().write(e.getDesc().getBytes());
-        } catch (Exception e) {
-            e.printStackTrace();
-            httpResponse.setHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR);
-            httpResponse.getOutputStream().write(e.fillInStackTrace().toString().getBytes());
-        }
+            httpResponse.getOutputStream().close();
 
-        httpResponse.getOutputStream().close();
-
-        //使用wrk压测时请注释一下代码
+            //使用wrk压测时请注释一下代码
 //        if (!StringUtils.equalsIgnoreCase(HttpHeaderConstant.Values.KEEPALIVE, request.getHeader(HttpHeaderConstant.Names.CONNECTION)) || httpResponse.getHttpStatus() != HttpStatus.OK) {
 //            session.close(false);
 //        }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        request.rest();
     }
 
     @Override
