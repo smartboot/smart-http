@@ -84,11 +84,6 @@ public class HttpMessageProcessor implements MessageProcessor<HttpEntity> {
 
     @Override
     public void stateEvent(AioSession<HttpEntity> session, StateMachineEnum stateMachineEnum, Throwable throwable) {
-        if (throwable != null) {
-            throwable.printStackTrace();
-//            System.exit(0);
-//            return;
-        }
         switch (stateMachineEnum) {
             case NEW_SESSION:
                 session.setAttachment(new HttpEntity());

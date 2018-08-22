@@ -110,7 +110,6 @@ final class HttpOutputStream extends OutputStream {
                 .put(getBytes(response.getHttpStatus().getReasonPhrase()))
                 .put(Consts.CRLF);
 
-
         for (Map.Entry<String, String> entry : response.getHeaders().entrySet()) {
             byte[] headKey = getBytes(entry.getKey());
             byte[] headVal = getBytes(entry.getValue());
