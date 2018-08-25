@@ -27,10 +27,11 @@ import java.util.Map;
 final class HttpOutputStream extends OutputStream {
 
     private static final byte[] endChunked = new byte[]{'0', Consts.CR, Consts.LF, Consts.CR, Consts.LF};
+    public static final int DEFAULT_CACHE_SIZE=512;
     boolean chunkedEnd = false;
     private AioSession aioSession;
     private DefaultHttpResponse response;
-    private ByteBuffer cacheBuffer = ByteBuffer.allocate(512);
+    private ByteBuffer cacheBuffer = ByteBuffer.allocate(DEFAULT_CACHE_SIZE);
     private boolean committed = false, closed = false;
     private boolean chunked = false;
     private HttpRequest request;
@@ -118,7 +119,7 @@ final class HttpOutputStream extends OutputStream {
             if (cacheBuffer.remaining() < needLength) {
                 cacheBuffer.flip();
                 aioSession.write(cacheBuffer);
-                cacheBuffer = ByteBuffer.allocate(512);
+                cacheBuffer = ByteBuffer.allocate(DEFAULT_CACHE_SIZE);
             }
             cacheBuffer.put(headKey)
                     .put(Consts.COLON)
@@ -130,9 +131,14 @@ final class HttpOutputStream extends OutputStream {
         } else {
             cacheBuffer.flip();
             aioSession.write(cacheBuffer);
-            cacheBuffer = ByteBuffer.allocate(512);
+            cacheBuffer = ByteBuffer.allocate(DEFAULT_CACHE_SIZE);
             cacheBuffer.put(Consts.CRLF);
 //            aioSession.write(ByteBuffer.wrap(new byte[]{Consts.CR, Consts.LF}));
+        }
+        if (chunked) {
+            cacheBuffer.flip();
+            aioSession.write(cacheBuffer);
+            cacheBuffer = ByteBuffer.allocate(DEFAULT_CACHE_SIZE);
         }
     }
 
