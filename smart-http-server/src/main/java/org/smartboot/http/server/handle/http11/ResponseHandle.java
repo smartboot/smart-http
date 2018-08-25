@@ -26,14 +26,11 @@ import java.util.TimeZone;
  * @version V1.0 , 2018/2/8
  */
 public class ResponseHandle extends HttpHandle {
-    private ThreadLocal<SimpleDateFormat> simpleDateFormatThreadLocal = new ThreadLocal<SimpleDateFormat>() {
-        @Override
-        protected SimpleDateFormat initialValue() {
-            SimpleDateFormat sdf = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
-            sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
-            return sdf;
-        }
-    };
+    private SimpleDateFormat sdf = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
+
+    public ResponseHandle() {
+        sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+    }
 
     public static void main(String[] args) {
         SimpleDateFormat sdf = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
@@ -66,7 +63,7 @@ public class ResponseHandle extends HttpHandle {
          * RFC2616 3.3.1
          * 只能用 RFC 1123 里定义的日期格式来填充头域 (header field)的值里用到 HTTP-date 的地方
          */
-        response.setHeader(HttpHeaderConstant.Names.DATE, simpleDateFormatThreadLocal.get().format(new Date()));
+        response.setHeader(HttpHeaderConstant.Names.DATE, sdf.format(new Date()));
 
         doNext(request, response);
     }
