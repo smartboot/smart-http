@@ -37,10 +37,13 @@ final class HttpOutputStream extends OutputStream {
     private HttpRequest request;
     private ResponseHandle responseHandle;
 
-    void init(AioSession aioSession, DefaultHttpResponse response, HttpRequest request, ResponseHandle responseHandle) {
+    public HttpOutputStream(ResponseHandle responseHandle) {
+        this.responseHandle = responseHandle;
+    }
+
+    void init(AioSession aioSession, DefaultHttpResponse response, HttpRequest request) {
         this.aioSession = aioSession;
         this.request = request;
-        this.responseHandle = responseHandle;
         this.response.setResponse(response);
         cacheBuffer.clear();
         chunkedEnd = committed = closed = chunked = false;

@@ -22,12 +22,6 @@ import java.io.IOException;
  */
 public class HttpMessageProcessor implements MessageProcessor<HttpEntity> {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpMessageProcessor.class);
-    private static final ThreadLocal<DefaultHttpResponse> RESPONSE_THREAD_LOCAL = new ThreadLocal<DefaultHttpResponse>() {
-        @Override
-        protected DefaultHttpResponse initialValue() {
-            return new DefaultHttpResponse();
-        }
-    };
     private static byte[] b = ("HTTP/1.1 200 OK\r\n" +
             "Server:smart-socket\r\n" +
             "Connection:keep-alive\r\n" +
@@ -35,7 +29,7 @@ public class HttpMessageProcessor implements MessageProcessor<HttpEntity> {
             "Content-Length:31\r\n" +
             "Date:Wed, 11 Apr 2018 12:35:01 GMT\r\n\r\n" +
             "Hello smart-socket http server!").getBytes();
-
+    private ThreadLocal<DefaultHttpResponse> RESPONSE_THREAD_LOCAL = null;
     /**
      * Http消息处理器
      */
@@ -51,6 +45,12 @@ public class HttpMessageProcessor implements MessageProcessor<HttpEntity> {
         processHandle.next(routeHandle);
 
         responseHandle = new ResponseHandle();
+        RESPONSE_THREAD_LOCAL = new ThreadLocal<DefaultHttpResponse>() {
+            @Override
+            protected DefaultHttpResponse initialValue() {
+                return new DefaultHttpResponse(responseHandle);
+            }
+        };
     }
 
     @Override
@@ -58,7 +58,7 @@ public class HttpMessageProcessor implements MessageProcessor<HttpEntity> {
 
         try {
             DefaultHttpResponse httpResponse = RESPONSE_THREAD_LOCAL.get();
-            httpResponse.init(session, request, responseHandle);
+            httpResponse.init(session, request);
             try {
                 processHandle.doHandle(request, httpResponse);
             } catch (HttpException e) {
