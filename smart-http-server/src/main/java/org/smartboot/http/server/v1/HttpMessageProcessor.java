@@ -2,7 +2,6 @@ package org.smartboot.http.server.v1;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.smartboot.http.HttpResponse;
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.exception.HttpException;
 import org.smartboot.http.server.handle.HttpHandle;
@@ -23,6 +22,12 @@ import java.io.IOException;
  */
 public class HttpMessageProcessor implements MessageProcessor<HttpEntity> {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpMessageProcessor.class);
+    private static final ThreadLocal<DefaultHttpResponse> RESPONSE_THREAD_LOCAL = new ThreadLocal<DefaultHttpResponse>() {
+        @Override
+        protected DefaultHttpResponse initialValue() {
+            return new DefaultHttpResponse();
+        }
+    };
     private static byte[] b = ("HTTP/1.1 200 OK\r\n" +
             "Server:smart-socket\r\n" +
             "Connection:keep-alive\r\n" +
@@ -52,7 +57,8 @@ public class HttpMessageProcessor implements MessageProcessor<HttpEntity> {
     public void process(AioSession<HttpEntity> session, HttpEntity request) {
 
         try {
-            HttpResponse httpResponse = new DefaultHttpResponse(session, request, responseHandle);
+            DefaultHttpResponse httpResponse = RESPONSE_THREAD_LOCAL.get();
+            httpResponse.init(session, request, responseHandle);
             try {
                 processHandle.doHandle(request, httpResponse);
             } catch (HttpException e) {

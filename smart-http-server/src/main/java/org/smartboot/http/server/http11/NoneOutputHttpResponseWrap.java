@@ -22,7 +22,7 @@ import java.util.Map;
 class NoneOutputHttpResponseWrap implements HttpResponse {
     private HttpResponse response;
 
-    public NoneOutputHttpResponseWrap(HttpResponse response) {
+    public void setResponse(HttpResponse response) {
         this.response = response;
     }
 

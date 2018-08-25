@@ -26,22 +26,24 @@ import java.util.Map;
  */
 final class HttpOutputStream extends OutputStream {
 
+    public static final int DEFAULT_CACHE_SIZE = 512;
     private static final byte[] endChunked = new byte[]{'0', Consts.CR, Consts.LF, Consts.CR, Consts.LF};
-    public static final int DEFAULT_CACHE_SIZE=512;
     boolean chunkedEnd = false;
+    private NoneOutputHttpResponseWrap response = new NoneOutputHttpResponseWrap();
     private AioSession aioSession;
-    private DefaultHttpResponse response;
     private ByteBuffer cacheBuffer = ByteBuffer.allocate(DEFAULT_CACHE_SIZE);
     private boolean committed = false, closed = false;
     private boolean chunked = false;
     private HttpRequest request;
     private ResponseHandle responseHandle;
 
-    public HttpOutputStream(AioSession aioSession, DefaultHttpResponse response, HttpRequest request, ResponseHandle responseHandle) {
+    void init(AioSession aioSession, DefaultHttpResponse response, HttpRequest request, ResponseHandle responseHandle) {
         this.aioSession = aioSession;
-        this.response = response;
         this.request = request;
         this.responseHandle = responseHandle;
+        this.response.setResponse(response);
+        cacheBuffer.clear();
+        chunkedEnd = committed = closed = chunked = false;
     }
 
     @Override
@@ -101,7 +103,7 @@ final class HttpOutputStream extends OutputStream {
     }
 
     private void writeHead() throws IOException {
-        responseHandle.doHandle(request, new NoneOutputHttpResponseWrap(response));//防止在handle中调用outputStream操作
+        responseHandle.doHandle(request, response);//防止在handle中调用outputStream操作
         chunked = StringUtils.equals(HttpHeaderConstant.Values.CHUNKED, response.getHeader(HttpHeaderConstant.Names.TRANSFER_ENCODING));
 
         cacheBuffer.put(getBytes(request.getProtocol()))

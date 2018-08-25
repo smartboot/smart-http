@@ -32,12 +32,12 @@ public class DefaultHttpResponse implements HttpResponse {
      */
     private HttpStatus httpStatus;
 
-    private HttpOutputStream outputStream;
+    private HttpOutputStream outputStream = new HttpOutputStream();
 
-
-    public DefaultHttpResponse(AioSession<? extends HttpRequest> session, HttpRequest request, ResponseHandle responseHandle) {
-//        this(new HttpHeader());
-        this.outputStream = new HttpOutputStream(session, this, request, responseHandle);
+    public void init(AioSession<? extends HttpRequest> session, HttpRequest request, ResponseHandle responseHandle) {
+        this.outputStream.init(session, this, request, responseHandle);
+        headMap.clear();
+        httpStatus = null;
     }
 
     public OutputStream getOutputStream() {
