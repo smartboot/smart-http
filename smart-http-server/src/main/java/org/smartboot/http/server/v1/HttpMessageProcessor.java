@@ -1,5 +1,6 @@
 package org.smartboot.http.server.v1;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartboot.http.enums.HttpStatus;
@@ -10,6 +11,7 @@ import org.smartboot.http.server.handle.http11.RFC2612RequestHandle;
 import org.smartboot.http.server.handle.http11.ResponseHandle;
 import org.smartboot.http.server.http11.DefaultHttpResponse;
 import org.smartboot.http.server.v1.decode.HttpEntity;
+import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.transport.AioSession;
@@ -73,9 +75,9 @@ public class HttpMessageProcessor implements MessageProcessor<HttpEntity> {
             httpResponse.getOutputStream().close();
 
             //使用wrk压测时请注释一下代码
-//        if (!StringUtils.equalsIgnoreCase(HttpHeaderConstant.Values.KEEPALIVE, request.getHeader(HttpHeaderConstant.Names.CONNECTION)) || httpResponse.getHttpStatus() != HttpStatus.OK) {
-//            session.close(false);
-//        }
+        if (!StringUtils.equalsIgnoreCase(HttpHeaderConstant.Values.KEEPALIVE, request.getHeader(HttpHeaderConstant.Names.CONNECTION)) || httpResponse.getHttpStatus() != HttpStatus.OK) {
+            session.close(false);
+        }
         } catch (IOException e) {
             e.printStackTrace();
         }

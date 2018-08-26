@@ -194,10 +194,11 @@ public class HttpEntity implements HttpRequest {
         if (headMap.containsKey(headName)) {
             return headMap.get(headName);
         }
-        BufferRange bufferRange = getAndRemove(headName.getBytes());
+        byte[] bytes = headName.getBytes();
+        BufferRange bufferRange = getAndRemove(bytes);
         String val = null;
         if (bufferRange != null) {
-            val = get(bufferRange);
+            val = new String(getBytes(bufferRange, bytes.length + 1)).trim();
         }
         headMap.put(headName, val);
         return val;
