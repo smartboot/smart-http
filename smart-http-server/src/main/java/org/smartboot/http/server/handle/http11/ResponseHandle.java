@@ -32,12 +32,6 @@ public class ResponseHandle extends HttpHandle {
         sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
     }
 
-    public static void main(String[] args) {
-        SimpleDateFormat sdf = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
-        sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
-        System.out.println(sdf.format(new Date()));
-    }
-
     @Override
     public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
         if (response.getHttpStatus() == null) {
