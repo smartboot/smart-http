@@ -17,7 +17,6 @@ import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 /**
  * @author 三刀
@@ -60,11 +59,11 @@ public class HttpMessageProcessor implements MessageProcessor<HttpEntity> {
     public void process(AioSession<HttpEntity> session, HttpEntity request) {
 
         try {
-            if (true) {
-                session.write(ByteBuffer.wrap(b));
-                request.rest();
-                return;
-            }
+//            if (true) {
+//                session.write(ByteBuffer.wrap(b));
+//                request.rest();
+//                return;
+//            }
             DefaultHttpResponse httpResponse = RESPONSE_THREAD_LOCAL.get();
             httpResponse.init(session, request);
             try {
