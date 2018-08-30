@@ -10,6 +10,8 @@ package org.smartboot.http.enums;
 
 import org.apache.commons.lang.StringUtils;
 
+import java.nio.ByteBuffer;
+
 /**
  * Http支持的Method
  *
@@ -34,8 +36,8 @@ public enum MethodEnum {
         this.bytes = method.getBytes();
     }
 
-    public static MethodEnum getByMethod(byte[] bytes, int index, int length) {
-        if (bytes == null || index < 0 || index >= bytes.length || length + index > bytes.length) {
+    public static MethodEnum getByMethod(ByteBuffer bytes, int index, int length) {
+        if (bytes == null || index < 0 || index >= bytes.limit() || length + index > bytes.limit()) {
             return null;
         }
         switch (length) {
@@ -90,9 +92,9 @@ public enum MethodEnum {
         return null;
     }
 
-    private static boolean isMatch(MethodEnum methodEnum, byte[] bytes, int index) {
+    private static boolean isMatch(MethodEnum methodEnum, ByteBuffer bytes, int index) {
         for (int i = 0; i < methodEnum.bytes.length; i++) {
-            if (methodEnum.bytes[i] != bytes[index + i]) {
+            if (methodEnum.bytes[i] != bytes.get(index + i)) {
                 return false;
             }
         }

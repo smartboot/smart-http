@@ -14,10 +14,8 @@ import org.smartboot.http.server.v1.HttpMessageProcessor;
 import org.smartboot.http.server.v1.decode.HttpEntity;
 import org.smartboot.http.server.v1.decode.HttpRequestProtocol;
 import org.smartboot.http.utils.HttpHeaderConstant;
-import org.smartboot.socket.Filter;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.extension.ssl.ClientAuth;
-import org.smartboot.socket.extension.timer.QuickMonitorTimer;
 import org.smartboot.socket.transport.AioQuickServer;
 import org.smartboot.socket.transport.AioSSLQuickServer;
 
@@ -64,7 +62,7 @@ public class HttpBootstrap {
         server.setWriteQueueSize(128);
         server.setReadBufferSize(1024);
 //        server.setThreadNum(8);
-        server.setFilters(new Filter[]{new QuickMonitorTimer<HttpEntity>()});
+//        server.setFilters(new Filter[]{new QuickMonitorTimer<HttpEntity>()});
         try {
             server.start();
         } catch (IOException e) {

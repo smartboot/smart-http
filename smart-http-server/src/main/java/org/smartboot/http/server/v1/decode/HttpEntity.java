@@ -111,7 +111,7 @@ public class HttpEntity implements HttpRequest {
     }
 
     public MethodEnum getMethodRange() {
-        return methodEnum == null ? methodEnum = MethodEnum.getByMethod(buffer.array(), methodRange.start, methodRange.length)
+        return methodEnum == null ? methodEnum = MethodEnum.getByMethod(buffer, methodRange.start, methodRange.length)
                 : methodEnum;
     }
 

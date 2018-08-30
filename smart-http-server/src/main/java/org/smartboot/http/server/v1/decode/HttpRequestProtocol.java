@@ -165,9 +165,8 @@ public final class HttpRequestProtocol implements Protocol<HttpEntity> {
         int index = buffer.position();
         bufferRange.start = index;
         int remaining = buffer.remaining();
-        byte[] data = buffer.array();
         while (remaining-- > 0) {
-            if (data[index] == split) {
+            if (buffer.get(index) == split) {
                 bufferRange.length = index - bufferRange.start;
                 bufferRange.isOk = true;
                 buffer.position(++index);
