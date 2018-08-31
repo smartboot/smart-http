@@ -14,6 +14,7 @@ import org.smartboot.http.HttpResponse;
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.server.handle.HttpHandle;
 import org.smartboot.http.utils.HttpHeaderConstant;
+import org.smartboot.socket.util.QuickTimerTask;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -28,8 +29,11 @@ import java.util.TimeZone;
 public class ResponseHandle extends HttpHandle {
     private SimpleDateFormat sdf = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
 
+    private String date = "";
+
     public ResponseHandle() {
         sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+        new ResponseDateTimer();
     }
 
     @Override
@@ -57,8 +61,21 @@ public class ResponseHandle extends HttpHandle {
          * RFC2616 3.3.1
          * 只能用 RFC 1123 里定义的日期格式来填充头域 (header field)的值里用到 HTTP-date 的地方
          */
-        response.setHeader(HttpHeaderConstant.Names.DATE, sdf.format(new Date()));
+        response.setHeader(HttpHeaderConstant.Names.DATE, date);
 
         doNext(request, response);
+    }
+
+    public class ResponseDateTimer extends QuickTimerTask {
+
+        @Override
+        protected long getPeriod() {
+            return 5000;
+        }
+
+        @Override
+        public void run() {
+            ResponseHandle.this.date = sdf.format(new Date());
+        }
     }
 }

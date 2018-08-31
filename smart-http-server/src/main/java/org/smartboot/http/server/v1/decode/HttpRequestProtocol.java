@@ -150,6 +150,7 @@ public final class HttpRequestProtocol implements Protocol<HttpEntity> {
         entityV2.setCurrentPosition(buffer.position());
         entityV2.state = curState;
         buffer.reset();
+        LOGGER.warn("continue");
         if (curState != State.body && buffer.limit() == buffer.capacity()) {
             throw new RuntimeException("buffer full");
         }
@@ -162,19 +163,16 @@ public final class HttpRequestProtocol implements Protocol<HttpEntity> {
     }
 
     private void scanUntil(ByteBuffer buffer, byte split, BufferRange bufferRange) {
-        int index = buffer.position();
-        bufferRange.start = index;
-        int remaining = buffer.remaining();
-        while (remaining-- > 0) {
-            if (buffer.get(index) == split) {
-                bufferRange.length = index - bufferRange.start;
+//        int index = buffer.position();
+        bufferRange.start = buffer.position();
+        while (buffer.hasRemaining()) {
+            if (buffer.get() == split) {
+                bufferRange.length = buffer.position() - bufferRange.start - 1;
                 bufferRange.isOk = true;
-                buffer.position(++index);
                 return;
-            } else {
-                index++;
             }
         }
+        LOGGER.warn("hahhaahah");
         bufferRange.start = -1;
     }
 
