@@ -77,8 +77,7 @@ public class HttpBootstrap {
                 .setClientAuth(ClientAuth.OPTIONAL)
                 .setKeyStore(ClassLoader.getSystemClassLoader().getResource("server.jks").getFile(), "storepass")
                 .setTrust(ClassLoader.getSystemClassLoader().getResource("trustedCerts.jks").getFile(), "storepass")
-                .setKeyPassword("keypass")
-        ;
+                .setKeyPassword("keypass");
         try {
             server.start();
         } catch (IOException e) {
