@@ -7,6 +7,7 @@ import org.smartboot.http.enums.State;
 import org.smartboot.http.utils.Consts;
 import org.smartboot.socket.Protocol;
 import org.smartboot.socket.transport.AioSession;
+import org.smartboot.socket.util.DecoderException;
 
 import java.nio.ByteBuffer;
 
@@ -32,7 +33,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
         }
         Http11Request entityV2 = session.getAttachment();
         byte[] b = BYTE_LOCAL.get();
-
+        buffer.mark();
         State curState = entityV2.state;
         boolean flag = false;
         do {
@@ -148,6 +149,9 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
             return entityV2;
         }
         entityV2.state = curState;
+        if (buffer.remaining() == buffer.capacity()) {
+            throw new DecoderException("buffer is too small when decode " + curState);
+        }
         LOGGER.warn("continue");
         return null;
     }
@@ -185,10 +189,12 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
         for (int i = 0; i < avail; ) {
             bytes[i] = buffer.get();
             if (bytes[i] == split) {
+                buffer.mark();
                 return i;
             }
             i++;
         }
+        buffer.reset();
         return 0;
     }
 }
