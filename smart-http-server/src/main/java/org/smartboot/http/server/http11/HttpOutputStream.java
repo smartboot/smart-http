@@ -111,9 +111,9 @@ final class HttpOutputStream extends OutputStream {
 
         cacheBuffer.put(getBytes(request.getProtocol()))
                 .put(Consts.SP)
-                .put(getBytes(String.valueOf(response.getHttpStatus().value())))
+                .put(response.getHttpStatus().getValueStringBytes())
                 .put(Consts.SP)
-                .put(getBytes(response.getHttpStatus().getReasonPhrase()))
+                .put(response.getHttpStatus().getReasonPhraseBytes())
                 .put(Consts.CRLF);
 
         for (Map.Entry<String, String> entry : response.getHeaders().entrySet()) {

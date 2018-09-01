@@ -442,12 +442,17 @@ public enum HttpStatus {
 
     private final int value;
 
+    private final byte[] valueStringBytes;
+
     private final String reasonPhrase;
 
+    private final byte[] reasonPhraseBytes;
 
     private HttpStatus(int value, String reasonPhrase) {
         this.value = value;
+        this.valueStringBytes = String.valueOf(value).getBytes();
         this.reasonPhrase = reasonPhrase;
+        this.reasonPhraseBytes = reasonPhrase.getBytes();
     }
 
     /**
@@ -473,11 +478,19 @@ public enum HttpStatus {
         return this.value;
     }
 
+    public byte[] getValueStringBytes() {
+        return valueStringBytes;
+    }
+
     /**
      * Return the reason phrase of this status code.
      */
     public String getReasonPhrase() {
         return reasonPhrase;
+    }
+
+    public byte[] getReasonPhraseBytes() {
+        return reasonPhraseBytes;
     }
 
     /**
