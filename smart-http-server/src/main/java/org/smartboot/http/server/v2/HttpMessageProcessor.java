@@ -1,9 +1,12 @@
 package org.smartboot.http.server.v2;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
+import org.smartboot.http.enums.HttpStatus;
+import org.smartboot.http.exception.HttpException;
 import org.smartboot.http.server.handle.HttpHandle;
 import org.smartboot.http.server.handle.RouteHandle;
 import org.smartboot.http.server.handle.http11.RFC2612RequestHandle;
@@ -18,7 +21,6 @@ import org.smartboot.socket.transport.AioQuickServer;
 import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 /**
  * @author 三刀
@@ -82,17 +84,42 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
 
     @Override
     public void process(AioSession<Http11Request> session, Http11Request request) {
-
         try {
-            System.out.println(request);
-            session.write(ByteBuffer.wrap(b));
+//            if (true) {
+//                session.write(ByteBuffer.wrap(b));
+//                request.rest();
+//                return;
+//            }
+//            System.out.println(request);
+            DefaultHttpResponse httpResponse = RESPONSE_THREAD_LOCAL.get();
+            httpResponse.init(session, request);
+            try {
+                processHandle.doHandle(request, httpResponse);
+            } catch (HttpException e) {
+                httpResponse.setHttpStatus(HttpStatus.valueOf(e.getHttpCode()));
+                httpResponse.getOutputStream().write(e.getDesc().getBytes());
+            } catch (Exception e) {
+                e.printStackTrace();
+                httpResponse.setHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+                httpResponse.getOutputStream().write(e.fillInStackTrace().toString().getBytes());
+            }
+
+            httpResponse.getOutputStream().close();
+
+            if (!StringUtils.equalsIgnoreCase(HttpHeaderConstant.Values.KEEPALIVE, request.getHeader(HttpHeaderConstant.Names.CONNECTION)) || httpResponse.getHttpStatus() != HttpStatus.OK) {
+                session.close(false);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
+        request.rest();
     }
 
     @Override
     public void stateEvent(AioSession<Http11Request> session, StateMachineEnum stateMachineEnum, Throwable throwable) {
+//        if(throwable!=null){
+//            throwable.printStackTrace();
+//        }
         switch (stateMachineEnum) {
             case NEW_SESSION:
                 session.setAttachment(new Http11Request());

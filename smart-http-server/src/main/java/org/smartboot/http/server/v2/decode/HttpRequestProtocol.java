@@ -24,6 +24,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
         }
     };
 
+
     @Override
     public Http11Request decode(ByteBuffer buffer, AioSession<Http11Request> session, boolean eof) {
         if (!buffer.hasRemaining() || eof) {
@@ -49,14 +50,14 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                     int uriLength = scanUntil(buffer, Consts.SP, b);
                     if (uriLength > 0) {
                         curState = State.protocol;
-                        entityV2.originalUri = new String(b, 0, uriLength);
+                        entityV2.originalUri = convertToString(b, uriLength);
                     } else {
                         break;
                     }
                 case protocol:
                     int protocolLength = scanUntil(buffer, Consts.CR, b);
                     if (protocolLength > 0) {
-                        entityV2.protocol = new String(b, 0, protocolLength);
+                        entityV2.protocol = convertToString(b, protocolLength);
                         curState = State.request_line_end;
                     } else {
                         break;
@@ -76,10 +77,10 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                         break;
                     }
                 case head_name:
-                    int nameLength = scanUntil(buffer, Consts.SP, b);
+                    int nameLength = scanUntil(buffer, Consts.COLON, b);
                     if (nameLength > 0) {
                         curState = State.head_value;
-                        entityV2.tmpHeaderName = new String(b, 0, nameLength);
+                        entityV2.tmpHeaderName = convertToString(b, nameLength);
                     } else {
                         break;
                     }
@@ -87,7 +88,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                     int valueLength = scanUntil(buffer, Consts.CR, b);
                     if (valueLength > 0) {
                         curState = State.head_line_LF;
-                        entityV2.headMap.put(entityV2.tmpHeaderName, new String(b, 0, valueLength));
+                        entityV2.headMap.put(entityV2.tmpHeaderName, convertToString(b, valueLength));
                     } else {
                         break;
                     }
@@ -156,16 +157,38 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
         return null;
     }
 
-    private int scanUntil(ByteBuffer buffer, byte split, byte[] bytes) {
-        int length = 0;
-        while (buffer.hasRemaining()) {
-            byte b = buffer.get();
-            if (b == split) {
-                return length;
-            } else {
-                bytes[length++] = b;
+
+    private String convertToString(byte[] bytes, int length) {
+        int offset = 0;
+        while (offset < length) {
+            if (bytes[offset] != Consts.SP) {
+                break;
             }
+            offset++;
         }
-        return length;
+        length -= offset;
+        if (length == 0) {
+            return "";
+        }
+        int endIndex = offset + length - 1;
+        while (endIndex >= offset) {
+            if (bytes[endIndex] != Consts.SP) {
+                break;
+            }
+            endIndex--;
+        }
+        return endIndex < offset ? "" : new String(bytes, offset, endIndex - offset + 1);
+    }
+
+    private int scanUntil(ByteBuffer buffer, byte split, byte[] bytes) {
+        int avail = buffer.remaining();
+        for (int i = 0; i < avail; ) {
+            bytes[i] = buffer.get();
+            if (bytes[i] == split) {
+                return i;
+            }
+            i++;
+        }
+        return 0;
     }
 }

@@ -22,9 +22,11 @@ public class Http11Request implements HttpRequest {
 
     String tmpHeaderName;
 
+    private String requestUri;
+
     @Override
     public String getHeader(String headName) {
-        return null;
+        return headMap.get(headName);
     }
 
     @Override
@@ -34,32 +36,38 @@ public class Http11Request implements HttpRequest {
 
     @Override
     public String getRequestURI() {
-        return null;
+        return requestUri;
     }
 
     @Override
     public void setRequestURI(String uri) {
-
+        this.requestUri = uri;
     }
 
     @Override
     public String getProtocol() {
-        return null;
+        return protocol;
     }
 
     @Override
     public MethodEnum getMethodRange() {
-        return null;
+        return methodEnum;
     }
 
     @Override
     public String getOriginalUri() {
-        return null;
+        return originalUri;
     }
 
     @Override
     public void setQueryString(String queryString) {
 
+    }
+
+    public void rest() {
+        state = State.method;
+        headMap.clear();
+        tmpHeaderName=null;
     }
 
     @Override
