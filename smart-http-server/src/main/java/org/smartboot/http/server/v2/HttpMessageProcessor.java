@@ -72,9 +72,9 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
             }
         });
         AioQuickServer<Http11Request> server = new AioQuickServer<Http11Request>(8080, new HttpRequestProtocol(), processor);
-//        server.setWriteQueueSize(4);
+        server.setWriteQueueSize(1024);
         server.setReadBufferSize(256);
-        server.setThreadNum(Runtime.getRuntime().availableProcessors() * 2);
+//        server.setAsyncProcess(true);
         try {
             server.start();
         } catch (IOException e) {
@@ -86,7 +86,9 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
     public void process(AioSession<Http11Request> session, Http11Request request) {
         try {
 //            if (true) {
-//                session.write(ByteBuffer.wrap(b));
+//                ByteBuffer buffer = DirectBufferUtil.getTemporaryDirectBuffer(b.length).put(b);
+//                buffer.flip();
+//                session.write(buffer);
 //                request.rest();
 //                return;
 //            }
@@ -106,7 +108,9 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
 
             httpResponse.getOutputStream().close();
 
+
             if (!StringUtils.equalsIgnoreCase(HttpHeaderConstant.Values.KEEPALIVE, request.getHeader(HttpHeaderConstant.Names.CONNECTION)) || httpResponse.getHttpStatus() != HttpStatus.OK) {
+                System.out.println(httpResponse.getHttpStatus() + " " + request);
                 session.close(false);
             }
         } catch (IOException e) {
@@ -117,12 +121,23 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
 
     @Override
     public void stateEvent(AioSession<Http11Request> session, StateMachineEnum stateMachineEnum, Throwable throwable) {
-//        if(throwable!=null){
+//        if (throwable != null) {
 //            throwable.printStackTrace();
 //        }
         switch (stateMachineEnum) {
             case NEW_SESSION:
-                session.setAttachment(new Http11Request());
+                session.setAttachment(new ThreadLocal<Http11Request>() {
+                    @Override
+                    protected Http11Request initialValue() {
+                        return new Http11Request();
+                    }
+                });
+                break;
+            case FLOW_LIMIT:
+                LOGGER.warn("流控");
+                break;
+            case RELEASE_FLOW_LIMIT:
+                LOGGER.warn("释放流控");
                 break;
             case PROCESS_EXCEPTION:
                 session.close();

@@ -31,7 +31,8 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
         if (!buffer.hasRemaining() || eof) {
             return null;
         }
-        Http11Request entityV2 = session.getAttachment();
+        ThreadLocal<Http11Request> threadLocal = session.getAttachment();
+        Http11Request entityV2 = threadLocal.get();
         byte[] b = BYTE_LOCAL.get();
         buffer.mark();
         State curState = entityV2.state;
