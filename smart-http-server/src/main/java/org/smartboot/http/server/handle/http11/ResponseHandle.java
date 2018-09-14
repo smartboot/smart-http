@@ -8,7 +8,6 @@
 
 package org.smartboot.http.server.handle.http11;
 
-import org.apache.commons.lang.StringUtils;
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
 import org.smartboot.http.enums.HttpStatus;
@@ -53,8 +52,9 @@ public class ResponseHandle extends HttpHandle {
             response.setHeader(HttpHeaderConstant.Names.HOST, "localhost");
         }
 
-        if (StringUtils.equalsIgnoreCase(request.getHeader(HttpHeaderConstant.Names.CONNECTION), HttpHeaderConstant.Values.KEEPALIVE)) {
-            response.setHeader(HttpHeaderConstant.Names.CONNECTION, HttpHeaderConstant.Values.KEEPALIVE);
+        String connection = request.getHeader(HttpHeaderConstant.Names.CONNECTION);
+        if (connection != null) {
+            response.setHeader(HttpHeaderConstant.Names.CONNECTION, connection);
         }
 
         /**

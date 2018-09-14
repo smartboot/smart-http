@@ -7,6 +7,7 @@ import org.smartboot.http.enums.State;
 import org.smartboot.http.utils.Consts;
 import org.smartboot.socket.Protocol;
 import org.smartboot.socket.transport.AioSession;
+import org.smartboot.socket.util.BufferUtils;
 import org.smartboot.socket.util.DecoderException;
 
 import java.nio.ByteBuffer;
@@ -87,12 +88,32 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                         break;
                     }
                 case head_value:
-                    int valueLength = scanUntil(buffer, Consts.CR, b);
-                    if (valueLength > 0) {
-                        curState = State.head_line_LF;
-                        entityV2.headMap.put(entityV2.tmpHeaderName, convertToString(b, valueLength));
+                    if (entityV2.tmpValEnable) {
+                        if (entityV2.tmpHeaderValue.decode(buffer)) {
+                            curState = State.head_line_LF;
+                            ByteBuffer valBuffer = entityV2.tmpHeaderValue.getBuffer();
+                            BufferUtils.trim(entityV2.tmpHeaderValue.getBuffer());
+                            byte[] valBytes = new byte[valBuffer.remaining()];
+                            valBuffer.get(valBytes);
+                            entityV2.headMap.put(entityV2.tmpHeaderName, convertToString(valBytes, valBytes.length));
+                            entityV2.tmpHeaderValue.reset();
+                        } else {
+                            break;
+                        }
                     } else {
-                        break;
+                        int valueLength = scanUntil(buffer, Consts.CR, b);
+                        if (valueLength > 0) {
+                            curState = State.head_line_LF;
+                            entityV2.headMap.put(entityV2.tmpHeaderName, convertToString(b, valueLength));
+                        }
+                        //value字段长度超过readBuffer空间大小
+                        else if (buffer.remaining() == buffer.capacity()) {
+                            entityV2.tmpValEnable = true;
+                            entityV2.tmpHeaderValue.decode(buffer);
+                            break;
+                        } else {
+                            break;
+                        }
                     }
                 case head_line_LF:
                     if (buffer.remaining() >= 2) {
@@ -104,6 +125,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                         } else {
                             curState = State.head_name;
                             flag = true;
+                            buffer.mark();
                             break;
                         }
                     } else {
@@ -151,9 +173,9 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
         }
         entityV2.state = curState;
         if (buffer.remaining() == buffer.capacity()) {
-            throw new DecoderException("buffer is too small when decode " + curState);
+            LOGGER.error("throw exception");
+            throw new DecoderException("buffer is too small when decode " + curState + " ," + entityV2.tmpHeaderName);
         }
-        LOGGER.warn("continue");
         return null;
     }
 

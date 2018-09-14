@@ -4,6 +4,8 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.enums.MethodEnum;
 import org.smartboot.http.enums.State;
+import org.smartboot.http.utils.Consts;
+import org.smartboot.socket.extension.decoder.DelimiterFrameDecoder;
 
 import java.io.InputStream;
 import java.util.HashMap;
@@ -21,6 +23,10 @@ public class Http11Request implements HttpRequest {
     Map<String, String> headMap = new HashMap<>();
 
     String tmpHeaderName;
+
+    boolean tmpValEnable = false;
+    DelimiterFrameDecoder tmpHeaderValue = new DelimiterFrameDecoder(new byte[]{Consts.CR}, 1024);
+
 
     private String requestUri;
 
@@ -67,7 +73,9 @@ public class Http11Request implements HttpRequest {
     public void rest() {
         state = State.method;
         headMap.clear();
-        tmpHeaderName=null;
+        tmpHeaderName = null;
+        tmpValEnable=false;
+        tmpHeaderValue.reset();
     }
 
     @Override
