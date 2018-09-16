@@ -56,11 +56,12 @@ public class HttpBootstrap {
 
     public static void http(MessageProcessor<HttpEntity> processor) {
         // 定义服务器接受的消息类型以及各类消息对应的处理器
-        int port = NumberUtils.toInt(System.getProperty("port"), 8888);
+        int port = NumberUtils.toInt(System.getProperty("port"), 8080);
         AioQuickServer<HttpEntity> server = new AioQuickServer<HttpEntity>(port, new HttpRequestProtocol(), processor);
 //        server.setDirectBuffer(true);
         server.setWriteQueueSize(4);
         server.setReadBufferSize(1028);
+        server.setFaster(true);
         server.setThreadNum(Runtime.getRuntime().availableProcessors()*2);
 //        server.setFilters(new Filter[]{new QuickMonitorTimer<HttpEntity>()});
         try {

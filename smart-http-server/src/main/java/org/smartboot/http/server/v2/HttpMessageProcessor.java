@@ -74,6 +74,7 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
         AioQuickServer<Http11Request> server = new AioQuickServer<Http11Request>(8080, new HttpRequestProtocol(), processor);
         server.setWriteQueueSize(1024);
         server.setReadBufferSize(256);
+        server.setFaster(true);
 //        server.setAsyncProcess(true);
         try {
             server.start();
@@ -134,10 +135,10 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
                 });
                 break;
             case FLOW_LIMIT:
-                LOGGER.warn("流控");
+//                LOGGER.warn("流控");
                 break;
             case RELEASE_FLOW_LIMIT:
-                LOGGER.warn("释放流控");
+//                LOGGER.warn("释放流控");
                 break;
             case PROCESS_EXCEPTION:
                 session.close();
