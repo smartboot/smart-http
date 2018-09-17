@@ -117,7 +117,6 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        request.rest();
     }
 
     @Override

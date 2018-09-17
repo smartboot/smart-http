@@ -169,6 +169,8 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
             }
         } while (flag);
         if (curState == State.finished) {
+//            System.out.println(entityV2);
+            threadLocal.set(new Http11Request());
             return entityV2;
         }
         entityV2.state = curState;
