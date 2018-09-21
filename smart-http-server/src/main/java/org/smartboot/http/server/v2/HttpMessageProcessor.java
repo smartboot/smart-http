@@ -108,7 +108,6 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
 
 
             if (!StringUtils.equalsIgnoreCase(HttpHeaderConstant.Values.KEEPALIVE, request.getHeader(HttpHeaderConstant.Names.CONNECTION)) || httpResponse.getHttpStatus() != HttpStatus.OK) {
-                System.out.println(httpResponse.getHttpStatus() + " " + request);
                 session.close(false);
             }
         } catch (IOException e) {
