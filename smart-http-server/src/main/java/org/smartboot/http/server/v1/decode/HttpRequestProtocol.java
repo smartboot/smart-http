@@ -30,10 +30,7 @@ public final class HttpRequestProtocol implements Protocol<HttpEntity> {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpRequestProtocol.class);
 
     @Override
-    public HttpEntity decode(ByteBuffer buffer, AioSession<HttpEntity> session, boolean eof) {
-        if (!buffer.hasRemaining() || eof) {
-            return null;
-        }
+    public HttpEntity decode(ByteBuffer buffer, AioSession<HttpEntity> session) {
         buffer.mark();
 
         HttpEntity entityV2 = session.getAttachment();

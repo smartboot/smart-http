@@ -28,10 +28,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
 
 
     @Override
-    public Http11Request decode(ByteBuffer buffer, AioSession<Http11Request> session, boolean eof) {
-        if (!buffer.hasRemaining() || eof) {
-            return null;
-        }
+    public Http11Request decode(ByteBuffer buffer, AioSession<Http11Request> session) {
         Http11Request entityV2 = session.getAttachment();
         byte[] b = BYTE_LOCAL.get();
         buffer.mark();
@@ -176,7 +173,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
         if (curState == State.finished) {
             return entityV2;
         }
-//        LOGGER.info("continue");
+        LOGGER.info("continue");
         entityV2.state = curState;
         if (buffer.remaining() == buffer.capacity()) {
             LOGGER.error("throw exception");

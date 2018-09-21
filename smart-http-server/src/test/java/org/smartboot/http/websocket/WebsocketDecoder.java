@@ -40,7 +40,7 @@ public class WebsocketDecoder implements Protocol<HttpEntity> {
     }
 
     @Override
-    public HttpEntity decode(ByteBuffer buffer, AioSession<HttpEntity> session, boolean eof) {
+    public HttpEntity decode(ByteBuffer buffer, AioSession<HttpEntity> session) {
         Attachment attachment = session.getAttachment();
         if (attachment == null) {
             throw new RuntimeException("decodeUnit is null");
