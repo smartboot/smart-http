@@ -69,7 +69,13 @@ public class Http11Request implements HttpRequest {
     public void setQueryString(String queryString) {
 
     }
-
+    public void rest() {
+        state = State.method;
+        headMap.clear();
+        tmpHeaderName = null;
+        tmpValEnable=false;
+        tmpHeaderValue.reset();
+    }
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this);

@@ -32,8 +32,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
         if (!buffer.hasRemaining() || eof) {
             return null;
         }
-        ThreadLocal<Http11Request> threadLocal = session.getAttachment();
-        Http11Request entityV2 = threadLocal.get();
+        Http11Request entityV2 = session.getAttachment();
         byte[] b = BYTE_LOCAL.get();
         buffer.mark();
         State curState = entityV2.state;
@@ -46,6 +45,12 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                     if (methodLength > 0) {
                         curState = State.uri;
                         entityV2.methodEnum = MethodEnum.getByMethod(b, 0, methodLength);
+                        if(entityV2.methodEnum==null){
+                            byte[] b1=new byte[buffer.remaining()];
+                            buffer.get(b1);
+                            LOGGER.info(new String(b1));
+                            throw new DecoderException(new String(b,0,methodLength));
+                        }
                     } else {
                         break;
                     }
@@ -169,10 +174,9 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
             }
         } while (flag);
         if (curState == State.finished) {
-//            System.out.println(entityV2);
-            threadLocal.set(new Http11Request());
             return entityV2;
         }
+//        LOGGER.info("continue");
         entityV2.state = curState;
         if (buffer.remaining() == buffer.capacity()) {
             LOGGER.error("throw exception");

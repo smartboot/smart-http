@@ -46,16 +46,16 @@ public class ResponseHandle extends HttpHandle {
             response.setHeader(HttpHeaderConstant.Names.TRANSFER_ENCODING, HttpHeaderConstant.Values.CHUNKED);
         }
         if (response.getHeader(HttpHeaderConstant.Names.SERVER) == null) {
-            response.setHeader(HttpHeaderConstant.Names.SERVER, "smart-socket");
+            response.setHeader(HttpHeaderConstant.Names.SERVER, "S");
         }
-        if (response.getHeader(HttpHeaderConstant.Names.HOST) == null) {
-            response.setHeader(HttpHeaderConstant.Names.HOST, "localhost");
-        }
+//        if (response.getHeader(HttpHeaderConstant.Names.HOST) == null) {
+//            response.setHeader(HttpHeaderConstant.Names.HOST, "localhost");
+//        }
 
-        String connection = request.getHeader(HttpHeaderConstant.Names.CONNECTION);
-        if (connection != null) {
-            response.setHeader(HttpHeaderConstant.Names.CONNECTION, connection);
-        }
+//        String connection = request.getHeader(HttpHeaderConstant.Names.CONNECTION);
+//        if (connection != null) {
+//            response.setHeader(HttpHeaderConstant.Names.CONNECTION, connection);
+//        }
 
         /**
          * RFC2616 3.3.1

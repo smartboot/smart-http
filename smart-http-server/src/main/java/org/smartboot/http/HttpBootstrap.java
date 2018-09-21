@@ -27,7 +27,7 @@ public class HttpBootstrap {
 
     public static void main(String[] args) throws UnknownHostException {
         HttpMessageProcessor processor = new HttpMessageProcessor(System.getProperty("webapps.dir", "./"));
-        processor.route("/", new HttpHandle() {
+        processor.route("/plaintext", new HttpHandle() {
             byte[] body = "welcome to smart-socket http server!".getBytes();
 
             @Override
@@ -61,7 +61,6 @@ public class HttpBootstrap {
 //        server.setDirectBuffer(true);
         server.setWriteQueueSize(4);
         server.setReadBufferSize(1028);
-        server.setFaster(true);
         server.setThreadNum(Runtime.getRuntime().availableProcessors()*2);
 //        server.setFilters(new Filter[]{new QuickMonitorTimer<HttpEntity>()});
         try {

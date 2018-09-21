@@ -29,12 +29,10 @@ import java.io.IOException;
 public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpMessageProcessor.class);
     private static byte[] b = ("HTTP/1.1 200 OK\r\n" +
-            "Server:smart-socket\r\n" +
-            "Connection:keep-alive\r\n" +
-            "Host:localhost\r\n" +
-            "Content-Length:31\r\n" +
+            "Server:s\r\n" +
+            "Content-Length:13\r\n" +
             "Date:Wed, 11 Apr 2018 12:35:01 GMT\r\n\r\n" +
-            "Hello smart-socket http server!").getBytes();
+            "Hello World!\r\n").getBytes();
     private ThreadLocal<DefaultHttpResponse> RESPONSE_THREAD_LOCAL = null;
     /**
      * Http消息处理器
@@ -61,8 +59,8 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
 
     public static void main(String[] args) {
         HttpMessageProcessor processor = new HttpMessageProcessor("./");
-        processor.route("/", new HttpHandle() {
-            byte[] body = "welcome to smart-socket http server!".getBytes();
+        processor.route("/plaintext", new HttpHandle() {
+            byte[] body = "Hello World!".getBytes();
 
             @Override
             public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
@@ -73,9 +71,7 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
         });
         AioQuickServer<Http11Request> server = new AioQuickServer<Http11Request>(8080, new HttpRequestProtocol(), processor);
         server.setWriteQueueSize(1024);
-        server.setReadBufferSize(256);
-        server.setFaster(true);
-//        server.setAsyncProcess(true);
+        server.setReadBufferSize(1024 * 4);
         try {
             server.start();
         } catch (IOException e) {
@@ -89,6 +85,7 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
 //            if (true) {
 //                ByteBuffer buffer = DirectBufferUtil.getTemporaryDirectBuffer(b.length).put(b);
 //                buffer.flip();
+////                ByteBuffer buffer=ByteBuffer.wrap(b);
 //                session.write(buffer);
 //                request.rest();
 //                return;
@@ -116,7 +113,9 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
             }
         } catch (IOException e) {
             e.printStackTrace();
+//            System.exit(1);
         }
+        request.rest();
     }
 
     @Override
@@ -126,18 +125,13 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
 //        }
         switch (stateMachineEnum) {
             case NEW_SESSION:
-                session.setAttachment(new ThreadLocal<Http11Request>() {
-                    @Override
-                    protected Http11Request initialValue() {
-                        return new Http11Request();
-                    }
-                });
+                session.setAttachment(new Http11Request());
                 break;
             case FLOW_LIMIT:
-//                LOGGER.warn("流控");
+                LOGGER.warn("流控");
                 break;
             case RELEASE_FLOW_LIMIT:
-//                LOGGER.warn("释放流控");
+                LOGGER.warn("释放流控");
                 break;
             case PROCESS_EXCEPTION:
                 session.close();
