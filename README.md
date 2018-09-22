@@ -1,37 +1,30 @@
 # smart-http
+smart-http是一款学习型开源http服务器项目，其通信内核采用了smart-socket最新版v1.3.19。
 
-#### 项目介绍
-基于smart-socket实现的轻量级http服务器
+相较于目前市面上各大http服务器，smart-http毫无任何特色。仅出于作者对技术、对开源的一份热爱，又重新造了一个轮子。同时本着对技术敬畏，对用户负责的态度，我们并不推荐您将次项目运用于生产。
+因为现在的smart-http还有太多的不完善，如果您愿意参与共建，或许能加速smart-http上生产的进程，不然请多给我们一点时间。
 
-#### 软件架构
-软件架构说明
+感兴趣的朋友欢迎加入QQ群交流：172299083
+## 功能列表
+1. 仅支持GET方式的请求。
+2. 支持URL路由。
+3. 支持部分RFC2612规范，后续会逐渐完善。
+4. 支持Https协议，由smart-socket为其赋能。
 
+## 快速体验
+1. 启动HttpBootstrap
+2. http服务请访问:`http://localhost:8080/`
+3. https服务请访问:`https://localhost:8889/`
 
-#### 安装教程
+> 更多惊喜等你发现
+ 
+## 性能表现
 
-1. xxxx
-2. xxxx
-3. xxxx
+待定
 
-#### 使用说明
-
-1. xxxx
-2. xxxx
-3. xxxx
-
-#### 参与贡献
+## 参与贡献
 
 1. Fork 本项目
 2. 新建 Feat_xxx 分支
 3. 提交代码
 4. 新建 Pull Request
-
-
-#### 码云特技
-
-1. 使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2. 码云官方博客 [blog.gitee.com](https://blog.gitee.com)
-3. 你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解码云上的优秀开源项目
-4. [GVP](https://gitee.com/gvp) 全称是码云最有价值开源项目，是码云综合评定出的优秀开源项目
-5. 码云官方提供的使用手册 [http://git.mydoc.io/](http://git.mydoc.io/)
-6. 码云封面人物是一档用来展示码云会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)

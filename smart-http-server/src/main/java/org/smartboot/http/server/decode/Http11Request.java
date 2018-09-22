@@ -1,4 +1,4 @@
-package org.smartboot.http.server.v2.decode;
+package org.smartboot.http.server.decode;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.smartboot.http.HttpRequest;
