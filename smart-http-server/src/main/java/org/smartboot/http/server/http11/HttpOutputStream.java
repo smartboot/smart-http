@@ -25,7 +25,7 @@ import java.util.Map;
  * @version V1.0 , 2018/2/3
  */
 final class HttpOutputStream extends OutputStream {
-
+    public static final String DEFAULT_CONTENT_TYPE = "text/html; charset=utf-8";
     public static final int DEFAULT_CACHE_SIZE = 512;
     private static final byte[] endChunked = new byte[]{'0', Consts.CR, Consts.LF, Consts.CR, Consts.LF};
     boolean chunkedEnd = false;
@@ -115,6 +115,10 @@ final class HttpOutputStream extends OutputStream {
                 .put(Consts.SP)
                 .put(response.getHttpStatus().getReasonPhraseBytes())
                 .put(Consts.CRLF);
+
+        if (response.getHeader(HttpHeaderConstant.Names.CONTENT_TYPE) == null) {
+            response.setHeader(HttpHeaderConstant.Names.CONTENT_TYPE, DEFAULT_CONTENT_TYPE);
+        }
 
         for (Map.Entry<String, String> entry : response.getHeaders().entrySet()) {
             byte[] headKey = getBytes(entry.getKey());
