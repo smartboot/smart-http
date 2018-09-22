@@ -13,6 +13,8 @@ import org.slf4j.LoggerFactory;
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
 import org.smartboot.http.enums.HttpStatus;
+import org.smartboot.http.utils.HttpHeaderConstant;
+import org.smartboot.http.utils.Mimetypes;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,20 +31,26 @@ import java.nio.channels.FileChannel;
 public class StaticResourceHandle extends HttpHandle {
     private static final Logger LOGGER = LoggerFactory.getLogger(StaticResourceHandle.class);
     private static final int READ_BUFFER = 1024;
-    private String baseDir;
+    private File baseDir;
 
     public StaticResourceHandle(String baseDir) {
-        this.baseDir = baseDir;
+        this.baseDir = new File(baseDir);
+        if (!this.baseDir.isDirectory()) {
+            throw new RuntimeException(baseDir + " is not a directory");
+        }
+        LOGGER.info("dir is:{}", this.baseDir.getAbsolutePath());
     }
 
     @Override
     public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
-        File file = new File(baseDir + request.getRequestURI());
+        File file = new File(baseDir, request.getRequestURI());
         if (!file.isFile()) {
             LOGGER.warn("file:{} not found!", request.getRequestURI());
             response.setHttpStatus(HttpStatus.NOT_FOUND);
             return;
         }
+        String contentType = Mimetypes.getInstance().getMimetype(file);
+        response.setHeader(HttpHeaderConstant.Names.CONTENT_TYPE, contentType);
         FileInputStream fis = new FileInputStream(file);
         FileChannel fileChannel = fis.getChannel();
         long fileSize = fileChannel.size();
