@@ -214,6 +214,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
     private int scanUntil(ByteBuffer buffer, byte split, byte[] bytes) {
         int avail = buffer.remaining();
         for (int i = 0; i < avail; ) {
+            LOGGER.info("aa"+i+"");
             bytes[i] = buffer.get();
             if (bytes[i] == split) {
                 buffer.mark();
