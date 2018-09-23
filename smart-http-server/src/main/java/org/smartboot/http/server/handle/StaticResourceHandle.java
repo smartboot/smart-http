@@ -23,6 +23,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 /**
  * 静态资源加载Handle
@@ -40,6 +43,12 @@ public class StaticResourceHandle extends HttpHandle {
                     "</head>" +
                     "<body><h1>smart-http 找不到你所请求的地址资源，404</h1></body>" +
                     "</html>";
+    private ThreadLocal<SimpleDateFormat> sdf = new ThreadLocal<SimpleDateFormat>() {
+        @Override
+        protected SimpleDateFormat initialValue() {
+            return new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
+        }
+    };
     private File baseDir;
 
     public StaticResourceHandle(String baseDir) {
@@ -67,6 +76,19 @@ public class StaticResourceHandle extends HttpHandle {
         LOGGER.info("请求URL:{}", fileName);
         String contentType = Mimetypes.getInstance().getMimetype(file);
         response.setHeader(HttpHeaderConstant.Names.CONTENT_TYPE, contentType + "; charset=utf-8");
+        response.setHeader(HttpHeaderConstant.Names.CACHE_CONTROL, "max-age=315360000");
+        Date lastModifyDate = new Date(file.lastModified());
+        String requestModified = request.getHeader(HttpHeaderConstant.Names.IF_MODIFIED_SINCE);
+        try {
+            if (StringUtils.isNotBlank(requestModified) && lastModifyDate.getTime() <= sdf.get().parse(requestModified).getTime()) {
+                response.setHttpStatus(HttpStatus.NOT_MODIFIED);
+                return;
+            }
+        } catch (Exception e) {
+            LOGGER.error("exception", e);
+        }
+        response.setHeader(HttpHeaderConstant.Names.LAST_MODIFIED, sdf.get().format(lastModifyDate));
+
         FileInputStream fis = new FileInputStream(file);
         FileChannel fileChannel = fis.getChannel();
         long fileSize = fileChannel.size();
