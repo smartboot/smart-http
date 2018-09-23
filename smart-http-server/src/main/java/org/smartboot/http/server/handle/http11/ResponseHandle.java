@@ -46,7 +46,7 @@ public class ResponseHandle extends HttpHandle {
             response.setHeader(HttpHeaderConstant.Names.TRANSFER_ENCODING, HttpHeaderConstant.Values.CHUNKED);
         }
         if (response.getHeader(HttpHeaderConstant.Names.SERVER) == null) {
-            response.setHeader(HttpHeaderConstant.Names.SERVER, "S");
+            response.setHeader(HttpHeaderConstant.Names.SERVER, "smart-http");
         }
 //        if (response.getHeader(HttpHeaderConstant.Names.HOST) == null) {
 //            response.setHeader(HttpHeaderConstant.Names.HOST, "localhost");
