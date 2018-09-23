@@ -32,7 +32,7 @@ import java.nio.channels.FileChannel;
  */
 public class StaticResourceHandle extends HttpHandle {
     private static final Logger LOGGER = LoggerFactory.getLogger(StaticResourceHandle.class);
-    private static final int READ_BUFFER = 1024;
+    private static final int READ_BUFFER = 1024 * 1024;
     private static final String URL_404 =
             "<html>" +
                     "<head>" +
