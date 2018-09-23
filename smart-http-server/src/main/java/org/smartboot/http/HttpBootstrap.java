@@ -51,7 +51,7 @@ public class HttpBootstrap {
             }
         });
         http(processor);
-//        https(processor);
+        https(processor);
     }
 
     public static void http(MessageProcessor<Http11Request> processor) {
