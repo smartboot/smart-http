@@ -58,8 +58,8 @@ public class HttpBootstrap {
         // 定义服务器接受的消息类型以及各类消息对应的处理器
         int port = NumberUtils.toInt(System.getProperty("port"), 8080);
         AioQuickServer<Http11Request> server = new AioQuickServer<Http11Request>(port, new HttpRequestProtocol(), processor);
-        server.setWriteQueueSize(4);
-        server.setReadBufferSize(1028);
+        server.setWriteQueueSize(1024);
+        server.setReadBufferSize(1024);
         server.setThreadNum(Runtime.getRuntime().availableProcessors() * 2);
         try {
             server.start();
