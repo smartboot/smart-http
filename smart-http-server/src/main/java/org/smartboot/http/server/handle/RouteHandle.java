@@ -35,7 +35,7 @@ public class RouteHandle extends HttpHandle {
 //            }
 //            if (httpHandle == null) {
             httpHandle = defaultHandle;
-            LOGGER.warn("路由匹配失败,使用defaultHandle");
+            LOGGER.debug("路由匹配失败,使用defaultHandle");
 //            }
             handleMap.put(uri, httpHandle);
         }

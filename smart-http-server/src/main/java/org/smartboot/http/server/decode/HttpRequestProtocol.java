@@ -176,7 +176,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
         if (curState == State.finished) {
             return entityV2;
         }
-        LOGGER.info("continue");
+        LOGGER.debug("continue");
         entityV2.state = curState;
         if (buffer.remaining() == buffer.capacity()) {
             LOGGER.error("throw exception");
