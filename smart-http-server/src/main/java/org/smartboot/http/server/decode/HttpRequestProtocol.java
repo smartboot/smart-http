@@ -107,7 +107,6 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                         }
                     } else {
                         int valueLength = scanUntil(buffer, Consts.CR, b);
-                        LOGGER.info(valueLength + "");
                         if (valueLength > 0) {
                             curState = State.head_line_LF;
                             entityV2.headMap.put(entityV2.tmpHeaderName, convertToString(b, valueLength));
