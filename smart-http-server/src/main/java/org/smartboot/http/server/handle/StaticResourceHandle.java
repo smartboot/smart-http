@@ -8,6 +8,7 @@
 
 package org.smartboot.http.server.handle;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartboot.http.HttpRequest;
@@ -51,7 +52,11 @@ public class StaticResourceHandle extends HttpHandle {
 
     @Override
     public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
-        File file = new File(baseDir, request.getRequestURI());
+        String fileName = request.getRequestURI();
+        if (StringUtils.equals(fileName, "/")) {
+            fileName = "/index.html";
+        }
+        File file = new File(baseDir, fileName);
         if (!file.isFile()) {
             LOGGER.warn("file:{} not found!", request.getRequestURI());
             response.setHttpStatus(HttpStatus.NOT_FOUND);
@@ -59,7 +64,7 @@ public class StaticResourceHandle extends HttpHandle {
             response.write(ByteBuffer.wrap(URL_404.getBytes()));
             return;
         }
-        LOGGER.info("请求URL:{}", request.getRequestURI());
+        LOGGER.info("请求URL:{}", fileName);
         String contentType = Mimetypes.getInstance().getMimetype(file);
         response.setHeader(HttpHeaderConstant.Names.CONTENT_TYPE, contentType + "; charset=utf-8");
         FileInputStream fis = new FileInputStream(file);
