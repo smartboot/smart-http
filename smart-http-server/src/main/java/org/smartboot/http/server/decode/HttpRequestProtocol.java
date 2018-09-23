@@ -29,6 +29,12 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
 
     @Override
     public Http11Request decode(ByteBuffer buffer, AioSession<Http11Request> session) {
+        if(true){
+            byte[] bytes=new byte[buffer.remaining()];
+            buffer.get(bytes);
+            LOGGER.info(new String(bytes));
+            return null;
+        }
         Http11Request entityV2 = session.getAttachment();
         byte[] b = BYTE_LOCAL.get();
         buffer.mark();
