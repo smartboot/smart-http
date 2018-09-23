@@ -65,7 +65,9 @@ public class StaticResourceHandle extends HttpHandle {
         if (StringUtils.endsWith(fileName, "/")) {
             fileName += "index.html";
         }
+        LOGGER.info("请求URL:{}", fileName);
         File file = new File(baseDir, fileName);
+        //404
         if (!file.isFile()) {
             LOGGER.warn("file:{} not found!", request.getRequestURI());
             response.setHttpStatus(HttpStatus.NOT_FOUND);
@@ -73,13 +75,10 @@ public class StaticResourceHandle extends HttpHandle {
             response.write(ByteBuffer.wrap(URL_404.getBytes()));
             return;
         }
-        LOGGER.info("请求URL:{}", fileName);
-        String contentType = Mimetypes.getInstance().getMimetype(file);
-        response.setHeader(HttpHeaderConstant.Names.CONTENT_TYPE, contentType + "; charset=utf-8");
-        response.setHeader(HttpHeaderConstant.Names.CACHE_CONTROL, "max-age=315360000");
+        //304
         Date lastModifyDate = new Date(file.lastModified());
-        String requestModified = request.getHeader(HttpHeaderConstant.Names.IF_MODIFIED_SINCE);
         try {
+            String requestModified = request.getHeader(HttpHeaderConstant.Names.IF_MODIFIED_SINCE);
             if (StringUtils.isNotBlank(requestModified) && lastModifyDate.getTime() <= sdf.get().parse(requestModified).getTime()) {
                 response.setHttpStatus(HttpStatus.NOT_MODIFIED);
                 return;
@@ -89,6 +88,9 @@ public class StaticResourceHandle extends HttpHandle {
         }
         response.setHeader(HttpHeaderConstant.Names.LAST_MODIFIED, sdf.get().format(lastModifyDate));
 
+
+        String contentType = Mimetypes.getInstance().getMimetype(file);
+        response.setHeader(HttpHeaderConstant.Names.CONTENT_TYPE, contentType + "; charset=utf-8");
         FileInputStream fis = new FileInputStream(file);
         FileChannel fileChannel = fis.getChannel();
         long fileSize = fileChannel.size();
