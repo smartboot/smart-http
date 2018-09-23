@@ -13,6 +13,7 @@ import org.smartboot.http.server.HttpMessageProcessor;
 import org.smartboot.http.server.decode.Http11Request;
 import org.smartboot.http.server.decode.HttpRequestProtocol;
 import org.smartboot.http.server.handle.HttpHandle;
+import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.extension.ssl.ClientAuth;
 import org.smartboot.socket.transport.AioQuickServer;
@@ -26,16 +27,16 @@ public class HttpBootstrap {
 
     public static void main(String[] args) throws UnknownHostException {
         HttpMessageProcessor processor = new HttpMessageProcessor(System.getProperty("webapps.dir", "./"));
-//        processor.route("/", new HttpHandle() {
-//            byte[] body = "welcome to smart-socket http server!".getBytes();
-//
-//            @Override
-//            public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
-//
-//                response.setHeader(HttpHeaderConstant.Names.CONTENT_LENGTH, body.length + "");
-//                response.getOutputStream().write(body);
-//            }
-//        });
+        processor.route("/", new HttpHandle() {
+            byte[] body = "welcome to smart-socket http server!".getBytes();
+
+            @Override
+            public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
+
+                response.setHeader(HttpHeaderConstant.Names.CONTENT_LENGTH, body.length + "");
+                response.getOutputStream().write(body);
+            }
+        });
         processor.route("/upload", new HttpHandle() {
             @Override
             public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
