@@ -59,6 +59,7 @@ public class StaticResourceHandle extends HttpHandle {
             response.write(ByteBuffer.wrap(URL_404.getBytes()));
             return;
         }
+        LOGGER.info("请求URL:{}", request.getRequestURI());
         String contentType = Mimetypes.getInstance().getMimetype(file);
         response.setHeader(HttpHeaderConstant.Names.CONTENT_TYPE, contentType + "; charset=utf-8");
         FileInputStream fis = new FileInputStream(file);
