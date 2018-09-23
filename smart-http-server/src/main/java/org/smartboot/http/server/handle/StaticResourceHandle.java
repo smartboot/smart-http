@@ -53,8 +53,8 @@ public class StaticResourceHandle extends HttpHandle {
     @Override
     public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
         String fileName = request.getRequestURI();
-        if (StringUtils.equals(fileName, "/")) {
-            fileName = "/index.html";
+        if (StringUtils.endsWith(fileName, "/")) {
+            fileName += "index.html";
         }
         File file = new File(baseDir, fileName);
         if (!file.isFile()) {
