@@ -115,6 +115,7 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
     public void stateEvent(AioSession<Http11Request> session, StateMachineEnum stateMachineEnum, Throwable throwable) {
         switch (stateMachineEnum) {
             case NEW_SESSION:
+                LOGGER.info("new connection:{}", session);
                 session.setAttachment(new Http11Request());
                 break;
             case FLOW_LIMIT:
@@ -126,6 +127,9 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
             case PROCESS_EXCEPTION:
                 LOGGER.error("process request exception", throwable);
                 session.close();
+                break;
+            case SESSION_CLOSED:
+                LOGGER.info("connection closed:{}", session);
                 break;
         }
     }
