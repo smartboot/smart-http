@@ -31,6 +31,9 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
     public Http11Request decode(ByteBuffer buffer, AioSession<Http11Request> session) {
         Http11Request entityV2 = session.getAttachment();
         byte[] b = BYTE_LOCAL.get();
+        if (b.length < buffer.remaining()) {
+            b = new byte[buffer.remaining()];
+        }
         buffer.mark();
         State curState = entityV2.state;
         boolean flag = false;
@@ -42,11 +45,11 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                     if (methodLength > 0) {
                         curState = State.uri;
                         entityV2.methodEnum = MethodEnum.getByMethod(b, 0, methodLength);
-                        if(entityV2.methodEnum==null){
-                            byte[] b1=new byte[buffer.remaining()];
+                        if (entityV2.methodEnum == null) {
+                            byte[] b1 = new byte[buffer.remaining()];
                             buffer.get(b1);
                             LOGGER.info(new String(b1));
-                            throw new DecoderException(new String(b,0,methodLength));
+                            throw new DecoderException(new String(b, 0, methodLength));
                         }
                     } else {
                         break;
@@ -104,7 +107,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                         }
                     } else {
                         int valueLength = scanUntil(buffer, Consts.CR, b);
-                        LOGGER.info(valueLength+"");
+                        LOGGER.info(valueLength + "");
                         if (valueLength > 0) {
                             curState = State.head_line_LF;
                             entityV2.headMap.put(entityV2.tmpHeaderName, convertToString(b, valueLength));
@@ -214,7 +217,6 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
     private int scanUntil(ByteBuffer buffer, byte split, byte[] bytes) {
         int avail = buffer.remaining();
         for (int i = 0; i < avail; ) {
-            LOGGER.info("aa"+i+"");
             bytes[i] = buffer.get();
             if (bytes[i] == split) {
                 buffer.mark();
