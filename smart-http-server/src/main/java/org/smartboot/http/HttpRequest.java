@@ -25,4 +25,8 @@ public interface HttpRequest {
     String getOriginalUri();
 
     void setQueryString(String queryString);
+
+    String getContentType();
+
+    int getContentLength();
 }

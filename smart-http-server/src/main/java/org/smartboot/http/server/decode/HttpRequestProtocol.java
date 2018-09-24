@@ -1,15 +1,20 @@
 package org.smartboot.http.server.decode;
 
+import org.apache.commons.lang.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartboot.http.enums.MethodEnum;
 import org.smartboot.http.enums.State;
 import org.smartboot.http.utils.Consts;
+import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.socket.Protocol;
+import org.smartboot.socket.extension.decoder.DelimiterFrameDecoder;
+import org.smartboot.socket.extension.decoder.FixedLengthFrameDecoder;
 import org.smartboot.socket.transport.AioSession;
 import org.smartboot.socket.util.BufferUtils;
 import org.smartboot.socket.util.DecoderException;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
@@ -148,23 +153,28 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                 case head_finished:
                     //Post请求
                     if (entityV2.getMethodRange() == MethodEnum.POST) {
+                        entityV2.setContentLength(NumberUtils.toInt(entityV2.getHeader(HttpHeaderConstant.Names.CONTENT_LENGTH), -1));
                         //文件上传
-//                        if (HttpHeaderConstant.Values.MULTIPART_FORM_DATA.equals(entityV2.getContentType())) {
-//                            curState = State.finished;
-//                            break;
-//                        } else {
-//                            entityV2.setBodyForm(new FixedLengthFrameDecoder(entityV2.getContentLength()));
-//                            curState = State.body;
-//                        }
-                        throw new UnsupportedOperationException("unsupport");
+                        if (HttpHeaderConstant.Values.MULTIPART_FORM_DATA.equals(entityV2.getContentType())) {
+                            try {
+                                entityV2.setInputStream(session.getInputStream());
+                            } catch (IOException e) {
+                                throw new DecoderException("session.getInputStream exception,", e);
+                            }
+                            curState = State.finished;
+                            break;
+                        } else {
+                            entityV2.bodyContentDecoder = entityV2.getContentLength() > 0 ? new FixedLengthFrameDecoder(entityV2.getContentLength()) : new DelimiterFrameDecoder(Consts.CRLF, 64);
+                            curState = State.body;
+                        }
                     } else {
                         curState = State.finished;
                         break;
                     }
                 case body:
-//                    if (entityV2.getBodyForm().decode(buffer)) {
-                    curState = State.finished;
-//                    }
+                    if (entityV2.bodyContentDecoder.decode(buffer)) {
+                        curState = State.finished;
+                    }
                     buffer.mark();
                     break;
                 case finished:
