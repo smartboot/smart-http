@@ -1,5 +1,6 @@
 package org.smartboot.http.server.decode;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -155,7 +156,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                     if (entityV2.getMethodRange() == MethodEnum.POST) {
                         entityV2.setContentLength(NumberUtils.toInt(entityV2.getHeader(HttpHeaderConstant.Names.CONTENT_LENGTH), -1));
                         //文件上传
-                        if (HttpHeaderConstant.Values.MULTIPART_FORM_DATA.equals(entityV2.getContentType())) {
+                        if (StringUtils.startsWith(entityV2.getContentType(), HttpHeaderConstant.Values.MULTIPART_FORM_DATA)) {
                             try {
                                 entityV2.setInputStream(session.getInputStream(entityV2.getContentLength()));
                             } catch (IOException e) {
