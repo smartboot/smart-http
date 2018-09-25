@@ -29,4 +29,6 @@ public interface HttpRequest {
     String getContentType();
 
     int getContentLength();
+
+    String getParameter(String name);
 }
