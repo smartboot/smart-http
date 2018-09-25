@@ -145,7 +145,11 @@ public class Http11Request implements HttpRequest {
         tmpHeaderName = null;
         tmpValEnable = false;
         tmpHeaderValue.reset();
+        bodyContentDecoder = null;
+        originalUri = null;
         paramMap = null;
+        contentType=null;
+        contentLength=-1;
     }
 
     @Override
