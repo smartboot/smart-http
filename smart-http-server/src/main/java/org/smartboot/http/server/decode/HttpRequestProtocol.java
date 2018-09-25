@@ -157,7 +157,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                         //文件上传
                         if (HttpHeaderConstant.Values.MULTIPART_FORM_DATA.equals(entityV2.getContentType())) {
                             try {
-                                entityV2.setInputStream(session.getInputStream());
+                                entityV2.setInputStream(session.getInputStream(entityV2.getContentLength()));
                             } catch (IOException e) {
                                 throw new DecoderException("session.getInputStream exception,", e);
                             }
