@@ -20,7 +20,7 @@ smart-http是一款学习型开源http服务器项目，其通信内核采用了
  
 ## 性能表现
 
-待定
+[点击这里](https://www.techempower.com/benchmarks/#section=test&runid=586ebf0d-4369-4648-8293-590ab295e64d&hw=ph&test=plaintext) 世界排名37
 
 ## 参与贡献
 
