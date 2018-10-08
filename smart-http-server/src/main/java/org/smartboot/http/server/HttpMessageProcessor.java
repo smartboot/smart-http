@@ -28,14 +28,19 @@ import java.io.IOException;
  */
 public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpMessageProcessor.class);
+    private static byte[] b = ("HTTP/1.1 200 OK\r\n" +
+            "Server:smart-socket\r\n" +
+            "Connection:keep-alive\r\n" +
+            "Host:localhost\r\n" +
+            "Content-Length:31\r\n" +
+            "Date:Wed, 11 Apr 2018 12:35:01 GMT\r\n\r\n" +
+            "Hello smart-socket http server!").getBytes();
     private ThreadLocal<DefaultHttpResponse> RESPONSE_THREAD_LOCAL = null;
     /**
      * Http消息处理器
      */
     private HttpHandle processHandle;
-
     private RouteHandle routeHandle;
-
     private ResponseHandle responseHandle;
 
     public HttpMessageProcessor(String baseDir) {
@@ -66,7 +71,8 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
         });
         AioQuickServer<Http11Request> server = new AioQuickServer<Http11Request>(8080, new HttpRequestProtocol(), processor);
         server.setWriteQueueSize(1024);
-        server.setReadBufferSize(1024 * 4);
+        server.setReadBufferSize(1024 * 8);
+        server.setFairIO(true);
         try {
             server.start();
         } catch (IOException e) {
@@ -113,9 +119,14 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
 
     @Override
     public void stateEvent(AioSession<Http11Request> session, StateMachineEnum stateMachineEnum, Throwable throwable) {
+//        LOGGER.info(stateMachineEnum+" "+session.getSessionID());
+//        if(throwable!=null){
+//            throwable.printStackTrace();
+//            System.exit(1);
+//        }
         switch (stateMachineEnum) {
             case NEW_SESSION:
-                LOGGER.info("new connection:{}", session);
+//                LOGGER.info("new connection:{}", session);
                 session.setAttachment(new Http11Request());
                 break;
             case FLOW_LIMIT:
@@ -129,7 +140,7 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
                 session.close();
                 break;
             case SESSION_CLOSED:
-                LOGGER.info("connection closed:{}", session);
+//                LOGGER.info("connection closed:{}", session);
                 break;
         }
     }
