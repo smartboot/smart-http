@@ -58,6 +58,7 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
     }
 
     public static void main(String[] args) {
+        System.setProperty("sun.nio.ch.maxCompletionHandlersOnStack","0");
         HttpMessageProcessor processor = new HttpMessageProcessor("./");
         processor.route("/plaintext", new HttpHandle() {
             byte[] body = "Hello World!".getBytes();
@@ -72,7 +73,8 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
         AioQuickServer<Http11Request> server = new AioQuickServer<Http11Request>(8080, new HttpRequestProtocol(), processor);
         server.setWriteQueueSize(1024);
         server.setReadBufferSize(1024 * 8);
-        server.setFairIO(true);
+        server.setBannerEnabled(false);
+//        server.setFairIO(true);
         try {
             server.start();
         } catch (IOException e) {
