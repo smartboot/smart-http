@@ -13,6 +13,7 @@ import org.smartboot.http.HttpRequest;
 import org.smartboot.http.server.handle.http11.ResponseHandle;
 import org.smartboot.http.utils.Consts;
 import org.smartboot.http.utils.HttpHeaderConstant;
+import org.smartboot.socket.buffer.ByteBuf;
 import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
@@ -31,7 +32,7 @@ final class HttpOutputStream extends OutputStream {
     boolean chunkedEnd = false;
     private NoneOutputHttpResponseWrap response = new NoneOutputHttpResponseWrap();
     private AioSession aioSession;
-    private ByteBuffer cacheBuffer = ByteBuffer.allocate(DEFAULT_CACHE_SIZE);
+    private ByteBuf cacheBuffer;
     private boolean committed = false, closed = false;
     private boolean chunked = false;
     private HttpRequest request;
@@ -45,7 +46,7 @@ final class HttpOutputStream extends OutputStream {
         this.aioSession = aioSession;
         this.request = request;
         this.response.setResponse(response);
-        cacheBuffer.clear();
+        cacheBuffer = aioSession.allocateBuf(DEFAULT_CACHE_SIZE);
         chunkedEnd = committed = closed = chunked = false;
     }
 
@@ -55,11 +56,11 @@ final class HttpOutputStream extends OutputStream {
             writeHead();
             committed = true;
         }
-        if (!cacheBuffer.hasRemaining()) {
+        if (!cacheBuffer.buffer().hasRemaining()) {
             flush();
         }
-        cacheBuffer.put((byte) b);
-        if (!cacheBuffer.hasRemaining()) {
+        cacheBuffer.buffer().put((byte) b);
+        if (!cacheBuffer.buffer().hasRemaining()) {
             flush();
         }
     }
@@ -69,15 +70,15 @@ final class HttpOutputStream extends OutputStream {
             writeHead();
             committed = true;
         }
-        if (!cacheBuffer.hasRemaining()) {
+        if (!cacheBuffer.buffer().hasRemaining()) {
             flush();
         }
         do {
-            int min = len < cacheBuffer.remaining() ? len : cacheBuffer.remaining();
-            cacheBuffer.put(b, off, min);
+            int min = len < cacheBuffer.buffer().remaining() ? len : cacheBuffer.buffer().remaining();
+            cacheBuffer.buffer().put(b, off, min);
             off += min;
             len -= min;
-            if (!cacheBuffer.hasRemaining()) {
+            if (!cacheBuffer.buffer().hasRemaining()) {
                 flush();
             }
         } while (len > 0);
@@ -88,19 +89,19 @@ final class HttpOutputStream extends OutputStream {
             writeHead();
             committed = true;
         }
-        if (!cacheBuffer.hasRemaining()) {
+        if (!cacheBuffer.buffer().hasRemaining()) {
             flush();
         }
-        if (cacheBuffer.remaining() >= buffer.remaining()) {
-            cacheBuffer.put(buffer);
+        if (cacheBuffer.buffer().remaining() >= buffer.remaining()) {
+            cacheBuffer.buffer().put(buffer);
         } else {
-            while (cacheBuffer.hasRemaining()) {
-                cacheBuffer.put(buffer.get());
+            while (cacheBuffer.buffer().hasRemaining()) {
+                cacheBuffer.buffer().put(buffer.get());
             }
             write(buffer);
         }
 
-        if (!cacheBuffer.hasRemaining()) {
+        if (!cacheBuffer.buffer().hasRemaining()) {
             flush();
         }
     }
@@ -109,7 +110,7 @@ final class HttpOutputStream extends OutputStream {
         responseHandle.doHandle(request, response);//防止在handle中调用outputStream操作
         chunked = StringUtils.equals(HttpHeaderConstant.Values.CHUNKED, response.getHeader(HttpHeaderConstant.Names.TRANSFER_ENCODING));
 
-        cacheBuffer.put(getBytes(request.getProtocol()))
+        cacheBuffer.buffer().put(getBytes(request.getProtocol()))
                 .put(Consts.SP)
                 .put(response.getHttpStatus().getValueStringBytes())
                 .put(Consts.SP)
@@ -125,29 +126,29 @@ final class HttpOutputStream extends OutputStream {
             byte[] headVal = getBytes(entry.getValue());
 
             int needLength = headKey.length + headVal.length + 3;
-            if (cacheBuffer.remaining() < needLength) {
-                cacheBuffer.flip();
+            if (cacheBuffer.buffer().remaining() < needLength) {
+                cacheBuffer.buffer().flip();
                 aioSession.write(cacheBuffer);
-                cacheBuffer = ByteBuffer.allocate(DEFAULT_CACHE_SIZE);
+                cacheBuffer = aioSession.allocateBuf(DEFAULT_CACHE_SIZE);
             }
-            cacheBuffer.put(headKey)
+            cacheBuffer.buffer().put(headKey)
                     .put(Consts.COLON)
                     .put(headVal)
                     .put(Consts.CRLF);
         }
-        if (cacheBuffer.remaining() >= 2) {
-            cacheBuffer.put(Consts.CRLF);
+        if (cacheBuffer.buffer().remaining() >= 2) {
+            cacheBuffer.buffer().put(Consts.CRLF);
         } else {
-            cacheBuffer.flip();
+            cacheBuffer.buffer().flip();
             aioSession.write(cacheBuffer);
-            cacheBuffer = ByteBuffer.allocate(DEFAULT_CACHE_SIZE);
-            cacheBuffer.put(Consts.CRLF);
+            cacheBuffer = aioSession.allocateBuf(DEFAULT_CACHE_SIZE);
+            cacheBuffer.buffer().put(Consts.CRLF);
 //            aioSession.write(ByteBuffer.wrap(new byte[]{Consts.CR, Consts.LF}));
         }
         if (chunked) {
-            cacheBuffer.flip();
+            cacheBuffer.buffer().flip();
             aioSession.write(cacheBuffer);
-            cacheBuffer = ByteBuffer.allocate(DEFAULT_CACHE_SIZE);
+            cacheBuffer = aioSession.allocateBuf(DEFAULT_CACHE_SIZE);
         }
     }
 
@@ -157,26 +158,28 @@ final class HttpOutputStream extends OutputStream {
             writeHead();
             committed = true;
         }
-        cacheBuffer.flip();
-        if (cacheBuffer.hasRemaining()) {
-            ByteBuffer buffer = null;
+        cacheBuffer.buffer().flip();
+        if (cacheBuffer.buffer().hasRemaining()) {
+            ByteBuf buffer = null;
             if (chunked) {
-                byte[] start = getBytes(Integer.toHexString(cacheBuffer.remaining()) + "\r\n");
-                buffer = ByteBuffer.allocate(start.length + cacheBuffer.remaining() + Consts.CRLF.length + (chunkedEnd ? endChunked.length : 0));
-                buffer.put(start).put(cacheBuffer).put(Consts.CRLF);
+                byte[] start = getBytes(Integer.toHexString(cacheBuffer.buffer().remaining()) + "\r\n");
+                buffer = aioSession.allocateBuf(start.length + cacheBuffer.buffer().remaining() + Consts.CRLF.length + (chunkedEnd ? endChunked.length : 0));
+                buffer.buffer().put(start).put(cacheBuffer.buffer()).put(Consts.CRLF);
                 if (chunkedEnd) {
-                    buffer.put(endChunked);
+                    buffer.buffer().put(endChunked);
                 }
-                buffer.flip();
+                buffer.buffer().flip();
             } else {
                 buffer = cacheBuffer;
-                cacheBuffer = ByteBuffer.allocate(cacheBuffer.capacity());
+                cacheBuffer = aioSession.allocateBuf(cacheBuffer.buffer().capacity());
             }
             aioSession.write(buffer);
         } else if (chunked && chunkedEnd) {
-            aioSession.write(ByteBuffer.wrap(endChunked));
+            ByteBuf byteBuf=aioSession.allocateBuf(endChunked.length);
+            byteBuf.buffer().put(endChunked).flip();
+            aioSession.write(byteBuf);
         }
-        cacheBuffer.clear();
+        cacheBuffer.buffer().clear();
     }
 
     @Override

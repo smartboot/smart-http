@@ -9,6 +9,7 @@ import org.smartboot.http.enums.State;
 import org.smartboot.http.utils.Consts;
 import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.socket.Protocol;
+import org.smartboot.socket.buffer.ByteBuf;
 import org.smartboot.socket.extension.decoder.DelimiterFrameDecoder;
 import org.smartboot.socket.extension.decoder.FixedLengthFrameDecoder;
 import org.smartboot.socket.transport.AioSession;
@@ -197,7 +198,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
     }
 
     @Override
-    public ByteBuffer encode(Http11Request msg, AioSession<Http11Request> session) {
+    public ByteBuf encode(Http11Request msg, AioSession<Http11Request> session) {
         return null;
     }
 

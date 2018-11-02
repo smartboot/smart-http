@@ -17,6 +17,7 @@ import org.smartboot.http.server.http11.DefaultHttpResponse;
 import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.StateMachineEnum;
+import org.smartboot.socket.buffer.ByteBuf;
 import org.smartboot.socket.transport.AioQuickServer;
 import org.smartboot.socket.transport.AioSession;
 
@@ -28,14 +29,19 @@ import java.io.IOException;
  */
 public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpMessageProcessor.class);
+    private static byte[] b = ("HTTP/1.1 200 OK\r\n" +
+            "Server:smart-socket\r\n" +
+            "Connection:keep-alive\r\n" +
+            "Host:localhost\r\n" +
+            "Content-Length:31\r\n" +
+            "Date:Wed, 11 Apr 2018 12:35:01 GMT\r\n\r\n" +
+            "Hello smart-socket http server!").getBytes();
     private ThreadLocal<DefaultHttpResponse> RESPONSE_THREAD_LOCAL = null;
     /**
      * Http消息处理器
      */
     private HttpHandle processHandle;
-
     private RouteHandle routeHandle;
-
     private ResponseHandle responseHandle;
 
     public HttpMessageProcessor(String baseDir) {
@@ -53,6 +59,7 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
     }
 
     public static void main(String[] args) {
+//        System.setProperty("sun.nio.ch.maxCompletionHandlersOnStack","0");
         HttpMessageProcessor processor = new HttpMessageProcessor("./");
         processor.route("/plaintext", new HttpHandle() {
             byte[] body = "Hello World!".getBytes();
@@ -65,8 +72,11 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
             }
         });
         AioQuickServer<Http11Request> server = new AioQuickServer<Http11Request>(8080, new HttpRequestProtocol(), processor);
-        server.setWriteQueueSize(1024);
-        server.setReadBufferSize(1024 * 4);
+        server.setWriteQueueSize(1024*8);
+        server.setReadBufferSize(1024);
+        server.setBannerEnabled(false);
+//        server.setThreadNum(16);
+//        server.setFairIO(true);
         try {
             server.start();
         } catch (IOException e) {
@@ -77,14 +87,16 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
     @Override
     public void process(AioSession<Http11Request> session, Http11Request request) {
         try {
-//            if (true) {
+            if (true) {
 //                ByteBuffer buffer = DirectBufferUtil.getTemporaryDirectBuffer(b.length).put(b);
 //                buffer.flip();
-////                ByteBuffer buffer=ByteBuffer.wrap(b);
-//                session.write(buffer);
-//                request.rest();
-//                return;
-//            }
+//                ByteBuffer buffer=ByteBuffer.wrap(b);
+                ByteBuf byteBuf=session.allocateBuf(b.length);
+                byteBuf.buffer().put(b).flip();
+                session.write(byteBuf);
+                request.rest();
+                return;
+            }
 //            System.out.println(request);
             DefaultHttpResponse httpResponse = RESPONSE_THREAD_LOCAL.get();
             httpResponse.init(session, request);
@@ -113,9 +125,14 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
 
     @Override
     public void stateEvent(AioSession<Http11Request> session, StateMachineEnum stateMachineEnum, Throwable throwable) {
+//        LOGGER.info(stateMachineEnum+" "+session.getSessionID());
+//        if(throwable!=null){
+//            throwable.printStackTrace();
+//            System.exit(1);
+//        }
         switch (stateMachineEnum) {
             case NEW_SESSION:
-                LOGGER.info("new connection:{}", session);
+//                LOGGER.info("new connection:{}", session);
                 session.setAttachment(new Http11Request());
                 break;
             case FLOW_LIMIT:
@@ -129,7 +146,7 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
                 session.close();
                 break;
             case SESSION_CLOSED:
-                LOGGER.info("connection closed:{}", session);
+//                LOGGER.info("connection closed:{}", session);
                 break;
         }
     }
