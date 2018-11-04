@@ -19,8 +19,10 @@ import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.transport.AioQuickServer;
 import org.smartboot.socket.transport.AioSession;
+import org.smartboot.socket.transport.DirectBufferUtil;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * @author 三刀
@@ -85,14 +87,14 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
     @Override
     public void process(AioSession<Http11Request> session, Http11Request request) {
         try {
-//            if (true) {
-//                ByteBuffer buffer = DirectBufferUtil.getTemporaryDirectBuffer(b.length).put(b);
-//                buffer.flip();
-////                ByteBuffer buffer=ByteBuffer.wrap(b);
-//                session.write(buffer);
-//                request.rest();
-//                return;
-//            }
+            if (true) {
+                ByteBuffer buffer = DirectBufferUtil.getTemporaryDirectBuffer(b.length).put(b);
+                buffer.flip();
+//                ByteBuffer buffer=ByteBuffer.wrap(b);
+                session.write(buffer);
+                request.rest();
+                return;
+            }
 //            System.out.println(request);
             DefaultHttpResponse httpResponse = RESPONSE_THREAD_LOCAL.get();
             httpResponse.init(session, request);
