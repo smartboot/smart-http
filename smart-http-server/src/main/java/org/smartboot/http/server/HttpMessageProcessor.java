@@ -91,7 +91,7 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
 //                ByteBuffer buffer = DirectBufferUtil.getTemporaryDirectBuffer(b.length).put(b);
 //                buffer.flip();
 //                ByteBuffer buffer=ByteBuffer.wrap(b);
-                ByteBuf byteBuf=session.allocateBuf(b.length);
+                ByteBuf byteBuf = session.allocateBuf(b.length);
                 byteBuf.buffer().put(b).flip();
                 session.write(byteBuf);
                 request.rest();
@@ -144,6 +144,9 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
             case PROCESS_EXCEPTION:
                 LOGGER.error("process request exception", throwable);
                 session.close();
+                break;
+            case OUTPUT_EXCEPTION:
+                LOGGER.error("", throwable);
                 break;
             case SESSION_CLOSED:
 //                LOGGER.info("connection closed:{}", session);
