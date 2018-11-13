@@ -8,17 +8,16 @@
 
 package org.smartboot.http.server.http11;
 
-import org.apache.commons.lang.StringUtils;
-import org.smartboot.http.HttpRequest;
-import org.smartboot.http.server.handle.http11.ResponseHandle;
+import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.utils.Consts;
 import org.smartboot.http.utils.HttpHeaderConstant;
-import org.smartboot.socket.buffer.ByteBuf;
-import org.smartboot.socket.transport.AioSession;
+import org.smartboot.socket.util.QuickTimerTask;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -26,130 +25,127 @@ import java.util.Map;
  * @version V1.0 , 2018/2/3
  */
 final class HttpOutputStream extends OutputStream {
-    public static final String DEFAULT_CONTENT_TYPE = "text/html; charset=utf-8";
-    public static final int DEFAULT_CACHE_SIZE = 512;
-    private static final byte[] endChunked = new byte[]{'0', Consts.CR, Consts.LF, Consts.CR, Consts.LF};
-    boolean chunkedEnd = false;
-    private NoneOutputHttpResponseWrap response = new NoneOutputHttpResponseWrap();
-    private AioSession aioSession;
-    private ByteBuf cacheBuffer;
-    private boolean committed = false, closed = false;
-    private boolean chunked = false;
-    private HttpRequest request;
-    private ResponseHandle responseHandle;
 
-    public HttpOutputStream(ResponseHandle responseHandle) {
-        this.responseHandle = responseHandle;
+    public static final String DEFAULT_CONTENT_TYPE = "text/html; charset=utf-8";
+    public static final byte[] DEFAULT_CONTENT_TYPE_BYTES = "text/html; charset=utf-8".getBytes(Consts.DEFAULT_CHARSET);
+    public static final int DEFAULT_CACHE_SIZE = 512;
+    private static final byte[] CHUNK_LINE = (HttpHeaderConstant.Names.TRANSFER_ENCODING + ":" + HttpHeaderConstant.Values.CHUNKED + "\r\n").getBytes();
+    private static final String SERVER_LIN_STR = HttpHeaderConstant.Names.SERVER + ":smart-http\r\n\r\n";
+    private static final byte[] SERVE_LINE = SERVER_LIN_STR.getBytes();
+    private static final byte[] CONTENT_TYPE_LINE = (HttpHeaderConstant.Names.CONTENT_TYPE + ":text/html; charset=utf-8\r\n").getBytes();
+    private static final byte[] endChunked = new byte[]{'0', Consts.CR, Consts.LF, Consts.CR, Consts.LF};
+
+    private static final byte[][] CONTENT_LENGTH_CACHE = new byte[100][];
+    private static SimpleDateFormat sdf = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
+    private static byte[] date;
+
+    static {
+        for (int i = 0; i < CONTENT_LENGTH_CACHE.length; i++) {
+            CONTENT_LENGTH_CACHE[i] = (HttpHeaderConstant.Names.CONTENT_LENGTH + ":" + i + "\r\n").getBytes();
+        }
+        flushDate();
+        new ResponseDateTimer();
     }
 
-    void init(AioSession aioSession, DefaultHttpResponse response, HttpRequest request) {
-        this.aioSession = aioSession;
-        this.request = request;
-        this.response.setResponse(response);
-        cacheBuffer = aioSession.allocateBuf(DEFAULT_CACHE_SIZE);
+    boolean chunkedEnd = false;
+    private DefaultHttpResponse response;
+    private OutputStream outputStream;
+    private boolean committed = false, closed = false;
+    private boolean chunked = false;
+
+    public HttpOutputStream() {
+
+    }
+
+    private static void flushDate() {
+        HttpOutputStream.date = (HttpHeaderConstant.Names.DATE + ":" + sdf.format(new Date()) + "\r\n" + SERVER_LIN_STR).getBytes();
+    }
+
+    void init(OutputStream outputStream, DefaultHttpResponse response) {
+        this.outputStream = outputStream;
+        this.response = response;
+//        cacheBuffer = aioSession.allocateBuf(DEFAULT_CACHE_SIZE);
         chunkedEnd = committed = closed = chunked = false;
     }
 
     @Override
     public final void write(int b) throws IOException {
-        if (!committed) {
-            writeHead();
-            committed = true;
-        }
-        if (!cacheBuffer.buffer().hasRemaining()) {
-            flush();
-        }
-        cacheBuffer.buffer().put((byte) b);
-        if (!cacheBuffer.buffer().hasRemaining()) {
-            flush();
-        }
+//        if (!committed) {
+//            writeHead();
+//            committed = true;
+//        }
+//        if (!cacheBuffer.buffer().hasRemaining()) {
+//            flush();
+//        }
+//        cacheBuffer.buffer().put((byte) b);
+//        if (!cacheBuffer.buffer().hasRemaining()) {
+//            flush();
+//        }
     }
 
     public final void write(byte b[], int off, int len) throws IOException {
+//        if(true){
+//            response.setHttpStatus(HttpStatus.OK);
+//            outputStream.write(("HTTP/1.1 200 OK\r\n" +
+//                    "Connection:keep-alive\r\n" +
+//                    "Content-Length:11\r\n" +
+//                    "Date:Wed, 11 Apr 2018 12:35:01 GMT\r\n\r\n" +
+//                    "Hello Word!").getBytes());
+//            return;
+//        }
         if (!committed) {
             writeHead();
             committed = true;
         }
-        if (!cacheBuffer.buffer().hasRemaining()) {
-            flush();
-        }
-        do {
-            int min = len < cacheBuffer.buffer().remaining() ? len : cacheBuffer.buffer().remaining();
-            cacheBuffer.buffer().put(b, off, min);
-            off += min;
-            len -= min;
-            if (!cacheBuffer.buffer().hasRemaining()) {
-                flush();
-            }
-        } while (len > 0);
-    }
+        if (chunked) {
 
-    public final void write(ByteBuffer buffer) throws IOException {
-        if (!committed) {
-            writeHead();
-            committed = true;
-        }
-        if (!cacheBuffer.buffer().hasRemaining()) {
-            flush();
-        }
-        if (cacheBuffer.buffer().remaining() >= buffer.remaining()) {
-            cacheBuffer.buffer().put(buffer);
         } else {
-            while (cacheBuffer.buffer().hasRemaining()) {
-                cacheBuffer.buffer().put(buffer.get());
-            }
-            write(buffer);
+            outputStream.write(b, off, len);
         }
 
-        if (!cacheBuffer.buffer().hasRemaining()) {
-            flush();
-        }
     }
 
     private void writeHead() throws IOException {
-        responseHandle.doHandle(request, response);//防止在handle中调用outputStream操作
-        chunked = StringUtils.equals(HttpHeaderConstant.Values.CHUNKED, response.getHeader(HttpHeaderConstant.Names.TRANSFER_ENCODING));
-
-        cacheBuffer.buffer().put(getBytes(request.getProtocol()))
-                .put(Consts.SP)
-                .put(response.getHttpStatus().getValueStringBytes())
-                .put(Consts.SP)
-                .put(response.getHttpStatus().getReasonPhraseBytes())
-                .put(Consts.CRLF);
-
-        if (response.getHeader(HttpHeaderConstant.Names.CONTENT_TYPE) == null) {
-            response.setHeader(HttpHeaderConstant.Names.CONTENT_TYPE, DEFAULT_CONTENT_TYPE);
+        if (response.getHttpStatus() == null) {
+            response.setHttpStatus(HttpStatus.OK);
         }
-
-        for (Map.Entry<String, String> entry : response.getHeaders().entrySet()) {
-            byte[] headKey = getBytes(entry.getKey());
-            byte[] headVal = getBytes(entry.getValue());
-
-            int needLength = headKey.length + headVal.length + 3;
-            if (cacheBuffer.buffer().remaining() < needLength) {
-                cacheBuffer.buffer().flip();
-                aioSession.write(cacheBuffer);
-                cacheBuffer = aioSession.allocateBuf(DEFAULT_CACHE_SIZE);
+//        outputStream.reset();
+        outputStream.write(response.getHttpStatus().getLineBytes());
+        if (!response.getHeaders().isEmpty()) {
+            for (Map.Entry<String, String> entry : response.getHeaders().entrySet()) {
+                outputStream.write(getBytes(entry.getKey() + ":" + entry.getValue() + "\r\n"));
             }
-            cacheBuffer.buffer().put(headKey)
-                    .put(Consts.COLON)
-                    .put(headVal)
-                    .put(Consts.CRLF);
         }
-        if (cacheBuffer.buffer().remaining() >= 2) {
-            cacheBuffer.buffer().put(Consts.CRLF);
+        if (response.getContentType() == null) {
+            outputStream.write(CONTENT_TYPE_LINE);
         } else {
-            cacheBuffer.buffer().flip();
-            aioSession.write(cacheBuffer);
-            cacheBuffer = aioSession.allocateBuf(DEFAULT_CACHE_SIZE);
-            cacheBuffer.buffer().put(Consts.CRLF);
-//            aioSession.write(ByteBuffer.wrap(new byte[]{Consts.CR, Consts.LF}));
+            outputStream.write((HttpHeaderConstant.Names.CONTENT_TYPE + ":" + response.getContentType() + "\r\n").getBytes());
         }
-        if (chunked) {
-            cacheBuffer.buffer().flip();
-            aioSession.write(cacheBuffer);
-            cacheBuffer = aioSession.allocateBuf(DEFAULT_CACHE_SIZE);
+        if (response.getHttpStatus() == HttpStatus.OK) {
+            if (response.getContentLength() >= 0 && response.getContentLength() < CONTENT_LENGTH_CACHE.length) {
+                outputStream.write(CONTENT_LENGTH_CACHE[response.getContentLength()]);
+            } else if (response.getContentLength() >= CONTENT_LENGTH_CACHE.length) {
+                outputStream.write(HttpHeaderConstant.HeaderBytes.CONTENT_LENGTH);
+                outputStream.write((response.getContentLength() + "").getBytes());
+                outputStream.write(Consts.CRLF);
+            } else if (response.getTransferEncoding() == null) {
+                chunked = true;
+                outputStream.write(CHUNK_LINE);
+            } else {
+                throw new RuntimeException();
+            }
         }
+
+
+        /**
+         * RFC2616 3.3.1
+         * 只能用 RFC 1123 里定义的日期格式来填充头域 (header field)的值里用到 HTTP-date 的地方
+         */
+//        if (date != null) {
+        outputStream.write(date);
+//        } else {
+//            outputStream.write(SERVE_LINE);
+//        }
     }
 
     @Override
@@ -158,28 +154,30 @@ final class HttpOutputStream extends OutputStream {
             writeHead();
             committed = true;
         }
-        cacheBuffer.buffer().flip();
-        if (cacheBuffer.buffer().hasRemaining()) {
-            ByteBuf buffer = null;
-            if (chunked) {
-                byte[] start = getBytes(Integer.toHexString(cacheBuffer.buffer().remaining()) + "\r\n");
-                buffer = aioSession.allocateBuf(start.length + cacheBuffer.buffer().remaining() + Consts.CRLF.length + (chunkedEnd ? endChunked.length : 0));
-                buffer.buffer().put(start).put(cacheBuffer.buffer()).put(Consts.CRLF);
-                if (chunkedEnd) {
-                    buffer.buffer().put(endChunked);
-                }
-                buffer.buffer().flip();
-            } else {
-                buffer = cacheBuffer;
-                cacheBuffer = aioSession.allocateBuf(cacheBuffer.buffer().capacity());
-            }
-            aioSession.write(buffer);
-        } else if (chunked && chunkedEnd) {
-            ByteBuf byteBuf=aioSession.allocateBuf(endChunked.length);
-            byteBuf.buffer().put(endChunked).flip();
-            aioSession.write(byteBuf);
-        }
-        cacheBuffer.buffer().clear();
+//        System.out.println("flash");
+        outputStream.flush();
+//        cacheBuffer.buffer().flip();
+//        if (cacheBuffer.buffer().hasRemaining()) {
+//            ByteBuf buffer = null;
+//            if (chunked) {
+//                byte[] start = getBytes(Integer.toHexString(cacheBuffer.buffer().remaining()) + "\r\n");
+//                buffer = aioSession.allocateBuf(start.length + cacheBuffer.buffer().remaining() + Consts.CRLF.length + (chunkedEnd ? endChunked.length : 0));
+//                buffer.buffer().put(start).put(cacheBuffer.buffer()).put(Consts.CRLF);
+//                if (chunkedEnd) {
+//                    buffer.buffer().put(endChunked);
+//                }
+//                buffer.buffer().flip();
+//            } else {
+//                buffer = cacheBuffer;
+//                cacheBuffer = aioSession.allocateBuf(cacheBuffer.buffer().capacity());
+//            }
+//            aioSession.write(buffer);
+//        } else if (chunked && chunkedEnd) {
+//            ByteBuf byteBuf = aioSession.allocateBuf(endChunked.length);
+//            byteBuf.buffer().put(endChunked).flip();
+//            aioSession.write(byteBuf);
+//        }
+//        cacheBuffer.buffer().clear();
     }
 
     @Override
@@ -188,7 +186,7 @@ final class HttpOutputStream extends OutputStream {
             return;
         }
         chunkedEnd = true;
-        flush();
+//        flush();
         closed = true;
     }
 
@@ -197,4 +195,17 @@ final class HttpOutputStream extends OutputStream {
 //        return str.getBytes();
     }
 
+    public static class ResponseDateTimer extends QuickTimerTask {
+
+
+        @Override
+        protected long getPeriod() {
+            return 5000;
+        }
+
+        @Override
+        public void run() {
+            HttpOutputStream.flushDate();
+        }
+    }
 }

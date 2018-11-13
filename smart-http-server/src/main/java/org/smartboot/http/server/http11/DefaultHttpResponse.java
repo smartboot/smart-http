@@ -8,15 +8,11 @@
 
 package org.smartboot.http.server.http11;
 
-import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
 import org.smartboot.http.enums.HttpStatus;
-import org.smartboot.http.server.handle.http11.ResponseHandle;
-import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,12 +30,18 @@ public class DefaultHttpResponse implements HttpResponse {
 
     private HttpOutputStream outputStream;
 
-    public DefaultHttpResponse(ResponseHandle responseHandle) {
-        outputStream = new HttpOutputStream(responseHandle);
+    private int contentLength = -1;
+
+    private String transferEncoding = null;
+
+    private String contentType;
+
+    public DefaultHttpResponse() {
+        outputStream = new HttpOutputStream();
     }
 
-    public void init(AioSession<? extends HttpRequest> session, HttpRequest request) {
-        this.outputStream.init(session, this, request);
+    public void init(OutputStream outputStream) {
+        this.outputStream.init(outputStream, this);
         headMap.clear();
         httpStatus = null;
     }
@@ -71,7 +73,31 @@ public class DefaultHttpResponse implements HttpResponse {
         return headMap;
     }
 
-    public void write(ByteBuffer buffer) throws IOException {
+    public void write(byte[] buffer) throws IOException {
         outputStream.write(buffer);
+    }
+
+    public int getContentLength() {
+        return contentLength;
+    }
+
+    public void setContentLength(int contentLength) {
+        this.contentLength = contentLength;
+    }
+
+    public String getTransferEncoding() {
+        return transferEncoding;
+    }
+
+    public void setTransferEncoding(String transferEncoding) {
+        this.transferEncoding = transferEncoding;
+    }
+
+    public String getContentType() {
+        return contentType;
+    }
+
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
     }
 }

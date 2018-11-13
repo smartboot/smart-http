@@ -448,11 +448,14 @@ public enum HttpStatus {
 
     private final byte[] reasonPhraseBytes;
 
+    private final byte[] lineBytes;
+
     private HttpStatus(int value, String reasonPhrase) {
         this.value = value;
         this.valueStringBytes = String.valueOf(value).getBytes();
         this.reasonPhrase = reasonPhrase;
         this.reasonPhraseBytes = reasonPhrase.getBytes();
+        this.lineBytes = ("HTTP/1.1 " + value + " " + reasonPhrase + "\r\n").getBytes();
     }
 
     /**
@@ -545,6 +548,10 @@ public enum HttpStatus {
      */
     public Series series() {
         return Series.valueOf(this);
+    }
+
+    public byte[] getLineBytes() {
+        return lineBytes;
     }
 
     /**

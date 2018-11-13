@@ -13,7 +13,6 @@ import org.smartboot.http.server.HttpMessageProcessor;
 import org.smartboot.http.server.decode.Http11Request;
 import org.smartboot.http.server.decode.HttpRequestProtocol;
 import org.smartboot.http.server.handle.HttpHandle;
-import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.extension.ssl.ClientAuth;
 import org.smartboot.socket.transport.AioQuickServer;
@@ -38,7 +37,7 @@ public class HttpBootstrap {
             @Override
             public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
 
-                response.setHeader(HttpHeaderConstant.Names.CONTENT_LENGTH, body.length + "");
+                response.setContentLength(body.length);
                 response.getOutputStream().write(body);
             }
         });
@@ -74,7 +73,6 @@ public class HttpBootstrap {
         // 定义服务器接受的消息类型以及各类消息对应的处理器
         int port = NumberUtils.toInt(System.getProperty("port"), 8080);
         AioQuickServer<Http11Request> server = new AioQuickServer<Http11Request>(port, new HttpRequestProtocol(), processor);
-        server.setWriteQueueSize(4);
         server.setReadBufferSize(1024);
         server.setThreadNum(8);
         try {

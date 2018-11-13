@@ -12,7 +12,6 @@ import org.smartboot.http.enums.HttpStatus;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
 import java.util.Map;
 
 /**
@@ -34,5 +33,9 @@ public interface HttpResponse {
 
     Map<String, String> getHeaders();
 
-    void write(ByteBuffer buffer) throws IOException;
+    void setContentLength(int contentLength);
+
+    void setContentType(String contentType);
+
+    void write(byte[] data) throws IOException;
 }

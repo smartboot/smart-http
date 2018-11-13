@@ -20,7 +20,6 @@ import org.smartboot.http.utils.Mimetypes;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
@@ -72,7 +71,7 @@ public class StaticResourceHandle extends HttpHandle {
             LOGGER.warn("file:{} not found!", request.getRequestURI());
             response.setHttpStatus(HttpStatus.NOT_FOUND);
             response.setHeader(HttpHeaderConstant.Names.CONTENT_TYPE, "text/html; charset=utf-8");
-            response.write(ByteBuffer.wrap(URL_404.getBytes()));
+            response.write(URL_404.getBytes());
             return;
         }
         //304
@@ -98,7 +97,7 @@ public class StaticResourceHandle extends HttpHandle {
         while (readPos < fileSize) {
             MappedByteBuffer mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, readPos, fileSize - readPos > READ_BUFFER ? READ_BUFFER : fileSize - readPos);
             readPos += mappedByteBuffer.remaining();
-            response.write(mappedByteBuffer);
+            response.write(mappedByteBuffer.array());
         }
         fis.close();
     }
