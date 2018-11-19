@@ -54,7 +54,8 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
     }
 
     public static void main(String[] args) {
-        System.setProperty("smart-socket.server.pageSize",(1024*1024*8)+"");
+        System.setProperty("smart-socket.server.pageSize", (1024 * 1024 * 16) + "");
+        System.setProperty("smart-socket.session.writeChunkSize", "2048");
         HttpMessageProcessor processor = new HttpMessageProcessor("./");
         processor.route("/plaintext", new HttpHandle() {
             byte[] body = "Hello World!".getBytes();
@@ -66,7 +67,7 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
             }
         });
         AioQuickServer<Http11Request> server = new AioQuickServer<Http11Request>(8080, new HttpRequestProtocol(), processor);
-        server.setReadBufferSize(1024);
+        server.setReadBufferSize(1024 * 16);
         server.setBannerEnabled(false);
 //        server.setThreadNum(1);
 //        server.setFairIO(true);
@@ -116,7 +117,7 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
     @Override
     public void stateEvent(AioSession<Http11Request> session, StateMachineEnum stateMachineEnum, Throwable throwable) {
 //        LOGGER.info(stateMachineEnum+" "+session.getSessionID());
-        if(throwable!=null){
+        if (throwable != null) {
 //            LOGGER.error("",throwable);
 //            System.exit(1);
         }
@@ -125,12 +126,12 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
 //                LOGGER.info("new connection:{}", session);
                 session.setAttachment(new Http11Request());
                 break;
-            case FLOW_LIMIT:
-                LOGGER.warn("流控");
-                break;
-            case RELEASE_FLOW_LIMIT:
-                LOGGER.warn("释放流控");
-                break;
+//            case FLOW_LIMIT:
+//                LOGGER.warn("流控");
+//                break;
+//            case RELEASE_FLOW_LIMIT:
+//                LOGGER.warn("释放流控");
+//                break;
             case PROCESS_EXCEPTION:
                 LOGGER.error("process request exception", throwable);
                 session.close();
