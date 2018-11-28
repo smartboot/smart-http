@@ -55,7 +55,7 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
 
     public static void main(String[] args) {
         System.setProperty("smart-socket.server.pageSize", (1024 * 1024 * 16) + "");
-        System.setProperty("smart-socket.session.writeChunkSize", "2048");
+        System.setProperty("smart-socket.session.writeChunkSize", (4096*2)+"");
         HttpMessageProcessor processor = new HttpMessageProcessor("./");
         processor.route("/plaintext", new HttpHandle() {
             byte[] body = "Hello World!".getBytes();
@@ -68,7 +68,7 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
         });
         AioQuickServer<Http11Request> server = new AioQuickServer<Http11Request>(8080, new HttpRequestProtocol(), processor);
         server.setReadBufferSize(1024 * 16);
-        server.setBannerEnabled(false);
+//        server.setBannerEnabled(false);
 //        server.setThreadNum(1);
 //        server.setFairIO(true);
         try {
