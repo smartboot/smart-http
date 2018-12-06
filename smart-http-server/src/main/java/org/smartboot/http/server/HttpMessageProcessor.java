@@ -54,8 +54,8 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
     }
 
     public static void main(String[] args) {
-        System.setProperty("smart-socket.server.pageSize", (1024 * 1024 * 16) + "");
-        System.setProperty("smart-socket.session.writeChunkSize", (4096*2)+"");
+        System.setProperty("smart-socket.server.pageSize", (1024 * 1024 * 5) + "");
+//        System.setProperty("smart-socket.session.writeChunkSize", (4096*2)+"");
         HttpMessageProcessor processor = new HttpMessageProcessor("./");
         processor.route("/plaintext", new HttpHandle() {
             byte[] body = "Hello World!".getBytes();
@@ -67,7 +67,7 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
             }
         });
         AioQuickServer<Http11Request> server = new AioQuickServer<Http11Request>(8080, new HttpRequestProtocol(), processor);
-        server.setReadBufferSize(1024 * 16);
+        server.setReadBufferSize(1024*4);
 //        server.setBannerEnabled(false);
 //        server.setThreadNum(1);
 //        server.setFairIO(true);
@@ -104,6 +104,7 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
 
 
             if (!StringUtils.equalsIgnoreCase(HttpHeaderConstant.Values.KEEPALIVE, request.getHeader(HttpHeaderConstant.Names.CONNECTION)) || httpResponse.getHttpStatus() != HttpStatus.OK) {
+                LOGGER.info("will close session");
                 session.close(false);
             }
 //            session.getOutputStream().write(b);

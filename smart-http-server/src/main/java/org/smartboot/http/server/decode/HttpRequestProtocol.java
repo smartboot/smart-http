@@ -17,6 +17,8 @@ import org.smartboot.socket.util.DecoderException;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author 三刀
@@ -31,7 +33,11 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
             return new byte[1024];
         }
     };
+    private List<ProtocolCache> protocolCaches = new ArrayList<ProtocolCache>(4);
 
+    public HttpRequestProtocol() {
+        protocolCaches.add(new ProtocolCache("HTTP/1.1"));
+    }
 
     @Override
     public Http11Request decode(ByteBuffer buffer, AioSession<Http11Request> session) {
@@ -39,6 +45,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
         byte[] b = BYTE_LOCAL.get();
         if (b.length < buffer.remaining()) {
             b = new byte[buffer.remaining()];
+            BYTE_LOCAL.set(b);
         }
         buffer.mark();
         State curState = entityV2.state;
@@ -70,11 +77,39 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                     }
                 case protocol:
                     int protocolLength = scanUntil(buffer, Consts.CR, b);
-                    if (protocolLength > 0) {
-                        entityV2.protocol = convertToString(b, protocolLength);
-                        curState = State.request_line_end;
-                    } else {
+                    if (protocolLength == 0) {
                         break;
+                    } else if (protocolLength == 8) {
+                        if (b[0] == 'H' && b[1] == 'T' && b[2] == 'T' && b[3] == 'P' && b[4] == '/' && b[6] == '.') {
+                            switch (b[5]) {
+                                case '0':
+                                    if (b[7] == '9') {
+                                        entityV2.protocol = "HTTP/0.9";
+                                    }
+                                    break;
+                                case '1':
+                                    if (b[7] == '0') {
+                                        entityV2.protocol = "HTTP/1.0";
+                                    } else if (b[7] == '1') {
+                                        entityV2.protocol = "HTTP/1.1";
+                                    }
+                                    break;
+                                case '2':
+                                    if (b[7] == '0') {
+                                        entityV2.protocol = "HTTP/2.0";
+                                    }
+                                    break;
+                                default:
+                                    throw new DecoderException("unsupport");
+                            }
+                            if (entityV2.protocol == null) {
+                                throw new DecoderException("unKnow protocol");
+                            }
+                            curState = State.request_line_end;
+                        }
+
+                    } else {
+                        throw new DecoderException("unsupport now");
                     }
                 case request_line_end:
                     if (buffer.remaining() >= 2) {
@@ -222,6 +257,9 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
         int avail = buffer.remaining();
         for (int i = 0; i < avail; ) {
             bytes[i] = buffer.get();
+            if (i == 0 && bytes[i] == Consts.SP) {
+                continue;
+            }
             if (bytes[i] == split) {
                 buffer.mark();
                 return i;
@@ -230,5 +268,15 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
         }
         buffer.reset();
         return 0;
+    }
+
+    class ProtocolCache {
+        byte[] bytes;
+        String str;
+
+        public ProtocolCache(String str) {
+            this.str = str;
+            bytes = str.getBytes();
+        }
     }
 }
