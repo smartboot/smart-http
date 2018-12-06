@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.smartboot.http.enums.MethodEnum;
 import org.smartboot.http.enums.State;
 import org.smartboot.http.utils.Consts;
+import org.smartboot.http.utils.HeaderNameEnum;
 import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.socket.Protocol;
 import org.smartboot.socket.extension.decoder.DelimiterFrameDecoder;
@@ -18,6 +19,8 @@ import org.smartboot.socket.util.DecoderException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -33,10 +36,18 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
             return new byte[1024];
         }
     };
-    private List<ProtocolCache> protocolCaches = new ArrayList<ProtocolCache>(4);
+    private final List<HeaderNameEnum> headerNameEnums = new ArrayList<>();
 
     public HttpRequestProtocol() {
-        protocolCaches.add(new ProtocolCache("HTTP/1.1"));
+        for (HeaderNameEnum headerNameEnum : HeaderNameEnum.values()) {
+            headerNameEnums.add(headerNameEnum);
+        }
+        Collections.sort(headerNameEnums, new Comparator<HeaderNameEnum>() {
+            @Override
+            public int compare(HeaderNameEnum o1, HeaderNameEnum o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
     }
 
     @Override
@@ -129,7 +140,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                     int nameLength = scanUntil(buffer, Consts.COLON, b);
                     if (nameLength > 0) {
                         curState = State.head_value;
-                        entityV2.tmpHeaderName = convertToString(b, nameLength);
+                        entityV2.tmpHeaderName = getHeaderName(b, nameLength);
                     } else {
                         break;
                     }
@@ -253,6 +264,16 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
         return endIndex < offset ? "" : new String(bytes, offset, endIndex - offset + 1);
     }
 
+
+    private String getHeaderName(byte[] bytes, int length) {
+        for (HeaderNameEnum nameEnum : headerNameEnums) {
+            if (nameEnum.equals(bytes, length)) {
+                return nameEnum.getName();
+            }
+        }
+        return convertToString(bytes, length);
+    }
+
     private int scanUntil(ByteBuffer buffer, byte split, byte[] bytes) {
         int avail = buffer.remaining();
         for (int i = 0; i < avail; ) {
@@ -262,6 +283,10 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
             }
             if (bytes[i] == split) {
                 buffer.mark();
+                //反向去空格
+                while (bytes[i - 1] == Consts.SP) {
+                    i--;
+                }
                 return i;
             }
             i++;
@@ -270,13 +295,4 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
         return 0;
     }
 
-    class ProtocolCache {
-        byte[] bytes;
-        String str;
-
-        public ProtocolCache(String str) {
-            this.str = str;
-            bytes = str.getBytes();
-        }
-    }
 }
