@@ -1,8 +1,5 @@
 package org.smartboot.http.utils;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * @author 三刀
  * @version V1.0 , 2018/12/6
@@ -55,16 +52,18 @@ public enum HeaderNameEnum {
     VIA("Via"),
     WARNING("Warning"),
     WWW_AUTHENTICATE("WWW-Authenticate");
-    private static List<HeaderNameEnum> headerNameEnums = new ArrayList<>();
 
     private String name;
 
     private byte[] bytes;
 
+    private byte[] bytesWithColon;
+
 
     HeaderNameEnum(String name) {
         this.name = name;
         this.bytes = name.getBytes();
+        this.bytesWithColon = ("\r\n" + name + ":").getBytes();
     }
 
 
@@ -82,5 +81,9 @@ public enum HeaderNameEnum {
             }
         }
         return true;
+    }
+
+    public byte[] getBytesWithColon() {
+        return bytesWithColon;
     }
 }

@@ -18,10 +18,6 @@ import org.smartboot.socket.util.DecoderException;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 
 /**
  * @author 三刀
@@ -36,19 +32,6 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
             return new byte[1024];
         }
     };
-    private final List<HeaderNameEnum> headerNameEnums = new ArrayList<>();
-
-    public HttpRequestProtocol() {
-        for (HeaderNameEnum headerNameEnum : HeaderNameEnum.values()) {
-            headerNameEnums.add(headerNameEnum);
-        }
-        Collections.sort(headerNameEnums, new Comparator<HeaderNameEnum>() {
-            @Override
-            public int compare(HeaderNameEnum o1, HeaderNameEnum o2) {
-                return o1.getName().compareTo(o2.getName());
-            }
-        });
-    }
 
     @Override
     public Http11Request decode(ByteBuffer buffer, AioSession<Http11Request> session) {
@@ -266,7 +249,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
 
 
     private String getHeaderName(byte[] bytes, int length) {
-        for (HeaderNameEnum nameEnum : headerNameEnums) {
+        for (HeaderNameEnum nameEnum : HttpHeaderConstant.HEADER_NAME_ENUM_LIST) {
             if (nameEnum.equals(bytes, length)) {
                 return nameEnum.getName();
             }

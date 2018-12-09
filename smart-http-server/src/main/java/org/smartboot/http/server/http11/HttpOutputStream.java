@@ -10,6 +10,7 @@ package org.smartboot.http.server.http11;
 
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.utils.Consts;
+import org.smartboot.http.utils.HeaderNameEnum;
 import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.socket.util.QuickTimerTask;
 
@@ -32,7 +33,7 @@ final class HttpOutputStream extends OutputStream {
     private static final byte[] CHUNK_LINE = (HttpHeaderConstant.Names.TRANSFER_ENCODING + ":" + HttpHeaderConstant.Values.CHUNKED + "\r\n").getBytes();
     private static final String SERVER_LIN_STR = HttpHeaderConstant.Names.SERVER + ":smart-http\r\n\r\n";
     private static final byte[] SERVE_LINE = SERVER_LIN_STR.getBytes();
-    private static final byte[] CONTENT_TYPE_LINE = (HttpHeaderConstant.Names.CONTENT_TYPE + ":text/html; charset=utf-8\r\n").getBytes();
+    private static final byte[] CONTENT_TYPE_LINE = ("\r\n" + HttpHeaderConstant.Names.CONTENT_TYPE + ":text/html; charset=utf-8ddd").getBytes();
     private static final byte[] endChunked = new byte[]{'0', Consts.CR, Consts.LF, Consts.CR, Consts.LF};
 
     private static final byte[][] CONTENT_LENGTH_CACHE = new byte[100][];
@@ -41,7 +42,7 @@ final class HttpOutputStream extends OutputStream {
 
     static {
         for (int i = 0; i < CONTENT_LENGTH_CACHE.length; i++) {
-            CONTENT_LENGTH_CACHE[i] = (HttpHeaderConstant.Names.CONTENT_LENGTH + ":" + i + "\r\n").getBytes();
+            CONTENT_LENGTH_CACHE[i] = ("\r\n" + HttpHeaderConstant.Names.CONTENT_LENGTH + ":" + i).getBytes();
         }
         flushDate();
         new ResponseDateTimer();
@@ -58,13 +59,12 @@ final class HttpOutputStream extends OutputStream {
     }
 
     private static void flushDate() {
-        HttpOutputStream.date = (HttpHeaderConstant.Names.DATE + ":" + sdf.format(new Date()) + "\r\n" + SERVER_LIN_STR).getBytes();
+        HttpOutputStream.date = ("\r\n" + HttpHeaderConstant.Names.DATE + ":" + sdf.format(new Date()) + "\r\n" + SERVER_LIN_STR).getBytes();
     }
 
     void init(OutputStream outputStream, DefaultHttpResponse response) {
         this.outputStream = outputStream;
         this.response = response;
-//        cacheBuffer = aioSession.allocateBuf(DEFAULT_CACHE_SIZE);
         chunkedEnd = committed = closed = chunked = false;
     }
 
@@ -84,15 +84,6 @@ final class HttpOutputStream extends OutputStream {
     }
 
     public final void write(byte b[], int off, int len) throws IOException {
-//        if(true){
-//            response.setHttpStatus(HttpStatus.OK);
-//            outputStream.write(("HTTP/1.1 200 OK\r\n" +
-//                    "Connection:keep-alive\r\n" +
-//                    "Content-Length:11\r\n" +
-//                    "Date:Wed, 11 Apr 2018 12:35:01 GMT\r\n\r\n" +
-//                    "Hello Word!").getBytes());
-//            return;
-//        }
         if (!committed) {
             writeHead();
             committed = true;
@@ -113,21 +104,26 @@ final class HttpOutputStream extends OutputStream {
         outputStream.write(response.getHttpStatus().getLineBytes());
         if (!response.getHeaders().isEmpty()) {
             for (Map.Entry<String, String> entry : response.getHeaders().entrySet()) {
-                outputStream.write(getBytes(entry.getKey() + ":" + entry.getValue() + "\r\n"));
+                outputStream.write(getHeaderNameBytes(entry.getKey()));
+                outputStream.write(getBytes(entry.getValue()));
+//                outputStream.write(Consts.CRLF);
             }
         }
         if (response.getContentType() == null) {
             outputStream.write(CONTENT_TYPE_LINE);
         } else {
-            outputStream.write((HttpHeaderConstant.Names.CONTENT_TYPE + ":" + response.getContentType() + "\r\n").getBytes());
+            outputStream.write(HeaderNameEnum.CONTENT_TYPE.getBytesWithColon());
+            outputStream.write(getBytes(response.getContentType()));
+//            outputStream.write(Consts.CRLF);
+//            outputStream.write((HttpHeaderConstant.Names.CONTENT_TYPE + ":" + response.getContentType() + "\r\n").getBytes());
         }
         if (response.getHttpStatus() == HttpStatus.OK) {
             if (response.getContentLength() >= 0 && response.getContentLength() < CONTENT_LENGTH_CACHE.length) {
                 outputStream.write(CONTENT_LENGTH_CACHE[response.getContentLength()]);
             } else if (response.getContentLength() >= CONTENT_LENGTH_CACHE.length) {
-                outputStream.write(HttpHeaderConstant.HeaderBytes.CONTENT_LENGTH);
+                outputStream.write(HeaderNameEnum.CONTENT_LENGTH.getBytesWithColon());
                 outputStream.write((response.getContentLength() + "").getBytes());
-                outputStream.write(Consts.CRLF);
+//                outputStream.write(Consts.CRLF);
             } else if (response.getTransferEncoding() == null) {
                 chunked = true;
                 outputStream.write(CHUNK_LINE);
@@ -146,6 +142,15 @@ final class HttpOutputStream extends OutputStream {
 //        } else {
 //            outputStream.write(SERVE_LINE);
 //        }
+    }
+
+    private byte[] getHeaderNameBytes(String name) {
+        for (HeaderNameEnum headerNameEnum : HttpHeaderConstant.HEADER_NAME_ENUM_LIST) {
+            if (headerNameEnum.getName().equals(name)) {
+                return headerNameEnum.getBytesWithColon();
+            }
+        }
+        return getBytes("\r\n" + name + ":");
     }
 
     @Override
@@ -196,7 +201,6 @@ final class HttpOutputStream extends OutputStream {
     }
 
     public static class ResponseDateTimer extends QuickTimerTask {
-
 
         @Override
         protected long getPeriod() {

@@ -8,13 +8,31 @@
 
 package org.smartboot.http.utils;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 /**
  * @author 三刀
  * @version V1.0 , 2018/2/8
  */
-public interface HttpHeaderConstant {
+public class HttpHeaderConstant {
+    public static final List<HeaderNameEnum> HEADER_NAME_ENUM_LIST = new ArrayList<>();
 
-    interface Names {
+    static {
+        for (HeaderNameEnum headerNameEnum : HeaderNameEnum.values()) {
+            HEADER_NAME_ENUM_LIST.add(headerNameEnum);
+        }
+        Collections.sort(HEADER_NAME_ENUM_LIST, new Comparator<HeaderNameEnum>() {
+            @Override
+            public int compare(HeaderNameEnum o1, HeaderNameEnum o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+    }
+
+    public interface Names {
         String ACCEPT = "Accept";
         String ACCEPT_CHARSET = "Accept-Charset";
         String ACCEPT_ENCODING = "Accept-Encoding";
@@ -79,7 +97,7 @@ public interface HttpHeaderConstant {
         String WWW_AUTHENTICATE = "WWW-Authenticate";
     }
 
-    interface Values {
+    public interface Values {
         String CHUNKED = "chunked";
 
         String MULTIPART_FORM_DATA = "multipart/form-data";
@@ -91,7 +109,7 @@ public interface HttpHeaderConstant {
         String KEEPALIVE = "keep-alive";
     }
 
-    interface HeaderBytes {
+    public interface HeaderBytes {
         byte[] CONTENT_TYPE = Names.CONTENT_TYPE.getBytes();
         byte[] CONTENT_LENGTH = (Names.CONTENT_LENGTH + ":").getBytes();
         byte[] DATE = Names.DATE.getBytes();

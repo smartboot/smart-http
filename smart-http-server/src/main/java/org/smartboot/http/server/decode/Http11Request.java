@@ -148,8 +148,8 @@ public class Http11Request implements HttpRequest {
         bodyContentDecoder = null;
         originalUri = null;
         paramMap = null;
-        contentType=null;
-        contentLength=-1;
+        contentType = null;
+        contentLength = -1;
     }
 
     @Override
