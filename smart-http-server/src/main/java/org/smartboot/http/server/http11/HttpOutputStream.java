@@ -9,6 +9,7 @@
 package org.smartboot.http.server.http11;
 
 import org.smartboot.http.enums.HttpStatus;
+import org.smartboot.http.utils.CharsetUtil;
 import org.smartboot.http.utils.Consts;
 import org.smartboot.http.utils.HeaderNameEnum;
 import org.smartboot.http.utils.HttpHeaderConstant;
@@ -33,11 +34,12 @@ final class HttpOutputStream extends OutputStream {
     private static final byte[] CHUNK_LINE = (HttpHeaderConstant.Names.TRANSFER_ENCODING + ":" + HttpHeaderConstant.Values.CHUNKED + "\r\n").getBytes();
     private static final String SERVER_LIN_STR = HttpHeaderConstant.Names.SERVER + ":smart-http\r\n\r\n";
     private static final byte[] SERVE_LINE = SERVER_LIN_STR.getBytes();
-    private static final byte[] CONTENT_TYPE_LINE = ("\r\n" + HttpHeaderConstant.Names.CONTENT_TYPE + ":text/html; charset=utf-8ddd").getBytes();
+    private static final byte[] CONTENT_TYPE_LINE = ("\r\n" + HttpHeaderConstant.Names.CONTENT_TYPE + ":text/html; charset=utf-8").getBytes();
     private static final byte[] endChunked = new byte[]{'0', Consts.CR, Consts.LF, Consts.CR, Consts.LF};
 
     private static final byte[][] CONTENT_LENGTH_CACHE = new byte[100][];
     private static SimpleDateFormat sdf = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
+    private static Date currentDate = new Date();
     private static byte[] date;
 
     static {
@@ -54,12 +56,9 @@ final class HttpOutputStream extends OutputStream {
     private boolean committed = false, closed = false;
     private boolean chunked = false;
 
-    public HttpOutputStream() {
-
-    }
-
     private static void flushDate() {
-        HttpOutputStream.date = ("\r\n" + HttpHeaderConstant.Names.DATE + ":" + sdf.format(new Date()) + "\r\n" + SERVER_LIN_STR).getBytes();
+        currentDate.setTime(System.currentTimeMillis());
+        HttpOutputStream.date = ("\r\n" + HttpHeaderConstant.Names.DATE + ":" + sdf.format(currentDate) + "\r\n" + SERVER_LIN_STR).getBytes();
     }
 
     void init(OutputStream outputStream, DefaultHttpResponse response) {
@@ -196,8 +195,7 @@ final class HttpOutputStream extends OutputStream {
     }
 
     private byte[] getBytes(String str) {
-        return str.getBytes(Consts.DEFAULT_CHARSET);
-//        return str.getBytes();
+        return str.getBytes(CharsetUtil.US_ASCII);
     }
 
     public static class ResponseDateTimer extends QuickTimerTask {

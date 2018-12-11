@@ -88,7 +88,12 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
 //            }
             DefaultHttpResponse httpResponse = RESPONSE_THREAD_LOCAL.get();
             httpResponse.init(session.getOutputStream());
+            boolean isKeepAlive = StringUtils.equalsIgnoreCase(HttpHeaderConstant.Values.KEEPALIVE, request.getHeader(HttpHeaderConstant.Names.CONNECTION));
             try {
+                //用ab进行测试时需要带上该响应
+                if (isKeepAlive) {
+//                    httpResponse.setHeader(HttpHeaderConstant.Names.CONNECTION, HttpHeaderConstant.Values.KEEPALIVE);
+                }
                 processHandle.doHandle(request, httpResponse);
             } catch (HttpException e) {
                 e.printStackTrace();
@@ -103,12 +108,10 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
             httpResponse.getOutputStream().close();
 
 
-            if (!StringUtils.equalsIgnoreCase(HttpHeaderConstant.Values.KEEPALIVE, request.getHeader(HttpHeaderConstant.Names.CONNECTION)) || httpResponse.getHttpStatus() != HttpStatus.OK) {
+            if (!isKeepAlive || httpResponse.getHttpStatus() != HttpStatus.OK) {
                 LOGGER.info("will close session");
                 session.close(false);
             }
-//            session.getOutputStream().write(b);
-
         } catch (IOException e) {
             LOGGER.error("IO Exception", e);
         }

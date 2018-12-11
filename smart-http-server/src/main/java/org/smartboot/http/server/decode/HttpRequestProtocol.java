@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartboot.http.enums.MethodEnum;
 import org.smartboot.http.enums.State;
+import org.smartboot.http.utils.CharsetUtil;
 import org.smartboot.http.utils.Consts;
 import org.smartboot.http.utils.HeaderNameEnum;
 import org.smartboot.http.utils.HttpHeaderConstant;
@@ -226,25 +227,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
     }
 
     private String convertToString(byte[] bytes, int length) {
-        int offset = 0;
-        while (offset < length) {
-            if (bytes[offset] != Consts.SP) {
-                break;
-            }
-            offset++;
-        }
-        length -= offset;
-        if (length == 0) {
-            return "";
-        }
-        int endIndex = offset + length - 1;
-        while (endIndex >= offset) {
-            if (bytes[endIndex] != Consts.SP) {
-                break;
-            }
-            endIndex--;
-        }
-        return endIndex < offset ? "" : new String(bytes, offset, endIndex - offset + 1);
+        return new String(bytes, 0, length, CharsetUtil.US_ASCII);
     }
 
 
