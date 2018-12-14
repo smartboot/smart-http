@@ -87,7 +87,7 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
 //                return;
 //            }
             DefaultHttpResponse httpResponse = RESPONSE_THREAD_LOCAL.get();
-            httpResponse.init(session.getOutputStream());
+            httpResponse.init(session.writeBuffer());
             boolean isKeepAlive = StringUtils.equalsIgnoreCase(HttpHeaderConstant.Values.KEEPALIVE, request.getHeader(HttpHeaderConstant.Names.CONNECTION));
             try {
                 //用ab进行测试时需要带上该响应
