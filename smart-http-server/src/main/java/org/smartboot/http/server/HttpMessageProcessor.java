@@ -67,7 +67,7 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
             }
         });
         AioQuickServer<Http11Request> server = new AioQuickServer<Http11Request>(8080, new HttpRequestProtocol(), processor);
-        server.setReadBufferSize(1024 * 4);
+        server.setReadBufferSize(1024 * 8);
 //        server.setBannerEnabled(false);
 //        server.setThreadNum(1);
 //        server.setFairIO(true);
@@ -82,7 +82,7 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
     public void process(AioSession<Http11Request> session, Http11Request request) {
         try {
 //            if (true) {
-//                session.getOutputStream().write(b);
+//                session.writeBuffer().write(b);
 //                request.rest();
 //                return;
 //            }
@@ -108,10 +108,10 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
             httpResponse.getOutputStream().close();
 
 
-            if (!isKeepAlive || httpResponse.getHttpStatus() != HttpStatus.OK) {
-                LOGGER.info("will close session");
-                session.close(false);
-            }
+//            if (!isKeepAlive || httpResponse.getHttpStatus() != HttpStatus.OK) {
+//                LOGGER.info("will close session");
+//                session.close(false);
+//            }
         } catch (IOException e) {
             LOGGER.error("IO Exception", e);
         }

@@ -145,7 +145,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                         int valueLength = scanUntil(buffer, Consts.CR, b);
                         if (valueLength > 0) {
                             curState = State.head_line_LF;
-                            entityV2.headMap.put(entityV2.tmpHeaderName, convertToString(b, valueLength));
+//                            entityV2.headMap.put(entityV2.tmpHeaderName, convertToString(b, valueLength));
                         }
                         //value字段长度超过readBuffer空间大小
                         else if (buffer.remaining() == buffer.capacity()) {

@@ -37,9 +37,6 @@ public enum MethodEnum {
     }
 
     public static MethodEnum getByMethod(byte[] bytes, int index, int length) {
-        if (bytes == null || index < 0 || index >= bytes.length || length + index > bytes.length) {
-            return null;
-        }
         switch (length) {
             case 3:
                 if (isMatch(GET, bytes, index)) {
