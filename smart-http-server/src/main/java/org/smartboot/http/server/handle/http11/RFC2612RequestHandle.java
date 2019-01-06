@@ -83,7 +83,7 @@ public class RFC2612RequestHandle extends HttpHandle {
          */
         String originalUri = request.getOriginalUri();
         int schemeIndex = originalUri.indexOf("://");
-        int queryStringIndex = StringUtils.indexOf(originalUri, "?");
+        int queryStringIndex = StringUtils.indexOf(originalUri, "?", schemeIndex);
         if (queryStringIndex != StringUtils.INDEX_NOT_FOUND) {
             request.setQueryString(StringUtils.substring(originalUri, queryStringIndex + 1));
         }

@@ -10,7 +10,6 @@ package org.smartboot.http.server.http11;
 
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.utils.CharsetUtil;
-import org.smartboot.http.utils.Consts;
 import org.smartboot.http.utils.HeaderNameEnum;
 import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.socket.util.QuickTimerTask;
@@ -19,6 +18,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -27,15 +27,10 @@ import java.util.Map;
  * @version V1.0 , 2018/2/3
  */
 final class HttpOutputStream extends OutputStream {
-
-    public static final String DEFAULT_CONTENT_TYPE = "text/html; charset=utf-8";
-    public static final byte[] DEFAULT_CONTENT_TYPE_BYTES = "text/html; charset=utf-8".getBytes(Consts.DEFAULT_CHARSET);
-    public static final int DEFAULT_CACHE_SIZE = 512;
     private static final byte[] CHUNK_LINE = (HttpHeaderConstant.Names.TRANSFER_ENCODING + ":" + HttpHeaderConstant.Values.CHUNKED + "\r\n").getBytes();
     private static final String SERVER_LIN_STR = HttpHeaderConstant.Names.SERVER + ":smart-http\r\n\r\n";
-    private static final byte[] SERVE_LINE = SERVER_LIN_STR.getBytes();
     private static final byte[] CONTENT_TYPE_LINE = ("\r\n" + HttpHeaderConstant.Names.CONTENT_TYPE + ":text/html; charset=utf-8").getBytes();
-    private static final byte[] endChunked = new byte[]{'0', Consts.CR, Consts.LF, Consts.CR, Consts.LF};
+    private static final Map<String, byte[]> CONTENT_TYPE_CACHE = new HashMap<>();
 
     private static final byte[][] CONTENT_LENGTH_CACHE = new byte[100][];
     private static SimpleDateFormat sdf = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
@@ -46,6 +41,9 @@ final class HttpOutputStream extends OutputStream {
         for (int i = 0; i < CONTENT_LENGTH_CACHE.length; i++) {
             CONTENT_LENGTH_CACHE[i] = ("\r\n" + HttpHeaderConstant.Names.CONTENT_LENGTH + ":" + i).getBytes();
         }
+//        CONTENT_TYPE_CACHE.put("text/plain; charset=UTF-8", getHeadPart("text/plain; charset=UTF-8"));
+//        CONTENT_TYPE_CACHE.put("application/json", getHeadPart("application/json"));
+//        CONTENT_TYPE_CACHE.put("text/html; charset=utf-8", getHeadPart("text/html; charset=utf-8"));
         flushDate();
         new ResponseDateTimer();
     }
@@ -55,6 +53,10 @@ final class HttpOutputStream extends OutputStream {
     private OutputStream outputStream;
     private boolean committed = false, closed = false;
     private boolean chunked = false;
+
+    private static byte[] getHeadPart(String contentType) {
+        return ("HTTP/1.1 200 OK\r\n" + HttpHeaderConstant.Names.CONTENT_TYPE + ":" + contentType).getBytes();
+    }
 
     private static void flushDate() {
         currentDate.setTime(System.currentTimeMillis());
@@ -99,23 +101,37 @@ final class HttpOutputStream extends OutputStream {
         if (response.getHttpStatus() == null) {
             response.setHttpStatus(HttpStatus.OK);
         }
-//        outputStream.reset();
-        outputStream.write(response.getHttpStatus().getLineBytes());
+        if (response.getHttpStatus() == HttpStatus.OK) {
+            String contentType = response.getContentType();
+            if (contentType == null) {
+                contentType = "text/html; charset=utf-8";
+            }
+            byte[] head = CONTENT_TYPE_CACHE.get(contentType);
+            if (head != null) {
+                outputStream.write(head);
+            } else {
+                outputStream.write(response.getHttpStatus().getLineBytes());
+                outputStream.write(HeaderNameEnum.CONTENT_TYPE.getBytesWithColon());
+                outputStream.write(getBytes(contentType));
+                CONTENT_TYPE_CACHE.put(contentType, getHeadPart(contentType));
+            }
+        } else {
+            outputStream.write(response.getHttpStatus().getLineBytes());
+            String contentType = response.getContentType();
+            if (contentType == null) {
+                contentType = "text/html; charset=utf-8";
+            }
+            outputStream.write(HeaderNameEnum.CONTENT_TYPE.getBytesWithColon());
+            outputStream.write(getBytes(contentType));
+        }
+
         if (!response.getHeaders().isEmpty()) {
             for (Map.Entry<String, String> entry : response.getHeaders().entrySet()) {
                 outputStream.write(getHeaderNameBytes(entry.getKey()));
                 outputStream.write(getBytes(entry.getValue()));
-//                outputStream.write(Consts.CRLF);
             }
         }
-        if (response.getContentType() == null) {
-            outputStream.write(CONTENT_TYPE_LINE);
-        } else {
-            outputStream.write(HeaderNameEnum.CONTENT_TYPE.getBytesWithColon());
-            outputStream.write(getBytes(response.getContentType()));
-//            outputStream.write(Consts.CRLF);
-//            outputStream.write((HttpHeaderConstant.Names.CONTENT_TYPE + ":" + response.getContentType() + "\r\n").getBytes());
-        }
+
         if (response.getHttpStatus() == HttpStatus.OK) {
             if (response.getContentLength() >= 0 && response.getContentLength() < CONTENT_LENGTH_CACHE.length) {
                 outputStream.write(CONTENT_LENGTH_CACHE[response.getContentLength()]);
