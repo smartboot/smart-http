@@ -27,23 +27,16 @@ import java.util.Map;
  * @version V1.0 , 2018/2/3
  */
 final class HttpOutputStream extends OutputStream {
-    private static final byte[] CHUNK_LINE = (HttpHeaderConstant.Names.TRANSFER_ENCODING + ":" + HttpHeaderConstant.Values.CHUNKED + "\r\n").getBytes();
-    private static final String SERVER_LIN_STR = HttpHeaderConstant.Names.SERVER + ":smart-http\r\n\r\n";
-    private static final byte[] CONTENT_TYPE_LINE = ("\r\n" + HttpHeaderConstant.Names.CONTENT_TYPE + ":text/html; charset=utf-8").getBytes();
-    private static final Map<String, byte[]> CONTENT_TYPE_CACHE = new HashMap<>();
-
-    private static final byte[][] CONTENT_LENGTH_CACHE = new byte[100][];
+    private static final Map<String, byte[]>[] CONTENT_TYPE_CACHE = new Map[512];
+    private static final Map<String, byte[]> CHUNKED_CACHE = new HashMap<>();
     private static SimpleDateFormat sdf = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
     private static Date currentDate = new Date();
     private static byte[] date;
 
     static {
-        for (int i = 0; i < CONTENT_LENGTH_CACHE.length; i++) {
-            CONTENT_LENGTH_CACHE[i] = ("\r\n" + HttpHeaderConstant.Names.CONTENT_LENGTH + ":" + i).getBytes();
+        for (int i = 0; i < CONTENT_TYPE_CACHE.length; i++) {
+            CONTENT_TYPE_CACHE[i] = new HashMap<>();
         }
-//        CONTENT_TYPE_CACHE.put("text/plain; charset=UTF-8", getHeadPart("text/plain; charset=UTF-8"));
-//        CONTENT_TYPE_CACHE.put("application/json", getHeadPart("application/json"));
-//        CONTENT_TYPE_CACHE.put("text/html; charset=utf-8", getHeadPart("text/html; charset=utf-8"));
         flushDate();
         new ResponseDateTimer();
     }
@@ -54,13 +47,41 @@ final class HttpOutputStream extends OutputStream {
     private boolean committed = false, closed = false;
     private boolean chunked = false;
 
-    private static byte[] getHeadPart(String contentType) {
-        return ("HTTP/1.1 200 OK\r\n" + HttpHeaderConstant.Names.CONTENT_TYPE + ":" + contentType).getBytes();
+    private static byte[] getHeadPart(String contentType, int contentLength, boolean chunked) {
+        Map<String, byte[]> map = null;
+        if (chunked) {
+            map = CHUNKED_CACHE;
+        } else if (contentLength >= 0 && contentLength < CONTENT_TYPE_CACHE.length) {
+            map = CONTENT_TYPE_CACHE[contentLength];
+        }
+        byte[] data = null;
+        if (map != null) {
+            data = map.get(contentType);
+            if (data != null) {
+                return data;
+            }
+        }
+
+        String str = "HTTP/1.1 200 OK\r\n" + HttpHeaderConstant.Names.CONTENT_TYPE + ":" + contentType + "\r\n" + HttpHeaderConstant.Names.SERVER + ":smart-http";
+        if (contentLength >= 0) {
+            str += "\r\n" + HttpHeaderConstant.Names.CONTENT_LENGTH + ":" + contentLength;
+        } else if (chunked) {
+            str += "\r\n" + HttpHeaderConstant.Names.TRANSFER_ENCODING + ":" + HttpHeaderConstant.Values.CHUNKED;
+        }
+        data = str.getBytes();
+        if (chunked) {
+            CHUNKED_CACHE.put(contentType, data);
+        } else if (contentLength >= 0 && contentLength < CONTENT_TYPE_CACHE.length) {
+            CONTENT_TYPE_CACHE[contentLength].put(contentType, data);
+        }
+        return data;
+
     }
+
 
     private static void flushDate() {
         currentDate.setTime(System.currentTimeMillis());
-        HttpOutputStream.date = ("\r\n" + HttpHeaderConstant.Names.DATE + ":" + sdf.format(currentDate) + "\r\n" + SERVER_LIN_STR).getBytes();
+        HttpOutputStream.date = ("\r\n" + HttpHeaderConstant.Names.DATE + ":" + sdf.format(currentDate) + "\r\n\r\n").getBytes();
     }
 
     void init(OutputStream outputStream, DefaultHttpResponse response) {
@@ -106,15 +127,10 @@ final class HttpOutputStream extends OutputStream {
             if (contentType == null) {
                 contentType = "text/html; charset=utf-8";
             }
-            byte[] head = CONTENT_TYPE_CACHE.get(contentType);
-            if (head != null) {
-                outputStream.write(head);
-            } else {
-                outputStream.write(response.getHttpStatus().getLineBytes());
-                outputStream.write(HeaderNameEnum.CONTENT_TYPE.getBytesWithColon());
-                outputStream.write(getBytes(contentType));
-                CONTENT_TYPE_CACHE.put(contentType, getHeadPart(contentType));
-            }
+            int contentLength = response.getContentLength();
+            chunked = contentLength < 0 && response.getTransferEncoding() == null;
+            byte[] head = getHeadPart(contentType, contentLength, chunked);
+            outputStream.write(head);
         } else {
             outputStream.write(response.getHttpStatus().getLineBytes());
             String contentType = response.getContentType();
@@ -132,31 +148,11 @@ final class HttpOutputStream extends OutputStream {
             }
         }
 
-        if (response.getHttpStatus() == HttpStatus.OK) {
-            if (response.getContentLength() >= 0 && response.getContentLength() < CONTENT_LENGTH_CACHE.length) {
-                outputStream.write(CONTENT_LENGTH_CACHE[response.getContentLength()]);
-            } else if (response.getContentLength() >= CONTENT_LENGTH_CACHE.length) {
-                outputStream.write(HeaderNameEnum.CONTENT_LENGTH.getBytesWithColon());
-                outputStream.write((response.getContentLength() + "").getBytes());
-//                outputStream.write(Consts.CRLF);
-            } else if (response.getTransferEncoding() == null) {
-                chunked = true;
-                outputStream.write(CHUNK_LINE);
-            } else {
-                throw new RuntimeException();
-            }
-        }
-
-
         /**
          * RFC2616 3.3.1
          * 只能用 RFC 1123 里定义的日期格式来填充头域 (header field)的值里用到 HTTP-date 的地方
          */
-//        if (date != null) {
         outputStream.write(date);
-//        } else {
-//            outputStream.write(SERVE_LINE);
-//        }
     }
 
     private byte[] getHeaderNameBytes(String name) {
