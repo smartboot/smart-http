@@ -5,13 +5,13 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.smartboot.http</groupId>
     <artifactId>smart-http-parent</artifactId>
-    <version>1.0.10.0106-beta</version>
+    <version>1.0.10.0107-beta</version>
     <packaging>pom</packaging>
 
     <properties>
         <smartsocket.version>1.4.0.1231-beta</smartsocket.version>
         <commons.lang.version>2.6</commons.lang.version>
-        <smarthttp.version>1.0.10.0106-beta</smarthttp.version>
+        <smarthttp.version>1.0.10.0107-beta</smarthttp.version>
     </properties>
 
     <dependencyManagement>
@@ -171,8 +171,8 @@
                 <executions>
                     <execution>
                         <id>sign-artifacts</id>
-                        <phase>verify</phase>
-                        <!--<phase>deploy</phase>-->
+                        <!--<phase>verify</phase>-->
+                        <phase>deploy</phase>
                         <goals>
                             <goal>sign</goal>
                         </goals>
