@@ -1,6 +1,5 @@
 package org.smartboot.http.server;
 
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartboot.http.HttpRequest;
@@ -13,7 +12,6 @@ import org.smartboot.http.server.handle.HttpHandle;
 import org.smartboot.http.server.handle.RouteHandle;
 import org.smartboot.http.server.handle.http11.RFC2612RequestHandle;
 import org.smartboot.http.server.http11.DefaultHttpResponse;
-import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.transport.AioQuickServer;
@@ -88,12 +86,12 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
 //            }
             DefaultHttpResponse httpResponse = RESPONSE_THREAD_LOCAL.get();
             httpResponse.init(session.writeBuffer());
-            boolean isKeepAlive = StringUtils.equalsIgnoreCase(HttpHeaderConstant.Values.KEEPALIVE, request.getHeader(HttpHeaderConstant.Names.CONNECTION));
+//            boolean isKeepAlive = StringUtils.equalsIgnoreCase(HttpHeaderConstant.Values.KEEPALIVE, request.getHeader(HttpHeaderConstant.Names.CONNECTION));
             try {
                 //用ab进行测试时需要带上该响应
-                if (isKeepAlive) {
+//                if (isKeepAlive) {
 //                    httpResponse.setHeader(HttpHeaderConstant.Names.CONNECTION, HttpHeaderConstant.Values.KEEPALIVE);
-                }
+//                }
                 processHandle.doHandle(request, httpResponse);
             } catch (HttpException e) {
                 e.printStackTrace();
@@ -107,7 +105,7 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
 //
             httpResponse.getOutputStream().close();
 
-
+//
 //            if (!isKeepAlive || httpResponse.getHttpStatus() != HttpStatus.OK) {
 //                LOGGER.info("will close session");
 //                session.close(false);
@@ -145,6 +143,9 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
                 break;
             case SESSION_CLOSED:
 //                LOGGER.info("connection closed:{}", session);
+                break;
+            case DECODE_EXCEPTION:
+                throwable.printStackTrace();
                 break;
         }
     }

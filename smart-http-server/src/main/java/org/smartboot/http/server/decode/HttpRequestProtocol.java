@@ -19,6 +19,8 @@ import org.smartboot.socket.util.DecoderException;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author 三刀
@@ -33,6 +35,14 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
             return new byte[1024];
         }
     };
+
+    private final List<StringCache>[] String_CACHE = new List[512];
+
+    {
+        for (int i = 0; i < String_CACHE.length; i++) {
+            String_CACHE[i] = new ArrayList<>();
+        }
+    }
 
     @Override
     public Http11Request decode(ByteBuffer buffer, AioSession<Http11Request> session) {
@@ -227,7 +237,37 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
     }
 
     private String convertToString(byte[] bytes, int length) {
-        return new String(bytes, 0, length, CharsetUtil.US_ASCII);
+        if (length >= String_CACHE.length) {
+            return new String(bytes, 0, length, CharsetUtil.US_ASCII);
+        }
+        List<StringCache> list = String_CACHE[length];
+        for (int i = 0, j = list.size(); i < j; i++) {
+            StringCache cache = list.get(i);
+            if (equals(cache.bytes, bytes)) {
+                return cache.value;
+            }
+        }
+        synchronized (list) {
+            for (StringCache cache : list) {
+                if (equals(cache.bytes, bytes)) {
+                    return cache.value;
+                }
+            }
+            String str = new String(bytes, 0, length, CharsetUtil.US_ASCII);
+            byte[] bak = new byte[length];
+            System.arraycopy(bytes, 0, bak, 0, bak.length);
+            list.add(new StringCache(bak, str));
+            return str;
+        }
+    }
+
+    private boolean equals(byte[] b0, byte[] b1) {
+        for (int i = 0, j = b0.length; i < j; i++) {
+            if (b0[i] != b1[i]) {
+                return false;
+            }
+        }
+        return true;
     }
 
 
@@ -259,6 +299,16 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
         }
         buffer.reset();
         return 0;
+    }
+
+    private class StringCache {
+        final byte[] bytes;
+        final String value;
+
+        public StringCache(byte[] bytes, String value) {
+            this.bytes = bytes;
+            this.value = value;
+        }
     }
 
 }
