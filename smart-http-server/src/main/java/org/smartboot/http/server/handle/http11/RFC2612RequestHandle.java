@@ -21,7 +21,7 @@ public class RFC2612RequestHandle extends HttpHandle {
     @Override
     public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
         methodCheck(request);
-//        hostCheck(request);
+        hostCheck(request);
         uriCheck(request);
         doNext(request, response);
     }

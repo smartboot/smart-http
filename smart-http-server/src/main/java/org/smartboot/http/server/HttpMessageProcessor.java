@@ -128,12 +128,12 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
 //                LOGGER.info("new connection:{}", session);
                 session.setAttachment(new Http11Request());
                 break;
-//            case FLOW_LIMIT:
-//                LOGGER.warn("流控");
-//                break;
-//            case RELEASE_FLOW_LIMIT:
-//                LOGGER.warn("释放流控");
-//                break;
+            case FLOW_CONTROL:
+                LOGGER.warn("流控");
+                break;
+            case RELEASE_FLOW_CONTROL:
+                LOGGER.warn("释放流控");
+                break;
             case PROCESS_EXCEPTION:
                 LOGGER.error("process request exception", throwable);
                 session.close();
