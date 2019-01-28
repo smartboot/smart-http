@@ -54,7 +54,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
         }
         buffer.mark();
         State curState = entityV2.state;
-        boolean flag = false;
+        boolean flag;
         do {
             flag = false;
             switch (curState) {

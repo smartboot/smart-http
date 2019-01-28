@@ -53,6 +53,8 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
 
     public static void main(String[] args) {
         System.setProperty("smart-socket.server.pageSize", (1024 * 1024 * 5) + "");
+        System.setProperty("smart-socket.server.page.isDirect", "true");
+//        System.setProperty("sun.nio.ch.maxCompletionHandlersOnStack","4");
 //        System.setProperty("smart-socket.session.writeChunkSize", (4096*2)+"");
         HttpMessageProcessor processor = new HttpMessageProcessor("./");
         processor.route("/plaintext", new HttpHandle() {
@@ -65,9 +67,9 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
             }
         });
         AioQuickServer<Http11Request> server = new AioQuickServer<Http11Request>(8080, new HttpRequestProtocol(), processor);
-        server.setReadBufferSize(1024 * 8);
+        server.setReadBufferSize(1024 * 4);
 //        server.setBannerEnabled(false);
-//        server.setThreadNum(1);
+//        server.setThreadNum(36);
 //        server.setFairIO(true);
         try {
             server.start();

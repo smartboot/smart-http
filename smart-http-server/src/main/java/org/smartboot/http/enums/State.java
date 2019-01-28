@@ -7,7 +7,6 @@ public enum State {
     request_line_end,
     head_name,
     head_value,
-    head_line,
     head_line_LF,
     head_line_end,
     head_finished,
