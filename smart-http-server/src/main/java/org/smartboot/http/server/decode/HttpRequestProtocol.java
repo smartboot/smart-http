@@ -285,6 +285,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
         for (int i = 0; i < avail; ) {
             bytes[i] = buffer.get();
             if (i == 0 && bytes[i] == Consts.SP) {
+                avail--;
                 continue;
             }
             if (bytes[i] == split) {
