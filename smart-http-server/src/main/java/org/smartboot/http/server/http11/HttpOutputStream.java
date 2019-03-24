@@ -214,7 +214,7 @@ final class HttpOutputStream extends OutputStream {
 
         @Override
         protected long getPeriod() {
-            return 5000;
+            return 900;
         }
 
         @Override
