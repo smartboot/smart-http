@@ -82,13 +82,13 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
     @Override
     public void process(AioSession<Http11Request> session, Http11Request request) {
         try {
-            if (true) {
-                session.writeBuffer().write(b);
+//            if (true) {
 //                session.writeBuffer().write(b);
 //                session.writeBuffer().write(b);
-                request.rest();
-                return;
-            }
+//                session.writeBuffer().write(b);
+//                request.rest();
+//                return;
+//            }
             DefaultHttpResponse httpResponse = RESPONSE_THREAD_LOCAL.get();
             httpResponse.init(session.writeBuffer());
 //            boolean isKeepAlive = StringUtils.equalsIgnoreCase(HttpHeaderConstant.Values.KEEPALIVE, request.getHeader(HttpHeaderConstant.Names.CONNECTION));

@@ -10,6 +10,7 @@ package org.smartboot.http.server.http11;
 
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.utils.CharsetUtil;
+import org.smartboot.http.utils.Consts;
 import org.smartboot.http.utils.HeaderNameEnum;
 import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.socket.util.QuickTimerTask;
@@ -29,6 +30,7 @@ import java.util.Map;
 final class HttpOutputStream extends OutputStream {
     private static final Map<String, byte[]>[] CONTENT_TYPE_CACHE = new Map[512];
     private static final Map<String, byte[]> CHUNKED_CACHE = new HashMap<>();
+    private static final byte[] CHUNKED_END_BYTES = "0\r\n\r\n".getBytes(CharsetUtil.US_ASCII);
     private static SimpleDateFormat sdf = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
     private static Date currentDate = new Date();
     private static byte[] date;
@@ -41,7 +43,6 @@ final class HttpOutputStream extends OutputStream {
         new ResponseDateTimer();
     }
 
-    boolean chunkedEnd = false;
     private DefaultHttpResponse response;
     private OutputStream outputStream;
     private boolean committed = false, closed = false;
@@ -87,22 +88,12 @@ final class HttpOutputStream extends OutputStream {
     void init(OutputStream outputStream, DefaultHttpResponse response) {
         this.outputStream = outputStream;
         this.response = response;
-        chunkedEnd = committed = closed = chunked = false;
+        committed = closed = chunked = false;
     }
 
     @Override
     public final void write(int b) throws IOException {
-//        if (!committed) {
-//            writeHead();
-//            committed = true;
-//        }
-//        if (!cacheBuffer.buffer().hasRemaining()) {
-//            flush();
-//        }
-//        cacheBuffer.buffer().put((byte) b);
-//        if (!cacheBuffer.buffer().hasRemaining()) {
-//            flush();
-//        }
+        throw new UnsupportedOperationException();
     }
 
     public final void write(byte b[], int off, int len) throws IOException {
@@ -111,7 +102,10 @@ final class HttpOutputStream extends OutputStream {
             committed = true;
         }
         if (chunked) {
-
+            byte[] start = getBytes(Integer.toHexString(len) + "\r\n");
+            outputStream.write(start);
+            outputStream.write(b, off, len);
+            outputStream.write(Consts.CRLF);
         } else {
             outputStream.write(b, off, len);
         }
@@ -170,39 +164,18 @@ final class HttpOutputStream extends OutputStream {
             writeHead();
             committed = true;
         }
-//        System.out.println("flash");
         outputStream.flush();
-//        cacheBuffer.buffer().flip();
-//        if (cacheBuffer.buffer().hasRemaining()) {
-//            ByteBuf buffer = null;
-//            if (chunked) {
-//                byte[] start = getBytes(Integer.toHexString(cacheBuffer.buffer().remaining()) + "\r\n");
-//                buffer = aioSession.allocateBuf(start.length + cacheBuffer.buffer().remaining() + Consts.CRLF.length + (chunkedEnd ? endChunked.length : 0));
-//                buffer.buffer().put(start).put(cacheBuffer.buffer()).put(Consts.CRLF);
-//                if (chunkedEnd) {
-//                    buffer.buffer().put(endChunked);
-//                }
-//                buffer.buffer().flip();
-//            } else {
-//                buffer = cacheBuffer;
-//                cacheBuffer = aioSession.allocateBuf(cacheBuffer.buffer().capacity());
-//            }
-//            aioSession.write(buffer);
-//        } else if (chunked && chunkedEnd) {
-//            ByteBuf byteBuf = aioSession.allocateBuf(endChunked.length);
-//            byteBuf.buffer().put(endChunked).flip();
-//            aioSession.write(byteBuf);
-//        }
-//        cacheBuffer.buffer().clear();
     }
 
     @Override
     public void close() throws IOException {
         if (closed) {
-            return;
+            throw new IOException("outputstream");
         }
-        chunkedEnd = true;
-//        flush();
+        flush();
+        if (chunked) {
+            outputStream.write(CHUNKED_END_BYTES);
+        }
         closed = true;
     }
 
