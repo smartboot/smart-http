@@ -56,7 +56,7 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
 //        System.setProperty("smart-socket.bufferPool.pageNum", 512 + "");
         System.setProperty("smart-socket.server.page.isDirect", "true");
 //        System.setProperty("sun.nio.ch.maxCompletionHandlersOnStack","4");
-        System.setProperty("smart-socket.session.writeChunkSize", (1024 * 3) + "");
+        System.setProperty("smart-socket.session.writeChunkSize", (1024 * 4) + "");
         HttpMessageProcessor processor = new HttpMessageProcessor("./");
         processor.route("/plaintext", new HttpHandle() {
             byte[] body = "Hello World!".getBytes();
@@ -68,7 +68,7 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
             }
         });
         AioQuickServer<Http11Request> server = new AioQuickServer<Http11Request>(8080, new HttpRequestProtocol(), processor);
-        server.setReadBufferSize(1024 * 3);
+        server.setReadBufferSize(1024 * 4);
 //        server.setBannerEnabled(false);
 //        server.setThreadNum(36);
 //        server.setFairIO(true);
@@ -139,7 +139,10 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
                 session.close();
                 break;
             case OUTPUT_EXCEPTION:
-                LOGGER.error("", throwable);
+//                LOGGER.error("", throwable);
+                break;
+            case INPUT_EXCEPTION:
+//                LOGGER.error("",throwable);
                 break;
             case SESSION_CLOSED:
 //                System.out.println("closeSession");

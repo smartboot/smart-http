@@ -75,7 +75,7 @@ public class HttpBootstrap {
         int port = NumberUtils.toInt(System.getProperty("port"), 8080);
         AioQuickServer<Http11Request> server = new AioQuickServer<Http11Request>(port, new HttpRequestProtocol(), processor);
         server.setReadBufferSize(1024);
-        server.setThreadNum(8);
+//        server.setThreadNum(8);
         try {
             server.start();
         } catch (IOException e) {

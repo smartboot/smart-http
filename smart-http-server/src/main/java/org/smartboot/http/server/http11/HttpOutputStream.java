@@ -172,8 +172,11 @@ final class HttpOutputStream extends OutputStream {
         if (closed) {
             throw new IOException("outputstream");
         }
-        flush();
         if (chunked) {
+            if (!committed) {
+                writeHead();
+                committed = true;
+            }
             outputStream.write(CHUNKED_END_BYTES);
         }
         closed = true;
