@@ -124,10 +124,10 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
     @Override
     public void stateEvent(AioSession<Http11Request> session, StateMachineEnum stateMachineEnum, Throwable throwable) {
 //        LOGGER.info(stateMachineEnum+" "+session.getSessionID());
-        if (throwable != null) {
+//        if (throwable != null) {
 //            LOGGER.error("",throwable);
 //            System.exit(1);
-        }
+//        }
         switch (stateMachineEnum) {
             case NEW_SESSION:
 //                LOGGER.info("new connection:{}");
@@ -138,16 +138,16 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
                 LOGGER.error("process request exception", throwable);
                 session.close();
                 break;
-            case OUTPUT_EXCEPTION:
+//            case OUTPUT_EXCEPTION:
 //                LOGGER.error("", throwable);
-                break;
-            case INPUT_EXCEPTION:
+//                break;
+//            case INPUT_EXCEPTION:
 //                LOGGER.error("",throwable);
-                break;
-            case SESSION_CLOSED:
+//                break;
+//            case SESSION_CLOSED:
 //                System.out.println("closeSession");
 //                LOGGER.info("connection closed:{}");
-                break;
+//                break;
             case DECODE_EXCEPTION:
                 throwable.printStackTrace();
                 break;
