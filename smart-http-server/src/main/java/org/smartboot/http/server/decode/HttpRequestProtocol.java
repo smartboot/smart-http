@@ -241,7 +241,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
             return new String(bytes, 0, length, CharsetUtil.US_ASCII);
         }
         List<StringCache> list = String_CACHE[length];
-        for (int i = 0, j = list.size(); i < j; i++) {
+        for (int i = list.size() - 1; i > -1; i--) {
             StringCache cache = list.get(i);
             if (equals(cache.bytes, bytes)) {
                 return cache.value;
@@ -262,12 +262,12 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
     }
 
     private boolean equals(byte[] b0, byte[] b1) {
-        for (int i = 0, j = b0.length; i < j; i++) {
+        for (int i = b0.length - 1; i > 0; i--) {
             if (b0[i] != b1[i]) {
                 return false;
             }
         }
-        return true;
+        return b0[0] == b1[0];
     }
 
 

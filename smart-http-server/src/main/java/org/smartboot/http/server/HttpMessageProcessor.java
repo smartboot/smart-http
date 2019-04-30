@@ -138,6 +138,9 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
                 LOGGER.error("process request exception", throwable);
                 session.close();
                 break;
+//            case INPUT_SHUTDOWN:
+//                LOGGER.error("inputShutdown", throwable);
+//                break;
 //            case OUTPUT_EXCEPTION:
 //                LOGGER.error("", throwable);
 //                break;
