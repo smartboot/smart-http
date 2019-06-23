@@ -84,8 +84,6 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
         try {
 //            if (true) {
 //                session.writeBuffer().write(b);
-//                session.writeBuffer().write(b);
-//                session.writeBuffer().write(b);
 //                request.rest();
 //                return;
 //            }

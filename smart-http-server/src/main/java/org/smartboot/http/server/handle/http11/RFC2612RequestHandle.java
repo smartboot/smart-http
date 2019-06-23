@@ -10,6 +10,8 @@ import org.smartboot.http.server.handle.HttpHandle;
 import org.smartboot.http.utils.HttpHeaderConstant;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author 三刀
@@ -17,6 +19,7 @@ import java.io.IOException;
  */
 public class RFC2612RequestHandle extends HttpHandle {
     public static final int MAX_LENGTH = 255 * 1024;
+    private Map<String, UriCache> uriCacheMap = new HashMap<>();
 
     @Override
     public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
@@ -82,10 +85,18 @@ public class RFC2612RequestHandle extends HttpHandle {
          *3. 假如由规则1或规则2定义的主机(host)对服务器来说是一个无效的主机(host)， 则应当以一个 400(坏请求)错误消息返回。
          */
         String originalUri = request.getOriginalUri();
+        UriCache uriCache = uriCacheMap.get(originalUri);
+        if (uriCache != null) {
+            request.setRequestURI(uriCache.uri);
+            request.setQueryString(uriCache.queryString);
+            return;
+        }
         int schemeIndex = originalUri.indexOf("://");
         int queryStringIndex = StringUtils.indexOf(originalUri, "?", schemeIndex);
+        String queryString = null;
         if (queryStringIndex != StringUtils.INDEX_NOT_FOUND) {
-            request.setQueryString(StringUtils.substring(originalUri, queryStringIndex + 1));
+            queryString = StringUtils.substring(originalUri, queryStringIndex + 1);
+            request.setQueryString(queryString);
         }
 
         if (schemeIndex > 0) {//绝对路径
@@ -104,6 +115,25 @@ public class RFC2612RequestHandle extends HttpHandle {
             request.setRequestURI(queryStringIndex > 0 ?
                     StringUtils.substring(originalUri, 0, queryStringIndex)
                     : originalUri);
+        }
+        uriCacheMap.put(originalUri, new UriCache(request.getRequestURI(), queryString));
+    }
+
+    private class UriCache {
+        private String uri;
+        private String queryString;
+
+        public UriCache(String uri, String queryString) {
+            this.uri = uri;
+            this.queryString = queryString;
+        }
+
+        public String getUri() {
+            return uri;
+        }
+
+        public void setUri(String uri) {
+            this.uri = uri;
         }
     }
 }
