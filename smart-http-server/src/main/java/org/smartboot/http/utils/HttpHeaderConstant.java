@@ -8,28 +8,22 @@
 
 package org.smartboot.http.utils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author 三刀
  * @version V1.0 , 2018/2/8
  */
 public class HttpHeaderConstant {
-    public static final List<HeaderNameEnum> HEADER_NAME_ENUM_LIST = new ArrayList<>();
+    public static final Map<String, HeaderNameEnum> HEADER_NAME_ENUM_MAP = new HashMap<>();
+    public static final Map<String, byte[]> HEADER_NAME_EXT_MAP = new ConcurrentHashMap<>();
 
     static {
         for (HeaderNameEnum headerNameEnum : HeaderNameEnum.values()) {
-            HEADER_NAME_ENUM_LIST.add(headerNameEnum);
+            HEADER_NAME_ENUM_MAP.put(headerNameEnum.getName(), headerNameEnum);
         }
-        Collections.sort(HEADER_NAME_ENUM_LIST, new Comparator<HeaderNameEnum>() {
-            @Override
-            public int compare(HeaderNameEnum o1, HeaderNameEnum o2) {
-                return o1.getName().compareTo(o2.getName());
-            }
-        });
     }
 
     public interface Names {

@@ -8,7 +8,6 @@ import org.smartboot.http.enums.MethodEnum;
 import org.smartboot.http.enums.State;
 import org.smartboot.http.utils.CharsetUtil;
 import org.smartboot.http.utils.Consts;
-import org.smartboot.http.utils.HeaderNameEnum;
 import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.socket.Protocol;
 import org.smartboot.socket.extension.decoder.DelimiterFrameDecoder;
@@ -268,16 +267,6 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
             }
         }
         return b0[0] == b1[0];
-    }
-
-
-    private String getHeaderName(byte[] bytes, int length) {
-        for (HeaderNameEnum nameEnum : HttpHeaderConstant.HEADER_NAME_ENUM_LIST) {
-            if (nameEnum.equals(bytes, length)) {
-                return nameEnum.getName();
-            }
-        }
-        return convertToString(bytes, length);
     }
 
     private int scanUntil(ByteBuffer buffer, byte split, byte[] bytes) {

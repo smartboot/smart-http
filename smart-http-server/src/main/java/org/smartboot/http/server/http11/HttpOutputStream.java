@@ -150,12 +150,18 @@ final class HttpOutputStream extends OutputStream {
     }
 
     private byte[] getHeaderNameBytes(String name) {
-        for (HeaderNameEnum headerNameEnum : HttpHeaderConstant.HEADER_NAME_ENUM_LIST) {
-            if (headerNameEnum.getName().equals(name)) {
-                return headerNameEnum.getBytesWithColon();
+        HeaderNameEnum headerNameEnum = HttpHeaderConstant.HEADER_NAME_ENUM_MAP.get(name);
+        if (headerNameEnum != null) {
+            return headerNameEnum.getBytesWithColon();
+        }
+        byte[] extBytes = HttpHeaderConstant.HEADER_NAME_EXT_MAP.get(name);
+        if (extBytes == null) {
+            synchronized (name) {
+                extBytes = getBytes("\r\n" + name + ":");
+                HttpHeaderConstant.HEADER_NAME_EXT_MAP.put(name, extBytes);
             }
         }
-        return getBytes("\r\n" + name + ":");
+        return extBytes;
     }
 
     @Override
