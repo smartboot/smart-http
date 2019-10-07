@@ -58,19 +58,70 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
             flag = false;
             switch (curState) {
                 case method:
-                    int methodLength = scanUntil(buffer, Consts.SP, b);
-                    if (methodLength > 0) {
-                        curState = State.uri;
-                        entityV2.methodEnum = MethodEnum.getByMethod(b, 0, methodLength);
-                        if (entityV2.methodEnum == null) {
-                            byte[] b1 = new byte[buffer.remaining()];
-                            buffer.get(b1);
-                            LOGGER.info(new String(b1));
-                            throw new DecoderException(new String(b, 0, methodLength));
-                        }
-                    } else {
+                    int mPos = buffer.position();
+                    if (buffer.remaining() < 8) {
                         break;
                     }
+                    byte firstByte = buffer.get();
+                    switch (firstByte) {
+                        case 'G':
+                            buffer.position(mPos + 3);
+                            if (buffer.get() == Consts.SP) {
+                                entityV2.methodEnum = MethodEnum.GET;
+                            }
+                            break;
+                        case 'P':
+                            buffer.position(mPos + 3);
+                            if (buffer.get() == Consts.SP) {
+                                entityV2.methodEnum = MethodEnum.PUT;
+                            } else if (buffer.get() == Consts.SP) {
+                                entityV2.methodEnum = MethodEnum.POST;
+                            }
+                            break;
+                        case 'D':
+                            buffer.position(mPos + 6);
+                            if (buffer.get() == Consts.SP) {
+                                entityV2.methodEnum = MethodEnum.DELETE;
+                            }
+                            break;
+                        case 'C':
+                            buffer.position(mPos + 7);
+                            if (buffer.get() == Consts.SP) {
+                                entityV2.methodEnum = MethodEnum.CONNECT;
+                            }
+                            break;
+                        case 'O':
+                            buffer.position(mPos + 7);
+                            if (buffer.get() == Consts.SP) {
+                                entityV2.methodEnum = MethodEnum.OPTIONS;
+                            }
+                            break;
+                        case 'T':
+                            buffer.position(mPos + 5);
+                            if (buffer.get() == Consts.SP) {
+                                entityV2.methodEnum = MethodEnum.TRACE;
+                            }
+                            break;
+                    }
+                    if (entityV2.methodEnum == null) {
+                        byte[] b1 = new byte[buffer.remaining()];
+                        buffer.get(b1);
+                        LOGGER.info(new String(b1));
+                        throw new DecoderException("invalid method");
+                    }
+//                    int methodLength = scanUntil(buffer, Consts.SP, b);
+//                    if (methodLength > 0) {
+//                        curState = State.uri;
+//                        entityV2.methodEnum = MethodEnum.getByMethod(b, 0, methodLength);
+//                        if (entityV2.methodEnum == null) {
+//                            byte[] b1 = new byte[buffer.remaining()];
+//                            buffer.get(b1);
+//                            LOGGER.info(new String(b1));
+//                            throw new DecoderException(new String(b, 0, methodLength));
+//                        }
+//                    } else {
+//                        break;
+//                    }
                 case uri:
                     int uriLength = scanUntil(buffer, Consts.SP, b);
                     if (uriLength > 0) {
@@ -80,38 +131,29 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                         break;
                     }
                 case protocol:
-                    int protocolLength = scanUntil(buffer, Consts.CR, b);
-                    if (protocolLength == 0) {
+//                    int protocolLength = scanUntil(buffer, Consts.CR, b);
+                    int pos = buffer.position();
+                    if (buffer.remaining() < 9) {
                         break;
-                    } else if (protocolLength == 8) {
-                        if (b[0] == 'H' && b[1] == 'T' && b[2] == 'T' && b[3] == 'P' && b[4] == '/' && b[6] == '.') {
-                            switch (b[5]) {
-                                case '0':
-                                    if (b[7] == '9') {
-                                        entityV2.protocol = "HTTP/0.9";
-                                    }
-                                    break;
-                                case '1':
-                                    if (b[7] == '0') {
-                                        entityV2.protocol = "HTTP/1.0";
-                                    } else if (b[7] == '1') {
-                                        entityV2.protocol = "HTTP/1.1";
-                                    }
-                                    break;
-                                case '2':
-                                    if (b[7] == '0') {
-                                        entityV2.protocol = "HTTP/2.0";
-                                    }
-                                    break;
-                                default:
-                                    throw new DecoderException("unsupport");
+                    } else if (buffer.get(pos + 8) == Consts.CR) {
+                        byte p5 = buffer.get(pos + 5);
+                        byte p7 = buffer.get(pos + 7);
+                        if (p5 == '0' && p7 == '9') {
+                            entityV2.protocol = "HTTP/0.9";
+                        } else if (p5 == '1') {
+                            if (p7 == '0') {
+                                entityV2.protocol = "HTTP/1.0";
+                            } else if (p7 == '1') {
+                                entityV2.protocol = "HTTP/1.1";
                             }
-                            if (entityV2.protocol == null) {
-                                throw new DecoderException("unKnow protocol");
-                            }
-                            curState = State.request_line_end;
+                        } else if (p5 == '2') {
+                            entityV2.protocol = "HTTP/2.0";
                         }
-
+                        if (entityV2.protocol == null) {
+                            throw new DecoderException("unKnow protocol");
+                        }
+                        curState = State.request_line_end;
+                        buffer.position(pos + 9);
                     } else {
                         throw new DecoderException("unsupport now");
                     }
