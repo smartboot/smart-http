@@ -133,6 +133,10 @@ final class HttpOutputStream extends OutputStream {
             }
             outputStream.write(HeaderNameEnum.CONTENT_TYPE.getBytesWithColon());
             outputStream.write(getBytes(contentType));
+            if (response.getContentLength() < 0 && !response.getHeaders().containsKey(HttpHeaderConstant.Names.TRANSFER_ENCODING)) {
+                chunked = true;
+                response.setHeader(HttpHeaderConstant.Names.TRANSFER_ENCODING, HttpHeaderConstant.Values.CHUNKED);
+            }
         }
 
         if (!response.getHeaders().isEmpty()) {
