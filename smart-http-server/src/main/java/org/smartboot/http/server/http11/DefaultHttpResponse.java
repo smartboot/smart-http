@@ -21,22 +21,30 @@ import java.util.Map;
  * @version V1.0 , 2018/2/3
  */
 public class DefaultHttpResponse implements HttpResponse {
-
-    private Map<String, String> headMap = new HashMap<>();
+    /**
+     * 响应消息头
+     */
+    private Map<String, String> headers = new HashMap<>();
     /**
      * http响应码
      */
     private HttpStatus httpStatus;
 
+    /**
+     * 输入流
+     */
     private HttpOutputStream outputStream;
 
+    /**
+     * 响应正文长度
+     */
     private int contentLength = -1;
 
-    private String transferEncoding = null;
-
+    /**
+     * 正文编码方式
+     */
     private String contentType;
 
-    private boolean closed;
 
     public DefaultHttpResponse() {
         outputStream = new HttpOutputStream();
@@ -44,9 +52,8 @@ public class DefaultHttpResponse implements HttpResponse {
 
     public void init(OutputStream outputStream) {
         this.outputStream.init(outputStream, this);
-        headMap.clear();
+        headers.clear();
         httpStatus = null;
-        closed = false;
     }
 
     public OutputStream getOutputStream() {
@@ -63,17 +70,17 @@ public class DefaultHttpResponse implements HttpResponse {
 
     @Override
     public void setHeader(String name, String value) {
-        headMap.put(name, value);
+        headers.put(name, value);
     }
 
     @Override
     public String getHeader(String name) {
-        return headMap.get(name);
+        return headers.get(name);
     }
 
     @Override
     public Map<String, String> getHeaders() {
-        return headMap;
+        return headers;
     }
 
     public void write(byte[] buffer) throws IOException {
@@ -88,14 +95,6 @@ public class DefaultHttpResponse implements HttpResponse {
         this.contentLength = contentLength;
     }
 
-    public String getTransferEncoding() {
-        return transferEncoding;
-    }
-
-    public void setTransferEncoding(String transferEncoding) {
-        this.transferEncoding = transferEncoding;
-    }
-
     public String getContentType() {
         return contentType;
     }
@@ -104,11 +103,12 @@ public class DefaultHttpResponse implements HttpResponse {
         this.contentType = contentType;
     }
 
+    /**
+     * 输出流是否已关闭
+     *
+     * @return
+     */
     public boolean isClosed() {
-        return closed;
-    }
-
-    public void setClosed(boolean closed) {
-        this.closed = closed;
+        return outputStream.isClosed();
     }
 }

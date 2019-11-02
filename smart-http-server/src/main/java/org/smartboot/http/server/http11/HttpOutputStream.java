@@ -28,7 +28,13 @@ import java.util.Map;
  * @version V1.0 , 2018/2/3
  */
 final class HttpOutputStream extends OutputStream {
+    /**
+     * key:status+contentType
+     */
     private static final Map<String, byte[]>[] CONTENT_TYPE_CACHE = new Map[512];
+    /**
+     * Key：status+contentType
+     */
     private static final Map<String, byte[]> CHUNKED_CACHE = new HashMap<>();
     private static final byte[] CHUNKED_END_BYTES = "0\r\n\r\n".getBytes(CharsetUtil.US_ASCII);
     private static SimpleDateFormat sdf = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
@@ -48,42 +54,11 @@ final class HttpOutputStream extends OutputStream {
     private boolean committed = false, closed = false;
     private boolean chunked = false;
 
-    private static byte[] getHeadPart(String contentType, int contentLength, boolean chunked) {
-        Map<String, byte[]> map = null;
-        if (chunked) {
-            map = CHUNKED_CACHE;
-        } else if (contentLength >= 0 && contentLength < CONTENT_TYPE_CACHE.length) {
-            map = CONTENT_TYPE_CACHE[contentLength];
-        }
-        byte[] data = null;
-        if (map != null) {
-            data = map.get(contentType);
-            if (data != null) {
-                return data;
-            }
-        }
-
-        String str = "HTTP/1.1 200 OK\r\n" + HttpHeaderConstant.Names.CONTENT_TYPE + ":" + contentType + "\r\n" + HttpHeaderConstant.Names.SERVER + ":smart-http";
-        if (contentLength >= 0) {
-            str += "\r\n" + HttpHeaderConstant.Names.CONTENT_LENGTH + ":" + contentLength;
-        } else if (chunked) {
-            str += "\r\n" + HttpHeaderConstant.Names.TRANSFER_ENCODING + ":" + HttpHeaderConstant.Values.CHUNKED;
-        }
-        data = str.getBytes();
-        if (chunked) {
-            CHUNKED_CACHE.put(contentType, data);
-        } else if (contentLength >= 0 && contentLength < CONTENT_TYPE_CACHE.length) {
-            CONTENT_TYPE_CACHE[contentLength].put(contentType, data);
-        }
-        return data;
-
-    }
-
-
     private static void flushDate() {
         currentDate.setTime(System.currentTimeMillis());
         HttpOutputStream.date = ("\r\n" + HttpHeaderConstant.Names.DATE + ":" + sdf.format(currentDate) + "\r\n\r\n").getBytes();
     }
+
 
     void init(OutputStream outputStream, DefaultHttpResponse response) {
         this.outputStream = outputStream;
@@ -116,36 +91,17 @@ final class HttpOutputStream extends OutputStream {
         if (response.getHttpStatus() == null) {
             response.setHttpStatus(HttpStatus.OK);
         }
-        if (response.getHttpStatus() == HttpStatus.OK) {
-            String contentType = response.getContentType();
-            if (contentType == null) {
-                contentType = "text/html; charset=utf-8";
-            }
-            int contentLength = response.getContentLength();
-            chunked = contentLength < 0 && response.getTransferEncoding() == null;
-            byte[] head = getHeadPart(contentType, contentLength, chunked);
-            outputStream.write(head);
-        } else {
-            outputStream.write(response.getHttpStatus().getLineBytes());
-            String contentType = response.getContentType();
-            if (contentType == null) {
-                contentType = "text/html; charset=utf-8";
-            }
-            outputStream.write(HeaderNameEnum.CONTENT_TYPE.getBytesWithColon());
-            outputStream.write(getBytes(contentType));
-            if (response.getContentLength() < 0 && !response.getHeaders().containsKey(HttpHeaderConstant.Names.TRANSFER_ENCODING)) {
-                chunked = true;
-                response.setHeader(HttpHeaderConstant.Names.TRANSFER_ENCODING, HttpHeaderConstant.Values.CHUNKED);
-            } else {
-                response.setHeader(HttpHeaderConstant.Names.CONTENT_LENGTH, response.getContentLength() + "");
-            }
+        String contentType = response.getContentType();
+        if (contentType == null) {
+            contentType = HttpHeaderConstant.Values.DEFAULT_CONTENT_TYPE;
         }
+        //输出http状态行、contentType,contentLength、Transfer-Encoding、server等信息
+        outputStream.write(getHeadPart(response.getHttpStatus(), contentType, response.getContentLength()));
 
-        if (!response.getHeaders().isEmpty()) {
-            for (Map.Entry<String, String> entry : response.getHeaders().entrySet()) {
-                outputStream.write(getHeaderNameBytes(entry.getKey()));
-                outputStream.write(getBytes(entry.getValue()));
-            }
+        //输出Header部分
+        for (Map.Entry<String, String> entry : response.getHeaders().entrySet()) {
+            outputStream.write(getHeaderNameBytes(entry.getKey()));
+            outputStream.write(getBytes(entry.getValue()));
         }
 
         /**
@@ -153,6 +109,43 @@ final class HttpOutputStream extends OutputStream {
          * 只能用 RFC 1123 里定义的日期格式来填充头域 (header field)的值里用到 HTTP-date 的地方
          */
         outputStream.write(date);
+    }
+
+    private byte[] getHeadPart(HttpStatus httpStatus, String contentType, int contentLength) {
+        chunked = contentLength < 0;
+        Map<String, byte[]> map = null;
+        if (chunked) {
+            map = CHUNKED_CACHE;
+        } else if (contentLength >= 0 && contentLength < CONTENT_TYPE_CACHE.length) {
+            map = CONTENT_TYPE_CACHE[contentLength];
+        }
+
+        String cacheKey = httpStatus.value() + contentType;
+        byte[] data = null;
+        if (map != null) {
+            data = map.get(cacheKey);
+            if (data != null) {
+                return data;
+            }
+        }
+
+        String str = httpStatus.getHttpStatusLine() + "\r\n"
+                + HttpHeaderConstant.Names.CONTENT_TYPE + ":" + contentType + "\r\n"
+                + HttpHeaderConstant.Names.SERVER + ":smart-http";
+        if (contentLength >= 0) {
+            str += "\r\n" + HttpHeaderConstant.Names.CONTENT_LENGTH + ":" + contentLength;
+        } else if (chunked) {
+            str += "\r\n" + HttpHeaderConstant.Names.TRANSFER_ENCODING + ":" + HttpHeaderConstant.Values.CHUNKED;
+        }
+        data = str.getBytes();
+        //缓存响应头
+        if (chunked) {
+            CHUNKED_CACHE.put(cacheKey, data);
+        } else if (contentLength >= 0 && contentLength < CONTENT_TYPE_CACHE.length) {
+            CONTENT_TYPE_CACHE[contentLength].put(cacheKey, data);
+        }
+        return data;
+
     }
 
     private byte[] getHeaderNameBytes(String name) {
@@ -193,11 +186,14 @@ final class HttpOutputStream extends OutputStream {
             outputStream.write(CHUNKED_END_BYTES);
         }
         closed = true;
-        response.setClosed(true);
     }
 
     private byte[] getBytes(String str) {
         return str.getBytes(CharsetUtil.US_ASCII);
+    }
+
+    public boolean isClosed() {
+        return closed;
     }
 
     public static class ResponseDateTimer extends QuickTimerTask {

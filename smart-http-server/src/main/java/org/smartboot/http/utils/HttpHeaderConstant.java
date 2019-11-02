@@ -101,6 +101,8 @@ public class HttpHeaderConstant {
         String WEBSOCKET = "websocket";
 
         String KEEPALIVE = "Keep-Alive";
+
+        String DEFAULT_CONTENT_TYPE = "text/html; charset=utf-8";
     }
 
 
