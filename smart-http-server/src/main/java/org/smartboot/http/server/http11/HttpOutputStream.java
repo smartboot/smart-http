@@ -128,19 +128,15 @@ final class HttpOutputStream extends OutputStream {
 
     private byte[] getHeadPart(HttpStatus httpStatus, String contentType, int contentLength) {
         chunked = contentLength < 0;
-        Map<String, byte[]> map = null;
         byte[] data = null;
         if (httpStatus == HttpStatus.OK) {
             if (chunked) {
-                map = CACHE_CHUNKED_AND_LENGTH;
+                data = CACHE_CHUNKED_AND_LENGTH.get(contentType);
             } else if (contentLength >= 0 && contentLength < CACHE_CONTENT_TYPE_AND_LENGTH.length) {
-                map = CACHE_CONTENT_TYPE_AND_LENGTH[contentLength];
+                data = CACHE_CONTENT_TYPE_AND_LENGTH[contentLength].get(contentType);
             }
-            if (map != null) {
-                data = map.get(contentType);
-                if (data != null) {
-                    return data;
-                }
+            if (data != null) {
+                return data;
             }
         }
 
