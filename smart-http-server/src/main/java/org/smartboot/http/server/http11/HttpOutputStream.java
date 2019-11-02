@@ -129,18 +129,18 @@ final class HttpOutputStream extends OutputStream {
     private byte[] getHeadPart(HttpStatus httpStatus, String contentType, int contentLength) {
         chunked = contentLength < 0;
         Map<String, byte[]> map = null;
-        if (chunked) {
-            map = CACHE_CHUNKED_AND_LENGTH;
-        } else if (contentLength >= 0 && contentLength < CACHE_CONTENT_TYPE_AND_LENGTH.length) {
-            map = CACHE_CONTENT_TYPE_AND_LENGTH[contentLength];
-        }
-
-        String cacheKey = httpStatus.value() + contentType;
         byte[] data = null;
-        if (map != null) {
-            data = map.get(cacheKey);
-            if (data != null) {
-                return data;
+        if (httpStatus == HttpStatus.OK) {
+            if (chunked) {
+                map = CACHE_CHUNKED_AND_LENGTH;
+            } else if (contentLength >= 0 && contentLength < CACHE_CONTENT_TYPE_AND_LENGTH.length) {
+                map = CACHE_CONTENT_TYPE_AND_LENGTH[contentLength];
+            }
+            if (map != null) {
+                data = map.get(contentType);
+                if (data != null) {
+                    return data;
+                }
             }
         }
 
@@ -154,10 +154,12 @@ final class HttpOutputStream extends OutputStream {
         }
         data = str.getBytes();
         //缓存响应头
-        if (chunked) {
-            CACHE_CHUNKED_AND_LENGTH.put(cacheKey, data);
-        } else if (contentLength >= 0 && contentLength < CACHE_CONTENT_TYPE_AND_LENGTH.length) {
-            CACHE_CONTENT_TYPE_AND_LENGTH[contentLength].put(cacheKey, data);
+        if (httpStatus == HttpStatus.OK) {
+            if (chunked) {
+                CACHE_CHUNKED_AND_LENGTH.put(contentType, data);
+            } else if (contentLength >= 0 && contentLength < CACHE_CONTENT_TYPE_AND_LENGTH.length) {
+                CACHE_CONTENT_TYPE_AND_LENGTH[contentLength].put(contentType, data);
+            }
         }
         return data;
 
@@ -194,9 +196,12 @@ final class HttpOutputStream extends OutputStream {
         }
 
         if (chunked) {
+            if (!committed) {
+                writeHead();
+                committed = true;
+            }
             outputStream.write(CHUNKED_END_BYTES);
         }
-        flush();
         closed = true;
     }
 
