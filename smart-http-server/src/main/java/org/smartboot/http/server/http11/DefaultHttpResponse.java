@@ -36,6 +36,8 @@ public class DefaultHttpResponse implements HttpResponse {
 
     private String contentType;
 
+    private boolean closed;
+
     public DefaultHttpResponse() {
         outputStream = new HttpOutputStream();
     }
@@ -44,6 +46,7 @@ public class DefaultHttpResponse implements HttpResponse {
         this.outputStream.init(outputStream, this);
         headMap.clear();
         httpStatus = null;
+        closed = false;
     }
 
     public OutputStream getOutputStream() {
@@ -99,5 +102,13 @@ public class DefaultHttpResponse implements HttpResponse {
 
     public void setContentType(String contentType) {
         this.contentType = contentType;
+    }
+
+    public boolean isClosed() {
+        return closed;
+    }
+
+    public void setClosed(boolean closed) {
+        this.closed = closed;
     }
 }

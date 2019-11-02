@@ -136,6 +136,8 @@ final class HttpOutputStream extends OutputStream {
             if (response.getContentLength() < 0 && !response.getHeaders().containsKey(HttpHeaderConstant.Names.TRANSFER_ENCODING)) {
                 chunked = true;
                 response.setHeader(HttpHeaderConstant.Names.TRANSFER_ENCODING, HttpHeaderConstant.Values.CHUNKED);
+            } else {
+                response.setHeader(HttpHeaderConstant.Names.CONTENT_LENGTH, response.getContentLength() + "");
             }
         }
 
@@ -182,6 +184,7 @@ final class HttpOutputStream extends OutputStream {
         if (closed) {
             throw new IOException("outputstream");
         }
+        flush();
         if (chunked) {
             if (!committed) {
                 writeHead();
@@ -190,6 +193,7 @@ final class HttpOutputStream extends OutputStream {
             outputStream.write(CHUNKED_END_BYTES);
         }
         closed = true;
+        response.setClosed(true);
     }
 
     private byte[] getBytes(String str) {

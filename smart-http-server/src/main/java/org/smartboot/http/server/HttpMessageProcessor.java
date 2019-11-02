@@ -106,7 +106,10 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
                 httpResponse.getOutputStream().write(e.fillInStackTrace().toString().getBytes());
             }
 //
-            httpResponse.getOutputStream().close();
+            if (!httpResponse.isClosed()) {
+                httpResponse.getOutputStream().close();
+            }
+
 
 //
 //            if (!isKeepAlive || httpResponse.getHttpStatus() != HttpStatus.OK) {

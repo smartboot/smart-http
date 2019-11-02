@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
+import org.smartboot.http.utils.AntPathMatcher;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -15,6 +16,7 @@ import java.util.Map;
  */
 public class RouteHandle extends HttpHandle {
     private static final Logger LOGGER = LoggerFactory.getLogger(RouteHandle.class);
+    private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
     private Map<String, HttpHandle> handleMap = new HashMap<>();
     private StaticResourceHandle defaultHandle;
 
@@ -27,16 +29,16 @@ public class RouteHandle extends HttpHandle {
         String uri = request.getRequestURI();
         HttpHandle httpHandle = handleMap.get(uri);
         if (httpHandle == null) {
-//            for (Map.Entry<String, HttpHandle> entity : handleMap.entrySet()) {
-//                if (uri.matches(entity.getKey())) {
-//                    httpHandle = entity.getValue();
-//                    break;
-//                }
-//            }
-//            if (httpHandle == null) {
-            httpHandle = defaultHandle;
-            LOGGER.debug("路由匹配失败,使用defaultHandle");
-//            }
+            for (Map.Entry<String, HttpHandle> entity : handleMap.entrySet()) {
+                if (PATH_MATCHER.match(entity.getKey(), uri)) {
+                    httpHandle = entity.getValue();
+                    break;
+                }
+            }
+            if (httpHandle == null) {
+                httpHandle = defaultHandle;
+                LOGGER.debug("路由匹配失败,使用defaultHandle");
+            }
             handleMap.put(uri, httpHandle);
         }
 
