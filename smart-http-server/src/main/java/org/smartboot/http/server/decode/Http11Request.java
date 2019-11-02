@@ -45,6 +45,11 @@ public class Http11Request implements HttpRequest {
     }
 
     @Override
+    public Map<String, String> getHeaders() {
+        return headMap;
+    }
+
+    @Override
     public InputStream getInputStream() {
         return this.inputStream == null ? new EmptyInputStream() : this.inputStream;
     }
@@ -125,6 +130,14 @@ public class Http11Request implements HttpRequest {
         buffer.get(bytes);
         decodeParamString(new String(bytes), parameters);
         return getParameterValues(name);
+    }
+
+    @Override
+    public Map<String, String[]> getParameters() {
+        if (parameters == null) {
+            getParameter("");
+        }
+        return parameters;
     }
 
     private void decodeParamString(String paramStr, Map<String, String[]> paramMap) {

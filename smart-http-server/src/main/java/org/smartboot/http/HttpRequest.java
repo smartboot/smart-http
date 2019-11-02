@@ -3,6 +3,7 @@ package org.smartboot.http;
 import org.smartboot.http.enums.MethodEnum;
 
 import java.io.InputStream;
+import java.util.Map;
 
 /**
  * @author 三刀
@@ -18,6 +19,7 @@ public interface HttpRequest {
      */
     String getHeader(String headName);
 
+    Map<String, String> getHeaders();
 
 
     InputStream getInputStream();
@@ -41,4 +43,6 @@ public interface HttpRequest {
     String getParameter(String name);
 
     String[] getParameterValues(String name);
+
+    Map<String, String[]> getParameters();
 }
