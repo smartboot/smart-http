@@ -31,19 +31,21 @@ final class HttpOutputStream extends OutputStream {
     /**
      * key:status+contentType
      */
-    private static final Map<String, byte[]>[] CONTENT_TYPE_CACHE = new Map[512];
+    private static final Map<String, byte[]>[] CACHE_CONTENT_TYPE_AND_LENGTH = new Map[512];
     /**
      * Key：status+contentType
      */
-    private static final Map<String, byte[]> CHUNKED_CACHE = new HashMap<>();
+    private static final Map<String, byte[]> CACHE_CHUNKED_AND_LENGTH = new HashMap<>();
+
     private static final byte[] CHUNKED_END_BYTES = "0\r\n\r\n".getBytes(CharsetUtil.US_ASCII);
+
     private static SimpleDateFormat sdf = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
     private static Date currentDate = new Date();
     private static byte[] date;
 
     static {
-        for (int i = 0; i < CONTENT_TYPE_CACHE.length; i++) {
-            CONTENT_TYPE_CACHE[i] = new HashMap<>();
+        for (int i = 0; i < CACHE_CONTENT_TYPE_AND_LENGTH.length; i++) {
+            CACHE_CONTENT_TYPE_AND_LENGTH[i] = new HashMap<>();
         }
         flushDate();
         new ResponseDateTimer();
@@ -71,6 +73,14 @@ final class HttpOutputStream extends OutputStream {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * 输出Http响应
+     *
+     * @param b
+     * @param off
+     * @param len
+     * @throws IOException
+     */
     public final void write(byte b[], int off, int len) throws IOException {
         if (!committed) {
             writeHead();
@@ -87,6 +97,11 @@ final class HttpOutputStream extends OutputStream {
 
     }
 
+    /**
+     * 输出Http消息头
+     *
+     * @throws IOException
+     */
     private void writeHead() throws IOException {
         if (response.getHttpStatus() == null) {
             response.setHttpStatus(HttpStatus.OK);
@@ -115,9 +130,9 @@ final class HttpOutputStream extends OutputStream {
         chunked = contentLength < 0;
         Map<String, byte[]> map = null;
         if (chunked) {
-            map = CHUNKED_CACHE;
-        } else if (contentLength >= 0 && contentLength < CONTENT_TYPE_CACHE.length) {
-            map = CONTENT_TYPE_CACHE[contentLength];
+            map = CACHE_CHUNKED_AND_LENGTH;
+        } else if (contentLength >= 0 && contentLength < CACHE_CONTENT_TYPE_AND_LENGTH.length) {
+            map = CACHE_CONTENT_TYPE_AND_LENGTH[contentLength];
         }
 
         String cacheKey = httpStatus.value() + contentType;
@@ -140,9 +155,9 @@ final class HttpOutputStream extends OutputStream {
         data = str.getBytes();
         //缓存响应头
         if (chunked) {
-            CHUNKED_CACHE.put(cacheKey, data);
-        } else if (contentLength >= 0 && contentLength < CONTENT_TYPE_CACHE.length) {
-            CONTENT_TYPE_CACHE[contentLength].put(cacheKey, data);
+            CACHE_CHUNKED_AND_LENGTH.put(cacheKey, data);
+        } else if (contentLength >= 0 && contentLength < CACHE_CONTENT_TYPE_AND_LENGTH.length) {
+            CACHE_CONTENT_TYPE_AND_LENGTH[contentLength].put(cacheKey, data);
         }
         return data;
 
@@ -175,14 +190,10 @@ final class HttpOutputStream extends OutputStream {
     @Override
     public void close() throws IOException {
         if (closed) {
-            throw new IOException("outputstream");
+            throw new IOException("outputStream has already closed");
         }
         flush();
         if (chunked) {
-            if (!committed) {
-                writeHead();
-                committed = true;
-            }
             outputStream.write(CHUNKED_END_BYTES);
         }
         closed = true;
