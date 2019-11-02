@@ -70,7 +70,7 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
         AioQuickServer<Http11Request> server = new AioQuickServer<Http11Request>(8080, new HttpRequestProtocol(), processor);
         server.setReadBufferSize(1024 * 4);
 //        server.setBannerEnabled(false);
-//        server.setThreadNum(36);
+        server.setThreadNum(Runtime.getRuntime().availableProcessors() + 2);
 //        server.setFairIO(true);
         try {
             server.start();

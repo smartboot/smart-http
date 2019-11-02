@@ -192,10 +192,11 @@ final class HttpOutputStream extends OutputStream {
         if (closed) {
             throw new IOException("outputStream has already closed");
         }
-        flush();
+
         if (chunked) {
             outputStream.write(CHUNKED_END_BYTES);
         }
+        flush();
         closed = true;
     }
 
