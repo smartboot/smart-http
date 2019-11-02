@@ -32,7 +32,7 @@ public class Http11Request implements HttpRequest {
     boolean tmpValEnable = false;
     DelimiterFrameDecoder tmpHeaderValue = new DelimiterFrameDecoder(new byte[]{Consts.CR}, 1024);
     SmartDecoder bodyContentDecoder;
-    private Map<String, String> paramMap;
+    private Map<String, String[]> parameters;
     private InputStream inputStream;
     private String requestUri;
     private String contentType;
@@ -99,29 +99,35 @@ public class Http11Request implements HttpRequest {
 
     @Override
     public String getParameter(String name) {
-        if (paramMap != null) {
-            return paramMap.get(name);
+        String[] arr = (name != null ? getParameterValues(name) : null);
+        return (arr != null && arr.length > 0 ? arr[0] : null);
+    }
+
+    @Override
+    public String[] getParameterValues(String name) {
+        if (parameters != null) {
+            return parameters.get(name);
         }
-        paramMap = new HashMap<>();
+        parameters = new HashMap<>();
         //识别url中的参数
         String urlParamStr = StringUtils.substringAfter(originalUri, "?");
         if (StringUtils.isNotBlank(urlParamStr)) {
             urlParamStr = StringUtils.substringBefore(urlParamStr, "#");
-            decodeParamString(urlParamStr, paramMap);
+            decodeParamString(urlParamStr, parameters);
         }
 
         //识别body中的参数
         if (bodyContentDecoder == null) {
-            return getParameter(name);
+            return getParameterValues(name);
         }
         ByteBuffer buffer = bodyContentDecoder.getBuffer();
         byte[] bytes = new byte[buffer.remaining()];
         buffer.get(bytes);
-        decodeParamString(new String(bytes), paramMap);
-        return getParameter(name);
+        decodeParamString(new String(bytes), parameters);
+        return getParameterValues(name);
     }
 
-    private void decodeParamString(String paramStr, Map<String, String> paramMap) {
+    private void decodeParamString(String paramStr, Map<String, String[]> paramMap) {
         if (StringUtils.isBlank(paramStr)) {
             return;
         }
@@ -132,7 +138,18 @@ public class Http11Request implements HttpRequest {
                 continue;
             }
             try {
-                paramMap.put(StringUtils.substring(param, 0, index), URLDecoder.decode(StringUtils.substring(param, index + 1), "utf8"));
+                String key = StringUtils.substring(param, 0, index);
+                String value = URLDecoder.decode(StringUtils.substring(param, index + 1), "utf8");
+                String[] values = paramMap.get(key);
+                if (values == null) {
+                    paramMap.put(key, new String[]{value});
+                } else {
+                    String[] newValue = new String[values.length + 1];
+                    System.arraycopy(values, 0, newValue, 0, values.length);
+                    newValue[values.length] = value;
+                    paramMap.put(key, newValue);
+                }
+
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
@@ -147,7 +164,7 @@ public class Http11Request implements HttpRequest {
         tmpHeaderValue.reset();
         bodyContentDecoder = null;
         originalUri = null;
-        paramMap = null;
+        parameters = null;
         contentType = null;
         contentLength = -1;
     }

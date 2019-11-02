@@ -10,7 +10,15 @@ import java.io.InputStream;
  */
 public interface HttpRequest {
 
+    /**
+     * 获取指定名称的Http Header值
+     *
+     * @param headName
+     * @return
+     */
     String getHeader(String headName);
+
+
 
     InputStream getInputStream();
 
@@ -31,4 +39,6 @@ public interface HttpRequest {
     int getContentLength();
 
     String getParameter(String name);
+
+    String[] getParameterValues(String name);
 }
