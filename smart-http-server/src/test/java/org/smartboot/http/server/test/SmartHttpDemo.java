@@ -3,8 +3,8 @@ package org.smartboot.http.server.test;
 import org.smartboot.http.HttpBootstrap;
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
-import org.smartboot.http.server.HttpMessageProcessor;
 import org.smartboot.http.server.handle.HttpHandle;
+import org.smartboot.http.server.handle.RouteHandle;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,8 +18,8 @@ public class SmartHttpDemo {
         System.setProperty("smart-socket.server.pageSize", (1024 * 1024 * 5) + "");
         System.setProperty("smart-socket.session.writeChunkSize", (1024 * 4) + "");
 
-        HttpMessageProcessor processor = new HttpMessageProcessor(System.getProperty("webapps.dir", "./"));
-        processor.route("/", new HttpHandle() {
+        RouteHandle routeHandle = new RouteHandle(System.getProperty("webapps.dir", "./"));
+        routeHandle.route("/", new HttpHandle() {
             byte[] body = ("<html>" +
                     "<head><title>smart-http demo</title></head>" +
                     "<body>" +
@@ -34,21 +34,18 @@ public class SmartHttpDemo {
                 response.setContentLength(body.length);
                 response.getOutputStream().write(body);
             }
-        });
-        processor.route("/get", new HttpHandle() {
+        }).route("/get", new HttpHandle() {
             @Override
             public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
                 response.getOutputStream().write(("收到Get参数text=" + request.getParameter("text")).getBytes());
                 response.getOutputStream().flush();
             }
-        });
-        processor.route("/post", new HttpHandle() {
+        }).route("/post", new HttpHandle() {
             @Override
             public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
                 response.getOutputStream().write(("收到Post参数text=" + request.getParameter("text")).getBytes());
             }
-        });
-        processor.route("/upload", new HttpHandle() {
+        }).route("/upload", new HttpHandle() {
             @Override
             public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
                 InputStream in = request.getInputStream();
@@ -59,8 +56,7 @@ public class SmartHttpDemo {
                 }
                 in.close();
             }
-        });
-        processor.route("/plaintext", new HttpHandle() {
+        }).route("/plaintext", new HttpHandle() {
             byte[] body = "Hello World!".getBytes();
 
             @Override
@@ -69,7 +65,12 @@ public class SmartHttpDemo {
                 response.getOutputStream().write(body);
             }
         });
-        HttpBootstrap bootstrap = new HttpBootstrap(processor);
+
+        HttpBootstrap bootstrap = new HttpBootstrap();
+        //配置HTTP消息处理管道
+        bootstrap.pipeline().next(routeHandle);
+
+        //设定服务器配置并启动
         bootstrap.setThreadNum(Runtime.getRuntime().availableProcessors() + 2)
                 .setPort(8080)
                 .start();

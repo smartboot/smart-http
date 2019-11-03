@@ -11,13 +11,13 @@ package org.smartboot.http;
 import org.smartboot.http.server.HttpMessageProcessor;
 import org.smartboot.http.server.decode.Http11Request;
 import org.smartboot.http.server.decode.HttpRequestProtocol;
-import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.Protocol;
 import org.smartboot.socket.transport.AioQuickServer;
 
 import java.io.IOException;
 
 public class HttpBootstrap {
+
 
     private AioQuickServer<Http11Request> server;
     /**
@@ -32,17 +32,11 @@ public class HttpBootstrap {
      * 服务线程数
      */
     private int threadNum = Runtime.getRuntime().availableProcessors() + 2;
-
-
-    private MessageProcessor<Http11Request> processor;
+    private HttpMessageProcessor processor = new HttpMessageProcessor();
     /**
      * http消息解码器
      */
     private Protocol<Http11Request> protocol = new HttpRequestProtocol();
-
-    public HttpBootstrap(HttpMessageProcessor processor) {
-        this.processor = processor;
-    }
 
 //    static void https(MessageProcessor<Http11Request> processor) {
 //        // 定义服务器接受的消息类型以及各类消息对应的处理器
@@ -70,6 +64,10 @@ public class HttpBootstrap {
         return this;
     }
 
+    public Pipeline pipeline() {
+        return processor.pipeline();
+    }
+
     /**
      * 设置read缓冲区大小
      *
@@ -91,6 +89,7 @@ public class HttpBootstrap {
         this.threadNum = threadNum;
         return this;
     }
+
 
     /**
      * 启动HTTP服务

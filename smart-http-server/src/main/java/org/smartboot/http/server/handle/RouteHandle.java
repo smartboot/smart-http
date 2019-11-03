@@ -45,8 +45,9 @@ public class RouteHandle extends HttpHandle {
         httpHandle.doHandle(request, response);
     }
 
-    public void route(String urlPattern, HttpHandle httpHandle) {
+    public RouteHandle route(String urlPattern, HttpHandle httpHandle) {
         handleMap.put(urlPattern, httpHandle);
+        return this;
     }
 
 }

@@ -2,11 +2,12 @@ package org.smartboot.http.server;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.smartboot.http.Pipeline;
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.exception.HttpException;
 import org.smartboot.http.server.decode.Http11Request;
+import org.smartboot.http.server.handle.HandlePipeline;
 import org.smartboot.http.server.handle.HttpHandle;
-import org.smartboot.http.server.handle.RouteHandle;
 import org.smartboot.http.server.handle.http11.RFC2612RequestHandle;
 import org.smartboot.http.server.http11.DefaultHttpResponse;
 import org.smartboot.socket.MessageProcessor;
@@ -22,16 +23,10 @@ import java.io.IOException;
 public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpMessageProcessor.class);
     private ThreadLocal<DefaultHttpResponse> RESPONSE_THREAD_LOCAL = null;
-    /**
-     * Http消息处理器
-     */
-    private HttpHandle processHandle;
-    private RouteHandle routeHandle;
+    private HandlePipeline pipeline = new HandlePipeline();
 
-    public HttpMessageProcessor(String baseDir) {
-        processHandle = new RFC2612RequestHandle();
-        routeHandle = new RouteHandle(baseDir);
-        processHandle.next(routeHandle);
+    public HttpMessageProcessor() {
+        pipeline.next(new RFC2612RequestHandle());
 
         RESPONSE_THREAD_LOCAL = new ThreadLocal<DefaultHttpResponse>() {
             @Override
@@ -52,7 +47,7 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
 //                if (isKeepAlive) {
 //                    httpResponse.setHeader(HttpHeaderConstant.Names.CONNECTION, HttpHeaderConstant.Values.KEEPALIVE);
 //                }
-                processHandle.doHandle(request, httpResponse);
+                pipeline.doHandle(request, httpResponse);
             } catch (HttpException e) {
                 e.printStackTrace();
                 httpResponse.setHttpStatus(HttpStatus.valueOf(e.getHttpCode()));
@@ -110,7 +105,11 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
         }
     }
 
-    public void route(String urlPattern, HttpHandle httpHandle) {
-        routeHandle.route(urlPattern, httpHandle);
+    public Pipeline pipeline(HttpHandle httpHandle) {
+        return pipeline.next(httpHandle);
+    }
+
+    public Pipeline pipeline() {
+        return pipeline;
     }
 }
