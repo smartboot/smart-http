@@ -9,11 +9,10 @@ import org.smartboot.http.server.handle.RouteHandle;
  */
 public class FileSmartHttp {
     public static void main(String[] args) {
-        RouteHandle routeHandle = new RouteHandle(System.getProperty("user.dir") + "/smart-http-server/webapps");
-
+        String webdir = System.getProperty("user.dir") + "/smart-http-server/webapps";
         HttpBootstrap bootstrap = new HttpBootstrap();
         //配置HTTP消息处理管道
-        bootstrap.pipeline().next(routeHandle);
+        bootstrap.pipeline().next(new RouteHandle(webdir));
 
         //设定服务器配置并启动
         bootstrap.setPort(8080).start();
