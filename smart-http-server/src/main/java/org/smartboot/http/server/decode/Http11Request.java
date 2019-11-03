@@ -1,13 +1,12 @@
 package org.smartboot.http.server.decode;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.enums.MethodEnum;
 import org.smartboot.http.enums.State;
 import org.smartboot.http.utils.Consts;
 import org.smartboot.http.utils.EmptyInputStream;
 import org.smartboot.http.utils.HttpHeaderConstant;
+import org.smartboot.http.utils.StringUtils;
 import org.smartboot.socket.extension.decoder.DelimiterFrameDecoder;
 import org.smartboot.socket.extension.decoder.SmartDecoder;
 
@@ -182,8 +181,8 @@ public class Http11Request implements HttpRequest {
         contentLength = -1;
     }
 
-    @Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this);
-    }
+//    @Override
+//    public String toString() {
+//        return ToStringBuilder.reflectionToString(this);
+//    }
 }

@@ -129,6 +129,7 @@ final class HttpOutputStream extends OutputStream {
     private byte[] getHeadPart(HttpStatus httpStatus, String contentType, int contentLength) {
         chunked = contentLength < 0;
         byte[] data = null;
+        //成功消息优先从缓存中加载
         if (httpStatus == HttpStatus.OK) {
             if (chunked) {
                 data = CACHE_CHUNKED_AND_LENGTH.get(contentType);

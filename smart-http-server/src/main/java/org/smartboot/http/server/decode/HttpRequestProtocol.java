@@ -1,7 +1,5 @@
 package org.smartboot.http.server.decode;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartboot.http.enums.MethodEnum;
@@ -9,6 +7,8 @@ import org.smartboot.http.enums.State;
 import org.smartboot.http.utils.CharsetUtil;
 import org.smartboot.http.utils.Consts;
 import org.smartboot.http.utils.HttpHeaderConstant;
+import org.smartboot.http.utils.NumberUtils;
+import org.smartboot.http.utils.StringUtils;
 import org.smartboot.socket.Protocol;
 import org.smartboot.socket.extension.decoder.DelimiterFrameDecoder;
 import org.smartboot.socket.extension.decoder.FixedLengthFrameDecoder;

@@ -8,7 +8,7 @@
 
 package org.smartboot.http.enums;
 
-import org.apache.commons.lang.StringUtils;
+import org.smartboot.http.utils.StringUtils;
 
 import java.nio.ByteBuffer;
 

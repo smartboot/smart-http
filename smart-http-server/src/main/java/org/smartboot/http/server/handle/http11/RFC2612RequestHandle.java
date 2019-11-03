@@ -1,6 +1,5 @@
 package org.smartboot.http.server.handle.http11;
 
-import org.apache.commons.lang.StringUtils;
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
 import org.smartboot.http.enums.HttpStatus;
@@ -8,6 +7,7 @@ import org.smartboot.http.enums.MethodEnum;
 import org.smartboot.http.exception.HttpException;
 import org.smartboot.http.server.handle.HttpHandle;
 import org.smartboot.http.utils.HttpHeaderConstant;
+import org.smartboot.http.utils.StringUtils;
 
 import java.io.IOException;
 import java.util.HashMap;

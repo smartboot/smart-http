@@ -8,11 +8,11 @@
 
 package org.smartboot.http;
 
-import org.apache.commons.lang.math.NumberUtils;
 import org.smartboot.http.server.HttpMessageProcessor;
 import org.smartboot.http.server.decode.Http11Request;
 import org.smartboot.http.server.decode.HttpRequestProtocol;
 import org.smartboot.http.server.handle.HttpHandle;
+import org.smartboot.http.utils.NumberUtils;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.extension.ssl.ClientAuth;
 import org.smartboot.socket.transport.AioQuickServer;
