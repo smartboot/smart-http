@@ -41,6 +41,6 @@ public final class HandlePipeline extends HttpHandle implements Pipeline {
 
     @Override
     public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
-        headHandle.doNext(request, response);
+        headHandle.doHandle(request, response);
     }
 }
