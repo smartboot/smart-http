@@ -82,10 +82,7 @@ final class HttpOutputStream extends OutputStream {
      * @throws IOException
      */
     public final void write(byte b[], int off, int len) throws IOException {
-        if (!committed) {
-            writeHead();
-            committed = true;
-        }
+        writeHead();
         if (chunked) {
             byte[] start = getBytes(Integer.toHexString(len) + "\r\n");
             outputStream.write(start);
@@ -103,6 +100,9 @@ final class HttpOutputStream extends OutputStream {
      * @throws IOException
      */
     private void writeHead() throws IOException {
+        if (committed) {
+            return;
+        }
         if (response.getHttpStatus() == null) {
             response.setHttpStatus(HttpStatus.OK);
         }
@@ -124,6 +124,7 @@ final class HttpOutputStream extends OutputStream {
          * 只能用 RFC 1123 里定义的日期格式来填充头域 (header field)的值里用到 HTTP-date 的地方
          */
         outputStream.write(date);
+        committed = true;
     }
 
     private byte[] getHeadPart(HttpStatus httpStatus, String contentType, int contentLength) {
@@ -179,10 +180,7 @@ final class HttpOutputStream extends OutputStream {
 
     @Override
     public void flush() throws IOException {
-        if (!committed) {
-            writeHead();
-            committed = true;
-        }
+        writeHead();
         outputStream.flush();
     }
 
@@ -191,16 +189,14 @@ final class HttpOutputStream extends OutputStream {
         if (closed) {
             throw new IOException("outputStream has already closed");
         }
+        writeHead();
 
         if (chunked) {
-            if (!committed) {
-                writeHead();
-                committed = true;
-            }
             outputStream.write(CHUNKED_END_BYTES);
         }
         closed = true;
     }
+
 
     private byte[] getBytes(String str) {
         return str.getBytes(CharsetUtil.US_ASCII);
