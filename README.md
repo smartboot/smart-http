@@ -1,30 +1,43 @@
 # smart-http
-smart-http是一款学习型开源http服务器项目，其通信内核采用了**smart-socket**最新版`v1.3.19`。
+smart-http 是一款比较简易的 http服务器，其通信内核采用了[**smart-socket**](https://gitee.com/smartboot/smart-socket)最新版`v1.4.4`。
 
-相较于目前市面上各大http服务器，smart-http毫无任何特色。仅出于作者对技术、对开源的一份热爱，又重新造了一个轮子。同时本着对技术敬畏，对用户负责的态度，我们并不推荐您将次项目运用于生产。
-因为现在的smart-http还有太多的不完善，如果您愿意参与共建，或许能加速smart-http上生产的进程，不然请多给我们一点时间。
+也正因使用了 smart-socket，该服务器的性能表现还是非常不错的，在本人的4核CPU下能跑出73W+的 qps。
 
-感兴趣的朋友欢迎加入QQ群交流：172299083
+smart-socket 的每次性能测试都是基于该服务器进行的，相信 smart-http 的表现不会让您失望的。
+
+
+感兴趣的朋友欢迎加入QQ群交流：830015805，入群的前提是 Star 一下我们的项目，所以请不要吝啬您的星 ^_^
 ## 功能列表
-1. 仅支持GET方式的请求。
-2. 支持URL路由。
+1. 支持GET、POST的HTTP请求。
+2. 提供了URL路由组件，可以快速搭建一套静态服务器。
 3. 支持部分RFC2612规范，后续会逐渐完善。
 4. 支持Https协议，由smart-socket为其赋能。
+5. 具备文件上传的能力。
 
 ## 快速体验
-1. 启动HttpBootstrap
-2. http服务请访问:`http://localhost:8080/`
-3. https服务请访问:`https://localhost:8889/`
+1. 在您的Maven工程中引入smart-http依赖。
+    ```xml
+    <dependency>
+        <groupId>org.smartboot.http</groupId>
+        <artifactId>smart-http-parent</artifactId>
+        <version>1.0.10</version>
+        <type>pom</type>
+    </dependency>
+    ```
+2. 拷贝以下代码并启动。
+    ```java
+    public class SimpleSmartHttp {
+        public static void main(String[] args) {
+            HttpBootstrap bootstrap = new HttpBootstrap();
+            bootstrap.pipeline().next(new HttpHandle() {
+                @Override
+                public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
+                    response.write("hello world".getBytes());
+                }
+            });
+            bootstrap.setPort(8080).start();
+        }
+    }
+    ```
+3. 浏览器访问:`http://localhost:8080/`，
 
-> 更多惊喜等你发现
- 
-## 性能表现
-
-[点击这里](https://www.techempower.com/benchmarks/#section=test&runid=586ebf0d-4369-4648-8293-590ab295e64d&hw=ph&test=plaintext) 世界排名37
-
-## 参与贡献
-
-1. Fork 本项目
-2. 新建 Feat_xxx 分支
-3. 提交代码
-4. 新建 Pull Request
