@@ -38,13 +38,12 @@ public class SmartHttpDemo {
                 .route("/get", new HttpHandle() {
                     @Override
                     public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
-                        response.getOutputStream().write(("收到Get参数text=" + request.getParameter("text")).getBytes());
-                        response.getOutputStream().flush();
+                        response.write(("收到Get参数text=" + request.getParameter("text")).getBytes());
                     }
                 }).route("/post", new HttpHandle() {
             @Override
             public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
-                response.getOutputStream().write(("收到Post参数text=" + request.getParameter("text")).getBytes());
+                response.write(("收到Post参数text=" + request.getParameter("text")).getBytes());
             }
         }).route("/upload", new HttpHandle() {
             @Override
@@ -63,17 +62,16 @@ public class SmartHttpDemo {
             @Override
             public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
                 response.setContentLength(body.length);
-                response.getOutputStream().write(body);
+                response.write(body);
             }
         });
+
 
         HttpBootstrap bootstrap = new HttpBootstrap();
         //配置HTTP消息处理管道
         bootstrap.pipeline().next(routeHandle);
 
         //设定服务器配置并启动
-        bootstrap.setThreadNum(Runtime.getRuntime().availableProcessors() + 2)
-                .setPort(8080)
-                .start();
+        bootstrap.setPort(8080).start();
     }
 }
