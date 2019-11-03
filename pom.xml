@@ -22,11 +22,6 @@
                 <version>${smartsocket.version}</version>
             </dependency>
             <dependency>
-                <groupId>commons-lang</groupId>
-                <artifactId>commons-lang</artifactId>
-                <version>${commons.lang.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.smartboot.http</groupId>
                 <artifactId>smart-http-server</artifactId>
                 <version>${smarthttp.version}</version>
