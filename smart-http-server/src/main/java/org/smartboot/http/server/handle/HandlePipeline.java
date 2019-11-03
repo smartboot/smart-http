@@ -12,10 +12,6 @@ import java.io.IOException;
  */
 public final class HandlePipeline extends HttpHandle implements Pipeline {
     /**
-     * 管道头
-     */
-    private HttpHandle headHandle;
-    /**
      * 管道尾
      */
     private HttpHandle tailHandle;
@@ -23,24 +19,24 @@ public final class HandlePipeline extends HttpHandle implements Pipeline {
     /**
      * 添加HttpHandle至末尾
      *
-     * @param nextHandle 尾部handle
+     * @param handle 尾部handle
      * @return 当前管道对象
      */
-    public Pipeline next(HttpHandle nextHandle) {
-        if (headHandle == null) {
-            headHandle = tailHandle = nextHandle;
+    public Pipeline next(HttpHandle handle) {
+        if (nextHandle == null) {
+            nextHandle = tailHandle = handle;
             return this;
         }
         HttpHandle httpHandle = tailHandle;
         while (httpHandle.nextHandle != null) {
             httpHandle = httpHandle.nextHandle;
         }
-        httpHandle.nextHandle = nextHandle;
+        httpHandle.nextHandle = handle;
         return this;
     }
 
     @Override
     public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
-        headHandle.doHandle(request, response);
+        nextHandle.doHandle(request, response);
     }
 }
