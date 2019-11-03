@@ -18,7 +18,7 @@ public class SmartHttpDemo {
         System.setProperty("smart-socket.server.pageSize", (1024 * 1024 * 5) + "");
         System.setProperty("smart-socket.session.writeChunkSize", (1024 * 4) + "");
 
-        RouteHandle routeHandle = new RouteHandle(System.getProperty("webapps.dir", "./"));
+        RouteHandle routeHandle = new RouteHandle("./");
         routeHandle.route("/", new HttpHandle() {
             byte[] body = ("<html>" +
                     "<head><title>smart-http demo</title></head>" +
@@ -34,13 +34,14 @@ public class SmartHttpDemo {
                 response.setContentLength(body.length);
                 response.getOutputStream().write(body);
             }
-        }).route("/get", new HttpHandle() {
-            @Override
-            public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
-                response.getOutputStream().write(("收到Get参数text=" + request.getParameter("text")).getBytes());
-                response.getOutputStream().flush();
-            }
-        }).route("/post", new HttpHandle() {
+        })
+                .route("/get", new HttpHandle() {
+                    @Override
+                    public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
+                        response.getOutputStream().write(("收到Get参数text=" + request.getParameter("text")).getBytes());
+                        response.getOutputStream().flush();
+                    }
+                }).route("/post", new HttpHandle() {
             @Override
             public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
                 response.getOutputStream().write(("收到Post参数text=" + request.getParameter("text")).getBytes());

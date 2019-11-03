@@ -104,4 +104,11 @@ public class HttpBootstrap {
             e.printStackTrace();
         }
     }
+
+    /**
+     * 停止服务
+     */
+    public void shutdown() {
+        server.shutdown();
+    }
 }
