@@ -7,8 +7,8 @@ import org.smartboot.http.HttpResponse;
 import org.smartboot.http.utils.AntPathMatcher;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author 三刀
@@ -17,7 +17,7 @@ import java.util.Map;
 public class RouteHandle extends HttpHandle {
     private static final Logger LOGGER = LoggerFactory.getLogger(RouteHandle.class);
     private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
-    private Map<String, HttpHandle> handleMap = new HashMap<>();
+    private Map<String, HttpHandle> handleMap = new ConcurrentHashMap<>();
     private StaticResourceHandle defaultHandle;
 
     public RouteHandle(String baseDir) {

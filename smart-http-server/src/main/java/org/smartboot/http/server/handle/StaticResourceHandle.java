@@ -97,7 +97,9 @@ public class StaticResourceHandle extends HttpHandle {
         while (readPos < fileSize) {
             MappedByteBuffer mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, readPos, fileSize - readPos > READ_BUFFER ? READ_BUFFER : fileSize - readPos);
             readPos += mappedByteBuffer.remaining();
-            response.write(mappedByteBuffer.array());
+            byte[] data = new byte[mappedByteBuffer.remaining()];
+            mappedByteBuffer.get(data);
+            response.write(data);
         }
         fis.close();
     }

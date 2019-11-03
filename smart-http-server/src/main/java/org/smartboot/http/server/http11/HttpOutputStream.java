@@ -108,8 +108,12 @@ final class HttpOutputStream extends OutputStream {
         }
         String contentType = response.getContentType();
         if (contentType == null) {
+            contentType = response.getHeaders().remove(HttpHeaderConstant.Names.CONTENT_TYPE);
+        }
+        if (contentType == null) {
             contentType = HttpHeaderConstant.Values.DEFAULT_CONTENT_TYPE;
         }
+
         //输出http状态行、contentType,contentLength、Transfer-Encoding、server等信息
         outputStream.write(getHeadPart(response.getHttpStatus(), contentType, response.getContentLength()));
 
