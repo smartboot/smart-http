@@ -6,7 +6,7 @@
  * Author: sandao
  */
 
-package org.smartboot.http.server.http11;
+package org.smartboot.http.server;
 
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.utils.CharsetUtil;

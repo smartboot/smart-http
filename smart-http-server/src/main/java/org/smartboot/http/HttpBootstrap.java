@@ -9,9 +9,7 @@
 package org.smartboot.http;
 
 import org.smartboot.http.server.HttpMessageProcessor;
-import org.smartboot.http.server.decode.Http11Request;
-import org.smartboot.http.server.decode.HttpRequestProtocol;
-import org.smartboot.socket.Protocol;
+import org.smartboot.http.server.HttpRequestProtocol;
 import org.smartboot.socket.transport.AioQuickServer;
 
 import java.io.IOException;
@@ -19,7 +17,7 @@ import java.io.IOException;
 public class HttpBootstrap {
 
 
-    private AioQuickServer<Http11Request> server;
+    private AioQuickServer<? extends HttpRequest> server;
     /**
      * Http服务端口号
      */
@@ -36,7 +34,7 @@ public class HttpBootstrap {
     /**
      * http消息解码器
      */
-    private Protocol<Http11Request> protocol = new HttpRequestProtocol();
+    private HttpRequestProtocol protocol = new HttpRequestProtocol();
 
 //    static void https(MessageProcessor<Http11Request> processor) {
 //        // 定义服务器接受的消息类型以及各类消息对应的处理器
@@ -95,7 +93,7 @@ public class HttpBootstrap {
      * 启动HTTP服务
      */
     public void start() {
-        server = new AioQuickServer<Http11Request>(port, protocol, processor);
+        server = new AioQuickServer<>(port, protocol, processor);
         server.setReadBufferSize(readBufferSize);
         server.setThreadNum(threadNum);
         try {

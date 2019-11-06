@@ -1,4 +1,4 @@
-package org.smartboot.http.server.decode;
+package org.smartboot.http.server;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +27,7 @@ import java.util.Map;
  * @author 三刀
  * @version V1.0 , 2018/8/31
  */
-public class Http11Request implements HttpRequest {
+class Http11Request implements HttpRequest {
     private static final Logger LOGGER = LoggerFactory.getLogger(Http11Request.class);
     State state = State.method;
     MethodEnum methodEnum;

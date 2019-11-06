@@ -1,11 +1,10 @@
-package org.smartboot.http.server.handle.http11;
+package org.smartboot.http.server.handle;
 
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.enums.MethodEnum;
 import org.smartboot.http.exception.HttpException;
-import org.smartboot.http.server.handle.HttpHandle;
 import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.http.utils.StringUtils;
 

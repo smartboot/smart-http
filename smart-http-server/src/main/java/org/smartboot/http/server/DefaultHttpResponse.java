@@ -6,7 +6,7 @@
  * Author: sandao
  */
 
-package org.smartboot.http.server.http11;
+package org.smartboot.http.server;
 
 import org.smartboot.http.HttpResponse;
 import org.smartboot.http.enums.HttpStatus;
@@ -20,7 +20,7 @@ import java.util.Map;
  * @author 三刀
  * @version V1.0 , 2018/2/3
  */
-public class DefaultHttpResponse implements HttpResponse {
+class DefaultHttpResponse implements HttpResponse {
     /**
      * 响应消息头
      */

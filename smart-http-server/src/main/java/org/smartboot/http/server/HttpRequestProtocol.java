@@ -1,4 +1,4 @@
-package org.smartboot.http.server.decode;
+package org.smartboot.http.server;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
