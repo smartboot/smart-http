@@ -26,15 +26,13 @@ public interface HttpRequest {
 
     String getRequestURI();
 
-    void setRequestURI(String uri);
-
     String getProtocol();
 
     MethodEnum getMethodRange();
 
-    String getOriginalUri();
 
-    void setQueryString(String queryString);
+    String getRequestURL();
+
 
     String getContentType();
 

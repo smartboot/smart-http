@@ -77,7 +77,6 @@ class Http11Request implements HttpRequest {
         return requestUri;
     }
 
-    @Override
     public void setRequestURI(String uri) {
         this.requestUri = uri;
     }
@@ -93,11 +92,10 @@ class Http11Request implements HttpRequest {
     }
 
     @Override
-    public String getOriginalUri() {
+    public String getRequestURL() {
         return originalUri;
     }
 
-    @Override
     public void setQueryString(String queryString) {
 
     }

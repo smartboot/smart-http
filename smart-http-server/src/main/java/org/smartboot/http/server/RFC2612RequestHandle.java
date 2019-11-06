@@ -1,10 +1,11 @@
-package org.smartboot.http.server.handle;
+package org.smartboot.http.server;
 
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.enums.MethodEnum;
 import org.smartboot.http.exception.HttpException;
+import org.smartboot.http.server.handle.HttpHandle;
 import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.http.utils.StringUtils;
 
@@ -22,9 +23,10 @@ public class RFC2612RequestHandle extends HttpHandle {
 
     @Override
     public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
-        methodCheck(request);
-        hostCheck(request);
-        uriCheck(request);
+        Http11Request http11Request = (Http11Request) request;
+        methodCheck(http11Request);
+        hostCheck(http11Request);
+        uriCheck(http11Request);
         doNext(request, response);
     }
 
@@ -40,7 +42,7 @@ public class RFC2612RequestHandle extends HttpHandle {
      *
      * @param request
      */
-    private void methodCheck(HttpRequest request) {
+    private void methodCheck(Http11Request request) {
         MethodEnum methodEnum = request.getMethodRange();//大小写敏感
         if (methodEnum == null) {
             throw new HttpException(HttpStatus.NOT_IMPLEMENTED);
@@ -59,7 +61,7 @@ public class RFC2612RequestHandle extends HttpHandle {
      *
      * @param request
      */
-    private void hostCheck(HttpRequest request) {
+    private void hostCheck(Http11Request request) {
         if (request.getHeader(HttpHeaderConstant.Names.HOST) == null) {
             throw new HttpException(HttpStatus.BAD_REQUEST);
         }
@@ -73,8 +75,8 @@ public class RFC2612RequestHandle extends HttpHandle {
      *
      * @param request
      */
-    private void uriCheck(HttpRequest request) {
-        if (StringUtils.length(request.getOriginalUri()) > MAX_LENGTH) {
+    private void uriCheck(Http11Request request) {
+        if (StringUtils.length(request.getRequestURL()) > MAX_LENGTH) {
             throw new HttpException(HttpStatus.URI_TOO_LONG);
         }
         /**
@@ -83,7 +85,7 @@ public class RFC2612RequestHandle extends HttpHandle {
          *2. 假如 Request-URI 不是绝对地址(absoluteURI)，并且请求包括一个 Host 头域，则主 机(host)由该 Host 头域的值决定.
          *3. 假如由规则1或规则2定义的主机(host)对服务器来说是一个无效的主机(host)， 则应当以一个 400(坏请求)错误消息返回。
          */
-        String originalUri = request.getOriginalUri();
+        String originalUri = request.getRequestURL();
         UriCache uriCache = uriCacheMap.get(originalUri);
         if (uriCache != null) {
             request.setRequestURI(uriCache.uri);
