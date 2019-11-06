@@ -27,7 +27,7 @@ import java.util.Map;
  * @author 三刀
  * @version V1.0 , 2018/8/31
  */
-class Http11Request implements HttpRequest {
+public final class Http11Request implements HttpRequest {
     private static final Logger LOGGER = LoggerFactory.getLogger(Http11Request.class);
     State _state = State.method;
     MethodEnum _methodEnum;
@@ -59,7 +59,7 @@ class Http11Request implements HttpRequest {
 
     private String remoteHost;
 
-    public Http11Request(AioSession<Http11Request> aioSession) {
+    Http11Request(AioSession<Http11Request> aioSession) {
         this.aioSession = aioSession;
     }
 
