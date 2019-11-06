@@ -1,5 +1,8 @@
 package org.smartboot.http.enums;
 
+/**
+ * Http解码状态机
+ */
 public enum State {
     method,
     uri,

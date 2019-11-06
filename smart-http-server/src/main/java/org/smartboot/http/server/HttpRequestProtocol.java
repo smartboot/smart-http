@@ -52,7 +52,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
             BYTE_LOCAL.set(b);
         }
         buffer.mark();
-        State curState = entityV2.state;
+        State curState = entityV2._state;
         boolean flag;
         do {
             flag = false;
@@ -67,66 +67,53 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                         case 'G':
                             buffer.position(mPos + 3);
                             if (buffer.get() == Consts.SP) {
-                                entityV2.methodEnum = MethodEnum.GET;
+                                entityV2._methodEnum = MethodEnum.GET;
                             }
                             break;
                         case 'P':
                             buffer.position(mPos + 3);
                             if (buffer.get() == Consts.SP) {
-                                entityV2.methodEnum = MethodEnum.PUT;
+                                entityV2._methodEnum = MethodEnum.PUT;
                             } else if (buffer.get() == Consts.SP) {
-                                entityV2.methodEnum = MethodEnum.POST;
+                                entityV2._methodEnum = MethodEnum.POST;
                             }
                             break;
                         case 'D':
                             buffer.position(mPos + 6);
                             if (buffer.get() == Consts.SP) {
-                                entityV2.methodEnum = MethodEnum.DELETE;
+                                entityV2._methodEnum = MethodEnum.DELETE;
                             }
                             break;
                         case 'C':
                             buffer.position(mPos + 7);
                             if (buffer.get() == Consts.SP) {
-                                entityV2.methodEnum = MethodEnum.CONNECT;
+                                entityV2._methodEnum = MethodEnum.CONNECT;
                             }
                             break;
                         case 'O':
                             buffer.position(mPos + 7);
                             if (buffer.get() == Consts.SP) {
-                                entityV2.methodEnum = MethodEnum.OPTIONS;
+                                entityV2._methodEnum = MethodEnum.OPTIONS;
                             }
                             break;
                         case 'T':
                             buffer.position(mPos + 5);
                             if (buffer.get() == Consts.SP) {
-                                entityV2.methodEnum = MethodEnum.TRACE;
+                                entityV2._methodEnum = MethodEnum.TRACE;
                             }
                             break;
                     }
-                    if (entityV2.methodEnum == null) {
+                    if (entityV2._methodEnum == null) {
                         byte[] b1 = new byte[buffer.remaining()];
                         buffer.get(b1);
                         LOGGER.info(new String(b1));
                         throw new DecoderException("invalid method");
                     }
-//                    int methodLength = scanUntil(buffer, Consts.SP, b);
-//                    if (methodLength > 0) {
-//                        curState = State.uri;
-//                        entityV2.methodEnum = MethodEnum.getByMethod(b, 0, methodLength);
-//                        if (entityV2.methodEnum == null) {
-//                            byte[] b1 = new byte[buffer.remaining()];
-//                            buffer.get(b1);
-//                            LOGGER.info(new String(b1));
-//                            throw new DecoderException(new String(b, 0, methodLength));
-//                        }
-//                    } else {
-//                        break;
-//                    }
                 case uri:
                     int uriLength = scanUntil(buffer, Consts.SP, b);
                     if (uriLength > 0) {
                         curState = State.protocol;
-                        entityV2.originalUri = convertToString(b, uriLength);
+                        entityV2._originalUri = convertToString(b, uriLength);
                     } else {
                         break;
                     }
@@ -139,17 +126,17 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                         byte p5 = buffer.get(pos + 5);
                         byte p7 = buffer.get(pos + 7);
                         if (p5 == '0' && p7 == '9') {
-                            entityV2.protocol = "HTTP/0.9";
+                            entityV2._protocol = "HTTP/0.9";
                         } else if (p5 == '1') {
                             if (p7 == '0') {
-                                entityV2.protocol = "HTTP/1.0";
+                                entityV2._protocol = "HTTP/1.0";
                             } else if (p7 == '1') {
-                                entityV2.protocol = "HTTP/1.1";
+                                entityV2._protocol = "HTTP/1.1";
                             }
                         } else if (p5 == '2') {
-                            entityV2.protocol = "HTTP/2.0";
+                            entityV2._protocol = "HTTP/2.0";
                         }
-                        if (entityV2.protocol == null) {
+                        if (entityV2._protocol == null) {
                             throw new DecoderException("unKnow protocol");
                         }
                         curState = State.request_line_end;
@@ -180,15 +167,16 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                         break;
                     }
                 case head_value:
-                    if (entityV2.tmpValEnable) {
-                        if (entityV2.tmpHeaderValue.decode(buffer)) {
+                    if (entityV2.headValueDecoderEnable) {
+                        DelimiterFrameDecoder valueDecoder = entityV2.getHeaderValueDecoder();
+                        if (valueDecoder.decode(buffer)) {
                             curState = State.head_line_LF;
-                            ByteBuffer valBuffer = entityV2.tmpHeaderValue.getBuffer();
-                            BufferUtils.trim(entityV2.tmpHeaderValue.getBuffer());
+                            ByteBuffer valBuffer = valueDecoder.getBuffer();
+                            BufferUtils.trim(valueDecoder.getBuffer());
                             byte[] valBytes = new byte[valBuffer.remaining()];
                             valBuffer.get(valBytes);
-                            entityV2.headMap.put(entityV2.tmpHeaderName, convertToString(valBytes, valBytes.length));
-                            entityV2.tmpHeaderValue.reset();
+                            entityV2._headers.put(entityV2.tmpHeaderName, convertToString(valBytes, valBytes.length));
+                            valueDecoder.reset();
                         } else {
                             break;
                         }
@@ -196,12 +184,12 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                         int valueLength = scanUntil(buffer, Consts.CR, b);
                         if (valueLength > 0) {
                             curState = State.head_line_LF;
-                            entityV2.headMap.put(entityV2.tmpHeaderName, convertToString(b, valueLength));
+                            entityV2._headers.put(entityV2.tmpHeaderName, convertToString(b, valueLength));
                         }
                         //value字段长度超过readBuffer空间大小
                         else if (buffer.remaining() == buffer.capacity()) {
-                            entityV2.tmpValEnable = true;
-                            entityV2.tmpHeaderValue.decode(buffer);
+                            entityV2.headValueDecoderEnable = true;
+                            entityV2.getHeaderValueDecoder().decode(buffer);
                             break;
                         } else {
                             break;
@@ -269,7 +257,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
             return entityV2;
         }
         LOGGER.debug("continue");
-        entityV2.state = curState;
+        entityV2._state = curState;
         if (buffer.remaining() == buffer.capacity()) {
             LOGGER.error("throw exception");
             throw new DecoderException("buffer is too small when decode " + curState + " ," + entityV2.tmpHeaderName);

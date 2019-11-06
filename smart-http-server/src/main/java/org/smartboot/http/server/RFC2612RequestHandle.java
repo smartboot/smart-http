@@ -101,7 +101,6 @@ public class RFC2612RequestHandle extends HttpHandle {
         }
 
         if (schemeIndex > 0) {//绝对路径
-//            request.setScheme(originalUri.substring(0, schemeIndex));
             int uriIndex = originalUri.indexOf('/', schemeIndex + 3);
             if (uriIndex == StringUtils.INDEX_NOT_FOUND) {
                 request.setRequestURI("/");

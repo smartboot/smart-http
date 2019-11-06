@@ -29,15 +29,25 @@ import java.util.Map;
  */
 class Http11Request implements HttpRequest {
     private static final Logger LOGGER = LoggerFactory.getLogger(Http11Request.class);
-    State state = State.method;
-    MethodEnum methodEnum;
-    String originalUri;
-    String protocol;
-    Map<String, String> headMap = new HashMap<>();
+    State _state = State.method;
+    MethodEnum _methodEnum;
+    String _originalUri;
+    String _protocol;
+    Map<String, String> _headers = new HashMap<>();
     String tmpHeaderName;
-    boolean tmpValEnable = false;
-    DelimiterFrameDecoder tmpHeaderValue = new DelimiterFrameDecoder(new byte[]{Consts.CR}, 1024);
+
     SmartDecoder bodyContentDecoder;
+    /**
+     * Header Value解码器是否启用
+     */
+    boolean headValueDecoderEnable = false;
+    /**
+     * 消息头Value值解码器
+     */
+    private DelimiterFrameDecoder headerValueDecoder = null;
+    /**
+     * 请求参数
+     */
     private Map<String, String[]> parameters;
     private InputStream inputStream;
     private String requestUri;
@@ -55,12 +65,12 @@ class Http11Request implements HttpRequest {
 
     @Override
     public String getHeader(String headName) {
-        return headMap.get(headName);
+        return _headers.get(headName);
     }
 
     @Override
     public Map<String, String> getHeaders() {
-        return headMap;
+        return _headers;
     }
 
     @Override
@@ -83,17 +93,17 @@ class Http11Request implements HttpRequest {
 
     @Override
     public String getProtocol() {
-        return protocol;
+        return _protocol;
     }
 
     @Override
     public MethodEnum getMethodRange() {
-        return methodEnum;
+        return _methodEnum;
     }
 
     @Override
     public String getRequestURL() {
-        return originalUri;
+        return _originalUri;
     }
 
     public void setQueryString(String queryString) {
@@ -102,7 +112,7 @@ class Http11Request implements HttpRequest {
 
     @Override
     public String getContentType() {
-        return contentType == null ? contentType = headMap.get(HttpHeaderConstant.Names.CONTENT_TYPE) : contentType;
+        return contentType == null ? contentType = _headers.get(HttpHeaderConstant.Names.CONTENT_TYPE) : contentType;
     }
 
     @Override
@@ -127,7 +137,7 @@ class Http11Request implements HttpRequest {
         }
         parameters = new HashMap<>();
         //识别url中的参数
-        String urlParamStr = StringUtils.substringAfter(originalUri, "?");
+        String urlParamStr = StringUtils.substringAfter(_originalUri, "?");
         if (StringUtils.isNotBlank(urlParamStr)) {
             urlParamStr = StringUtils.substringBefore(urlParamStr, "#");
             decodeParamString(urlParamStr, parameters);
@@ -233,14 +243,28 @@ class Http11Request implements HttpRequest {
         }
     }
 
+    /**
+     * 获取解码器
+     *
+     * @return
+     */
+    public DelimiterFrameDecoder getHeaderValueDecoder() {
+        if (headerValueDecoder == null) {
+            headerValueDecoder = new DelimiterFrameDecoder(new byte[]{Consts.CR}, 1024);
+        }
+        return headerValueDecoder;
+    }
+
     public void rest() {
-        state = State.method;
-        headMap.clear();
+        _state = State.method;
+        _headers.clear();
         tmpHeaderName = null;
-        tmpValEnable = false;
-        tmpHeaderValue.reset();
+        headValueDecoderEnable = false;
+        if (headerValueDecoder != null) {
+            headerValueDecoder.reset();
+        }
         bodyContentDecoder = null;
-        originalUri = null;
+        _originalUri = null;
         parameters = null;
         contentType = null;
         contentLength = -1;
