@@ -1,5 +1,7 @@
 package org.smartboot.http.server.decode;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.enums.MethodEnum;
 import org.smartboot.http.enums.State;
@@ -9,9 +11,13 @@ import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.http.utils.StringUtils;
 import org.smartboot.socket.extension.decoder.DelimiterFrameDecoder;
 import org.smartboot.socket.extension.decoder.SmartDecoder;
+import org.smartboot.socket.transport.AioSession;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.URLDecoder;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -22,6 +28,7 @@ import java.util.Map;
  * @version V1.0 , 2018/8/31
  */
 public class Http11Request implements HttpRequest {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Http11Request.class);
     State state = State.method;
     MethodEnum methodEnum;
     String originalUri;
@@ -36,7 +43,15 @@ public class Http11Request implements HttpRequest {
     private String requestUri;
     private String contentType;
     private int contentLength = -1;
+    private AioSession<Http11Request> aioSession;
 
+    private String remoteAddr;
+
+    private String remoteHost;
+
+    public Http11Request(AioSession<Http11Request> aioSession) {
+        this.aioSession = aioSession;
+    }
 
     @Override
     public String getHeader(String headName) {
@@ -137,6 +152,58 @@ public class Http11Request implements HttpRequest {
             getParameter("");
         }
         return parameters;
+    }
+
+    /**
+     * Returns the Internet Protocol (IP) address of the client
+     * or last proxy that sent the request.
+     * For HTTP servlets, same as the value of the
+     * CGI variable <code>REMOTE_ADDR</code>.
+     *
+     * @return a <code>String</code> containing the
+     * IP address of the client that sent the request
+     */
+    @Override
+    public String getRemoteAddr() {
+        if (remoteAddr != null) {
+            return remoteAddr;
+        }
+        try {
+            InetSocketAddress remote = aioSession.getRemoteAddress();
+            InetAddress address = remote.getAddress();
+            if (address == null) {
+                remoteAddr = remote.getHostString();
+            } else {
+                remoteAddr = address.getHostAddress();
+            }
+        } catch (IOException e) {
+            LOGGER.error("", e);
+        }
+        return remoteAddr;
+    }
+
+    /**
+     * Returns the fully qualified name of the client
+     * or the last proxy that sent the request.
+     * If the engine cannot or chooses not to resolve the hostname
+     * (to improve performance), this method returns the dotted-string form of
+     * the IP address. For HTTP servlets, same as the value of the CGI variable
+     * <code>REMOTE_HOST</code>.
+     *
+     * @return a <code>String</code> containing the fully
+     * qualified name of the client
+     */
+    @Override
+    public String getRemoteHost() {
+        if (remoteHost != null) {
+            return remoteHost;
+        }
+        try {
+            remoteHost = aioSession.getRemoteAddress().getHostString();
+        } catch (IOException e) {
+            LOGGER.error("", e);
+        }
+        return remoteHost;
     }
 
     private void decodeParamString(String paramStr, Map<String, String[]> paramMap) {

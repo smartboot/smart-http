@@ -78,7 +78,7 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
     public void stateEvent(AioSession<Http11Request> session, StateMachineEnum stateMachineEnum, Throwable throwable) {
         switch (stateMachineEnum) {
             case NEW_SESSION:
-                session.setAttachment(new Http11Request());
+                session.setAttachment(new Http11Request(session));
                 break;
             case PROCESS_EXCEPTION:
                 LOGGER.error("process request exception", throwable);

@@ -9,6 +9,7 @@ import java.io.IOException;
 
 /**
  * 打开浏览器请求：http://127.0.0.0:8080/
+ *
  * @author 三刀
  * @version V1.0 , 2019/11/3
  */
@@ -18,7 +19,8 @@ public class SimpleSmartHttp {
         bootstrap.pipeline().next(new HttpHandle() {
             @Override
             public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
-                response.write("hello world".getBytes());
+                response.write("hello world<br/>".getBytes());
+                response.write((request.getRemoteAddr() + " " + request.getRemoteHost()).getBytes());
             }
         });
         bootstrap.setPort(8080).start();

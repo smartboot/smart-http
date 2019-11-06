@@ -45,4 +45,28 @@ public interface HttpRequest {
     String[] getParameterValues(String name);
 
     Map<String, String[]> getParameters();
+
+    /**
+     * Returns the Internet Protocol (IP) address of the client
+     * or last proxy that sent the request.
+     * For HTTP servlets, same as the value of the
+     * CGI variable <code>REMOTE_ADDR</code>.
+     *
+     * @return a <code>String</code> containing the
+     * IP address of the client that sent the request
+     */
+    String getRemoteAddr();
+
+    /**
+     * Returns the fully qualified name of the client
+     * or the last proxy that sent the request.
+     * If the engine cannot or chooses not to resolve the hostname
+     * (to improve performance), this method returns the dotted-string form of
+     * the IP address. For HTTP servlets, same as the value of the CGI variable
+     * <code>REMOTE_HOST</code>.
+     *
+     * @return a <code>String</code> containing the fully
+     * qualified name of the client
+     */
+    String getRemoteHost();
 }
