@@ -19,9 +19,8 @@ smart-socket 的每次性能测试都是基于该服务器进行的，相信 sma
     ```xml
     <dependency>
         <groupId>org.smartboot.http</groupId>
-        <artifactId>smart-http-parent</artifactId>
+        <artifactId>smart-http-server</artifactId>
         <version>1.0.10</version>
-        <type>pom</type>
     </dependency>
     ```
 2. 拷贝以下代码并启动。
