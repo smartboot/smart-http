@@ -47,11 +47,6 @@ public class RFC2612RequestHandle extends HttpHandle {
         if (methodEnum == null) {
             throw new HttpException(HttpStatus.NOT_IMPLEMENTED);
         }
-
-        //暂时只支持GET/POST
-        if (methodEnum != MethodEnum.GET && methodEnum != MethodEnum.POST) {
-            throw new HttpException(HttpStatus.METHOD_NOT_ALLOWED);
-        }
     }
 
     /**

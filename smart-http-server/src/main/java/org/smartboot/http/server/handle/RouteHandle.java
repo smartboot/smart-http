@@ -18,11 +18,11 @@ public class RouteHandle extends HttpHandle {
     private static final Logger LOGGER = LoggerFactory.getLogger(RouteHandle.class);
     private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
     private Map<String, HttpHandle> handleMap = new ConcurrentHashMap<>();
-    private StaticResourceHandle defaultHandle;
 
-    public RouteHandle(String baseDir) {
-        this.defaultHandle = new StaticResourceHandle(baseDir);
-    }
+    /**
+     * 默认404
+     */
+    private HttpHandle defaultHandle = new NotFoundHandle();
 
     @Override
     public void doHandle(HttpRequest request, HttpResponse response) throws IOException {

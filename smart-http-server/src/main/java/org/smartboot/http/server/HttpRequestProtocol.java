@@ -78,6 +78,12 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                                 entityV2._methodEnum = MethodEnum.POST;
                             }
                             break;
+                        case 'H':
+                            buffer.position(mPos + 4);
+                            if (buffer.get() == Consts.SP) {
+                                entityV2._methodEnum = MethodEnum.HEAD;
+                            }
+                            break;
                         case 'D':
                             buffer.position(mPos + 6);
                             if (buffer.get() == Consts.SP) {

@@ -10,6 +10,7 @@ package org.smartboot.http.server;
 
 import org.smartboot.http.HttpResponse;
 import org.smartboot.http.enums.HttpStatus;
+import org.smartboot.http.enums.MethodEnum;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -31,6 +32,11 @@ class DefaultHttpResponse implements HttpResponse {
     private HttpStatus httpStatus;
 
     /**
+     * Http Method
+     */
+    private MethodEnum httpMethod;
+
+    /**
      * 输入流
      */
     private HttpOutputStream outputStream;
@@ -50,10 +56,15 @@ class DefaultHttpResponse implements HttpResponse {
         outputStream = new HttpOutputStream();
     }
 
-    public void init(OutputStream outputStream) {
+    public void init(MethodEnum methodEnum, OutputStream outputStream) {
         this.outputStream.init(outputStream, this);
+        this.httpMethod = methodEnum;
         headers.clear();
         httpStatus = null;
+    }
+
+    public MethodEnum getHttpMethod() {
+        return httpMethod;
     }
 
     public OutputStream getOutputStream() {

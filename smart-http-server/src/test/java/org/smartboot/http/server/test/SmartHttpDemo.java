@@ -11,6 +11,7 @@ import java.io.InputStream;
 
 /**
  * 打开浏览器请求：http://127.0.0.0:8080/
+ *
  * @author 三刀
  * @version V1.0 , 2019/11/3
  */
@@ -19,7 +20,7 @@ public class SmartHttpDemo {
         System.setProperty("smart-socket.server.pageSize", (1024 * 1024 * 5) + "");
         System.setProperty("smart-socket.session.writeChunkSize", (1024 * 4) + "");
 
-        RouteHandle routeHandle = new RouteHandle("./");
+        RouteHandle routeHandle = new RouteHandle();
         routeHandle.route("/", new HttpHandle() {
             byte[] body = ("<html>" +
                     "<head><title>smart-http demo</title></head>" +
@@ -64,6 +65,11 @@ public class SmartHttpDemo {
             public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
                 response.setContentLength(body.length);
                 response.write(body);
+            }
+        }).route("/head", new HttpHandle() {
+            @Override
+            public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
+                System.out.println(request.getMethodRange());
             }
         });
 
