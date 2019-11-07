@@ -31,6 +31,9 @@ public final class Http11Request implements HttpRequest {
     private static final Logger LOGGER = LoggerFactory.getLogger(Http11Request.class);
     State _state = State.method;
     MethodEnum _methodEnum;
+    /**
+     * 原始的完整请求
+     */
     String _originalUri;
     String _protocol;
     Map<String, String> _headers = new HashMap<>();
@@ -52,6 +55,11 @@ public final class Http11Request implements HttpRequest {
     private InputStream inputStream;
     private String requestUri;
     private String contentType;
+    /**
+     * 跟在URL后面的请求信息
+     */
+    private String queryString;
+    private String scheme;
     private int contentLength = -1;
     private AioSession<Http11Request> aioSession;
 
@@ -106,8 +114,20 @@ public final class Http11Request implements HttpRequest {
         return _originalUri;
     }
 
-    public void setQueryString(String queryString) {
+    public String getScheme() {
+        return scheme;
+    }
 
+    public void setScheme(String scheme) {
+        this.scheme = scheme;
+    }
+
+    public String getQueryString() {
+        return queryString;
+    }
+
+    void setQueryString(String queryString) {
+        this.queryString = queryString;
     }
 
     @Override
@@ -137,7 +157,7 @@ public final class Http11Request implements HttpRequest {
         }
         parameters = new HashMap<>();
         //识别url中的参数
-        String urlParamStr = StringUtils.substringAfter(_originalUri, "?");
+        String urlParamStr = queryString;
         if (StringUtils.isNotBlank(urlParamStr)) {
             urlParamStr = StringUtils.substringBefore(urlParamStr, "#");
             decodeParamString(urlParamStr, parameters);

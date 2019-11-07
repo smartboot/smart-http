@@ -90,6 +90,7 @@ public class RFC2612RequestHandle extends HttpHandle {
         if (uriCache != null) {
             request.setRequestURI(uriCache.uri);
             request.setQueryString(uriCache.queryString);
+            uriCache.lastUseTime = System.currentTimeMillis();
             return;
         }
         int schemeIndex = originalUri.indexOf("://");
@@ -105,12 +106,11 @@ public class RFC2612RequestHandle extends HttpHandle {
             if (uriIndex == StringUtils.INDEX_NOT_FOUND) {
                 request.setRequestURI("/");
             } else {
-
                 request.setRequestURI(queryStringIndex > 0 ?
                         StringUtils.substring(originalUri, uriIndex, queryStringIndex)
                         : StringUtils.substring(originalUri, uriIndex));
             }
-
+            request.setScheme(StringUtils.substring(originalUri, 0, schemeIndex));
         } else {
             request.setRequestURI(queryStringIndex > 0 ?
                     StringUtils.substring(originalUri, 0, queryStringIndex)
@@ -122,10 +122,12 @@ public class RFC2612RequestHandle extends HttpHandle {
     private class UriCache {
         private String uri;
         private String queryString;
+        private long lastUseTime;
 
         public UriCache(String uri, String queryString) {
             this.uri = uri;
             this.queryString = queryString;
+            this.lastUseTime = System.currentTimeMillis();
         }
 
         public String getUri() {
