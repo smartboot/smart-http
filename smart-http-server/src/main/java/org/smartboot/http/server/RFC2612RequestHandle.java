@@ -3,7 +3,6 @@ package org.smartboot.http.server;
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
 import org.smartboot.http.enums.HttpStatus;
-import org.smartboot.http.enums.MethodEnum;
 import org.smartboot.http.exception.HttpException;
 import org.smartboot.http.server.handle.HttpHandle;
 import org.smartboot.http.utils.HttpHeaderConstant;
@@ -43,8 +42,7 @@ public class RFC2612RequestHandle extends HttpHandle {
      * @param request
      */
     private void methodCheck(Http11Request request) {
-        MethodEnum methodEnum = request.getMethodRange();//大小写敏感
-        if (methodEnum == null) {
+        if (request.getMethod() == null) {
             throw new HttpException(HttpStatus.NOT_IMPLEMENTED);
         }
     }
@@ -80,7 +78,7 @@ public class RFC2612RequestHandle extends HttpHandle {
          *2. 假如 Request-URI 不是绝对地址(absoluteURI)，并且请求包括一个 Host 头域，则主 机(host)由该 Host 头域的值决定.
          *3. 假如由规则1或规则2定义的主机(host)对服务器来说是一个无效的主机(host)， 则应当以一个 400(坏请求)错误消息返回。
          */
-        String originalUri = request.getRequestURL();
+        String originalUri = request._originalUri;
         UriCache uriCache = uriCacheMap.get(originalUri);
         if (uriCache != null) {
             request.setRequestURI(uriCache.uri);
@@ -106,10 +104,12 @@ public class RFC2612RequestHandle extends HttpHandle {
                         : StringUtils.substring(originalUri, uriIndex));
             }
             request.setScheme(StringUtils.substring(originalUri, 0, schemeIndex));
+            request.setRequestUrl(request.getRequestURI());
         } else {
-            request.setRequestURI(queryStringIndex > 0 ?
+            request.setRequestURI((queryStringIndex > 0 ?
                     StringUtils.substring(originalUri, 0, queryStringIndex)
-                    : originalUri);
+                    : originalUri));
+            request.setRequestUrl(request.getScheme() + "://" + request.getHeader(HttpHeaderConstant.Names.HOST) + request.getRequestURI());
         }
         uriCacheMap.put(originalUri, new UriCache(request.getRequestURI(), queryString));
     }

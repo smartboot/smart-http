@@ -69,7 +69,7 @@ public class SmartHttpDemo {
         }).route("/head", new HttpHandle() {
             @Override
             public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
-                System.out.println(request.getMethodRange());
+                System.out.println(request.getMethod());
             }
         });
 

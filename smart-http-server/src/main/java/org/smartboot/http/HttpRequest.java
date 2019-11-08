@@ -1,7 +1,5 @@
 package org.smartboot.http;
 
-import org.smartboot.http.enums.MethodEnum;
-
 import java.io.InputStream;
 import java.util.Map;
 
@@ -28,7 +26,17 @@ public interface HttpRequest {
 
     String getProtocol();
 
-    MethodEnum getMethodRange();
+    /**
+     * Returns the name of the HTTP method with which this
+     * request was made, for example, GET, POST, or PUT.
+     * Same as the value of the CGI variable REQUEST_METHOD.
+     *
+     * @return a <code>String</code>
+     * specifying the name
+     * of the method with which
+     * this request was made
+     */
+    String getMethod();
 
 
     String getRequestURL();

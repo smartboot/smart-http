@@ -37,7 +37,7 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
     public void process(AioSession<Http11Request> session, Http11Request request) {
         try {
             DefaultHttpResponse httpResponse = RESPONSE_THREAD_LOCAL.get();
-            httpResponse.init(request.getMethodRange(), session.writeBuffer());
+            httpResponse.init(request.getMethod(), session.writeBuffer());
 //            boolean isKeepAlive = StringUtils.equalsIgnoreCase(HttpHeaderConstant.Values.KEEPALIVE, request.getHeader(HttpHeaderConstant.Names.CONNECTION));
             try {
                 //用ab进行测试时需要带上该响应

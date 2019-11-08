@@ -12,6 +12,8 @@ import java.nio.charset.Charset;
 
 public interface Consts {
 
+    String SCHEMA_HTTP = "http";
+    String SCHEMA_HTTPS = "https";
     /**
      * Horizontal space
      */

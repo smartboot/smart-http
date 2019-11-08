@@ -62,7 +62,7 @@ public class StaticResourceHandle extends HttpHandle {
     @Override
     public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
         String fileName = request.getRequestURI();
-        MethodEnum methodEnum = request.getMethodRange();
+        String method = request.getMethod();
         if (StringUtils.endsWith(fileName, "/")) {
             fileName += "index.html";
         }
@@ -74,7 +74,7 @@ public class StaticResourceHandle extends HttpHandle {
             response.setHttpStatus(HttpStatus.NOT_FOUND);
             response.setHeader(HttpHeaderConstant.Names.CONTENT_TYPE, "text/html; charset=utf-8");
 
-            if (methodEnum != MethodEnum.HEAD) {
+            if (!MethodEnum.HEAD.getMethod().equals(method)) {
                 response.write(URL_404.getBytes());
             }
             return;
@@ -96,7 +96,7 @@ public class StaticResourceHandle extends HttpHandle {
         String contentType = Mimetypes.getInstance().getMimetype(file);
         response.setHeader(HttpHeaderConstant.Names.CONTENT_TYPE, contentType + "; charset=utf-8");
         //HEAD不输出内容
-        if (methodEnum == MethodEnum.HEAD) {
+        if (MethodEnum.HEAD.getMethod().equals(method)) {
             return;
         }
 

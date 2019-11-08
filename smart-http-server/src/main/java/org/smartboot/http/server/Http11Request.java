@@ -30,20 +30,25 @@ import java.util.Map;
 public final class Http11Request implements HttpRequest {
     private static final Logger LOGGER = LoggerFactory.getLogger(Http11Request.class);
     State _state = State.method;
-    MethodEnum _methodEnum;
     /**
      * 原始的完整请求
      */
     String _originalUri;
-    String _protocol;
     Map<String, String> _headers = new HashMap<>();
     String tmpHeaderName;
-
     SmartDecoder bodyContentDecoder;
     /**
      * Header Value解码器是否启用
      */
     boolean headValueDecoderEnable = false;
+    /**
+     * 请求方法
+     */
+    private String method;
+    /**
+     * Http协议版本
+     */
+    private String protocol;
     /**
      * 消息头Value值解码器
      */
@@ -54,12 +59,13 @@ public final class Http11Request implements HttpRequest {
     private Map<String, String[]> parameters;
     private InputStream inputStream;
     private String requestUri;
+    private String requestUrl;
     private String contentType;
     /**
      * 跟在URL后面的请求信息
      */
     private String queryString;
-    private String scheme;
+    private String scheme = Consts.SCHEMA_HTTP;
     private int contentLength = -1;
     private AioSession<Http11Request> aioSession;
 
@@ -101,17 +107,28 @@ public final class Http11Request implements HttpRequest {
 
     @Override
     public String getProtocol() {
-        return _protocol;
+        return protocol;
     }
 
-    @Override
-    public MethodEnum getMethodRange() {
-        return _methodEnum;
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
+    }
+
+    public String getMethod() {
+        return method;
+    }
+
+    public void setMethod(MethodEnum method) {
+        this.method = method.getMethod();
     }
 
     @Override
     public String getRequestURL() {
-        return _originalUri;
+        return requestUrl;
+    }
+
+    public void setRequestUrl(String requestUrl) {
+        this.requestUrl = requestUrl;
     }
 
     public String getScheme() {
