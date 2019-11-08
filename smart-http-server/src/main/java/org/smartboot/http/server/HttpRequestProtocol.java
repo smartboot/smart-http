@@ -182,7 +182,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                             BufferUtils.trim(valueDecoder.getBuffer());
                             byte[] valBytes = new byte[valBuffer.remaining()];
                             valBuffer.get(valBytes);
-                            request._headers.put(request.tmpHeaderName, convertToString(valBytes, valBytes.length));
+                            request.setHeader(request.tmpHeaderName, convertToString(valBytes, valBytes.length));
                             valueDecoder.reset();
                         } else {
                             break;
@@ -191,7 +191,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                         int valueLength = scanUntil(buffer, Consts.CR, b);
                         if (valueLength > 0) {
                             curState = State.head_line_LF;
-                            request._headers.put(request.tmpHeaderName, convertToString(b, valueLength));
+                            request.setHeader(request.tmpHeaderName, convertToString(b, valueLength));
                         }
                         //value字段长度超过readBuffer空间大小
                         else if (buffer.remaining() == buffer.capacity()) {

@@ -29,18 +29,24 @@ import java.util.Map;
  */
 public final class Http11Request implements HttpRequest {
     private static final Logger LOGGER = LoggerFactory.getLogger(Http11Request.class);
+    /**
+     * 解码状态
+     */
     State _state = State.method;
     /**
      * 原始的完整请求
      */
     String _originalUri;
-    Map<String, String> _headers = new HashMap<>();
     String tmpHeaderName;
     SmartDecoder bodyContentDecoder;
     /**
      * Header Value解码器是否启用
      */
     boolean headValueDecoderEnable = false;
+    /**
+     * Http请求头
+     */
+    private Map<String, String> headers = new HashMap<>();
     /**
      * 请求方法
      */
@@ -65,6 +71,9 @@ public final class Http11Request implements HttpRequest {
      * 跟在URL后面的请求信息
      */
     private String queryString;
+    /**
+     * 协议
+     */
     private String scheme = Consts.SCHEMA_HTTP;
     private int contentLength = -1;
     private AioSession<Http11Request> aioSession;
@@ -79,12 +88,16 @@ public final class Http11Request implements HttpRequest {
 
     @Override
     public String getHeader(String headName) {
-        return _headers.get(headName);
+        return headers.get(headName);
+    }
+
+    public void setHeader(String headerName, String value) {
+        headers.put(headerName, value);
     }
 
     @Override
     public Map<String, String> getHeaders() {
-        return _headers;
+        return headers;
     }
 
     @Override
@@ -149,7 +162,7 @@ public final class Http11Request implements HttpRequest {
 
     @Override
     public String getContentType() {
-        return contentType == null ? contentType = _headers.get(HttpHeaderConstant.Names.CONTENT_TYPE) : contentType;
+        return contentType == null ? contentType = headers.get(HttpHeaderConstant.Names.CONTENT_TYPE) : contentType;
     }
 
     @Override
@@ -294,7 +307,7 @@ public final class Http11Request implements HttpRequest {
 
     public void rest() {
         _state = State.method;
-        _headers.clear();
+        headers.clear();
         tmpHeaderName = null;
         headValueDecoderEnable = false;
         if (headerValueDecoder != null) {
