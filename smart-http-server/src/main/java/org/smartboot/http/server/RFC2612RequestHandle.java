@@ -18,6 +18,8 @@ import java.util.Map;
  */
 public class RFC2612RequestHandle extends HttpHandle {
     public static final int MAX_LENGTH = 255 * 1024;
+    private static final int MAX_URL_CACHE = 128;
+    private static final int CACHE_EXPIRE = 10000;
     private Map<String, UriCache> uriCacheMap = new HashMap<>();
 
     @Override
@@ -79,11 +81,12 @@ public class RFC2612RequestHandle extends HttpHandle {
          *3. 假如由规则1或规则2定义的主机(host)对服务器来说是一个无效的主机(host)， 则应当以一个 400(坏请求)错误消息返回。
          */
         String originalUri = request._originalUri;
+        long currentTime = System.currentTimeMillis();
         UriCache uriCache = uriCacheMap.get(originalUri);
         if (uriCache != null) {
             request.setRequestURI(uriCache.uri);
             request.setQueryString(uriCache.queryString);
-            uriCache.lastUseTime = System.currentTimeMillis();
+            uriCache.lastUseTime = currentTime;
             return;
         }
         int schemeIndex = originalUri.indexOf("://");
@@ -111,7 +114,16 @@ public class RFC2612RequestHandle extends HttpHandle {
                     : originalUri));
             request.setRequestUrl(request.getScheme() + "://" + request.getHeader(HttpHeaderConstant.Names.HOST) + request.getRequestURI());
         }
-        uriCacheMap.put(originalUri, new UriCache(request.getRequestURI(), queryString));
+        if (uriCacheMap.size() >= MAX_URL_CACHE) {
+            for (Map.Entry<String, UriCache> entry : uriCacheMap.entrySet()) {
+                if ((currentTime - entry.getValue().lastUseTime) > CACHE_EXPIRE) {
+                    uriCacheMap.remove(entry.getKey());
+                }
+            }
+        }
+        if (uriCacheMap.size() >= MAX_URL_CACHE) {
+            uriCacheMap.put(originalUri, new UriCache(request.getRequestURI(), queryString));
+        }
     }
 
     private class UriCache {
