@@ -42,7 +42,7 @@ public class RFC2612RequestHandle extends HttpHandle {
      * @param request
      */
     private void methodCheck(Http11Request request) {
-        if (request.getMethod() == null) {
+        if (request.getMethodEnum() == null) {
             throw new HttpException(HttpStatus.NOT_IMPLEMENTED);
         }
     }

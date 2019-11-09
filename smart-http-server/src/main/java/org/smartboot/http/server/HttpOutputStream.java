@@ -84,7 +84,7 @@ final class HttpOutputStream extends OutputStream {
      */
     public final void write(byte b[], int off, int len) throws IOException {
         writeHead();
-        if (MethodEnum.HEAD.getMethod().equals(response.getHttpMethod())) {
+        if (MethodEnum.HEAD == response.getHttpMethod()) {
             throw new UnsupportedOperationException(response.getHttpMethod() + " can not write http body");
         }
         if (chunked) {

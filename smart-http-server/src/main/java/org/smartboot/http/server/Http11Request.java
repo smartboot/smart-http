@@ -50,7 +50,7 @@ public final class Http11Request implements HttpRequest {
     /**
      * 请求方法
      */
-    private String method;
+    private MethodEnum method;
     /**
      * Http协议版本
      */
@@ -128,11 +128,15 @@ public final class Http11Request implements HttpRequest {
     }
 
     public String getMethod() {
-        return method;
+        return method.getMethod();
     }
 
     public void setMethod(MethodEnum method) {
-        this.method = method.getMethod();
+        this.method = method;
+    }
+
+    public MethodEnum getMethodEnum() {
+        return method;
     }
 
     @Override

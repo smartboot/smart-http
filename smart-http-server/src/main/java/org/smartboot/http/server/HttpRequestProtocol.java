@@ -110,7 +110,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                             }
                             break;
                     }
-                    if (request.getMethod() == null) {
+                    if (request.getMethodEnum() == null) {
                         byte[] b1 = new byte[buffer.remaining()];
                         buffer.get(b1);
                         LOGGER.info(new String(b1));
