@@ -9,8 +9,8 @@
 package org.smartboot.http.server;
 
 import org.smartboot.http.HttpResponse;
+import org.smartboot.http.enums.HttpMethodEnum;
 import org.smartboot.http.enums.HttpStatus;
-import org.smartboot.http.enums.MethodEnum;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -23,6 +23,10 @@ import java.util.Map;
  */
 class DefaultHttpResponse implements HttpResponse {
     /**
+     * Http Method
+     */
+    private HttpMethodEnum httpMethod;
+    /**
      * 响应消息头
      */
     private Map<String, String> headers = new HashMap<>();
@@ -30,12 +34,6 @@ class DefaultHttpResponse implements HttpResponse {
      * http响应码
      */
     private HttpStatus httpStatus;
-
-    /**
-     * Http Method
-     */
-    private MethodEnum httpMethod;
-
     /**
      * 输入流
      */
@@ -56,14 +54,14 @@ class DefaultHttpResponse implements HttpResponse {
         outputStream = new HttpOutputStream();
     }
 
-    public void init(MethodEnum methodEnum, OutputStream outputStream) {
+    public void init(HttpMethodEnum methodEnum, OutputStream outputStream) {
         this.outputStream.init(outputStream, this);
         this.httpMethod = methodEnum;
         headers.clear();
         httpStatus = null;
     }
 
-    public MethodEnum getHttpMethod() {
+    public HttpMethodEnum getHttpMethod() {
         return httpMethod;
     }
 

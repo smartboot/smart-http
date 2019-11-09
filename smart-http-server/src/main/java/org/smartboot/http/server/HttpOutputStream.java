@@ -8,8 +8,8 @@
 
 package org.smartboot.http.server;
 
+import org.smartboot.http.enums.HttpMethodEnum;
 import org.smartboot.http.enums.HttpStatus;
-import org.smartboot.http.enums.MethodEnum;
 import org.smartboot.http.utils.CharsetUtil;
 import org.smartboot.http.utils.Consts;
 import org.smartboot.http.utils.HeaderNameEnum;
@@ -84,7 +84,7 @@ final class HttpOutputStream extends OutputStream {
      */
     public final void write(byte b[], int off, int len) throws IOException {
         writeHead();
-        if (MethodEnum.HEAD == response.getHttpMethod()) {
+        if (HttpMethodEnum.HEAD == response.getHttpMethod()) {
             throw new UnsupportedOperationException(response.getHttpMethod() + " can not write http body");
         }
         if (chunked) {

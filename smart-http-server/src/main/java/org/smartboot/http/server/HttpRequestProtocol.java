@@ -2,7 +2,7 @@ package org.smartboot.http.server;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.smartboot.http.enums.MethodEnum;
+import org.smartboot.http.enums.HttpMethodEnum;
 import org.smartboot.http.enums.State;
 import org.smartboot.http.utils.CharsetUtil;
 import org.smartboot.http.utils.Consts;
@@ -68,45 +68,45 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                         case 'G':
                             buffer.position(mPos + 3);
                             if (buffer.get() == Consts.SP) {
-                                request.setMethod(MethodEnum.GET);
+                                request.setMethod(HttpMethodEnum.GET);
                             }
                             break;
                         case 'P':
                             buffer.position(mPos + 3);
                             if (buffer.get() == Consts.SP) {
-                                request.setMethod(MethodEnum.PUT);
+                                request.setMethod(HttpMethodEnum.PUT);
                             } else if (buffer.get() == Consts.SP) {
-                                request.setMethod(MethodEnum.POST);
+                                request.setMethod(HttpMethodEnum.POST);
                             }
                             break;
                         case 'H':
                             buffer.position(mPos + 4);
                             if (buffer.get() == Consts.SP) {
-                                request.setMethod(MethodEnum.HEAD);
+                                request.setMethod(HttpMethodEnum.HEAD);
                             }
                             break;
                         case 'D':
                             buffer.position(mPos + 6);
                             if (buffer.get() == Consts.SP) {
-                                request.setMethod(MethodEnum.DELETE);
+                                request.setMethod(HttpMethodEnum.DELETE);
                             }
                             break;
                         case 'C':
                             buffer.position(mPos + 7);
                             if (buffer.get() == Consts.SP) {
-                                request.setMethod(MethodEnum.CONNECT);
+                                request.setMethod(HttpMethodEnum.CONNECT);
                             }
                             break;
                         case 'O':
                             buffer.position(mPos + 7);
                             if (buffer.get() == Consts.SP) {
-                                request.setMethod(MethodEnum.OPTIONS);
+                                request.setMethod(HttpMethodEnum.OPTIONS);
                             }
                             break;
                         case 'T':
                             buffer.position(mPos + 5);
                             if (buffer.get() == Consts.SP) {
-                                request.setMethod(MethodEnum.TRACE);
+                                request.setMethod(HttpMethodEnum.TRACE);
                             }
                             break;
                     }
@@ -229,7 +229,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                     }
                 case head_finished:
                     //Post请求
-                    if (MethodEnum.POST.getMethod().equals(request.getMethod())) {
+                    if (HttpMethodEnum.POST.getMethod().equals(request.getMethod())) {
                         request.setContentLength(NumberUtils.toInt(request.getHeader(HttpHeaderConstant.Names.CONTENT_LENGTH), -1));
                         //文件上传
                         if (StringUtils.startsWith(request.getContentType(), HttpHeaderConstant.Values.MULTIPART_FORM_DATA)) {

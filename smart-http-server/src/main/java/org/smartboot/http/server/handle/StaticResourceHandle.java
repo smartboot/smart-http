@@ -12,8 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
+import org.smartboot.http.enums.HttpMethodEnum;
 import org.smartboot.http.enums.HttpStatus;
-import org.smartboot.http.enums.MethodEnum;
 import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.http.utils.Mimetypes;
 import org.smartboot.http.utils.StringUtils;
@@ -74,7 +74,7 @@ public class StaticResourceHandle extends HttpHandle {
             response.setHttpStatus(HttpStatus.NOT_FOUND);
             response.setHeader(HttpHeaderConstant.Names.CONTENT_TYPE, "text/html; charset=utf-8");
 
-            if (!MethodEnum.HEAD.getMethod().equals(method)) {
+            if (!HttpMethodEnum.HEAD.getMethod().equals(method)) {
                 response.write(URL_404.getBytes());
             }
             return;
@@ -96,7 +96,7 @@ public class StaticResourceHandle extends HttpHandle {
         String contentType = Mimetypes.getInstance().getMimetype(file);
         response.setHeader(HttpHeaderConstant.Names.CONTENT_TYPE, contentType + "; charset=utf-8");
         //HEAD不输出内容
-        if (MethodEnum.HEAD.getMethod().equals(method)) {
+        if (HttpMethodEnum.HEAD.getMethod().equals(method)) {
             return;
         }
 

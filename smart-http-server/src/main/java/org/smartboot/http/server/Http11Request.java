@@ -3,7 +3,7 @@ package org.smartboot.http.server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartboot.http.HttpRequest;
-import org.smartboot.http.enums.MethodEnum;
+import org.smartboot.http.enums.HttpMethodEnum;
 import org.smartboot.http.enums.State;
 import org.smartboot.http.utils.Consts;
 import org.smartboot.http.utils.EmptyInputStream;
@@ -50,7 +50,7 @@ public final class Http11Request implements HttpRequest {
     /**
      * 请求方法
      */
-    private MethodEnum method;
+    private HttpMethodEnum method;
     /**
      * Http协议版本
      */
@@ -131,11 +131,11 @@ public final class Http11Request implements HttpRequest {
         return method.getMethod();
     }
 
-    public void setMethod(MethodEnum method) {
+    void setMethod(HttpMethodEnum method) {
         this.method = method;
     }
 
-    public MethodEnum getMethodEnum() {
+    HttpMethodEnum getMethodEnum() {
         return method;
     }
 
