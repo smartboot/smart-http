@@ -85,6 +85,7 @@ public class RFC2612RequestHandle extends HttpHandle {
         UriCache uriCache = uriCacheMap.get(originalUri);
         if (uriCache != null) {
             request.setRequestURI(uriCache.uri);
+            request.setRequestUrl(uriCache.url);
             request.setQueryString(uriCache.queryString);
             uriCache.lastUseTime = currentTime;
             return;
@@ -122,17 +123,19 @@ public class RFC2612RequestHandle extends HttpHandle {
             }
         }
         if (uriCacheMap.size() >= MAX_URL_CACHE) {
-            uriCacheMap.put(originalUri, new UriCache(request.getRequestURI(), queryString));
+            uriCacheMap.put(originalUri, new UriCache(request.getRequestURI(), request.getRequestURL(), queryString));
         }
     }
 
     private class UriCache {
         private String uri;
         private String queryString;
+        private String url;
         private long lastUseTime;
 
-        public UriCache(String uri, String queryString) {
+        public UriCache(String uri, String url, String queryString) {
             this.uri = uri;
+            this.url = url;
             this.queryString = queryString;
             this.lastUseTime = System.currentTimeMillis();
         }

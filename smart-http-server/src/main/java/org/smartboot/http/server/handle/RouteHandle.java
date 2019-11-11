@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author 三刀
  * @version V1.0 , 2018/3/24
  */
-public class RouteHandle extends HttpHandle {
+public final class RouteHandle extends HttpHandle {
     private static final Logger LOGGER = LoggerFactory.getLogger(RouteHandle.class);
     private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
     private Map<String, HttpHandle> handleMap = new ConcurrentHashMap<>();
@@ -45,6 +45,13 @@ public class RouteHandle extends HttpHandle {
         httpHandle.doHandle(request, response);
     }
 
+    /**
+     * 配置URL路由
+     *
+     * @param urlPattern url匹配
+     * @param httpHandle 处理handle
+     * @return
+     */
     public RouteHandle route(String urlPattern, HttpHandle httpHandle) {
         handleMap.put(urlPattern, httpHandle);
         return this;
