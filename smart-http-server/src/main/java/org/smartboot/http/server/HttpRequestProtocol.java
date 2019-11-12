@@ -14,6 +14,7 @@ import org.smartboot.socket.Protocol;
 import org.smartboot.socket.extension.decoder.DelimiterFrameDecoder;
 import org.smartboot.socket.extension.decoder.FixedLengthFrameDecoder;
 import org.smartboot.socket.transport.AioSession;
+import org.smartboot.socket.util.Attachment;
 import org.smartboot.socket.util.BufferUtils;
 import org.smartboot.socket.util.DecoderException;
 
@@ -46,12 +47,9 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
 
     @Override
     public Http11Request decode(ByteBuffer buffer, AioSession<Http11Request> session) {
-        Http11Request request = session.getAttachment();
-        byte[] b = BYTE_LOCAL.get();
-        if (b.length < buffer.remaining()) {
-            b = new byte[buffer.remaining()];
-            BYTE_LOCAL.set(b);
-        }
+        Attachment attachment = session.getAttachment();
+        Http11Request request = attachment.get(Consts.ATTACH_KEY_REQUEST);
+        byte[] cacheBytes = getCacheBytes(buffer, attachment);
         buffer.mark();
         State curState = request._state;
         boolean flag;
@@ -117,15 +115,15 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                         throw new DecoderException("invalid method");
                     }
                 case uri:
-                    int uriLength = scanUntil(buffer, Consts.SP, b);
+                    int uriLength = scanUntil(buffer, Consts.SP, cacheBytes);
                     if (uriLength > 0) {
                         curState = State.protocol;
-                        request._originalUri = convertToString(b, uriLength);
+                        request._originalUri = convertToString(cacheBytes, uriLength);
                     } else {
                         break;
                     }
                 case protocol:
-//                    int protocolLength = scanUntil(buffer, Consts.CR, b);
+//                    int protocolLength = scanUntil(buffer, Consts.CR, cacheBytes);
                     int pos = buffer.position();
                     if (buffer.remaining() < 9) {
                         break;
@@ -166,10 +164,10 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                         break;
                     }
                 case head_name:
-                    int nameLength = scanUntil(buffer, Consts.COLON, b);
+                    int nameLength = scanUntil(buffer, Consts.COLON, cacheBytes);
                     if (nameLength > 0) {
                         curState = State.head_value;
-                        request.tmpHeaderName = convertToString(b, nameLength);
+                        request.tmpHeaderName = convertToString(cacheBytes, nameLength);
                     } else {
                         break;
                     }
@@ -188,10 +186,10 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                             break;
                         }
                     } else {
-                        int valueLength = scanUntil(buffer, Consts.CR, b);
+                        int valueLength = scanUntil(buffer, Consts.CR, cacheBytes);
                         if (valueLength > 0) {
                             curState = State.head_line_LF;
-                            request.setHeader(request.tmpHeaderName, convertToString(b, valueLength));
+                            request.setHeader(request.tmpHeaderName, convertToString(cacheBytes, valueLength));
                         }
                         //value字段长度超过readBuffer空间大小
                         else if (buffer.remaining() == buffer.capacity()) {
@@ -270,6 +268,22 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
             throw new DecoderException("buffer is too small when decode " + curState + " ," + request.tmpHeaderName);
         }
         return null;
+    }
+
+    private byte[] getCacheBytes(ByteBuffer buffer, Attachment attachment) {
+        Thread thread = attachment.get(Consts.ATTACH_KEY_CURRENT_THREAD);
+        Thread currentThread = Thread.currentThread();
+        if (thread != currentThread) {
+            attachment.put(Consts.ATTACH_KEY_CURRENT_THREAD, currentThread);
+            attachment.put(Consts.ATTACH_KEY_CACHE_BYTES, BYTE_LOCAL.get());
+        }
+        byte[] cacheBytes = attachment.get(Consts.ATTACH_KEY_CACHE_BYTES);
+        if (cacheBytes.length < buffer.remaining()) {
+            cacheBytes = new byte[buffer.remaining()];
+            BYTE_LOCAL.set(cacheBytes);
+            attachment.put(Consts.ATTACH_KEY_CACHE_BYTES, cacheBytes);
+        }
+        return cacheBytes;
     }
 
     private String convertToString(byte[] bytes, int length) {

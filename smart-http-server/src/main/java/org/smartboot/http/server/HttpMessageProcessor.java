@@ -7,9 +7,11 @@ import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.exception.HttpException;
 import org.smartboot.http.server.handle.HandlePipeline;
 import org.smartboot.http.server.handle.HttpHandle;
+import org.smartboot.http.utils.Consts;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.transport.AioSession;
+import org.smartboot.socket.util.Attachment;
 
 import java.io.IOException;
 
@@ -66,7 +68,9 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
     public void stateEvent(AioSession<Http11Request> session, StateMachineEnum stateMachineEnum, Throwable throwable) {
         switch (stateMachineEnum) {
             case NEW_SESSION:
-                session.setAttachment(new Http11Request(session));
+                Attachment attachment = new Attachment();
+                attachment.put(Consts.ATTACH_KEY_REQUEST, new Http11Request(session));
+                session.setAttachment(attachment);
                 break;
             case PROCESS_EXCEPTION:
                 LOGGER.error("process request exception", throwable);
