@@ -81,9 +81,18 @@ public final class Http11Request implements HttpRequest {
     private String remoteAddr;
 
     private String remoteHost;
+    /**
+     * Http响应
+     */
+    private Http11Response response;
 
     Http11Request(AioSession<Http11Request> aioSession) {
         this.aioSession = aioSession;
+        response = new Http11Response(this, aioSession.writeBuffer());
+    }
+
+    public Http11Response getResponse() {
+        return response;
     }
 
     @Override
@@ -322,6 +331,7 @@ public final class Http11Request implements HttpRequest {
         parameters = null;
         contentType = null;
         contentLength = -1;
+        response.reset();
     }
 
 //    @Override

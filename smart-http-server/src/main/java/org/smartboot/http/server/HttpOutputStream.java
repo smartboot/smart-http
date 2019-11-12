@@ -52,25 +52,29 @@ final class HttpOutputStream extends OutputStream {
         new ResponseDateTimer();
     }
 
-    private DefaultHttpResponse response;
-    private OutputStream outputStream;
+    private final Http11Response response;
+    private final Http11Request request;
+    private final OutputStream outputStream;
     private boolean committed = false, closed = false;
     private boolean chunked = false;
+
+    public HttpOutputStream(Http11Request request, Http11Response response, OutputStream outputStream) {
+        this.response = response;
+        this.request = request;
+        this.outputStream = outputStream;
+    }
 
     private static void flushDate() {
         currentDate.setTime(System.currentTimeMillis());
         HttpOutputStream.date = ("\r\n" + HttpHeaderConstant.Names.DATE + ":" + sdf.format(currentDate) + "\r\n\r\n").getBytes();
     }
 
-
-    void init(OutputStream outputStream, DefaultHttpResponse response) {
-        this.outputStream = outputStream;
-        this.response = response;
+    void reset() {
         committed = closed = chunked = false;
     }
 
     @Override
-    public final void write(int b) throws IOException {
+    public final void write(int b) {
         throw new UnsupportedOperationException();
     }
 
@@ -84,8 +88,8 @@ final class HttpOutputStream extends OutputStream {
      */
     public final void write(byte b[], int off, int len) throws IOException {
         writeHead();
-        if (HttpMethodEnum.HEAD == response.getHttpMethod()) {
-            throw new UnsupportedOperationException(response.getHttpMethod() + " can not write http body");
+        if (HttpMethodEnum.HEAD == request.getMethodEnum()) {
+            throw new UnsupportedOperationException(request.getMethodEnum() + " can not write http body");
         }
         if (chunked) {
             byte[] start = getBytes(Integer.toHexString(len) + "\r\n");

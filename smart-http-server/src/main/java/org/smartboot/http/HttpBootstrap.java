@@ -10,7 +10,9 @@ package org.smartboot.http;
 
 import org.smartboot.http.server.HttpMessageProcessor;
 import org.smartboot.http.server.HttpRequestProtocol;
+import org.smartboot.socket.extension.ssl.ClientAuth;
 import org.smartboot.socket.transport.AioQuickServer;
+import org.smartboot.socket.transport.AioSSLQuickServer;
 
 import java.io.IOException;
 
@@ -18,6 +20,8 @@ public class HttpBootstrap {
 
 
     private AioQuickServer<? extends HttpRequest> server;
+
+    private AioSSLQuickServer<? extends HttpRequest> sslServer;
     /**
      * Http服务端口号
      */
@@ -36,20 +40,19 @@ public class HttpBootstrap {
      */
     private HttpRequestProtocol protocol = new HttpRequestProtocol();
 
-//    static void https(MessageProcessor<Http11Request> processor) {
-//        // 定义服务器接受的消息类型以及各类消息对应的处理器
-//        AioSSLQuickServer<Http11Request> server = new AioSSLQuickServer<Http11Request>(8889, new HttpRequestProtocol(), processor);
-//        server
-//                .setClientAuth(ClientAuth.OPTIONAL)
-//                .setKeyStore(ClassLoader.getSystemClassLoader().getResource("server.jks").getFile(), "storepass")
-//                .setTrust(ClassLoader.getSystemClassLoader().getResource("trustedCerts.jks").getFile(), "storepass")
-//                .setKeyPassword("keypass");
-//        try {
-//            server.start();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
+    private String keyStore;
+
+    private String trust;
+
+    private String trustPassword;
+
+    private int sslPort;
+
+    private boolean sslEnabled;
+
+    private String storePassword;
+
+    private String keyPassword;
 
     /**
      * 设置HTTP服务端端口号
@@ -88,6 +91,31 @@ public class HttpBootstrap {
         return this;
     }
 
+    /**
+     * 只配置keyStore则使用单向认证
+     *
+     * @param keyStore
+     * @param storePassword
+     * @return
+     */
+    public HttpBootstrap sslKeyStore(String keyStore, String storePassword) {
+        this.keyStore = keyStore;
+        this.storePassword = storePassword;
+        return this;
+    }
+
+    /**
+     * 配合sslKeyStore提供双向认证
+     *
+     * @param trust
+     * @param password
+     * @return
+     */
+    public HttpBootstrap sslTrustStore(String trust, String password) {
+        this.trust = trust;
+        this.trustPassword = password;
+        return this;
+    }
 
     /**
      * 启动HTTP服务
@@ -101,12 +129,37 @@ public class HttpBootstrap {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        if (sslEnabled) {
+            startSsl();
+        }
+    }
+
+    private void startSsl() {
+        // 定义服务器接受的消息类型以及各类消息对应的处理器
+        sslServer = new AioSSLQuickServer<>(sslPort, protocol, processor);
+        sslServer
+                .setClientAuth(ClientAuth.OPTIONAL)
+                .setKeyStore(ClassLoader.getSystemClassLoader().getResource(keyStore).getFile(), storePassword)
+                .setTrust(ClassLoader.getSystemClassLoader().getResource(trust).getFile(), storePassword)
+                .setKeyPassword(keyPassword);
+        try {
+            sslServer.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
      * 停止服务
      */
     public void shutdown() {
-        server.shutdown();
+        if (server != null) {
+            server.shutdown();
+            server = null;
+        }
+        if (sslServer != null) {
+            sslServer.shutdown();
+            sslServer = null;
+        }
     }
 }

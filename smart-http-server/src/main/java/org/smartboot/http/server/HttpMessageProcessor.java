@@ -19,25 +19,16 @@ import java.io.IOException;
  */
 public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpMessageProcessor.class);
-    private ThreadLocal<DefaultHttpResponse> RESPONSE_THREAD_LOCAL = null;
     private HandlePipeline pipeline = new HandlePipeline();
 
     public HttpMessageProcessor() {
         pipeline.next(new RFC2612RequestHandle());
-
-        RESPONSE_THREAD_LOCAL = new ThreadLocal<DefaultHttpResponse>() {
-            @Override
-            protected DefaultHttpResponse initialValue() {
-                return new DefaultHttpResponse();
-            }
-        };
     }
 
     @Override
     public void process(AioSession<Http11Request> session, Http11Request request) {
         try {
-            DefaultHttpResponse httpResponse = RESPONSE_THREAD_LOCAL.get();
-            httpResponse.init(request.getMethodEnum(), session.writeBuffer());
+            Http11Response httpResponse = request.getResponse();
 //            boolean isKeepAlive = StringUtils.equalsIgnoreCase(HttpHeaderConstant.Values.KEEPALIVE, request.getHeader(HttpHeaderConstant.Names.CONNECTION));
             try {
                 //用ab进行测试时需要带上该响应

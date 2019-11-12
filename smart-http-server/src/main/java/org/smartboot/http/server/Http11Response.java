@@ -9,7 +9,6 @@
 package org.smartboot.http.server;
 
 import org.smartboot.http.HttpResponse;
-import org.smartboot.http.enums.HttpMethodEnum;
 import org.smartboot.http.enums.HttpStatus;
 
 import java.io.IOException;
@@ -21,11 +20,12 @@ import java.util.Map;
  * @author 三刀
  * @version V1.0 , 2018/2/3
  */
-class DefaultHttpResponse implements HttpResponse {
+class Http11Response implements HttpResponse {
     /**
-     * Http Method
+     * 输入流
      */
-    private HttpMethodEnum httpMethod;
+    private final HttpOutputStream outputStream;
+
     /**
      * 响应消息头
      */
@@ -34,11 +34,6 @@ class DefaultHttpResponse implements HttpResponse {
      * http响应码
      */
     private HttpStatus httpStatus;
-    /**
-     * 输入流
-     */
-    private HttpOutputStream outputStream;
-
     /**
      * 响应正文长度
      */
@@ -50,20 +45,19 @@ class DefaultHttpResponse implements HttpResponse {
     private String contentType;
 
 
-    public DefaultHttpResponse() {
-        outputStream = new HttpOutputStream();
+    public Http11Response(Http11Request request, OutputStream outputStream) {
+        this.outputStream = new HttpOutputStream(request, this, outputStream);
     }
 
-    public void init(HttpMethodEnum methodEnum, OutputStream outputStream) {
-        this.outputStream.init(outputStream, this);
-        this.httpMethod = methodEnum;
+
+    public void reset() {
         headers.clear();
         httpStatus = null;
+        contentType = null;
+        contentLength = -1;
+        this.outputStream.reset();
     }
 
-    public HttpMethodEnum getHttpMethod() {
-        return httpMethod;
-    }
 
     public OutputStream getOutputStream() {
         return outputStream;
