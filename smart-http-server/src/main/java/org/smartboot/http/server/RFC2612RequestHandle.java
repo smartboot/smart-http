@@ -76,7 +76,7 @@ public class RFC2612RequestHandle extends HttpHandle {
          *3. 假如由规则1或规则2定义的主机(host)对服务器来说是一个无效的主机(host)， 则应当以一个 400(坏请求)错误消息返回。
          */
         String originalUri = request._originalUri;
-        if (originalUri.startsWith("/")) {
+        if (originalUri.charAt(0) == '/') {
             request.setRequestURI(originalUri);
             return;
         }
