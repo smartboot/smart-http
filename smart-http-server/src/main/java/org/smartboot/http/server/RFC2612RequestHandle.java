@@ -9,8 +9,6 @@ import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.http.utils.StringUtils;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author 三刀
@@ -18,9 +16,6 @@ import java.util.Map;
  */
 public class RFC2612RequestHandle extends HttpHandle {
     public static final int MAX_LENGTH = 255 * 1024;
-    private static final int MAX_URL_CACHE = 128;
-    private static final int CACHE_EXPIRE = 10000;
-    private Map<String, UriCache> uriCacheMap = new HashMap<>();
 
     @Override
     public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
@@ -81,11 +76,8 @@ public class RFC2612RequestHandle extends HttpHandle {
          *3. 假如由规则1或规则2定义的主机(host)对服务器来说是一个无效的主机(host)， 则应当以一个 400(坏请求)错误消息返回。
          */
         String originalUri = request._originalUri;
-        long currentTime = System.currentTimeMillis();
-        UriCache uriCache = uriCacheMap.get(originalUri);
-        if (uriCache != null) {
-            request.setRequestURI(uriCache.uri);
-            uriCache.lastUseTime = currentTime;
+        if (originalUri.startsWith("/")) {
+            request.setRequestURI(originalUri);
             return;
         }
         int schemeIndex = originalUri.indexOf("://");
@@ -99,34 +91,6 @@ public class RFC2612RequestHandle extends HttpHandle {
             request.setScheme(StringUtils.substring(originalUri, 0, schemeIndex));
         } else {
             request.setRequestURI(originalUri);
-        }
-        if (uriCacheMap.size() >= MAX_URL_CACHE) {
-            for (Map.Entry<String, UriCache> entry : uriCacheMap.entrySet()) {
-                if ((currentTime - entry.getValue().lastUseTime) > CACHE_EXPIRE) {
-                    uriCacheMap.remove(entry.getKey());
-                }
-            }
-        }
-        if (uriCacheMap.size() < MAX_URL_CACHE) {
-            uriCacheMap.put(originalUri, new UriCache(request.getRequestURI()));
-        }
-    }
-
-    private class UriCache {
-        private String uri;
-        private long lastUseTime;
-
-        public UriCache(String uri) {
-            this.uri = uri;
-            this.lastUseTime = System.currentTimeMillis();
-        }
-
-        public String getUri() {
-            return uri;
-        }
-
-        public void setUri(String uri) {
-            this.uri = uri;
         }
     }
 }
