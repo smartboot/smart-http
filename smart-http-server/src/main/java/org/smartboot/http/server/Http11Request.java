@@ -150,12 +150,17 @@ public final class Http11Request implements HttpRequest {
 
     @Override
     public String getRequestURL() {
+        if (requestUrl != null) {
+            return requestUrl;
+        }
+        if (requestUri.startsWith("/")) {
+            requestUrl = getScheme() + "://" + getHeader(HttpHeaderConstant.Names.HOST) + getRequestURI();
+        } else {
+            requestUrl = requestUri;
+        }
         return requestUrl;
     }
 
-    public void setRequestUrl(String requestUrl) {
-        this.requestUrl = requestUrl;
-    }
 
     public String getScheme() {
         return scheme;

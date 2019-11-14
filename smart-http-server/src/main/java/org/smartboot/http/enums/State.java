@@ -6,6 +6,7 @@ package org.smartboot.http.enums;
 public enum State {
     method,
     uri,
+    queryString,
     protocol,
     request_line_end,
     head_name,

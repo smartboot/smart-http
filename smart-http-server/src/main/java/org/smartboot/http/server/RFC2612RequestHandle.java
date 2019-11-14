@@ -71,7 +71,7 @@ public class RFC2612RequestHandle extends HttpHandle {
      * @param request
      */
     private void uriCheck(Http11Request request) {
-        if (StringUtils.length(request.getRequestURL()) > MAX_LENGTH) {
+        if (StringUtils.length(request.getRequestURI()) > MAX_LENGTH) {
             throw new HttpException(HttpStatus.URI_TOO_LONG);
         }
         /**
@@ -85,35 +85,20 @@ public class RFC2612RequestHandle extends HttpHandle {
         UriCache uriCache = uriCacheMap.get(originalUri);
         if (uriCache != null) {
             request.setRequestURI(uriCache.uri);
-            request.setRequestUrl(uriCache.url);
-            request.setQueryString(uriCache.queryString);
             uriCache.lastUseTime = currentTime;
             return;
         }
         int schemeIndex = originalUri.indexOf("://");
-        int queryStringIndex = StringUtils.indexOf(originalUri, "?", schemeIndex);
-        String queryString = null;
-        if (queryStringIndex != StringUtils.INDEX_NOT_FOUND) {
-            queryString = StringUtils.substring(originalUri, queryStringIndex + 1);
-            request.setQueryString(queryString);
-        }
-
         if (schemeIndex > 0) {//绝对路径
             int uriIndex = originalUri.indexOf('/', schemeIndex + 3);
             if (uriIndex == StringUtils.INDEX_NOT_FOUND) {
                 request.setRequestURI("/");
             } else {
-                request.setRequestURI(queryStringIndex > 0 ?
-                        StringUtils.substring(originalUri, uriIndex, queryStringIndex)
-                        : StringUtils.substring(originalUri, uriIndex));
+                request.setRequestURI(StringUtils.substring(originalUri, uriIndex));
             }
             request.setScheme(StringUtils.substring(originalUri, 0, schemeIndex));
-            request.setRequestUrl(request.getRequestURI());
         } else {
-            request.setRequestURI((queryStringIndex > 0 ?
-                    StringUtils.substring(originalUri, 0, queryStringIndex)
-                    : originalUri));
-            request.setRequestUrl(request.getScheme() + "://" + request.getHeader(HttpHeaderConstant.Names.HOST) + request.getRequestURI());
+            request.setRequestURI(originalUri);
         }
         if (uriCacheMap.size() >= MAX_URL_CACHE) {
             for (Map.Entry<String, UriCache> entry : uriCacheMap.entrySet()) {
@@ -122,21 +107,17 @@ public class RFC2612RequestHandle extends HttpHandle {
                 }
             }
         }
-        if (uriCacheMap.size() >= MAX_URL_CACHE) {
-            uriCacheMap.put(originalUri, new UriCache(request.getRequestURI(), request.getRequestURL(), queryString));
+        if (uriCacheMap.size() < MAX_URL_CACHE) {
+            uriCacheMap.put(originalUri, new UriCache(request.getRequestURI()));
         }
     }
 
     private class UriCache {
         private String uri;
-        private String queryString;
-        private String url;
         private long lastUseTime;
 
-        public UriCache(String uri, String url, String queryString) {
+        public UriCache(String uri) {
             this.uri = uri;
-            this.url = url;
-            this.queryString = queryString;
             this.lastUseTime = System.currentTimeMillis();
         }
 

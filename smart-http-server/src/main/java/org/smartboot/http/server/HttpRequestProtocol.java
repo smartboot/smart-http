@@ -36,7 +36,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
             return new byte[1024];
         }
     };
-
+    private static final byte[] SCAN_URI = new byte[]{'?', Consts.SP};
     private final List<StringCache>[] String_CACHE = new List[512];
 
     {
@@ -115,15 +115,30 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                         throw new DecoderException("invalid method");
                     }
                 case uri:
-                    int uriLength = scanUntil(buffer, Consts.SP, cacheBytes);
+                    int uriLength = scanUntilAndTrim(buffer, SCAN_URI, cacheBytes);
                     if (uriLength > 0) {
-                        curState = State.protocol;
                         request._originalUri = convertToString(cacheBytes, uriLength);
+                        if (buffer.get(buffer.position() - 1) == '?') {
+                            curState = State.queryString;
+                        } else {
+                            curState = State.protocol;
+                            flag = true;
+                            break;
+                        }
+                    } else {
+                        break;
+                    }
+                case queryString:
+                    int queryLength = scanUntil(buffer, Consts.SP, cacheBytes);
+                    if (queryLength == 0) {
+                        curState = State.protocol;
+                    } else if (queryLength > 0) {
+                        request.setQueryString(convertToString(cacheBytes, queryLength));
+                        curState = State.protocol;
                     } else {
                         break;
                     }
                 case protocol:
-//                    int protocolLength = scanUntil(buffer, Consts.CR, cacheBytes);
                     int pos = buffer.position();
                     if (buffer.remaining() < 9) {
                         break;
@@ -164,7 +179,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                         break;
                     }
                 case head_name:
-                    int nameLength = scanUntil(buffer, Consts.COLON, cacheBytes);
+                    int nameLength = scanUntilAndTrim(buffer, Consts.COLON, cacheBytes);
                     if (nameLength > 0) {
                         curState = State.head_value;
                         request.tmpHeaderName = convertToString(cacheBytes, nameLength);
@@ -186,7 +201,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                             break;
                         }
                     } else {
-                        int valueLength = scanUntil(buffer, Consts.CR, cacheBytes);
+                        int valueLength = scanUntilAndTrim(buffer, Consts.CR, cacheBytes);
                         if (valueLength > 0) {
                             curState = State.head_line_LF;
                             request.setHeader(request.tmpHeaderName, convertToString(cacheBytes, valueLength));
@@ -271,9 +286,9 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
     }
 
     private byte[] getCacheBytes(ByteBuffer buffer, Attachment attachment) {
-        Thread thread = attachment.get(Consts.ATTACH_KEY_CURRENT_THREAD);
+        Thread attachThread = attachment.get(Consts.ATTACH_KEY_CURRENT_THREAD);
         Thread currentThread = Thread.currentThread();
-        if (thread != currentThread) {
+        if (attachThread != currentThread) {
             attachment.put(Consts.ATTACH_KEY_CURRENT_THREAD, currentThread);
             attachment.put(Consts.ATTACH_KEY_CACHE_BYTES, BYTE_LOCAL.get());
         }
@@ -320,7 +335,22 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
         return b0[0] == b1[0];
     }
 
+
     private int scanUntil(ByteBuffer buffer, byte split, byte[] bytes) {
+        int avail = buffer.remaining();
+        for (int i = 0; i < avail; ) {
+            bytes[i] = buffer.get();
+            if (bytes[i] == split) {
+                buffer.mark();
+                return i;
+            }
+            i++;
+        }
+        buffer.reset();
+        return -1;
+    }
+
+    private int scanUntilAndTrim(ByteBuffer buffer, byte split, byte[] bytes) {
         int avail = buffer.remaining();
         for (int i = 0; i < avail; ) {
             bytes[i] = buffer.get();
@@ -335,6 +365,31 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                     i--;
                 }
                 return i;
+            }
+            i++;
+        }
+        buffer.reset();
+        return 0;
+    }
+
+    private int scanUntilAndTrim(ByteBuffer buffer, byte[] splits, byte[] bytes) {
+        int avail = buffer.remaining();
+        for (int i = 0; i < avail; ) {
+            bytes[i] = buffer.get();
+            if (i == 0 && bytes[i] == Consts.SP) {
+                avail--;
+                continue;
+            }
+            byte b = bytes[i];
+            for (byte split : splits) {
+                if (b == split) {
+                    buffer.mark();
+                    //反向去空格
+                    while (bytes[i - 1] == Consts.SP) {
+                        i--;
+                    }
+                    return i;
+                }
             }
             i++;
         }
