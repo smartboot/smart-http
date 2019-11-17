@@ -34,6 +34,12 @@ public class HttpBootstrap {
      * 服务线程数
      */
     private int threadNum = Runtime.getRuntime().availableProcessors() + 2;
+
+    private int pageSize = 1024 * 1024;
+
+    private int pageNum = threadNum;
+
+    private int chunkSize = 1024;
     private HttpMessageProcessor processor = new HttpMessageProcessor();
     /**
      * http消息解码器
@@ -91,6 +97,12 @@ public class HttpBootstrap {
         return this;
     }
 
+    public HttpBootstrap setBufferPool(int pageSize, int pageNum, int chunkSize) {
+        this.pageSize = pageSize;
+        this.pageNum = pageNum;
+        this.chunkSize = chunkSize;
+        return this;
+    }
     /**
      * 只配置keyStore则使用单向认证
      *
@@ -122,8 +134,11 @@ public class HttpBootstrap {
      */
     public void start() {
         server = new AioQuickServer<>(port, protocol, processor);
-        server.setReadBufferSize(readBufferSize);
-        server.setThreadNum(threadNum);
+        server.setReadBufferSize(readBufferSize)
+                .setThreadNum(threadNum)
+                .setBufferPoolPageSize(pageSize)
+                .setBufferPoolPageNum(pageNum)
+                .setBufferPoolChunkSize(chunkSize);
         try {
             server.start();
         } catch (IOException e) {
