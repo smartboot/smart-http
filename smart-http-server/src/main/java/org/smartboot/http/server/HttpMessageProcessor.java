@@ -7,11 +7,11 @@ import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.exception.HttpException;
 import org.smartboot.http.server.handle.HandlePipeline;
 import org.smartboot.http.server.handle.HttpHandle;
+import org.smartboot.http.utils.Attachment;
 import org.smartboot.http.utils.Consts;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.transport.AioSession;
-import org.smartboot.socket.util.Attachment;
 
 import java.io.IOException;
 

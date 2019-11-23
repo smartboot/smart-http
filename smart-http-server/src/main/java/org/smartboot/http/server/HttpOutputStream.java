@@ -14,7 +14,6 @@ import org.smartboot.http.utils.CharsetUtil;
 import org.smartboot.http.utils.Consts;
 import org.smartboot.http.utils.HeaderNameEnum;
 import org.smartboot.http.utils.HttpHeaderConstant;
-import org.smartboot.socket.util.QuickTimerTask;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -23,6 +22,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author 三刀
@@ -39,7 +42,14 @@ final class HttpOutputStream extends OutputStream {
     private static final Map<String, byte[]> CACHE_CHUNKED_AND_LENGTH = new HashMap<>();
 
     private static final byte[] CHUNKED_END_BYTES = "0\r\n\r\n".getBytes(CharsetUtil.US_ASCII);
-
+    private static final ScheduledExecutorService SCHEDULED_EXECUTOR_SERVICE = new ScheduledThreadPoolExecutor(1, new ThreadFactory() {
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread thread = new Thread(r, "flushDate");
+            thread.setDaemon(true);
+            return thread;
+        }
+    });
     private static SimpleDateFormat sdf = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
     private static Date currentDate = new Date();
     private static byte[] date;
@@ -49,7 +59,12 @@ final class HttpOutputStream extends OutputStream {
             CACHE_CONTENT_TYPE_AND_LENGTH[i] = new HashMap<>();
         }
         flushDate();
-        new ResponseDateTimer();
+        SCHEDULED_EXECUTOR_SERVICE.scheduleWithFixedDelay(new Runnable() {
+            @Override
+            public void run() {
+                HttpOutputStream.flushDate();
+            }
+        }, 900, 900, TimeUnit.MILLISECONDS);
     }
 
     private final Http11Response response;
@@ -216,18 +231,5 @@ final class HttpOutputStream extends OutputStream {
 
     public boolean isClosed() {
         return closed;
-    }
-
-    public static class ResponseDateTimer extends QuickTimerTask {
-
-        @Override
-        protected long getPeriod() {
-            return 900;
-        }
-
-        @Override
-        public void run() {
-            HttpOutputStream.flushDate();
-        }
     }
 }

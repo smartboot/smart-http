@@ -3,20 +3,20 @@ package org.smartboot.http.server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartboot.http.enums.HttpMethodEnum;
+import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.enums.State;
+import org.smartboot.http.exception.HttpException;
+import org.smartboot.http.utils.Attachment;
 import org.smartboot.http.utils.CharsetUtil;
 import org.smartboot.http.utils.Consts;
+import org.smartboot.http.utils.DelimiterFrameDecoder;
+import org.smartboot.http.utils.FixedLengthFrameDecoder;
 import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.http.utils.HttpVersion;
 import org.smartboot.http.utils.NumberUtils;
 import org.smartboot.http.utils.StringUtils;
 import org.smartboot.socket.Protocol;
-import org.smartboot.socket.extension.decoder.DelimiterFrameDecoder;
-import org.smartboot.socket.extension.decoder.FixedLengthFrameDecoder;
 import org.smartboot.socket.transport.AioSession;
-import org.smartboot.socket.util.Attachment;
-import org.smartboot.socket.util.BufferUtils;
-import org.smartboot.socket.util.DecoderException;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -112,7 +112,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                         byte[] b1 = new byte[buffer.remaining()];
                         buffer.get(b1);
                         LOGGER.info(new String(b1));
-                        throw new DecoderException("invalid method");
+                        throw new HttpException(HttpStatus.METHOD_NOT_ALLOWED);
                     }
                 case uri:
                     int uriLength = scanUntilAndTrim(buffer, SCAN_URI, cacheBytes);
@@ -157,12 +157,12 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                             request.setProtocol(HttpVersion.HTTP_2_0);
                         }
                         if (request.getProtocol() == null) {
-                            throw new DecoderException("unKnow protocol");
+                            throw new HttpException(HttpStatus.HTTP_VERSION_NOT_SUPPORTED);
                         }
                         curState = State.request_line_end;
                         buffer.position(pos + 9);
                     } else {
-                        throw new DecoderException("unsupport now");
+                        throw new HttpException(HttpStatus.HTTP_VERSION_NOT_SUPPORTED);
                     }
                 case request_line_end:
                     if (buffer.remaining() >= 2) {
@@ -192,7 +192,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                         if (valueDecoder.decode(buffer)) {
                             curState = State.head_line_LF;
                             ByteBuffer valBuffer = valueDecoder.getBuffer();
-                            BufferUtils.trim(valueDecoder.getBuffer());
+                            trim(valueDecoder.getBuffer());
                             byte[] valBytes = new byte[valBuffer.remaining()];
                             valBuffer.get(valBytes);
                             request.setHeader(request.tmpHeaderName, convertToString(valBytes, valBytes.length));
@@ -249,7 +249,8 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                             try {
                                 request.setInputStream(session.getInputStream(request.getContentLength()));
                             } catch (IOException e) {
-                                throw new DecoderException("session.getInputStream exception,", e);
+                                LOGGER.error("", e);
+                                throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR);
                             }
                             curState = State.finished;
                             break;
@@ -280,7 +281,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
         request._state = curState;
         if (buffer.remaining() == buffer.capacity()) {
             LOGGER.error("throw exception");
-            throw new DecoderException("buffer is too small when decode " + curState + " ," + request.tmpHeaderName);
+            throw new RuntimeException("buffer is too small when decode " + curState + " ," + request.tmpHeaderName);
         }
         return null;
     }
@@ -396,6 +397,30 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
         buffer.reset();
         return 0;
     }
+
+    private void trim(ByteBuffer buffer) {
+        int pos = buffer.position();
+        int limit = buffer.limit();
+
+        while (pos < limit) {
+            byte b = buffer.get(pos);
+            if (b != Consts.SP && b != Consts.CR && b != Consts.LF) {
+                break;
+            }
+            pos++;
+        }
+        buffer.position(pos);
+
+        while (pos < limit) {
+            byte b = buffer.get(limit - 1);
+            if (b != Consts.SP && b != Consts.CR && b != Consts.LF) {
+                break;
+            }
+            limit--;
+        }
+        buffer.limit(limit);
+    }
+
 
     private class StringCache {
         final byte[] bytes;

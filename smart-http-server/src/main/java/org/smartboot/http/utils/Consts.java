@@ -9,7 +9,6 @@
 package org.smartboot.http.utils;
 
 import org.smartboot.http.server.Http11Request;
-import org.smartboot.socket.util.AttachKey;
 
 import java.nio.charset.Charset;
 
