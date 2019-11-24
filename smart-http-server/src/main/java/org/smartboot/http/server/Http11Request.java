@@ -339,10 +339,19 @@ public final class Http11Request implements HttpRequest {
     public void rest() {
         _state = State.method;
         headers.clear();
+        method = null;
         tmpHeaderName = null;
         headValueDecoderEnable = false;
         if (headerValueDecoder != null) {
             headerValueDecoder.reset();
+        }
+        if (inputStream != null) {
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            inputStream = null;
         }
         _originalUri = null;
         parameters = null;

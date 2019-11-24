@@ -66,7 +66,6 @@ public class SmartHttpDemo {
                 int len = 0;
                 System.out.println(request.getContentType());
                 while ((len = in.read(buffer)) != -1) {
-                    System.out.println("aaa");
                     response.getOutputStream().write(buffer, 0, len);
                 }
                 in.close();
