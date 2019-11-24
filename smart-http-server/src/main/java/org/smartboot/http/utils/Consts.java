@@ -82,4 +82,6 @@ public interface Consts {
     AttachKey<Thread> ATTACH_KEY_CURRENT_THREAD = AttachKey.valueOf("thread");
 
     AttachKey<byte[]> ATTACH_KEY_CACHE_BYTES = AttachKey.valueOf("cacheBytes");
+
+    AttachKey<SmartDecoder> ATTACH_KEY_FIX_LENGTH_DECODER = AttachKey.valueOf("fixLengthDecoder");
 }

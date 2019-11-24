@@ -1,5 +1,6 @@
 package org.smartboot.http;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
@@ -20,7 +21,7 @@ public interface HttpRequest {
     Map<String, String> getHeaders();
 
 
-    InputStream getInputStream();
+    InputStream getInputStream() throws IOException;
 
     String getRequestURI();
 

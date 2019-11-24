@@ -13,12 +13,11 @@ import org.smartboot.http.utils.DelimiterFrameDecoder;
 import org.smartboot.http.utils.FixedLengthFrameDecoder;
 import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.http.utils.HttpVersion;
-import org.smartboot.http.utils.NumberUtils;
+import org.smartboot.http.utils.SmartDecoder;
 import org.smartboot.http.utils.StringUtils;
 import org.smartboot.socket.Protocol;
 import org.smartboot.socket.transport.AioSession;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -242,28 +241,19 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                     }
                 case head_finished:
                     //Post请求
-                    if (HttpMethodEnum.POST.getMethod().equals(request.getMethod())) {
-                        request.setContentLength(NumberUtils.toInt(request.getHeader(HttpHeaderConstant.Names.CONTENT_LENGTH), -1));
-                        //文件上传
-                        if (StringUtils.startsWith(request.getContentType(), HttpHeaderConstant.Values.MULTIPART_FORM_DATA)) {
-                            try {
-                                request.setInputStream(session.getInputStream(request.getContentLength()));
-                            } catch (IOException e) {
-                                LOGGER.error("", e);
-                                throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR);
-                            }
-                            curState = State.finished;
-                            break;
-                        } else {
-                            request.bodyContentDecoder = request.getContentLength() > 0 ? new FixedLengthFrameDecoder(request.getContentLength()) : new DelimiterFrameDecoder(Consts.CRLF, 64);
-                            curState = State.body;
-                        }
+                    if (HttpMethodEnum.POST == request.getMethodEnum()
+                            && StringUtils.startsWith(request.getContentType(), HttpHeaderConstant.Values.X_WWW_FORM_URLENCODED)) {
+                        attachment.put(Consts.ATTACH_KEY_FIX_LENGTH_DECODER, new FixedLengthFrameDecoder(request.getContentLength()));
+                        curState = State.body;
                     } else {
                         curState = State.finished;
                         break;
                     }
                 case body:
-                    if (request.bodyContentDecoder.decode(buffer)) {
+                    SmartDecoder smartDecoder = attachment.get(Consts.ATTACH_KEY_FIX_LENGTH_DECODER);
+                    if (smartDecoder.decode(buffer)) {
+                        request.setPostData(smartDecoder.getBuffer().array());
+                        attachment.remove(Consts.ATTACH_KEY_FIX_LENGTH_DECODER);
                         curState = State.finished;
                     }
                     buffer.mark();

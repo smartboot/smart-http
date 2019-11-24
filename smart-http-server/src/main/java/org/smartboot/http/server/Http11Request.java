@@ -4,12 +4,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.enums.HttpMethodEnum;
+import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.enums.State;
+import org.smartboot.http.exception.HttpException;
 import org.smartboot.http.utils.Consts;
 import org.smartboot.http.utils.DelimiterFrameDecoder;
 import org.smartboot.http.utils.EmptyInputStream;
 import org.smartboot.http.utils.HttpHeaderConstant;
-import org.smartboot.http.utils.SmartDecoder;
+import org.smartboot.http.utils.NumberUtils;
 import org.smartboot.http.utils.StringUtils;
 import org.smartboot.socket.transport.AioSession;
 
@@ -19,7 +21,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,7 +39,6 @@ public final class Http11Request implements HttpRequest {
      */
     String _originalUri;
     String tmpHeaderName;
-    SmartDecoder bodyContentDecoder;
     /**
      * Header Value解码器是否启用
      */
@@ -86,6 +86,9 @@ public final class Http11Request implements HttpRequest {
      */
     private Http11Response response;
 
+
+    private byte[] postData = null;
+
     Http11Request(AioSession<Http11Request> aioSession) {
         this.aioSession = aioSession;
         response = new Http11Response(this, aioSession.writeBuffer());
@@ -110,12 +113,18 @@ public final class Http11Request implements HttpRequest {
     }
 
     @Override
-    public InputStream getInputStream() {
-        return this.inputStream == null ? new EmptyInputStream() : this.inputStream;
-    }
-
-    void setInputStream(InputStream inputStream) {
-        this.inputStream = inputStream;
+    public InputStream getInputStream() throws IOException {
+        if (inputStream != null) {
+            return inputStream;
+        }
+        if (method != HttpMethodEnum.POST) {
+            inputStream = new EmptyInputStream();
+        } else if (postData == null) {
+            inputStream = aioSession.getInputStream(getContentLength());
+        } else {
+            throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return inputStream;
     }
 
     @Override
@@ -185,11 +194,11 @@ public final class Http11Request implements HttpRequest {
 
     @Override
     public int getContentLength() {
+        if (contentLength > -1) {
+            return contentLength;
+        }
+        contentLength = NumberUtils.toInt(getHeader(HttpHeaderConstant.Names.CONTENT_LENGTH), -1);
         return contentLength;
-    }
-
-    void setContentLength(int contentLength) {
-        this.contentLength = contentLength;
     }
 
     @Override
@@ -210,17 +219,21 @@ public final class Http11Request implements HttpRequest {
             urlParamStr = StringUtils.substringBefore(urlParamStr, "#");
             decodeParamString(urlParamStr, parameters);
         }
-
         //识别body中的参数
-        if (bodyContentDecoder == null) {
-            return getParameterValues(name);
-        }
-        ByteBuffer buffer = bodyContentDecoder.getBuffer();
-        byte[] bytes = new byte[buffer.remaining()];
-        buffer.get(bytes);
-        decodeParamString(new String(bytes), parameters);
+        parsePostParameters();
         return getParameterValues(name);
     }
+
+    public void setPostData(byte[] postData) {
+        this.postData = postData;
+    }
+
+    private void parsePostParameters() {
+        if (postData != null && postData.length > 0) {
+            decodeParamString(new String(postData), parameters);
+        }
+    }
+
 
     @Override
     public Map<String, String[]> getParameters() {
@@ -331,7 +344,6 @@ public final class Http11Request implements HttpRequest {
         if (headerValueDecoder != null) {
             headerValueDecoder.reset();
         }
-        bodyContentDecoder = null;
         _originalUri = null;
         parameters = null;
         contentType = null;

@@ -96,6 +96,8 @@ public class HttpHeaderConstant {
 
         String MULTIPART_FORM_DATA = "multipart/form-data";
 
+        String X_WWW_FORM_URLENCODED="application/x-www-form-urlencoded";
+
         String UPGRADE = "Upgrade";
 
         String WEBSOCKET = "websocket";
