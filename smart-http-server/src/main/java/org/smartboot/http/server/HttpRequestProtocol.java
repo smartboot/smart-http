@@ -243,6 +243,12 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                     //Post请求
                     if (HttpMethodEnum.POST == request.getMethodEnum()
                             && StringUtils.startsWith(request.getContentType(), HttpHeaderConstant.Values.X_WWW_FORM_URLENCODED)) {
+                        int postLength = request.getContentLength();
+                        if (postLength > Consts.maxPostSize) {
+                            throw new HttpException(HttpStatus.PAYLOAD_TOO_LARGE);
+                        } else if (postLength <= 0) {
+                            throw new HttpException(HttpStatus.LENGTH_REQUIRED);
+                        }
                         attachment.put(Consts.ATTACH_KEY_FIX_LENGTH_DECODER, new FixedLengthFrameDecoder(request.getContentLength()));
                         curState = State.body;
                     } else {

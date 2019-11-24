@@ -58,6 +58,19 @@ public class SmartHttpDemo {
                 }
                 in.close();
             }
+        }).route("/post_json", new HttpHandle() {
+            @Override
+            public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
+                InputStream in = request.getInputStream();
+                byte[] buffer = new byte[1024];
+                int len = 0;
+                System.out.println(request.getContentType());
+                while ((len = in.read(buffer)) != -1) {
+                    System.out.println("aaa");
+                    response.getOutputStream().write(buffer, 0, len);
+                }
+                in.close();
+            }
         }).route("/plaintext", new HttpHandle() {
             byte[] body = "Hello World!".getBytes();
 

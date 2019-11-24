@@ -13,6 +13,10 @@ import org.smartboot.http.server.Http11Request;
 import java.nio.charset.Charset;
 
 public interface Consts {
+    /**
+     * Post 最大长度
+     */
+    int maxPostSize = 2 * 1024 * 1024;
 
     String SCHEMA_HTTP = "http";
     String SCHEMA_HTTPS = "https";
