@@ -1,4 +1,4 @@
-package org.smartboot.http.server.test;
+package org.smartboot.http.example;
 
 import org.smartboot.http.HttpBootstrap;
 import org.smartboot.http.server.handle.StaticResourceHandle;
@@ -11,7 +11,7 @@ import org.smartboot.http.server.handle.StaticResourceHandle;
  */
 public class FileSmartHttp {
     public static void main(String[] args) {
-        String webdir = System.getProperty("user.dir") + "/smart-http-server/webapps";
+        String webdir = System.getProperty("user.dir") + "/example/webapps";
         HttpBootstrap bootstrap = new HttpBootstrap();
         //配置HTTP消息处理管道
         bootstrap.pipeline().next(new StaticResourceHandle(webdir));

@@ -1,4 +1,4 @@
-package org.smartboot.http.fileupload;
+package org.smartboot.http.example.fileupload;
 
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileUpload;

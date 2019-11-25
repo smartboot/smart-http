@@ -1,4 +1,4 @@
-package org.smartboot.http.server.test;
+package org.smartboot.http.example;
 
 import org.smartboot.http.HttpBootstrap;
 import org.smartboot.http.HttpRequest;

@@ -10,11 +10,7 @@
 
     <properties>
         <smartsocket.version>1.4.6.rc-4</smartsocket.version>
-        <!--<smartsocket.version>1.4.4</smartsocket.version>-->
         <smarthttp.version>1.0.12.rc-1</smarthttp.version>
-        <log4j.version>2.11.0</log4j.version>
-        <commons.fileupload.version>1.4</commons.fileupload.version>
-
     </properties>
 
     <dependencyManagement>
@@ -28,29 +24,6 @@
                 <groupId>org.smartboot.http</groupId>
                 <artifactId>smart-http-server</artifactId>
                 <version>${smarthttp.version}</version>
-            </dependency>
-            <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j-impl -->
-            <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-slf4j-impl</artifactId>
-                <version>${log4j.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-api</artifactId>
-                <version>${log4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-core</artifactId>
-                <version>${log4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>commons-fileupload</groupId>
-                <artifactId>commons-fileupload</artifactId>
-                <scope>provided</scope>
-                <version>${commons.fileupload.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -240,7 +213,5 @@
     </pluginRepositories>
     <modules>
         <module>smart-http-server</module>
-        <!--<module>smart-http-client</module>-->
-        <!--<module>smart-http-common</module>-->
     </modules>
 </project>
