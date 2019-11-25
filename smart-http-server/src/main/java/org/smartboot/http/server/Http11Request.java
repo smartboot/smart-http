@@ -295,6 +295,11 @@ public final class Http11Request implements HttpRequest {
         return remoteHost;
     }
 
+    @Override
+    public String getCharacterEncoding() {
+        return "utf8";
+    }
+
     private void decodeParamString(String paramStr, Map<String, String[]> paramMap) {
         if (StringUtils.isBlank(paramStr)) {
             return;

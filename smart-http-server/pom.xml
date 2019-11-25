@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.smartboot.http</groupId>
         <artifactId>smart-http-parent</artifactId>
-        <version>1.0.11</version>
+        <version>1.0.12.rc-1</version>
     </parent>
     <artifactId>smart-http-server</artifactId>
     <dependencies>
@@ -27,6 +27,11 @@
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>commons-fileupload</groupId>
+            <artifactId>commons-fileupload</artifactId>
             <optional>true</optional>
         </dependency>
     </dependencies>

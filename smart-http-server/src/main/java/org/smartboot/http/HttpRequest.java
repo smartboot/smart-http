@@ -76,4 +76,6 @@ public interface HttpRequest {
      * qualified name of the client
      */
     String getRemoteHost();
+
+    String getCharacterEncoding();
 }

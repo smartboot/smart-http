@@ -5,14 +5,16 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.smartboot.http</groupId>
     <artifactId>smart-http-parent</artifactId>
-    <version>1.0.11</version>
+    <version>1.0.12.rc-1</version>
     <packaging>pom</packaging>
 
     <properties>
-        <smartsocket.version>1.4.6.rc-3</smartsocket.version>
+        <smartsocket.version>1.4.6.rc-4</smartsocket.version>
         <!--<smartsocket.version>1.4.4</smartsocket.version>-->
-        <smarthttp.version>1.0.11</smarthttp.version>
+        <smarthttp.version>1.0.12.rc-1</smarthttp.version>
         <log4j.version>2.11.0</log4j.version>
+        <commons.fileupload.version>1.4</commons.fileupload.version>
+
     </properties>
 
     <dependencyManagement>
@@ -43,6 +45,12 @@
                 <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-core</artifactId>
                 <version>${log4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-fileupload</groupId>
+                <artifactId>commons-fileupload</artifactId>
+                <scope>provided</scope>
+                <version>${commons.fileupload.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
