@@ -31,12 +31,7 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
     public void process(AioSession<Http11Request> session, Http11Request request) {
         try {
             Http11Response httpResponse = request.getResponse();
-//            boolean isKeepAlive = StringUtils.equalsIgnoreCase(HttpHeaderConstant.Values.KEEPALIVE, request.getHeader(HttpHeaderConstant.Names.CONNECTION));
             try {
-                //用ab进行测试时需要带上该响应
-//                if (isKeepAlive) {
-//                    httpResponse.setHeader(HttpHeaderConstant.Names.CONNECTION, HttpHeaderConstant.Values.KEEPALIVE);
-//                }
                 pipeline.doHandle(request, httpResponse);
             } catch (HttpException e) {
                 e.printStackTrace();
@@ -47,17 +42,9 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
                 httpResponse.setHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR);
                 httpResponse.getOutputStream().write(e.fillInStackTrace().toString().getBytes());
             }
-//
             if (!httpResponse.isClosed()) {
                 httpResponse.getOutputStream().close();
             }
-
-
-//
-//            if (!isKeepAlive || httpResponse.getHttpStatus() != HttpStatus.OK) {
-//                LOGGER.info("will close session");
-//                session.close(false);
-//            }
         } catch (IOException e) {
             LOGGER.error("IO Exception", e);
         }
