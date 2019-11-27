@@ -359,6 +359,7 @@ public final class Http11Request implements HttpRequest {
             inputStream = null;
         }
         _originalUri = null;
+        requestUrl = null;
         parameters = null;
         contentType = null;
         contentLength = -1;
