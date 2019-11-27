@@ -76,6 +76,7 @@ public class SmartHttpDemo {
             @Override
             public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
                 response.setContentLength(body.length);
+                response.setContentType("text/plain; charset=UTF-8");
                 response.write(body);
             }
         }).route("/head", new HttpHandle() {

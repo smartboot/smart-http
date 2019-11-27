@@ -66,7 +66,8 @@ public class RFC2612RequestHandle extends HttpHandle {
      * @param request
      */
     private void uriCheck(Http11Request request) {
-        if (StringUtils.length(request.getRequestURI()) > MAX_LENGTH) {
+        String originalUri = request._originalUri;
+        if (StringUtils.length(originalUri) > MAX_LENGTH) {
             throw new HttpException(HttpStatus.URI_TOO_LONG);
         }
         /**
@@ -75,7 +76,6 @@ public class RFC2612RequestHandle extends HttpHandle {
          *2. 假如 Request-URI 不是绝对地址(absoluteURI)，并且请求包括一个 Host 头域，则主 机(host)由该 Host 头域的值决定.
          *3. 假如由规则1或规则2定义的主机(host)对服务器来说是一个无效的主机(host)， 则应当以一个 400(坏请求)错误消息返回。
          */
-        String originalUri = request._originalUri;
         if (originalUri.charAt(0) == '/') {
             request.setRequestURI(originalUri);
             return;

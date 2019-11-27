@@ -21,7 +21,7 @@ import java.io.IOException;
  */
 public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpMessageProcessor.class);
-    private HandlePipeline pipeline = new HandlePipeline();
+    private final HandlePipeline pipeline = new HandlePipeline();
 
     public HttpMessageProcessor() {
         pipeline.next(new RFC2612RequestHandle());
