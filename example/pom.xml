@@ -10,7 +10,7 @@
 
     <properties>
         <!--<smartsocket.version>1.4.4</smartsocket.version>-->
-        <smarthttp.version>1.0.12.rc-2</smarthttp.version>
+        <smarthttp.version>1.0.12</smarthttp.version>
         <log4j.version>2.11.0</log4j.version>
         <commons.fileupload.version>1.4</commons.fileupload.version>
     </properties>

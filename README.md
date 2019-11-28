@@ -1,5 +1,5 @@
 # smart-http
-smart-http 是一款比较简易的 http服务器，其通信内核采用了[**smart-socket**](https://gitee.com/smartboot/smart-socket)最新版`v1.4.4`。
+smart-http 是一款比较简易的 http服务器，其通信内核采用了[**smart-socket**](https://gitee.com/smartboot/smart-socket)最新版`v1.4.6`。
 
 也正因使用了 smart-socket，该服务器的性能表现还是非常不错的，在本人的4核CPU下能跑出73W+的 qps。
 
@@ -20,7 +20,7 @@ smart-socket 的每次性能测试都是基于该服务器进行的，相信 sma
     <dependency>
         <groupId>org.smartboot.http</groupId>
         <artifactId>smart-http-server</artifactId>
-        <version>1.0.12.rc-2</version>
+        <version>1.0.12</version>
     </dependency>
     ```
 2. 拷贝以下代码并启动。
