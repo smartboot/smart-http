@@ -138,12 +138,14 @@ final class HttpOutputStream extends OutputStream {
         outputStream.write(getHeadPart(response.getHttpStatus(), contentType, response.getContentLength()));
 
         //输出Header部分
-        for (Map.Entry<String, HeaderValue> entry : response.getHeaders().entrySet()) {
-            HeaderValue headerValue = entry.getValue();
-            while (headerValue != null) {
-                outputStream.write(getHeaderNameBytes(entry.getKey()));
-                outputStream.write(getBytes(headerValue.getValue()));
-                headerValue = headerValue.getNextValue();
+        if (response.getHeaders() != null) {
+            for (Map.Entry<String, HeaderValue> entry : response.getHeaders().entrySet()) {
+                HeaderValue headerValue = entry.getValue();
+                while (headerValue != null) {
+                    outputStream.write(getHeaderNameBytes(entry.getKey()));
+                    outputStream.write(getBytes(headerValue.getValue()));
+                    headerValue = headerValue.getNextValue();
+                }
             }
         }
 

@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +34,7 @@ class Http11Response implements HttpResponse {
     /**
      * 响应消息头
      */
-    private Map<String, HeaderValue> headers = new HashMap<>();
+    private Map<String, HeaderValue> headers = null;
     /**
      * http响应码
      */
@@ -55,7 +56,9 @@ class Http11Response implements HttpResponse {
 
 
     public void reset() {
-        headers.clear();
+        if (headers != null) {
+            headers.clear();
+        }
         httpStatus = null;
         contentType = null;
         contentLength = -1;
@@ -97,6 +100,9 @@ class Http11Response implements HttpResponse {
                 return;
         }
 
+        if (headers == null) {
+            headers = new HashMap<>();
+        }
         if (replace) {
             headers.put(name, new HeaderValue(value));
             return;
@@ -134,7 +140,10 @@ class Http11Response implements HttpResponse {
 
     @Override
     public String getHeader(String name) {
-        HeaderValue headerValue = headers.get(name);
+        HeaderValue headerValue = null;
+        if (headers != null) {
+            headerValue = headers.get(name);
+        }
         return headerValue == null ? null : headerValue.getValue();
     }
 
@@ -144,8 +153,11 @@ class Http11Response implements HttpResponse {
 
     @Override
     public Collection<String> getHeaders(String name) {
-        HeaderValue headerValue = headers.get(name);
+        if (headers == null) {
+            return Collections.emptyList();
+        }
         Vector<String> result = new Vector<>();
+        HeaderValue headerValue = headers.get(name);
         while (headerValue != null) {
             result.addElement(headerValue.getValue());
             headerValue = headerValue.getNextValue();
@@ -155,6 +167,9 @@ class Http11Response implements HttpResponse {
 
     @Override
     public Collection<String> getHeaderNames() {
+        if (headers == null) {
+            return Collections.emptyList();
+        }
         List<String> result = new ArrayList<>(headers.size());
         for (String key : headers.keySet()) {
             result.add(key);
