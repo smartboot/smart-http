@@ -13,8 +13,12 @@ import org.smartboot.http.enums.HttpStatus;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 
 /**
  * @author 三刀
@@ -29,7 +33,7 @@ class Http11Response implements HttpResponse {
     /**
      * 响应消息头
      */
-    private Map<String, String> headers = new HashMap<>();
+    private Map<String, HeaderValue> headers = new HashMap<>();
     /**
      * http响应码
      */
@@ -73,18 +77,91 @@ class Http11Response implements HttpResponse {
 
     @Override
     public void setHeader(String name, String value) {
-        headers.put(name, value);
+        setHeader(name, value, true);
+    }
+
+    @Override
+    public void addHeader(String name, String value) {
+        setHeader(name, value, false);
+    }
+
+    /**
+     * @param name    header name
+     * @param value   header value
+     * @param replace true:replace,false:append
+     */
+    private void setHeader(String name, String value, boolean replace) {
+        char cc = name.charAt(0);
+        if (cc == 'C' || cc == 'c') {
+            if (checkSpecialHeader(name, value))
+                return;
+        }
+
+        if (replace) {
+            headers.put(name, new HeaderValue(value));
+            return;
+        }
+
+        HeaderValue headerValue = headers.get(name);
+        if (headerValue == null) {
+            setHeader(name, value, true);
+            return;
+        }
+        HeaderValue preHeaderValue = null;
+        while (headerValue != null && !headerValue.getValue().equals(value)) {
+            preHeaderValue = headerValue;
+            headerValue = headerValue.getNextValue();
+        }
+        if (headerValue == null) {
+            preHeaderValue.setNextValue(new HeaderValue(value));
+        }
+    }
+
+    /**
+     * 部分header需要特殊处理
+     *
+     * @param name
+     * @param value
+     * @return
+     */
+    private boolean checkSpecialHeader(String name, String value) {
+        if (name.equalsIgnoreCase("Content-Type")) {
+            setContentType(value);
+            return true;
+        }
+        return false;
     }
 
     @Override
     public String getHeader(String name) {
-        return headers.get(name);
+        HeaderValue headerValue = headers.get(name);
+        return headerValue == null ? null : headerValue.getValue();
+    }
+
+    Map<String, HeaderValue> getHeaders() {
+        return headers;
     }
 
     @Override
-    public Map<String, String> getHeaders() {
-        return headers;
+    public Collection<String> getHeaders(String name) {
+        HeaderValue headerValue = headers.get(name);
+        Vector<String> result = new Vector<>();
+        while (headerValue != null) {
+            result.addElement(headerValue.getValue());
+            headerValue = headerValue.getNextValue();
+        }
+        return result;
     }
+
+    @Override
+    public Collection<String> getHeaderNames() {
+        List<String> result = new ArrayList<>(headers.size());
+        for (String key : headers.keySet()) {
+            result.add(key);
+        }
+        return result;
+    }
+
 
     public void write(byte[] buffer) throws IOException {
         outputStream.write(buffer);
