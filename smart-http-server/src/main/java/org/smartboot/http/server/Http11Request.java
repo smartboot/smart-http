@@ -34,7 +34,7 @@ import java.util.Set;
  * @author 三刀
  * @version V1.0 , 2018/8/31
  */
-final class Http11Request implements HttpRequest {
+public final class Http11Request implements HttpRequest {
     private static final Logger LOGGER = LoggerFactory.getLogger(Http11Request.class);
     /**
      * 解码状态
@@ -100,7 +100,7 @@ final class Http11Request implements HttpRequest {
         response = new Http11Response(this, aioSession.writeBuffer());
     }
 
-    public Http11Response getResponse() {
+    Http11Response getResponse() {
         return response;
     }
 
@@ -135,7 +135,7 @@ final class Http11Request implements HttpRequest {
     }
 
 
-    public void setHeader(String headerName, String value) {
+    void setHeader(String headerName, String value) {
         headers.add(new HeaderValue(headerName, value));
     }
 
@@ -159,7 +159,7 @@ final class Http11Request implements HttpRequest {
         return requestUri;
     }
 
-    public void setRequestURI(String uri) {
+    void setRequestURI(String uri) {
         this.requestUri = uri;
     }
 
@@ -168,7 +168,7 @@ final class Http11Request implements HttpRequest {
         return protocol;
     }
 
-    public void setProtocol(String protocol) {
+    void setProtocol(String protocol) {
         this.protocol = protocol;
     }
 
@@ -202,7 +202,7 @@ final class Http11Request implements HttpRequest {
         return scheme;
     }
 
-    public void setScheme(String scheme) {
+    void setScheme(String scheme) {
         this.scheme = scheme;
     }
 
@@ -255,7 +255,7 @@ final class Http11Request implements HttpRequest {
         return getParameterValues(name);
     }
 
-    public void setPostData(byte[] postData) {
+    void setPostData(byte[] postData) {
         this.postData = postData;
     }
 
@@ -372,7 +372,7 @@ final class Http11Request implements HttpRequest {
         return headerValueDecoder;
     }
 
-    public void rest() {
+    void rest() {
         _state = State.method;
         headers.clear();
         method = null;
