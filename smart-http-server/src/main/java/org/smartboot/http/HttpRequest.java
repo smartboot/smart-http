@@ -2,6 +2,7 @@ package org.smartboot.http;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -18,8 +19,10 @@ public interface HttpRequest {
      */
     String getHeader(String headName);
 
-    Map<String, String> getHeaders();
 
+    public Collection<String> getHeaders(String name);
+
+    Collection<String> getHeaderNames();
 
     InputStream getInputStream() throws IOException;
 

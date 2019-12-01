@@ -8,6 +8,10 @@ package org.smartboot.http.server;
  */
 class HeaderValue {
     /**
+     * name
+     */
+    private String name;
+    /**
      * Value 值
      */
     private String value;
@@ -16,7 +20,8 @@ class HeaderValue {
      */
     private HeaderValue nextValue;
 
-    public HeaderValue(String value) {
+    public HeaderValue(String name, String value) {
+        this.name = name;
         this.value = value;
     }
 
@@ -24,8 +29,8 @@ class HeaderValue {
         return value;
     }
 
-    public void setValue(String value) {
-        this.value = value;
+    public String getName() {
+        return name;
     }
 
     public HeaderValue getNextValue() {

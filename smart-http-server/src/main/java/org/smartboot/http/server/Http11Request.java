@@ -22,8 +22,14 @@ import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author 三刀
@@ -31,6 +37,7 @@ import java.util.Map;
  */
 public final class Http11Request implements HttpRequest {
     private static final Logger LOGGER = LoggerFactory.getLogger(Http11Request.class);
+    private static final String LOWER_CONTENT_TYE = HttpHeaderConstant.Names.CONTENT_TYPE.toLowerCase();
     /**
      * 解码状态
      */
@@ -47,7 +54,7 @@ public final class Http11Request implements HttpRequest {
     /**
      * Http请求头
      */
-    private Map<String, String> headers = new HashMap<>();
+    private Map<String, HeaderValue> headers = new HashMap<>();
     /**
      * 请求方法
      */
@@ -101,16 +108,55 @@ public final class Http11Request implements HttpRequest {
 
     @Override
     public String getHeader(String headName) {
-        return headers.get(headName);
-    }
-
-    public void setHeader(String headerName, String value) {
-        headers.put(headerName, value);
+        HeaderValue headerValue = headers.get(headName.toLowerCase());
+        return headerValue == null ? null : headerValue.getValue();
     }
 
     @Override
-    public Map<String, String> getHeaders() {
-        return headers;
+    public Collection<String> getHeaders(String name) {
+        HeaderValue headerValue = headers.get(getHeaderName(name));
+        if (headerValue == null) {
+            return Collections.emptyList();
+        }
+        if (headerValue.getNextValue() == null) {
+            return Arrays.asList(headerValue.getValue());
+        }
+        LinkedList<String> value = new LinkedList<>();
+        do {
+            value.add(headerValue.getValue());
+        } while ((headerValue = headerValue.getNextValue()) != null);
+        return value;
+    }
+
+    @Override
+    public Collection<String> getHeaderNames() {
+        if (headers.isEmpty()) {
+            return Collections.emptyList();
+        }
+        Set<String> nameSet = new HashSet<>();
+        for (HeaderValue headerValue : headers.values()) {
+            do {
+                nameSet.add(headerValue.getName());
+            } while ((headerValue = headerValue.getNextValue()) != null);
+        }
+        return nameSet;
+    }
+
+    private String getHeaderName(String name) {
+        return name.toLowerCase();
+    }
+
+    public void setHeader(String headerName, String value) {
+        String lowerName = headerName.toLowerCase();
+        if (contentType == null && LOWER_CONTENT_TYE.equals(lowerName)) {
+            contentType = value;
+        }
+        HeaderValue newHeader = new HeaderValue(headerName, value);
+        HeaderValue oldHeaderValue = headers.get(lowerName);
+        if (oldHeaderValue != null) {
+            newHeader.setNextValue(oldHeaderValue);
+        }
+        headers.put(lowerName, newHeader);
     }
 
     @Override
@@ -190,7 +236,7 @@ public final class Http11Request implements HttpRequest {
 
     @Override
     public String getContentType() {
-        return contentType == null ? contentType = headers.get(HttpHeaderConstant.Names.CONTENT_TYPE) : contentType;
+        return contentType;
     }
 
     @Override

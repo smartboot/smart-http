@@ -104,7 +104,7 @@ class Http11Response implements HttpResponse {
             headers = new HashMap<>();
         }
         if (replace) {
-            headers.put(name, new HeaderValue(value));
+            headers.put(name, new HeaderValue(null, value));
             return;
         }
 
@@ -119,7 +119,7 @@ class Http11Response implements HttpResponse {
             headerValue = headerValue.getNextValue();
         }
         if (headerValue == null) {
-            preHeaderValue.setNextValue(new HeaderValue(value));
+            preHeaderValue.setNextValue(new HeaderValue(null, value));
         }
     }
 
