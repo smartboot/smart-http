@@ -23,12 +23,9 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -119,52 +116,27 @@ final class Http11Request implements HttpRequest {
 
     @Override
     public Collection<String> getHeaders(String name) {
-        HeaderValue headerVal = null;
+        List<String> value = new ArrayList<>(4);
         for (HeaderValue headerValue : headers) {
             if (headerValue.getName().equalsIgnoreCase(name)) {
-                headerVal = headerValue;
-                break;
+                value.add(headerValue.getValue());
             }
         }
-        if (headerVal == null) {
-            return Collections.emptyList();
-        }
-        if (headerVal.getNextValue() == null) {
-            return Arrays.asList(headerVal.getValue());
-        }
-        LinkedList<String> value = new LinkedList<>();
-        do {
-            value.add(headerVal.getValue());
-        } while ((headerVal = headerVal.getNextValue()) != null);
         return value;
     }
 
     @Override
     public Collection<String> getHeaderNames() {
-        if (headers.isEmpty()) {
-            return Collections.emptyList();
-        }
         Set<String> nameSet = new HashSet<>();
         for (HeaderValue headerValue : headers) {
-            do {
-                nameSet.add(headerValue.getName());
-            } while ((headerValue = headerValue.getNextValue()) != null);
+            nameSet.add(headerValue.getName());
         }
         return nameSet;
     }
 
 
     public void setHeader(String headerName, String value) {
-        HeaderValue newHeader = new HeaderValue(headerName, value);
-        for (HeaderValue firstHeaderValue : headers) {
-            if (firstHeaderValue.getName().equalsIgnoreCase(headerName)) {
-                firstHeaderValue.getLastValue().setNextValue(newHeader);
-                firstHeaderValue.setLastValue(newHeader);
-                return;
-            }
-        }
-        newHeader.setLastValue(newHeader);
-        headers.add(newHeader);
+        headers.add(new HeaderValue(headerName, value));
     }
 
     @Override
