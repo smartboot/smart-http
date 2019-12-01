@@ -3,6 +3,7 @@ package org.smartboot.http.server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartboot.http.Pipeline;
+import org.smartboot.http.enums.HttpMethodEnum;
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.exception.HttpException;
 import org.smartboot.http.server.handle.HandlePipeline;
@@ -45,10 +46,17 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
             if (!httpResponse.isClosed()) {
                 httpResponse.getOutputStream().close();
             }
+            //Post请求没有读完Body，关闭通道
+            if (request.getMethodEnum() == HttpMethodEnum.POST && request.getInputStream().available() > 0) {
+                session.close(false);
+            } else {
+                request.rest();
+            }
         } catch (IOException e) {
             LOGGER.error("IO Exception", e);
         }
-        request.rest();
+
+
     }
 
     @Override

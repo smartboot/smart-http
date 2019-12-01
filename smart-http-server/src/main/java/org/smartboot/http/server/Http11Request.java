@@ -12,6 +12,7 @@ import org.smartboot.http.utils.DelimiterFrameDecoder;
 import org.smartboot.http.utils.EmptyInputStream;
 import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.http.utils.NumberUtils;
+import org.smartboot.http.utils.PostInputStream;
 import org.smartboot.http.utils.StringUtils;
 import org.smartboot.socket.transport.AioSession;
 
@@ -120,7 +121,7 @@ public final class Http11Request implements HttpRequest {
         if (method != HttpMethodEnum.POST) {
             inputStream = new EmptyInputStream();
         } else if (postData == null) {
-            inputStream = aioSession.getInputStream(getContentLength());
+            inputStream = new PostInputStream(aioSession.getInputStream(getContentLength()), getContentLength());
         } else {
             throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR);
         }
