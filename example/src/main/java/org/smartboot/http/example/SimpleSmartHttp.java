@@ -20,7 +20,6 @@ public class SimpleSmartHttp {
             @Override
             public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
                 response.write("hello world<br/>".getBytes());
-                response.write((request.getRemoteAddr() + " " + request.getRemoteHost()).getBytes());
             }
         });
         bootstrap.setPort(8080).start();

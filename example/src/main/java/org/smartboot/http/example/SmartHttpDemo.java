@@ -8,6 +8,7 @@ import org.smartboot.http.server.handle.RouteHandle;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 
 /**
  * 打开浏览器请求：http://127.0.0.0:8080/
@@ -82,7 +83,12 @@ public class SmartHttpDemo {
         }).route("/head", new HttpHandle() {
             @Override
             public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
-                System.out.println(request.getMethod());
+                response.addHeader("a", "b");
+                response.addHeader("a", "c");
+                Collection<String> headNames = request.getHeaderNames();
+                for (String headerName : headNames) {
+                    response.write((headerName + ": " + request.getHeaders(headerName) + "</br>").getBytes());
+                }
             }
         });
 
