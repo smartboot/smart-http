@@ -20,6 +20,8 @@ class HeaderValue {
      */
     private HeaderValue nextValue;
 
+    private HeaderValue lastValue;
+
     public HeaderValue(String name, String value) {
         this.name = name;
         this.value = value;
@@ -31,6 +33,14 @@ class HeaderValue {
 
     public String getName() {
         return name;
+    }
+
+    public HeaderValue getLastValue() {
+        return lastValue;
+    }
+
+    public void setLastValue(HeaderValue lastValue) {
+        this.lastValue = lastValue;
     }
 
     public HeaderValue getNextValue() {

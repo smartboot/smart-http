@@ -22,12 +22,14 @@ import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -54,7 +56,7 @@ public final class Http11Request implements HttpRequest {
     /**
      * Http请求头
      */
-    private Map<String, HeaderValue> headers = new HashMap<>();
+    private List<HeaderValue> headers = new ArrayList<>();
     /**
      * 请求方法
      */
@@ -108,23 +110,33 @@ public final class Http11Request implements HttpRequest {
 
     @Override
     public String getHeader(String headName) {
-        HeaderValue headerValue = headers.get(headName.toLowerCase());
-        return headerValue == null ? null : headerValue.getValue();
+        for (HeaderValue headerValue : headers) {
+            if (headerValue.getName().equalsIgnoreCase(headName)) {
+                return headerValue.getValue();
+            }
+        }
+        return null;
     }
 
     @Override
     public Collection<String> getHeaders(String name) {
-        HeaderValue headerValue = headers.get(getHeaderName(name));
-        if (headerValue == null) {
+        HeaderValue headerVal = null;
+        for (HeaderValue headerValue : headers) {
+            if (headerValue.getName().equalsIgnoreCase(name)) {
+                headerVal = headerValue;
+                break;
+            }
+        }
+        if (headerVal == null) {
             return Collections.emptyList();
         }
-        if (headerValue.getNextValue() == null) {
-            return Arrays.asList(headerValue.getValue());
+        if (headerVal.getNextValue() == null) {
+            return Arrays.asList(headerVal.getValue());
         }
         LinkedList<String> value = new LinkedList<>();
         do {
-            value.add(headerValue.getValue());
-        } while ((headerValue = headerValue.getNextValue()) != null);
+            value.add(headerVal.getValue());
+        } while ((headerVal = headerVal.getNextValue()) != null);
         return value;
     }
 
@@ -134,7 +146,7 @@ public final class Http11Request implements HttpRequest {
             return Collections.emptyList();
         }
         Set<String> nameSet = new HashSet<>();
-        for (HeaderValue headerValue : headers.values()) {
+        for (HeaderValue headerValue : headers) {
             do {
                 nameSet.add(headerValue.getName());
             } while ((headerValue = headerValue.getNextValue()) != null);
@@ -142,21 +154,18 @@ public final class Http11Request implements HttpRequest {
         return nameSet;
     }
 
-    private String getHeaderName(String name) {
-        return name.toLowerCase();
-    }
 
     public void setHeader(String headerName, String value) {
-        String lowerName = headerName.toLowerCase();
-        if (contentType == null && LOWER_CONTENT_TYE.equals(lowerName)) {
-            contentType = value;
-        }
         HeaderValue newHeader = new HeaderValue(headerName, value);
-        HeaderValue oldHeaderValue = headers.get(lowerName);
-        if (oldHeaderValue != null) {
-            newHeader.setNextValue(oldHeaderValue);
+        for (HeaderValue firstHeaderValue : headers) {
+            if (firstHeaderValue.getName().equalsIgnoreCase(headerName)) {
+                firstHeaderValue.getLastValue().setNextValue(newHeader);
+                firstHeaderValue.setLastValue(newHeader);
+                return;
+            }
         }
-        headers.put(lowerName, newHeader);
+        newHeader.setLastValue(newHeader);
+        headers.add(newHeader);
     }
 
     @Override
@@ -236,6 +245,10 @@ public final class Http11Request implements HttpRequest {
 
     @Override
     public String getContentType() {
+        if (contentType != null) {
+            return contentType;
+        }
+        contentType = getHeader(HttpHeaderConstant.Names.CONTENT_TYPE);
         return contentType;
     }
 
