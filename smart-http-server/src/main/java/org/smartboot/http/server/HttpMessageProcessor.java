@@ -9,7 +9,6 @@ import org.smartboot.http.exception.HttpException;
 import org.smartboot.http.server.handle.HandlePipeline;
 import org.smartboot.http.server.handle.HttpHandle;
 import org.smartboot.http.utils.Attachment;
-import org.smartboot.http.utils.Consts;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.transport.AioSession;
@@ -64,7 +63,7 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
         switch (stateMachineEnum) {
             case NEW_SESSION:
                 Attachment attachment = new Attachment();
-                attachment.put(Consts.ATTACH_KEY_REQUEST, new Http11Request(session));
+                attachment.put(HttpRequestProtocol.ATTACH_KEY_REQUEST, new Http11Request(session));
                 session.setAttachment(attachment);
                 break;
             case PROCESS_EXCEPTION:

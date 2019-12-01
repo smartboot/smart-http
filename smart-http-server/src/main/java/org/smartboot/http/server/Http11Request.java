@@ -37,9 +37,8 @@ import java.util.Set;
  * @author 三刀
  * @version V1.0 , 2018/8/31
  */
-public final class Http11Request implements HttpRequest {
+final class Http11Request implements HttpRequest {
     private static final Logger LOGGER = LoggerFactory.getLogger(Http11Request.class);
-    private static final String LOWER_CONTENT_TYE = HttpHeaderConstant.Names.CONTENT_TYPE.toLowerCase();
     /**
      * 解码状态
      */

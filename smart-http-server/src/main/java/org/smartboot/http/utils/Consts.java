@@ -8,8 +8,6 @@
 
 package org.smartboot.http.utils;
 
-import org.smartboot.http.server.Http11Request;
-
 import java.nio.charset.Charset;
 
 public interface Consts {
@@ -80,8 +78,6 @@ public interface Consts {
     byte[] COLON_ARRAY = {COLON};
 
     byte[] SP_ARRAY = {SP};
-
-    AttachKey<Http11Request> ATTACH_KEY_REQUEST = AttachKey.valueOf("request");
 
     AttachKey<Thread> ATTACH_KEY_CURRENT_THREAD = AttachKey.valueOf("thread");
 

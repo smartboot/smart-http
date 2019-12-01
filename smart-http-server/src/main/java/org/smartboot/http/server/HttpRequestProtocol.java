@@ -6,6 +6,7 @@ import org.smartboot.http.enums.HttpMethodEnum;
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.enums.State;
 import org.smartboot.http.exception.HttpException;
+import org.smartboot.http.utils.AttachKey;
 import org.smartboot.http.utils.Attachment;
 import org.smartboot.http.utils.CharsetUtil;
 import org.smartboot.http.utils.Consts;
@@ -28,6 +29,7 @@ import java.util.List;
  */
 public class HttpRequestProtocol implements Protocol<Http11Request> {
 
+    static final AttachKey<Http11Request> ATTACH_KEY_REQUEST = AttachKey.valueOf("request");
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpRequestProtocol.class);
     private static final ThreadLocal<byte[]> BYTE_LOCAL = new ThreadLocal<byte[]>() {
         @Override
@@ -47,7 +49,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
     @Override
     public Http11Request decode(ByteBuffer buffer, AioSession<Http11Request> session) {
         Attachment attachment = session.getAttachment();
-        Http11Request request = attachment.get(Consts.ATTACH_KEY_REQUEST);
+        Http11Request request = attachment.get(ATTACH_KEY_REQUEST);
         byte[] cacheBytes = getCacheBytes(buffer, attachment);
         buffer.mark();
         State curState = request._state;
