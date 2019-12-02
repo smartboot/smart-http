@@ -9,6 +9,8 @@ import org.smartboot.http.exception.HttpException;
 import org.smartboot.http.server.handle.HandlePipeline;
 import org.smartboot.http.server.handle.HttpHandle;
 import org.smartboot.http.utils.Attachment;
+import org.smartboot.http.utils.HttpHeaderConstant;
+import org.smartboot.http.utils.StringUtils;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.transport.AioSession;
@@ -46,7 +48,9 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
                 httpResponse.getOutputStream().close();
             }
             //Post请求没有读完Body，关闭通道
-            if (request.getMethodEnum() == HttpMethodEnum.POST && request.getInputStream().available() > 0) {
+            if (request.getMethodEnum() == HttpMethodEnum.POST
+                    && !StringUtils.startsWith(request.getContentType(), HttpHeaderConstant.Values.X_WWW_FORM_URLENCODED)
+                    && request.getInputStream().available() > 0) {
                 session.close(false);
             } else {
                 request.rest();
