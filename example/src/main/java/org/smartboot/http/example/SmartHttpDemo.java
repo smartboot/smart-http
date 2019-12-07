@@ -18,8 +18,7 @@ import java.util.Collection;
  */
 public class SmartHttpDemo {
     public static void main(String[] args) {
-        System.setProperty("smart-socket.server.pageSize", (1024 * 1024 * 5) + "");
-        System.setProperty("smart-socket.session.writeChunkSize", (1024 * 4) + "");
+        System.setProperty("smartHttp.server.alias", "SANDAO base on ");
 
         RouteHandle routeHandle = new RouteHandle();
         routeHandle.route("/", new HttpHandle() {

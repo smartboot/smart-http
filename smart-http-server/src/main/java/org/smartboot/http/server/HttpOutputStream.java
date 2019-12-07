@@ -40,7 +40,6 @@ final class HttpOutputStream extends OutputStream {
      * Key：status+contentType
      */
     private static final Map<String, byte[]> CACHE_CHUNKED_AND_LENGTH = new HashMap<>();
-
     private static final byte[] CHUNKED_END_BYTES = "0\r\n\r\n".getBytes(CharsetUtil.US_ASCII);
     private static final ScheduledExecutorService SCHEDULED_EXECUTOR_SERVICE = new ScheduledThreadPoolExecutor(1, new ThreadFactory() {
         @Override
@@ -50,6 +49,7 @@ final class HttpOutputStream extends OutputStream {
             return thread;
         }
     });
+    private static String SERVER_ALIAS_NAME = "smart-http";
     private static SimpleDateFormat sdf = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
     private static Date currentDate = new Date();
     private static byte[] date;
@@ -57,6 +57,10 @@ final class HttpOutputStream extends OutputStream {
     static {
         for (int i = 0; i < CACHE_CONTENT_TYPE_AND_LENGTH.length; i++) {
             CACHE_CONTENT_TYPE_AND_LENGTH[i] = new HashMap<>();
+        }
+        String aliasServer = System.getProperty("smartHttp.server.alias");
+        if (aliasServer != null) {
+            SERVER_ALIAS_NAME = aliasServer + "smart-http";
         }
         flushDate();
         SCHEDULED_EXECUTOR_SERVICE.scheduleWithFixedDelay(new Runnable() {
@@ -81,7 +85,8 @@ final class HttpOutputStream extends OutputStream {
 
     private static void flushDate() {
         currentDate.setTime(System.currentTimeMillis());
-        HttpOutputStream.date = ("\r\n" + HttpHeaderConstant.Names.DATE + ":" + sdf.format(currentDate) + "\r\n\r\n").getBytes();
+        HttpOutputStream.date = ("\r\n" + HttpHeaderConstant.Names.DATE + ":" + sdf.format(currentDate) + "\r\n"
+                + HttpHeaderConstant.Names.SERVER + ":" + SERVER_ALIAS_NAME + "\r\n\r\n").getBytes();
     }
 
     void reset() {
@@ -173,8 +178,7 @@ final class HttpOutputStream extends OutputStream {
         }
 
         String str = httpStatus.getHttpStatusLine() + "\r\n"
-                + HttpHeaderConstant.Names.CONTENT_TYPE + ":" + contentType + "\r\n"
-                + HttpHeaderConstant.Names.SERVER + ":smart-http";
+                + HttpHeaderConstant.Names.CONTENT_TYPE + ":" + contentType;
         if (contentLength >= 0) {
             str += "\r\n" + HttpHeaderConstant.Names.CONTENT_LENGTH + ":" + contentLength;
         } else if (chunked) {
