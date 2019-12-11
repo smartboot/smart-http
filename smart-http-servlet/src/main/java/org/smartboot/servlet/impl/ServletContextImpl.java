@@ -1,7 +1,11 @@
 package org.smartboot.servlet.impl;
 
-import org.smartboot.servlet.conf.FilterInfo;
-import org.smartboot.servlet.conf.ServletInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.smartboot.http.utils.Mimetypes;
+import org.smartboot.servlet.DeploymentRuntime;
+import org.smartboot.servlet.conf.DeploymentInfo;
+import org.smartboot.servlet.util.IteratorEnumeration;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterRegistration;
@@ -18,32 +22,44 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.EventListener;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * @author 三刀
  * @version V1.0 , 2019/12/11
  */
 public class ServletContextImpl implements ServletContext {
-    private Map<String, ServletInfo> servletInfoMap = new HashMap<>();
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServletContextImpl.class);
+    private final ConcurrentMap<String, Object> attributes = new ConcurrentHashMap<>();
+    private DeploymentInfo deploymentInfo;
+    private SessionCookieConfig sessionCookieConfig = new SessionCookieConfigImpl();
 
-    private Map<String, FilterInfo> filterInfoMap = new HashMap<>();
-
-    public Map<String, ServletInfo> getServletInfoMap() {
-        return servletInfoMap;
+    public ServletContextImpl(DeploymentInfo deploymentInfo) {
+        this.deploymentInfo = deploymentInfo;
     }
 
     @Override
 
     public String getContextPath() {
-        return null;
+        String contextPath = deploymentInfo.getContextPath();
+        if (contextPath.equals("/")) {
+            return "";
+        }
+        return contextPath;
     }
 
     @Override
     public ServletContext getContext(String uripath) {
-        return null;
+        //获取uri归属的 DeploymentRuntime
+        LOGGER.error("unSupport now");
+        DeploymentRuntime runtime = null;
+        if (runtime == null) {
+            return null;
+        }
+        return runtime.getServletContext();
     }
 
     @Override
@@ -68,7 +84,7 @@ public class ServletContextImpl implements ServletContext {
 
     @Override
     public String getMimeType(String file) {
-        return null;
+        return Mimetypes.getInstance().getMimetype(file);
     }
 
     @Override
@@ -113,17 +129,17 @@ public class ServletContextImpl implements ServletContext {
 
     @Override
     public void log(String msg) {
-
+        LOGGER.info(msg);
     }
 
     @Override
     public void log(Exception exception, String msg) {
-
+        LOGGER.error(msg, exception);
     }
 
     @Override
     public void log(String message, Throwable throwable) {
-
+        LOGGER.error(message, throwable);
     }
 
     @Override
@@ -133,150 +149,153 @@ public class ServletContextImpl implements ServletContext {
 
     @Override
     public String getServerInfo() {
-        return null;
+        return "smart-servlet";
     }
 
     @Override
     public String getInitParameter(String name) {
-        return null;
+        return deploymentInfo.getInitParameters().get(name);
     }
 
     @Override
     public Enumeration<String> getInitParameterNames() {
-        return null;
+        return new IteratorEnumeration<>(deploymentInfo.getInitParameters().keySet().iterator());
     }
 
     @Override
     public boolean setInitParameter(String name, String value) {
-        return false;
+        if (deploymentInfo.getInitParameters().containsKey(name)) {
+            return false;
+        }
+        deploymentInfo.addInitParameter(name, value);
+        return true;
     }
 
     @Override
     public Object getAttribute(String name) {
-        return null;
+        return attributes.get(name);
     }
 
     @Override
     public Enumeration<String> getAttributeNames() {
-        return null;
+        return new IteratorEnumeration<>(attributes.keySet().iterator());
     }
 
     @Override
     public void setAttribute(String name, Object object) {
-
+        if (object == null) {
+            //todo 补充ServletContextAttributeListener#attributeRemoved
+            Object existing = attributes.remove(name);
+        } else {
+            Object existing = attributes.put(name, object);
+            //todo 补充ServletContextAttributeListener#attributeReplaced 或 attributeAdded
+        }
     }
 
     @Override
     public void removeAttribute(String name) {
-
+        Object exiting = attributes.remove(name);
+        //todo 补充ServletContextAttributeListener#attributeRemoved
     }
 
     @Override
     public String getServletContextName() {
-        return null;
+        return deploymentInfo.getDisplayName();
     }
 
     @Override
     public ServletRegistration.Dynamic addServlet(String servletName, String className) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public ServletRegistration.Dynamic addServlet(String servletName, Servlet servlet) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public ServletRegistration.Dynamic addServlet(String servletName, Class<? extends Servlet> servletClass) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public <T extends Servlet> T createServlet(Class<T> clazz) throws ServletException {
-        return null;
-    }
-
-    public void addServletInfo(ServletInfo servletInfo) {
-        servletInfoMap.put(servletInfo.getName(), servletInfo);
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public ServletRegistration getServletRegistration(String servletName) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Map<String, ? extends ServletRegistration> getServletRegistrations() {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public FilterRegistration.Dynamic addFilter(String filterName, String className) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public FilterRegistration.Dynamic addFilter(String filterName, Filter filter) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public FilterRegistration.Dynamic addFilter(String filterName, Class<? extends Filter> filterClass) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public <T extends Filter> T createFilter(Class<T> clazz) throws ServletException {
-        return null;
-    }
-
-    public void addFilterInfo(FilterInfo filterInfo) {
-        filterInfoMap.put(filterInfo.getName(), filterInfo);
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public FilterRegistration getFilterRegistration(String filterName) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Map<String, ? extends FilterRegistration> getFilterRegistrations() {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public SessionCookieConfig getSessionCookieConfig() {
-        return null;
+        return sessionCookieConfig;
     }
 
     @Override
     public void setSessionTrackingModes(Set<SessionTrackingMode> sessionTrackingModes) {
-
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Set<SessionTrackingMode> getDefaultSessionTrackingModes() {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Set<SessionTrackingMode> getEffectiveSessionTrackingModes() {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void addListener(String className) {
-
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public <T extends EventListener> void addListener(T t) {
-
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void addListener(Class<? extends EventListener> listenerClass) {
-
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -286,21 +305,21 @@ public class ServletContextImpl implements ServletContext {
 
     @Override
     public JspConfigDescriptor getJspConfigDescriptor() {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public ClassLoader getClassLoader() {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void declareRoles(String... roleNames) {
-
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public String getVirtualServerName() {
-        return null;
+        throw new UnsupportedOperationException();
     }
 }

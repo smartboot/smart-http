@@ -31,6 +31,7 @@ public class ServletHttpHandle extends HttpHandle {
         FilterInfo filterInfo = new FilterInfo(DefaultFilter.class, "default");
         filterInfo.addInitParam("abc", "123");
         deploymentInfo.addFilter(filterInfo);
+
         runtime.deploy();
     }
 

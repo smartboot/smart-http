@@ -23,7 +23,7 @@ import java.util.Map;
 public class DeploymentRuntime {
     private static final Logger LOGGER = LoggerFactory.getLogger(DeploymentRuntime.class);
     private DeploymentInfo deploymentInfo = new DeploymentInfo();
-    private ServletContextImpl servletContext = new ServletContextImpl();
+    private ServletContextImpl servletContext = new ServletContextImpl(deploymentInfo);
 
     public DeploymentInfo getDeploymentInfo() {
         return deploymentInfo;
@@ -39,7 +39,6 @@ public class DeploymentRuntime {
                 LOGGER.info("init servlet:{}", servlet);
                 servlet.init(servletConfig);
                 servletInfo.setServlet(servlet);
-                servletContext.addServletInfo(servletInfo);
             } catch (InstantiationException e) {
                 e.printStackTrace();
             } catch (IllegalAccessException e) {
@@ -58,7 +57,6 @@ public class DeploymentRuntime {
                 LOGGER.info("init filter:{}", filter);
                 filter.init(filterConfig);
                 filterInfo.setFilter(filter);
-                servletContext.addFilterInfo(filterInfo);
             } catch (InstantiationException e) {
                 e.printStackTrace();
             } catch (IllegalAccessException e) {

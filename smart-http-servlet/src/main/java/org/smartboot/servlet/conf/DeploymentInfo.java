@@ -11,7 +11,9 @@ import java.util.Map;
 public class DeploymentInfo {
     private final Map<String, ServletInfo> servlets = new HashMap<>();
     private final Map<String, FilterInfo> filters = new HashMap<>();
-
+    private final Map<String, String> initParameters = new HashMap<>();
+    private String contextPath;
+    private String displayName;
 
     public DeploymentInfo addServlet(final ServletInfo servlet) {
         servlets.put(servlet.getName(), servlet);
@@ -57,5 +59,31 @@ public class DeploymentInfo {
 
     public Map<String, FilterInfo> getFilters() {
         return filters;
+    }
+
+    public String getContextPath() {
+        return contextPath;
+    }
+
+    public DeploymentInfo setContextPath(final String contextPath) {
+        if (contextPath != null && contextPath.isEmpty()) {
+            this.contextPath = "/"; //we represent the root context as / instead of "", but both work
+        } else {
+            this.contextPath = contextPath;
+        }
+        return this;
+    }
+
+    public Map<String, String> getInitParameters() {
+        return initParameters;
+    }
+
+    public DeploymentInfo addInitParameter(final String name, final String value) {
+        initParameters.put(name, value);
+        return this;
+    }
+
+    public String getDisplayName() {
+        return displayName;
     }
 }
