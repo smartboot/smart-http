@@ -1,4 +1,4 @@
-package org.smartboot.servlet;
+package org.smartboot.servlet.conf;
 
 import java.util.Collection;
 import java.util.HashMap;

@@ -2,6 +2,9 @@ package org.smartboot.servlet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.smartboot.servlet.conf.DeploymentInfo;
+import org.smartboot.servlet.conf.FilterInfo;
+import org.smartboot.servlet.conf.ServletInfo;
 import org.smartboot.servlet.impl.FilterConfigImpl;
 import org.smartboot.servlet.impl.ServletConfigImpl;
 import org.smartboot.servlet.impl.ServletContextImpl;
@@ -19,13 +22,12 @@ import java.util.Map;
  */
 public class DeploymentRuntime {
     private static final Logger LOGGER = LoggerFactory.getLogger(DeploymentRuntime.class);
-    private DeploymentInfo deploymentInfo;
+    private DeploymentInfo deploymentInfo = new DeploymentInfo();
     private ServletContextImpl servletContext = new ServletContextImpl();
 
-    public DeploymentRuntime(DeploymentInfo deploymentInfo) {
-        this.deploymentInfo = deploymentInfo;
+    public DeploymentInfo getDeploymentInfo() {
+        return deploymentInfo;
     }
-
 
     public void deploy() {
         //启动Servlet
@@ -65,5 +67,9 @@ public class DeploymentRuntime {
                 e.printStackTrace();
             }
         }
+    }
+
+    public ServletContextImpl getServletContext() {
+        return servletContext;
     }
 }

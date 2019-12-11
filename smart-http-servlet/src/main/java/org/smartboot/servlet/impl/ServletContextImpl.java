@@ -1,7 +1,7 @@
 package org.smartboot.servlet.impl;
 
-import org.smartboot.servlet.FilterInfo;
-import org.smartboot.servlet.ServletInfo;
+import org.smartboot.servlet.conf.FilterInfo;
+import org.smartboot.servlet.conf.ServletInfo;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterRegistration;

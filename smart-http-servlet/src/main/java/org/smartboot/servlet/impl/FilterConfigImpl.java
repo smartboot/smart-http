@@ -18,7 +18,7 @@
 
 package org.smartboot.servlet.impl;
 
-import org.smartboot.servlet.FilterInfo;
+import org.smartboot.servlet.conf.FilterInfo;
 import org.smartboot.servlet.util.IteratorEnumeration;
 
 import javax.servlet.FilterConfig;

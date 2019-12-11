@@ -1,6 +1,6 @@
 package org.smartboot.servlet.impl;
 
-import org.smartboot.servlet.ServletInfo;
+import org.smartboot.servlet.conf.ServletInfo;
 import org.smartboot.servlet.util.IteratorEnumeration;
 
 import javax.servlet.ServletConfig;

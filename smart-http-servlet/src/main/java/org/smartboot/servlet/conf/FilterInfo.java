@@ -16,7 +16,7 @@
  *  limitations under the License.
  */
 
-package org.smartboot.servlet;
+package org.smartboot.servlet.conf;
 
 import javax.servlet.Filter;
 import java.util.Collections;

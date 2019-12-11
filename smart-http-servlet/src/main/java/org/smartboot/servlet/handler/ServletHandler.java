@@ -1,7 +1,7 @@
 package org.smartboot.servlet.handler;
 
 import org.smartboot.servlet.HttpServerExchange;
-import org.smartboot.servlet.ServletInfo;
+import org.smartboot.servlet.conf.ServletInfo;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;

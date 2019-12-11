@@ -1,4 +1,4 @@
-package org.smartboot.servlet;
+package org.smartboot.servlet.conf;
 
 import javax.servlet.Servlet;
 import java.util.ArrayList;
@@ -35,8 +35,13 @@ public class ServletInfo {
         return Collections.unmodifiableList(mappings);
     }
 
+    public ServletInfo addInitParam(final String name, final String value) {
+        initParams.put(name, value);
+        return this;
+    }
+
     public ServletInfo addMapping(final String mapping) {
-        if(!mapping.startsWith("/") && !mapping.startsWith("*") && !mapping.isEmpty()) {
+        if (!mapping.startsWith("/") && !mapping.startsWith("*") && !mapping.isEmpty()) {
             //if the user adds a mapping like 'index.html' we transparently translate it to '/index.html'
             mappings.add("/" + mapping);
         } else {
