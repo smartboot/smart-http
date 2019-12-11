@@ -18,7 +18,7 @@
     <dependencies>
         <dependency>
             <groupId>org.smartboot.http</groupId>
-            <artifactId>smart-http-server</artifactId>
+            <artifactId>smart-http-servlet</artifactId>
             <version>${smarthttp.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j-impl -->
