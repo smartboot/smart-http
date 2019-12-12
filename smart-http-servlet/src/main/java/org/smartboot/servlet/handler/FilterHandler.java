@@ -22,17 +22,17 @@ public class FilterHandler implements Handler {
     }
 
     @Override
-    public void handleRequest(HandlerContext exchange) throws Exception {
+    public void handleRequest(HandlerContext handlerContext) throws Exception {
         //匹配Filter
         List<Filter> filters = null;
 
 
         //Filter执行完毕后执行Servlet
         if (filters == null) {
-            next.handleRequest(exchange);
+            next.handleRequest(handlerContext);
         } else {
-            FilterChain filterChain = new FilterChainImpl(next, exchange, filters);
-            filterChain.doFilter(exchange.getRequest(), exchange.getResponse());
+            FilterChain filterChain = new FilterChainImpl(next, handlerContext, filters);
+            filterChain.doFilter(handlerContext.getRequest(), handlerContext.getResponse());
         }
     }
 }

@@ -16,16 +16,16 @@ import java.util.Map;
  */
 public class ServletHandler implements Handler {
     @Override
-    public void handleRequest(HandlerContext exchange) throws ServletException, IOException {
+    public void handleRequest(HandlerContext handlerContext) throws ServletException, IOException {
         //匹配Servlet
         ServletInfo defaultServlet = null;
         HttpServlet httpServlet = null;
-        for (Map.Entry<String, ServletInfo> entry : exchange.getServletContext().getServletInfoMap().entrySet()) {
+        for (Map.Entry<String, ServletInfo> entry : handlerContext.getDeploymentInfo().getServlets().entrySet()) {
             final ServletInfo servletInfo = entry.getValue();
             for (String path : servletInfo.getMappings()) {
 
             }
         }
-        httpServlet.service(exchange.getRequest(), exchange.getResponse());
+        httpServlet.service(handlerContext.getRequest(), handlerContext.getResponse());
     }
 }

@@ -7,5 +7,5 @@ import org.smartboot.servlet.HandlerContext;
  * @version V1.0 , 2019/12/11
  */
 public interface Handler {
-    public void handleRequest(HandlerContext exchange) throws Exception;
+    public void handleRequest(HandlerContext handlerContext) throws Exception;
 }

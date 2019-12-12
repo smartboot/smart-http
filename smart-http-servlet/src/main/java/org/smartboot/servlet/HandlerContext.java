@@ -1,5 +1,6 @@
 package org.smartboot.servlet;
 
+import org.smartboot.servlet.conf.DeploymentInfo;
 import org.smartboot.servlet.impl.HttpServletRequestImpl;
 import org.smartboot.servlet.impl.HttpServletResponseImpl;
 import org.smartboot.servlet.impl.ServletContextImpl;
@@ -13,6 +14,15 @@ public class HandlerContext {
     private HttpServletRequestImpl request;
     private HttpServletResponseImpl response;
     private ServletContextImpl servletContext;
+    private DeploymentInfo deploymentInfo;
+
+    public DeploymentInfo getDeploymentInfo() {
+        return deploymentInfo;
+    }
+
+    public void setDeploymentInfo(DeploymentInfo deploymentInfo) {
+        this.deploymentInfo = deploymentInfo;
+    }
 
     public ServletContextImpl getServletContext() {
         return servletContext;

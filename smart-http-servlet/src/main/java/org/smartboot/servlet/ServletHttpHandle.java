@@ -45,6 +45,7 @@ public class ServletHttpHandle extends HttpHandle {
         exchange.setRequest(servletRequest);
         exchange.setResponse(servletResponse);
         exchange.setServletContext(runtime.getServletContext());
+        exchange.setDeploymentInfo(runtime.getDeploymentInfo());
         try {
             ServletHandler servletHandler = new ServletHandler();
             FilterHandler filterHandler = new FilterHandler(servletHandler);
