@@ -1,6 +1,6 @@
 package org.smartboot.servlet.handler;
 
-import org.smartboot.servlet.HttpServerExchange;
+import org.smartboot.servlet.HandlerContext;
 import org.smartboot.servlet.impl.FilterChainImpl;
 
 import javax.servlet.Filter;
@@ -22,7 +22,7 @@ public class FilterHandler implements Handler {
     }
 
     @Override
-    public void handleRequest(HttpServerExchange exchange) throws Exception {
+    public void handleRequest(HandlerContext exchange) throws Exception {
         //匹配Filter
         List<Filter> filters = null;
 

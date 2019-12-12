@@ -8,7 +8,7 @@ import org.smartboot.servlet.impl.ServletContextImpl;
  * @author 三刀
  * @version V1.0 , 2019/12/11
  */
-public class HttpServerExchange {
+public class HandlerContext {
 
     private HttpServletRequestImpl request;
     private HttpServletResponseImpl response;

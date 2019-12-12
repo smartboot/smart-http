@@ -1,6 +1,6 @@
 package org.smartboot.servlet.handler;
 
-import org.smartboot.servlet.HttpServerExchange;
+import org.smartboot.servlet.HandlerContext;
 import org.smartboot.servlet.conf.ServletInfo;
 
 import javax.servlet.ServletException;
@@ -16,7 +16,7 @@ import java.util.Map;
  */
 public class ServletHandler implements Handler {
     @Override
-    public void handleRequest(HttpServerExchange exchange) throws ServletException, IOException {
+    public void handleRequest(HandlerContext exchange) throws ServletException, IOException {
         //匹配Servlet
         ServletInfo defaultServlet = null;
         HttpServlet httpServlet = null;

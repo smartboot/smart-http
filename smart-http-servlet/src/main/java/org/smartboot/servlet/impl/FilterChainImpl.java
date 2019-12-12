@@ -1,6 +1,6 @@
 package org.smartboot.servlet.impl;
 
-import org.smartboot.servlet.HttpServerExchange;
+import org.smartboot.servlet.HandlerContext;
 import org.smartboot.servlet.handler.Handler;
 
 import javax.servlet.Filter;
@@ -20,10 +20,10 @@ public class FilterChainImpl implements FilterChain {
     int location = 0;
     private Handler handler;
 
-    private HttpServerExchange exchange;
+    private HandlerContext exchange;
 
 
-    public FilterChainImpl(Handler handler, HttpServerExchange exchange, List<Filter> filters) {
+    public FilterChainImpl(Handler handler, HandlerContext exchange, List<Filter> filters) {
         this.filters = filters;
         this.handler = handler;
         this.exchange = exchange;

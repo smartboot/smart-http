@@ -41,14 +41,13 @@ public class ServletHttpHandle extends HttpHandle {
         HttpServletRequestImpl servletRequest = new HttpServletRequestImpl(request);
         HttpServletResponseImpl servletResponse = new HttpServletResponseImpl(response);
 
-        HttpServerExchange exchange = new HttpServerExchange();
+        HandlerContext exchange = new HandlerContext();
         exchange.setRequest(servletRequest);
         exchange.setResponse(servletResponse);
         exchange.setServletContext(runtime.getServletContext());
         try {
             ServletHandler servletHandler = new ServletHandler();
             FilterHandler filterHandler = new FilterHandler(servletHandler);
-
             filterHandler.handleRequest(exchange);
         } catch (Exception e) {
             throw new RuntimeException(e);
