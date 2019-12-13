@@ -1,17 +1,20 @@
 package org.smartboot.servlet;
 
+import org.dom4j.DocumentException;
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
 import org.smartboot.http.server.handle.HttpHandle;
 import org.smartboot.servlet.conf.DeploymentInfo;
-import org.smartboot.servlet.conf.FilterInfo;
-import org.smartboot.servlet.conf.ServletInfo;
 import org.smartboot.servlet.handler.FilterHandler;
 import org.smartboot.servlet.handler.ServletHandler;
 import org.smartboot.servlet.impl.HttpServletRequestImpl;
 import org.smartboot.servlet.impl.HttpServletResponseImpl;
+import org.smartboot.servlet.war.WebContextClassLoader;
+import org.smartboot.servlet.war.WebContextRuntime;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.MalformedURLException;
 
 /**
  * @author 三刀
@@ -21,16 +24,33 @@ public class ServletHttpHandle extends HttpHandle {
 
     private DeploymentRuntime runtime = new DeploymentRuntime();
 
-    public ServletHttpHandle() {
+    public ServletHttpHandle() throws MalformedURLException {
         DeploymentInfo deploymentInfo = runtime.getDeploymentInfo();
-        ServletInfo servletInfo = new ServletInfo(DefaultServlet.class, "default");
-        servletInfo.addMapping("/");
-        servletInfo.addInitParam("abc", "123");
-        deploymentInfo.addServlet(servletInfo);
+//        ServletInfo servletInfo = new ServletInfo();
+//        servletInfo.setServletClass(DefaultServlet.class.getName());
+//        servletInfo.setServletName("default");
+//        servletInfo.addMapping("/");
+//        servletInfo.addInitParam("abc", "123");
+//        deploymentInfo.addServlet(servletInfo);
+//
+//        FilterInfo filterInfo = new FilterInfo();
+//        filterInfo.setFilterName(DefaultFilter.class.getName());
+//        filterInfo.setFilterName("default");
+//        filterInfo.addInitParam("abc", "123");
+//        deploymentInfo.addFilter(filterInfo);
 
-        FilterInfo filterInfo = new FilterInfo(DefaultFilter.class, "default");
-        filterInfo.addInitParam("abc", "123");
-        deploymentInfo.addFilter(filterInfo);
+        WebContextClassLoader webContextClassLoader = new WebContextClassLoader("/Users/zhengjunwei/IdeaProjects/yt_trade/trade-web/target/dev-trade-web");
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(webContextClassLoader.getClassLoader());
+        WebContextRuntime webContextRuntime = new WebContextRuntime(runtime,
+                "/Users/zhengjunwei/IdeaProjects/yt_trade/trade-web/target/dev-trade-web");
+        try {
+            webContextRuntime.deploy();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (DocumentException e) {
+            e.printStackTrace();
+        }
 
         runtime.deploy();
     }

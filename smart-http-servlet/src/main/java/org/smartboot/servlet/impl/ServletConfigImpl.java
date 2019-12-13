@@ -19,7 +19,7 @@ public class ServletConfigImpl implements ServletConfig {
 
     @Override
     public String getServletName() {
-        return servletInfo.getName();
+        return servletInfo.getServletName();
     }
 
     @Override

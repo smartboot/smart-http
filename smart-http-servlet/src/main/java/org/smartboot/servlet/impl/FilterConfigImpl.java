@@ -38,7 +38,7 @@ public class FilterConfigImpl implements FilterConfig {
 
     @Override
     public String getFilterName() {
-        return filterInfo.getName();
+        return filterInfo.getFilterName();
     }
 
     @Override

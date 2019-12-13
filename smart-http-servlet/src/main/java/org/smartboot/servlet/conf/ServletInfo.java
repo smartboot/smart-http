@@ -12,15 +12,22 @@ import java.util.Map;
  * @version V1.0 , 2019/12/11
  */
 public class ServletInfo {
-    private final Class<? extends Servlet> servletClass;
-    private final String name;
     private final List<String> mappings = new ArrayList<>();
     private final Map<String, String> initParams = new HashMap<>();
+    private String servletClass;
+    private String servletName;
+    private int loadOnStartup;
     private Servlet servlet;
 
-    public ServletInfo(Class<? extends Servlet> servletClass, String name) {
-        this.servletClass = servletClass;
-        this.name = name;
+    public ServletInfo() {
+    }
+
+    public int getLoadOnStartup() {
+        return loadOnStartup;
+    }
+
+    public void setLoadOnStartup(int loadOnStartup) {
+        this.loadOnStartup = loadOnStartup;
     }
 
     public Servlet getServlet() {
@@ -50,15 +57,23 @@ public class ServletInfo {
         return this;
     }
 
-    public String getName() {
-        return name;
+    public String getServletName() {
+        return servletName;
+    }
+
+    public void setServletName(String servletName) {
+        this.servletName = servletName;
     }
 
     public Map<String, String> getInitParams() {
         return initParams;
     }
 
-    public Class<? extends Servlet> getServletClass() {
+    public String getServletClass() {
         return servletClass;
+    }
+
+    public void setServletClass(String servletClass) {
+        this.servletClass = servletClass;
     }
 }

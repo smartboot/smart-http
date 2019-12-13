@@ -12,11 +12,13 @@ public class DeploymentInfo {
     private final Map<String, ServletInfo> servlets = new HashMap<>();
     private final Map<String, FilterInfo> filters = new HashMap<>();
     private final Map<String, String> initParameters = new HashMap<>();
+    private final Map<String, ServletContextListenerInfo> contextListeners = new HashMap<>();
+
     private String contextPath;
     private String displayName;
 
     public DeploymentInfo addServlet(final ServletInfo servlet) {
-        servlets.put(servlet.getName(), servlet);
+        servlets.put(servlet.getServletName(), servlet);
         return this;
     }
 
@@ -39,8 +41,17 @@ public class DeploymentInfo {
     }
 
     public DeploymentInfo addFilter(final FilterInfo filter) {
-        filters.put(filter.getName(), filter);
+        filters.put(filter.getFilterName(), filter);
         return this;
+    }
+
+    public DeploymentInfo addServletContextListener(final ServletContextListenerInfo listenerInfo) {
+        contextListeners.put(listenerInfo.getListenerClass(), listenerInfo);
+        return this;
+    }
+
+    public Map<String, ServletContextListenerInfo> getContextListeners() {
+        return contextListeners;
     }
 
     public DeploymentInfo addFilters(final FilterInfo... filters) {
@@ -56,6 +67,7 @@ public class DeploymentInfo {
         }
         return this;
     }
+
 
     public Map<String, FilterInfo> getFilters() {
         return filters;
@@ -86,4 +98,5 @@ public class DeploymentInfo {
     public String getDisplayName() {
         return displayName;
     }
+
 }

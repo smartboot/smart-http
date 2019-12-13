@@ -26,15 +26,11 @@ import java.util.Map;
 
 public class FilterInfo {
 
-    private final Class<? extends Filter> filterClass;
-    private final String name;
     private final Map<String, String> initParams = new HashMap<>();
+    private String filterClass;
+    private String filterName;
     private Filter filter;
 
-    public FilterInfo(Class<? extends Filter> filterClass, String name) {
-        this.filterClass = filterClass;
-        this.name = name;
-    }
 
     public Filter getFilter() {
         return filter;
@@ -44,14 +40,21 @@ public class FilterInfo {
         this.filter = filter;
     }
 
-    public Class<? extends Filter> getFilterClass() {
+    public String getFilterClass() {
         return filterClass;
     }
 
-    public String getName() {
-        return name;
+    public void setFilterClass(String filterClass) {
+        this.filterClass = filterClass;
     }
 
+    public String getFilterName() {
+        return filterName;
+    }
+
+    public void setFilterName(String filterName) {
+        this.filterName = filterName;
+    }
 
     public FilterInfo addInitParam(final String name, final String value) {
         initParams.put(name, value);
@@ -67,7 +70,7 @@ public class FilterInfo {
     public String toString() {
         return "FilterInfo{" +
                 "filterClass=" + filterClass +
-                ", name='" + name + '\'' +
+                ", name='" + filterName + '\'' +
                 '}';
     }
 }
