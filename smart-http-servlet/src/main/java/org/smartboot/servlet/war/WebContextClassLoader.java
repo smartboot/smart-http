@@ -14,11 +14,16 @@ import java.util.List;
 public class WebContextClassLoader {
     private String location;
 
+    private ClassLoader classLoader;
+
     public WebContextClassLoader(String location) {
         this.location = location;
     }
 
     public ClassLoader getClassLoader() throws MalformedURLException {
+        if (classLoader != null) {
+            return classLoader;
+        }
         List<URL> list = new ArrayList<>();
         File libDir = new File(location, "WEB-INF" + File.separator + "lib/");
         for (File file : libDir.listFiles()) {
@@ -27,7 +32,7 @@ public class WebContextClassLoader {
 
         File classDir = new File(location, "WEB-INF" + File.separator + "classes/");
         list.add(classDir.toURI().toURL());
-        URLClassLoader urlClassLoader = new URLClassLoader(list.toArray(new URL[list.size()]), Thread.currentThread().getContextClassLoader());
-        return urlClassLoader;
+        classLoader = new URLClassLoader(list.toArray(new URL[list.size()]), Thread.currentThread().getContextClassLoader());
+        return classLoader;
     }
 }

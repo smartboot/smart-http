@@ -41,6 +41,7 @@ public class DeploymentRuntime {
         params.forEach((key, value) -> {
             servletContext.setInitParameter(key, value);
         });
+
         //启动Listener
         Map<String, ServletContextListenerInfo> listenerInfoMap = deploymentInfo.getContextListeners();
         for (ServletContextListenerInfo contextListenerInfo : listenerInfoMap.values()) {
@@ -49,7 +50,9 @@ public class DeploymentRuntime {
                 if (ServletContextListener.class.isAssignableFrom(listener.getClass())) {
                     ServletContextEvent event = new ServletContextEvent(servletContext);
                     ((ServletContextListener) listener).contextInitialized(event);
+                    LOGGER.info("contextInitialized listener:{}", listener);
                 } else if (ServletRequestListener.class.isAssignableFrom(listener.getClass())) {
+                    System.err.println(listener);
 //                    ServletRequestEvent event = new ServletRequestEvent();
 //                    ((ServletRequestListener) listener).requestInitialized(event);
                 } else {

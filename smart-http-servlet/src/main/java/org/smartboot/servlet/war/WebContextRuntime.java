@@ -42,6 +42,7 @@ public class WebContextRuntime {
             webAppInfo.getListeners().forEach(value -> deploymentInfo.addServletContextListener(new ServletContextListenerInfo(value)));
 
             deploymentInfo.setContextPath("/");
+            deploymentInfo.setRealPath(location);
         } finally {
             if (webXmlInputStream != null) {
                 try {

@@ -13,10 +13,11 @@ import java.io.IOException;
 public class RequestDispatcherImpl implements RequestDispatcher {
     @Override
     public void forward(ServletRequest request, ServletResponse response) throws ServletException, IOException {
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void include(ServletRequest request, ServletResponse response) throws ServletException, IOException {
-
+        throw new UnsupportedOperationException();
     }
 }

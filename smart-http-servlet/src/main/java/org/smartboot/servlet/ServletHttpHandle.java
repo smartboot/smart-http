@@ -39,11 +39,13 @@ public class ServletHttpHandle extends HttpHandle {
 //        filterInfo.addInitParam("abc", "123");
 //        deploymentInfo.addFilter(filterInfo);
 
-        WebContextClassLoader webContextClassLoader = new WebContextClassLoader("/Users/zhengjunwei/IdeaProjects/yt_trade/trade-web/target/dev-trade-web");
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(webContextClassLoader.getClassLoader());
-        WebContextRuntime webContextRuntime = new WebContextRuntime(runtime,
-                "/Users/zhengjunwei/IdeaProjects/yt_trade/trade-web/target/dev-trade-web");
+//        String location = "/Users/zhengjunwei/IdeaProjects/yt_trade/trade-web/target/dev-trade-web";
+        String location="/Users/zhengjunwei/IdeaProjects/yt-buy/buy-web/target/buy-web";
+        WebContextClassLoader webContextClassLoader = new WebContextClassLoader(location);
+        ClassLoader webClassLoader = webContextClassLoader.getClassLoader();
+        deploymentInfo.setClassLoader(webClassLoader);
+        Thread.currentThread().setContextClassLoader(webClassLoader);
+        WebContextRuntime webContextRuntime = new WebContextRuntime(runtime, location);
         try {
             webContextRuntime.deploy();
         } catch (FileNotFoundException e) {

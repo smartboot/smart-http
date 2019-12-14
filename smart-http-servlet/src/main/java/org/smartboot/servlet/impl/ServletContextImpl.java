@@ -17,6 +17,7 @@ import javax.servlet.ServletRegistration;
 import javax.servlet.SessionCookieConfig;
 import javax.servlet.SessionTrackingMode;
 import javax.servlet.descriptor.JspConfigDescriptor;
+import java.io.File;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -89,42 +90,45 @@ public class ServletContextImpl implements ServletContext {
 
     @Override
     public Set<String> getResourcePaths(String path) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public URL getResource(String path) throws MalformedURLException {
-        return null;
+        File file = new File(getRealPath(path));
+        System.out.println(file.getAbsolutePath());
+        return file.toURI().toURL();
     }
 
     @Override
     public InputStream getResourceAsStream(String path) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public RequestDispatcher getRequestDispatcher(String path) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public RequestDispatcher getNamedDispatcher(String name) {
-        return null;
+        System.out.println("getNamedDispatcher:" + name);
+        return new RequestDispatcherImpl();
     }
 
     @Override
     public Servlet getServlet(String name) throws ServletException {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Enumeration<Servlet> getServlets() {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Enumeration<String> getServletNames() {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -144,7 +148,21 @@ public class ServletContextImpl implements ServletContext {
 
     @Override
     public String getRealPath(String path) {
-        return null;
+        if (path == null)
+            return null;
+        if (path.length() == 0)
+            path = "/";
+        else if (path.charAt(0) != '/')
+            path = "/" + path;
+
+        try {
+            path = deploymentInfo.getRealPath() + path;
+            LOGGER.info("path:{}", path);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return path;
     }
 
     @Override
@@ -154,7 +172,9 @@ public class ServletContextImpl implements ServletContext {
 
     @Override
     public String getInitParameter(String name) {
-        return deploymentInfo.getInitParameters().get(name);
+        String value = deploymentInfo.getInitParameters().get(name);
+        System.out.println("context param:" + name + " value:" + value);
+        return value;
     }
 
     @Override
@@ -190,12 +210,14 @@ public class ServletContextImpl implements ServletContext {
             Object existing = attributes.put(name, object);
             //todo 补充ServletContextAttributeListener#attributeReplaced 或 attributeAdded
         }
+//        throw new UnsupportedOperationException();
     }
 
     @Override
     public void removeAttribute(String name) {
         Object exiting = attributes.remove(name);
         //todo 补充ServletContextAttributeListener#attributeRemoved
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -300,7 +322,7 @@ public class ServletContextImpl implements ServletContext {
 
     @Override
     public <T extends EventListener> T createListener(Class<T> clazz) throws ServletException {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -310,7 +332,7 @@ public class ServletContextImpl implements ServletContext {
 
     @Override
     public ClassLoader getClassLoader() {
-        throw new UnsupportedOperationException();
+        return deploymentInfo.getClassLoader();
     }
 
     @Override

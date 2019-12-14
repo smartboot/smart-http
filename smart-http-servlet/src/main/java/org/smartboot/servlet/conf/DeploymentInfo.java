@@ -13,9 +13,26 @@ public class DeploymentInfo {
     private final Map<String, FilterInfo> filters = new HashMap<>();
     private final Map<String, String> initParameters = new HashMap<>();
     private final Map<String, ServletContextListenerInfo> contextListeners = new HashMap<>();
-
+    private ClassLoader classLoader;
     private String contextPath;
+    private String realPath;
     private String displayName;
+
+    public String getRealPath() {
+        return realPath;
+    }
+
+    public void setRealPath(String realPath) {
+        this.realPath = realPath;
+    }
+
+    public ClassLoader getClassLoader() {
+        return classLoader;
+    }
+
+    public void setClassLoader(ClassLoader classLoader) {
+        this.classLoader = classLoader;
+    }
 
     public DeploymentInfo addServlet(final ServletInfo servlet) {
         servlets.put(servlet.getServletName(), servlet);
