@@ -1,7 +1,5 @@
 package org.smartboot.http.server.handle;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
 import org.smartboot.http.utils.AntPathMatcher;
@@ -15,7 +13,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version V1.0 , 2018/3/24
  */
 public final class RouteHandle extends HttpHandle {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RouteHandle.class);
     private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
     private Map<String, HttpHandle> handleMap = new ConcurrentHashMap<>();
 
@@ -37,7 +34,6 @@ public final class RouteHandle extends HttpHandle {
             }
             if (httpHandle == null) {
                 httpHandle = defaultHandle;
-                LOGGER.debug("路由匹配失败,使用defaultHandle");
             }
             handleMap.put(uri, httpHandle);
         }

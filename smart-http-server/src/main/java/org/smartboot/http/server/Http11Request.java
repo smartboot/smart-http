@@ -1,7 +1,5 @@
 package org.smartboot.http.server;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.enums.HttpMethodEnum;
 import org.smartboot.http.enums.HttpStatus;
@@ -35,7 +33,6 @@ import java.util.Set;
  * @version V1.0 , 2018/8/31
  */
 public final class Http11Request implements HttpRequest {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Http11Request.class);
     /**
      * 解码状态
      */
@@ -297,7 +294,7 @@ public final class Http11Request implements HttpRequest {
                 remoteAddr = address.getHostAddress();
             }
         } catch (IOException e) {
-            LOGGER.error("", e);
+            e.printStackTrace();
         }
         return remoteAddr;
     }
@@ -321,7 +318,7 @@ public final class Http11Request implements HttpRequest {
         try {
             remoteHost = aioSession.getRemoteAddress().getHostString();
         } catch (IOException e) {
-            LOGGER.error("", e);
+            e.printStackTrace();
         }
         return remoteHost;
     }

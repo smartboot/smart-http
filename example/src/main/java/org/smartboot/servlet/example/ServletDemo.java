@@ -11,8 +11,9 @@ import java.net.MalformedURLException;
  */
 public class ServletDemo {
     public static void main(String[] args) throws MalformedURLException {
+        ServletHttpHandle httpHandle = new ServletHttpHandle();
         HttpBootstrap bootstrap = new HttpBootstrap();
-        bootstrap.pipeline().next(new ServletHttpHandle());
+        bootstrap.pipeline().next(httpHandle);
         bootstrap.setPort(8080).start();
         System.out.println("启动成功");
     }

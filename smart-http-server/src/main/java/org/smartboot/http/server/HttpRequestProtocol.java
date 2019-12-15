@@ -1,7 +1,5 @@
 package org.smartboot.http.server;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.smartboot.http.enums.HttpMethodEnum;
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.enums.State;
@@ -30,7 +28,6 @@ import java.util.List;
 public class HttpRequestProtocol implements Protocol<Http11Request> {
 
     static final AttachKey<Http11Request> ATTACH_KEY_REQUEST = AttachKey.valueOf("request");
-    private static final Logger LOGGER = LoggerFactory.getLogger(HttpRequestProtocol.class);
     private static final ThreadLocal<byte[]> BYTE_LOCAL = new ThreadLocal<byte[]>() {
         @Override
         protected byte[] initialValue() {
@@ -112,7 +109,6 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                     if (request.getMethodEnum() == null) {
                         byte[] b1 = new byte[buffer.remaining()];
                         buffer.get(b1);
-                        LOGGER.info(new String(b1));
                         throw new HttpException(HttpStatus.METHOD_NOT_ALLOWED);
                     }
                 case uri:
@@ -168,7 +164,6 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                 case request_line_end:
                     if (buffer.remaining() >= 2) {
                         if (buffer.get() != Consts.LF) {
-                            LOGGER.error(buffer.toString());
                             throw new RuntimeException("");
                         }
                         if (buffer.get(buffer.position()) == Consts.CR) {
@@ -275,10 +270,8 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
         if (curState == State.finished) {
             return request;
         }
-        LOGGER.debug("continue");
         request._state = curState;
         if (buffer.remaining() == buffer.capacity()) {
-            LOGGER.error("throw exception");
             throw new RuntimeException("buffer is too small when decode " + curState + " ," + request.tmpHeaderName);
         }
         return null;

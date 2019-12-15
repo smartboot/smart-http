@@ -1,7 +1,5 @@
 package org.smartboot.servlet.impl;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.smartboot.http.utils.Mimetypes;
 import org.smartboot.servlet.DeploymentRuntime;
 import org.smartboot.servlet.conf.DeploymentInfo;
@@ -18,6 +16,8 @@ import javax.servlet.SessionCookieConfig;
 import javax.servlet.SessionTrackingMode;
 import javax.servlet.descriptor.JspConfigDescriptor;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentMap;
  * @version V1.0 , 2019/12/11
  */
 public class ServletContextImpl implements ServletContext {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ServletContextImpl.class);
+    //    private static final Logger LOGGER = LoggerFactory.getLogger(ServletContextImpl.class);
     private final ConcurrentMap<String, Object> attributes = new ConcurrentHashMap<>();
     private DeploymentInfo deploymentInfo;
     private SessionCookieConfig sessionCookieConfig = new SessionCookieConfigImpl();
@@ -55,7 +55,7 @@ public class ServletContextImpl implements ServletContext {
     @Override
     public ServletContext getContext(String uripath) {
         //获取uri归属的 DeploymentRuntime
-        LOGGER.error("unSupport now");
+//        LOGGER.error("unSupport now");
         DeploymentRuntime runtime = null;
         if (runtime == null) {
             return null;
@@ -102,7 +102,13 @@ public class ServletContextImpl implements ServletContext {
 
     @Override
     public InputStream getResourceAsStream(String path) {
-        throw new UnsupportedOperationException();
+        InputStream inputStream = null;
+        try {
+            inputStream = new FileInputStream(getRealPath(path));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return inputStream;
     }
 
     @Override
@@ -133,17 +139,17 @@ public class ServletContextImpl implements ServletContext {
 
     @Override
     public void log(String msg) {
-        LOGGER.info(msg);
+//        LOGGER.info(msg);
     }
 
     @Override
     public void log(Exception exception, String msg) {
-        LOGGER.error(msg, exception);
+//        LOGGER.error(msg, exception);
     }
 
     @Override
     public void log(String message, Throwable throwable) {
-        LOGGER.error(message, throwable);
+//        LOGGER.error(message, throwable);
     }
 
     @Override
@@ -157,7 +163,7 @@ public class ServletContextImpl implements ServletContext {
 
         try {
             path = deploymentInfo.getRealPath() + path;
-            LOGGER.info("path:{}", path);
+//            LOGGER.info("path:{}", path);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -173,7 +179,7 @@ public class ServletContextImpl implements ServletContext {
     @Override
     public String getInitParameter(String name) {
         String value = deploymentInfo.getInitParameters().get(name);
-        System.out.println("context param:" + name + " value:" + value);
+//        System.out.println("context param:" + name + " value:" + value);
         return value;
     }
 

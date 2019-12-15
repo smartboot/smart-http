@@ -1,7 +1,5 @@
 package org.smartboot.http.server;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.smartboot.http.Pipeline;
 import org.smartboot.http.enums.HttpMethodEnum;
 import org.smartboot.http.enums.HttpStatus;
@@ -22,7 +20,6 @@ import java.io.IOException;
  * @version V1.0 , 2018/6/10
  */
 public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(HttpMessageProcessor.class);
     private final HandlePipeline pipeline = new HandlePipeline();
 
     public HttpMessageProcessor() {
@@ -56,7 +53,7 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
                 request.rest();
             }
         } catch (IOException e) {
-            LOGGER.error("IO Exception", e);
+            e.printStackTrace();
         }
 
 
@@ -71,7 +68,7 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
                 session.setAttachment(attachment);
                 break;
             case PROCESS_EXCEPTION:
-                LOGGER.error("process request exception", throwable);
+                throwable.printStackTrace();
                 session.close();
                 break;
 //            case INPUT_SHUTDOWN:

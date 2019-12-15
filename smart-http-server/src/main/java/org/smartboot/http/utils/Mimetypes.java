@@ -1,7 +1,5 @@
 package org.smartboot.http.utils;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -13,7 +11,6 @@ import java.util.HashMap;
 import java.util.Locale;
 
 public class Mimetypes {
-    public static final Logger LOGGER = LoggerFactory.getLogger(Mimetypes.class);
     /* The default MIME type */
     public static final String DEFAULT_MIMETYPE = "application/octet-stream";
     private static final String MIME_TYPES_FILE_NAME = "mime.types";

@@ -1,7 +1,5 @@
 package org.smartboot.servlet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.smartboot.servlet.conf.DeploymentInfo;
 import org.smartboot.servlet.conf.FilterInfo;
 import org.smartboot.servlet.conf.ServletContextListenerInfo;
@@ -26,7 +24,7 @@ import java.util.Map;
  * @version V1.0 , 2019/12/11
  */
 public class DeploymentRuntime {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DeploymentRuntime.class);
+    //    private static final Logger LOGGER = LoggerFactory.getLogger(DeploymentRuntime.class);
     private DeploymentInfo deploymentInfo = new DeploymentInfo();
     private ServletContextImpl servletContext = new ServletContextImpl(deploymentInfo);
 
@@ -50,7 +48,7 @@ public class DeploymentRuntime {
                 if (ServletContextListener.class.isAssignableFrom(listener.getClass())) {
                     ServletContextEvent event = new ServletContextEvent(servletContext);
                     ((ServletContextListener) listener).contextInitialized(event);
-                    LOGGER.info("contextInitialized listener:{}", listener);
+//                    LOGGER.info("contextInitialized listener:{}", listener);
                 } else if (ServletRequestListener.class.isAssignableFrom(listener.getClass())) {
                     System.err.println(listener);
 //                    ServletRequestEvent event = new ServletRequestEvent();
@@ -75,7 +73,7 @@ public class DeploymentRuntime {
             try {
                 ServletConfig servletConfig = new ServletConfigImpl(servletInfo, servletContext);
                 Servlet servlet = (Servlet) Thread.currentThread().getContextClassLoader().loadClass(servletInfo.getServletClass()).newInstance();
-                LOGGER.info("init servlet:{}", servlet);
+//                LOGGER.info("init servlet:{}", servlet);
                 servlet.init(servletConfig);
                 servletInfo.setServlet(servlet);
             } catch (InstantiationException e) {
@@ -95,7 +93,7 @@ public class DeploymentRuntime {
             try {
                 FilterConfig filterConfig = new FilterConfigImpl(filterInfo, servletContext);
                 Filter filter = (Filter) Thread.currentThread().getContextClassLoader().loadClass(filterInfo.getFilterClass()).newInstance();
-                LOGGER.info("init filter:{}", filter);
+//                LOGGER.info("init filter:{}", filter);
                 filter.init(filterConfig);
                 filterInfo.setFilter(filter);
             } catch (InstantiationException e) {

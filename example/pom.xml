@@ -11,7 +11,6 @@
     <properties>
         <!--<smartsocket.version>1.4.4</smartsocket.version>-->
         <smarthttp.version>1.0.13-SNAPSHOT</smarthttp.version>
-        <log4j.version>2.11.0</log4j.version>
         <commons.fileupload.version>1.4</commons.fileupload.version>
     </properties>
 
@@ -21,23 +20,7 @@
             <artifactId>smart-http-servlet</artifactId>
             <version>${smarthttp.version}</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j-impl -->
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
-            <version>${log4j.version}</version>
-        </dependency>
 
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>${log4j.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>${log4j.version}</version>
-        </dependency>
         <dependency>
             <groupId>commons-fileupload</groupId>
             <artifactId>commons-fileupload</artifactId>

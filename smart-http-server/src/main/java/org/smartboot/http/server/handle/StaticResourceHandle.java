@@ -8,12 +8,12 @@
 
 package org.smartboot.http.server.handle;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
 import org.smartboot.http.enums.HttpMethodEnum;
 import org.smartboot.http.enums.HttpStatus;
+import org.smartboot.http.logging.Logger;
+import org.smartboot.http.logging.LoggerFactory;
 import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.http.utils.Mimetypes;
 import org.smartboot.http.utils.StringUtils;
@@ -56,7 +56,7 @@ public class StaticResourceHandle extends HttpHandle {
         if (!this.baseDir.isDirectory()) {
             throw new RuntimeException(baseDir + " is not a directory");
         }
-        LOGGER.info("dir is:{}", this.baseDir.getAbsolutePath());
+        LOGGER.info("dir is:" + this.baseDir.getAbsolutePath());
     }
 
     @Override
@@ -66,11 +66,11 @@ public class StaticResourceHandle extends HttpHandle {
         if (StringUtils.endsWith(fileName, "/")) {
             fileName += "index.html";
         }
-        LOGGER.info("请求URL:{}", fileName);
+        LOGGER.info("请求URL:" + fileName);
         File file = new File(baseDir, fileName);
         //404
         if (!file.isFile()) {
-            LOGGER.warn("file:{} not found!", request.getRequestURI());
+            LOGGER.warn("file:" + request.getRequestURI() + " not found!");
             response.setHttpStatus(HttpStatus.NOT_FOUND);
             response.setHeader(HttpHeaderConstant.Names.CONTENT_TYPE, "text/html; charset=utf-8");
 

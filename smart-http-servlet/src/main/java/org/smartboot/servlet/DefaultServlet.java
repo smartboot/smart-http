@@ -1,7 +1,8 @@
 package org.smartboot.servlet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import org.smartboot.http.logging.Logger;
+import org.smartboot.http.logging.LoggerFactory;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -21,7 +22,7 @@ public class DefaultServlet extends HttpServlet {
         Enumeration<String> enumeration = config.getInitParameterNames();
         while (enumeration.hasMoreElements()) {
             String name = enumeration.nextElement();
-            LOGGER.info("servlet parameter name:{} ,value:{}", name, config.getInitParameter(name));
+            LOGGER.info("servlet parameter name:" + name + " ,value:" + config.getInitParameter(name));
         }
 
     }
