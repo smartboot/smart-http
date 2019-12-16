@@ -1,5 +1,7 @@
 package org.smartboot.servlet;
 
+import org.smartboot.http.logging.Logger;
+import org.smartboot.http.logging.LoggerFactory;
 import org.smartboot.servlet.conf.DeploymentInfo;
 import org.smartboot.servlet.conf.FilterInfo;
 import org.smartboot.servlet.conf.ServletContextListenerInfo;
@@ -24,7 +26,7 @@ import java.util.Map;
  * @version V1.0 , 2019/12/11
  */
 public class DeploymentRuntime {
-    //    private static final Logger LOGGER = LoggerFactory.getLogger(DeploymentRuntime.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DeploymentRuntime.class);
     private DeploymentInfo deploymentInfo = new DeploymentInfo();
     private ServletContextImpl servletContext = new ServletContextImpl(deploymentInfo);
 
@@ -48,7 +50,7 @@ public class DeploymentRuntime {
                 if (ServletContextListener.class.isAssignableFrom(listener.getClass())) {
                     ServletContextEvent event = new ServletContextEvent(servletContext);
                     ((ServletContextListener) listener).contextInitialized(event);
-//                    LOGGER.info("contextInitialized listener:{}", listener);
+                    LOGGER.info("contextInitialized listener:" + listener);
                 } else if (ServletRequestListener.class.isAssignableFrom(listener.getClass())) {
                     System.err.println(listener);
 //                    ServletRequestEvent event = new ServletRequestEvent();

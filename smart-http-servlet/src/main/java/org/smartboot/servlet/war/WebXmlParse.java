@@ -14,23 +14,18 @@ import org.smartboot.servlet.conf.WebAppInfo;
 import org.smartboot.servlet.enums.MappingType;
 
 import javax.servlet.DispatcherType;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
+ * 解析web.xml文件
+ *
  * @author 三刀
  * @version V1.0 , 2019/12/12
  */
-public class WebXmlParse {
-
-    public static void main(String[] args) throws IOException, DocumentException {
-        WebXmlParse loader = new WebXmlParse();
-        loader.load(new FileInputStream("/Users/zhengjunwei/IdeaProjects/smart-http/smart-http-servlet/src/main/resources/web.xml"));
-    }
+class WebXmlParse {
 
     public WebAppInfo load(InputStream webXmlStream) throws DocumentException {
         WebAppInfo webAppInfo = new WebAppInfo();
