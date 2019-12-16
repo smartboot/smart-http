@@ -6,11 +6,11 @@ import java.util.EventListener;
  * @author 三刀
  * @version V1.0 , 2019/12/13
  */
-public class ServletContextListenerInfo {
+public class EventListenerInfo {
     private final String listenerClass;
     private EventListener listener;
 
-    public ServletContextListenerInfo(String listenerClass) {
+    public EventListenerInfo(String listenerClass) {
         this.listenerClass = listenerClass;
     }
 

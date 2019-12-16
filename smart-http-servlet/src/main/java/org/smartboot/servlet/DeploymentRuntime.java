@@ -3,8 +3,8 @@ package org.smartboot.servlet;
 import org.smartboot.http.logging.Logger;
 import org.smartboot.http.logging.LoggerFactory;
 import org.smartboot.servlet.conf.DeploymentInfo;
+import org.smartboot.servlet.conf.EventListenerInfo;
 import org.smartboot.servlet.conf.FilterInfo;
-import org.smartboot.servlet.conf.ServletContextListenerInfo;
 import org.smartboot.servlet.conf.ServletInfo;
 import org.smartboot.servlet.impl.FilterConfigImpl;
 import org.smartboot.servlet.impl.ServletConfigImpl;
@@ -43,28 +43,24 @@ public class DeploymentRuntime {
         });
 
         //启动Listener
-        Map<String, ServletContextListenerInfo> listenerInfoMap = deploymentInfo.getContextListeners();
-        for (ServletContextListenerInfo contextListenerInfo : listenerInfoMap.values()) {
+        Map<String, EventListenerInfo> listenerInfoMap = deploymentInfo.getEventListeners();
+        for (EventListenerInfo eventListenerInfo : listenerInfoMap.values()) {
             try {
-                EventListener listener = (EventListener) Thread.currentThread().getContextClassLoader().loadClass(contextListenerInfo.getListenerClass()).newInstance();
+                EventListener listener = (EventListener) Thread.currentThread().getContextClassLoader().loadClass(eventListenerInfo.getListenerClass()).newInstance();
                 if (ServletContextListener.class.isAssignableFrom(listener.getClass())) {
                     ServletContextEvent event = new ServletContextEvent(servletContext);
                     ((ServletContextListener) listener).contextInitialized(event);
                     LOGGER.info("contextInitialized listener:" + listener);
                 } else if (ServletRequestListener.class.isAssignableFrom(listener.getClass())) {
-                    System.err.println(listener);
-//                    ServletRequestEvent event = new ServletRequestEvent();
+                    LOGGER.info("ServletRequestListener listener:" + listener);
+//                    ServletRequestEvent event = new ServletRequestEvent(servletContext, null);
 //                    ((ServletRequestListener) listener).requestInitialized(event);
                 } else {
                     throw new RuntimeException(listener.toString());
                 }
 
-                contextListenerInfo.setListener(listener);
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InstantiationException e) {
+                eventListenerInfo.setListener(listener);
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }

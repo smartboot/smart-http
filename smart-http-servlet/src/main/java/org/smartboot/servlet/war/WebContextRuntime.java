@@ -2,7 +2,7 @@ package org.smartboot.servlet.war;
 
 import org.smartboot.servlet.DeploymentRuntime;
 import org.smartboot.servlet.conf.DeploymentInfo;
-import org.smartboot.servlet.conf.ServletContextListenerInfo;
+import org.smartboot.servlet.conf.EventListenerInfo;
 import org.smartboot.servlet.conf.WebAppInfo;
 
 import java.io.File;
@@ -42,7 +42,7 @@ public class WebContextRuntime {
             webAppInfo.getContextParams().forEach(deploymentInfo::addInitParameter);
 
             //register ServletContextListener into deploymentInfo
-            webAppInfo.getListeners().forEach(value -> deploymentInfo.addServletContextListener(new ServletContextListenerInfo(value)));
+            webAppInfo.getListeners().forEach(value -> deploymentInfo.addServletContextListener(new EventListenerInfo(value)));
 
             deploymentInfo.setContextPath("/");
             deploymentInfo.setRealPath(location);

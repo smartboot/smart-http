@@ -12,7 +12,7 @@ public class DeploymentInfo {
     private final Map<String, ServletInfo> servlets = new HashMap<>();
     private final Map<String, FilterInfo> filters = new HashMap<>();
     private final Map<String, String> initParameters = new HashMap<>();
-    private final Map<String, ServletContextListenerInfo> contextListeners = new HashMap<>();
+    private final Map<String, EventListenerInfo> eventListeners = new HashMap<>();
     private ClassLoader classLoader;
     private String contextPath;
     private String realPath;
@@ -62,13 +62,13 @@ public class DeploymentInfo {
         return this;
     }
 
-    public DeploymentInfo addServletContextListener(final ServletContextListenerInfo listenerInfo) {
-        contextListeners.put(listenerInfo.getListenerClass(), listenerInfo);
+    public DeploymentInfo addServletContextListener(final EventListenerInfo listenerInfo) {
+        eventListeners.put(listenerInfo.getListenerClass(), listenerInfo);
         return this;
     }
 
-    public Map<String, ServletContextListenerInfo> getContextListeners() {
-        return contextListeners;
+    public Map<String, EventListenerInfo> getEventListeners() {
+        return eventListeners;
     }
 
     public DeploymentInfo addFilters(final FilterInfo... filters) {
