@@ -26,6 +26,7 @@ public class FilterMatchHandler extends Handler {
     @Override
     public void handleRequest(HandlerContext handlerContext) throws Exception {
         HttpServletRequest request = handlerContext.getRequest();
+        String contextPath = handlerContext.getDeploymentRuntime().getServletContext().getContextPath();
         //匹配Filter
         List<Filter> filters = new ArrayList<>();
         List<FilterMappingInfo> filterMappings = handlerContext.getDeploymentRuntime().getDeploymentInfo().getFilterMappings();
@@ -33,7 +34,7 @@ public class FilterMatchHandler extends Handler {
         filterMappings.forEach(filterInfo -> {
             switch (filterInfo.getMappingType()) {
                 case URL:
-                    if (PATH_MATCHER.match(filterInfo.getMapping(), request.getRequestURI())) {
+                    if (PATH_MATCHER.match(contextPath + filterInfo.getMapping(), request.getRequestURI())) {
                         filters.add(allFilters.get(filterInfo.getFilterName()).getFilter());
                     }
                     break;

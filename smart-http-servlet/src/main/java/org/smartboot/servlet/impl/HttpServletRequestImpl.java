@@ -118,7 +118,7 @@ public class HttpServletRequestImpl implements HttpServletRequest {
 
     @Override
     public String getRequestURI() {
-        return null;
+        return request.getRequestURI();
     }
 
     @Override

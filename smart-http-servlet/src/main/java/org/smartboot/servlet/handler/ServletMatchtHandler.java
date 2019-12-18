@@ -22,12 +22,14 @@ public class ServletMatchtHandler extends Handler {
     public void handleRequest(HandlerContext handlerContext) throws Exception {
         //匹配Servlet
         Servlet servlet = null;
+        String contextPath = handlerContext.getDeploymentRuntime().getServletContext().getContextPath();
         Map<String, ServletInfo> servletInfoMap = handlerContext.getDeploymentRuntime().getDeploymentInfo().getServlets();
 
         for (Map.Entry<String, ServletInfo> entry : servletInfoMap.entrySet()) {
             final ServletInfo servletInfo = entry.getValue();
             for (String path : servletInfo.getMappings()) {
-                if (PATH_MATCHER.match(path, handlerContext.getRequest().getRequestURI())) {
+
+                if (PATH_MATCHER.match(contextPath + path, handlerContext.getRequest().getRequestURI())) {
                     servlet = servletInfo.getServlet();
                     break;
                 }
