@@ -18,15 +18,19 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequestListener;
+import java.util.Collection;
 import java.util.EventListener;
 import java.util.Map;
 
 /**
+ * 运行时环境
+ *
  * @author 三刀
  * @version V1.0 , 2019/12/11
  */
-public class DeploymentRuntime {
+public class DeploymentRuntime implements Lifecycle {
     private static final Logger LOGGER = LoggerFactory.getLogger(DeploymentRuntime.class);
+    private volatile boolean started = false;
     private DeploymentInfo deploymentInfo = new DeploymentInfo();
     private ServletContextImpl servletContext = new ServletContextImpl(deploymentInfo);
 
@@ -35,7 +39,12 @@ public class DeploymentRuntime {
         return deploymentInfo;
     }
 
-    public void deploy() {
+    public ServletContextImpl getServletContext() {
+        return servletContext;
+    }
+
+    @Override
+    public void start() {
         //设置ServletContext参数
         Map<String, String> params = deploymentInfo.getInitParameters();
         params.forEach((key, value) -> {
@@ -86,8 +95,8 @@ public class DeploymentRuntime {
         }
 
         //启动Filter
-        Map<String, FilterInfo> filterInfoMap = deploymentInfo.getFilters();
-        for (FilterInfo filterInfo : filterInfoMap.values()) {
+        Collection<FilterInfo> filters = deploymentInfo.getFilters().values();
+        for (FilterInfo filterInfo : filters) {
             try {
                 FilterConfig filterConfig = new FilterConfigImpl(filterInfo, servletContext);
                 Filter filter = (Filter) Thread.currentThread().getContextClassLoader().loadClass(filterInfo.getFilterClass()).newInstance();
@@ -106,7 +115,13 @@ public class DeploymentRuntime {
         }
     }
 
-    public ServletContextImpl getServletContext() {
-        return servletContext;
+    @Override
+    public void stop() {
+
+    }
+
+    @Override
+    public boolean isStarted() {
+        return started;
     }
 }

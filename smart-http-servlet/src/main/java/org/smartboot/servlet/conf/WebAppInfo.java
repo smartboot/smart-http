@@ -17,7 +17,7 @@ public class WebAppInfo {
 
     private Map<String, FilterInfo> filters = new HashMap<>();
 
-    private Map<String, FilterMappingInfo> filterMappings = new HashMap<>();
+    private List<FilterMappingInfo> filterMappings = new ArrayList<>();
 
     private List<String> listeners = new ArrayList<>();
 
@@ -36,7 +36,7 @@ public class WebAppInfo {
     }
 
     public void addFilterMapping(FilterMappingInfo filterMappingInfo) {
-        filterMappings.put(filterMappingInfo.getFilterName(), filterMappingInfo);
+        filterMappings.add(filterMappingInfo);
     }
 
     public void addListener(String listener) {
@@ -71,7 +71,7 @@ public class WebAppInfo {
         return filters;
     }
 
-    public Map<String, FilterMappingInfo> getFilterMappings() {
+    public List<FilterMappingInfo> getFilterMappings() {
         return filterMappings;
     }
 

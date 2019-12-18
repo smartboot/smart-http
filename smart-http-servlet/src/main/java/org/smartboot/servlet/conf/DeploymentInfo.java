@@ -1,16 +1,21 @@
 package org.smartboot.servlet.conf;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
+ * 运行环境配置
+ *
  * @author 三刀
  * @version V1.0 , 2019/12/11
  */
 public class DeploymentInfo {
     private final Map<String, ServletInfo> servlets = new HashMap<>();
     private final Map<String, FilterInfo> filters = new HashMap<>();
+    private final List<FilterMappingInfo> filterMappings = new ArrayList<>();
     private final Map<String, String> initParameters = new HashMap<>();
     private final Map<String, EventListenerInfo> eventListeners = new HashMap<>();
     private ClassLoader classLoader;
@@ -88,6 +93,14 @@ public class DeploymentInfo {
 
     public Map<String, FilterInfo> getFilters() {
         return filters;
+    }
+
+    public void addFilterMapping(FilterMappingInfo filterMappingInfo) {
+        filterMappings.add(filterMappingInfo);
+    }
+
+    public List<FilterMappingInfo> getFilterMappings() {
+        return filterMappings;
     }
 
     public String getContextPath() {

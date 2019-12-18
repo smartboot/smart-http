@@ -1,8 +1,5 @@
 package org.smartboot.servlet.impl;
 
-import org.smartboot.servlet.HandlerContext;
-import org.smartboot.servlet.handler.Handler;
-
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -18,27 +15,15 @@ import java.util.List;
 public class FilterChainImpl implements FilterChain {
     final List<Filter> filters;
     int location = 0;
-    private Handler handler;
 
-    private HandlerContext exchange;
-
-
-    public FilterChainImpl(Handler handler, HandlerContext exchange, List<Filter> filters) {
+    public FilterChainImpl(List<Filter> filters) {
         this.filters = filters;
-        this.handler = handler;
-        this.exchange = exchange;
     }
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response) throws IOException, ServletException {
         int index = location++;
-        if (index >= filters.size()) {
-            try {
-                handler.handleRequest(exchange);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        } else {
+        if (index < filters.size()) {
             filters.get(index).doFilter(request, response, this);
         }
     }

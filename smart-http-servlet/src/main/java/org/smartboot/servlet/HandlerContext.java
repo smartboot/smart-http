@@ -1,9 +1,9 @@
 package org.smartboot.servlet;
 
-import org.smartboot.servlet.conf.DeploymentInfo;
 import org.smartboot.servlet.impl.HttpServletRequestImpl;
 import org.smartboot.servlet.impl.HttpServletResponseImpl;
-import org.smartboot.servlet.impl.ServletContextImpl;
+
+import javax.servlet.Servlet;
 
 /**
  * @author 三刀
@@ -13,23 +13,15 @@ public class HandlerContext {
 
     private HttpServletRequestImpl request;
     private HttpServletResponseImpl response;
-    private ServletContextImpl servletContext;
-    private DeploymentInfo deploymentInfo;
+    private DeploymentRuntime deploymentRuntime;
+    private Servlet servlet;
 
-    public DeploymentInfo getDeploymentInfo() {
-        return deploymentInfo;
+    public DeploymentRuntime getDeploymentRuntime() {
+        return deploymentRuntime;
     }
 
-    public void setDeploymentInfo(DeploymentInfo deploymentInfo) {
-        this.deploymentInfo = deploymentInfo;
-    }
-
-    public ServletContextImpl getServletContext() {
-        return servletContext;
-    }
-
-    public void setServletContext(ServletContextImpl servletContext) {
-        this.servletContext = servletContext;
+    public void setDeploymentRuntime(DeploymentRuntime deploymentRuntime) {
+        this.deploymentRuntime = deploymentRuntime;
     }
 
     public HttpServletRequestImpl getRequest() {
@@ -46,5 +38,13 @@ public class HandlerContext {
 
     public void setResponse(HttpServletResponseImpl response) {
         this.response = response;
+    }
+
+    public Servlet getServlet() {
+        return servlet;
+    }
+
+    public void setServlet(Servlet servlet) {
+        this.servlet = servlet;
     }
 }
