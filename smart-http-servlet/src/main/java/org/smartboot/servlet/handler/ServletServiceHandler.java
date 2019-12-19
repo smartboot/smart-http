@@ -12,6 +12,7 @@ public class ServletServiceHandler extends Handler {
 
     @Override
     public void handleRequest(HandlerContext handlerContext) throws Exception {
+        handlerContext.getDeploymentRuntime().getDeploymentInfo().getEventListeners();
         handlerContext.getServlet().service(handlerContext.getRequest(), handlerContext.getResponse());
         doNext(handlerContext);
     }

@@ -2,11 +2,13 @@ package org.smartboot.servlet.handler;
 
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.exception.HttpException;
-import org.smartboot.http.utils.AntPathMatcher;
 import org.smartboot.servlet.HandlerContext;
 import org.smartboot.servlet.conf.ServletInfo;
+import org.smartboot.servlet.util.ServletPathMatcher;
 
 import javax.servlet.Servlet;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 /**
@@ -15,21 +17,22 @@ import java.util.Map;
  * @author 三刀
  * @version V1.0 , 2019/12/11
  */
-public class ServletMatchtHandler extends Handler {
-    private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
+public class ServletMatchHandler extends Handler {
+    private static final ServletPathMatcher PATH_MATCHER = new ServletPathMatcher();
 
     @Override
     public void handleRequest(HandlerContext handlerContext) throws Exception {
         //匹配Servlet
         Servlet servlet = null;
-        String contextPath = handlerContext.getDeploymentRuntime().getServletContext().getContextPath();
+        ServletContext servletContext = handlerContext.getDeploymentRuntime().getServletContext();
+        String contextPath = servletContext.getContextPath();
         Map<String, ServletInfo> servletInfoMap = handlerContext.getDeploymentRuntime().getDeploymentInfo().getServlets();
+        HttpServletRequest request = handlerContext.getRequest();
 
         for (Map.Entry<String, ServletInfo> entry : servletInfoMap.entrySet()) {
             final ServletInfo servletInfo = entry.getValue();
             for (String path : servletInfo.getMappings()) {
-
-                if (PATH_MATCHER.match(contextPath + path, handlerContext.getRequest().getRequestURI())) {
+                if (PATH_MATCHER.matches(contextPath + path, request.getRequestURI())) {
                     servlet = servletInfo.getServlet();
                     break;
                 }

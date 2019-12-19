@@ -4,7 +4,6 @@ import org.smartboot.http.utils.StringUtils;
 import org.smartboot.servlet.DeploymentRuntime;
 import org.smartboot.servlet.Lifecycle;
 import org.smartboot.servlet.conf.DeploymentInfo;
-import org.smartboot.servlet.conf.EventListenerInfo;
 import org.smartboot.servlet.conf.WebAppInfo;
 
 import java.io.File;
@@ -58,7 +57,7 @@ public class WebContextRuntime implements Lifecycle {
             webAppInfo.getContextParams().forEach(deploymentInfo::addInitParameter);
 
             //register ServletContextListener into deploymentInfo
-            webAppInfo.getListeners().forEach(value -> deploymentInfo.addServletContextListener(new EventListenerInfo(value)));
+            webAppInfo.getListeners().forEach(value -> deploymentInfo.addEventListener(value));
 
             //register filterMapping into deploymentInfo
             webAppInfo.getFilterMappings().forEach(filterMappingInfo -> deploymentInfo.addFilterMapping(filterMappingInfo));

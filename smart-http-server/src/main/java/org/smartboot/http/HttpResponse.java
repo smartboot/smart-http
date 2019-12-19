@@ -80,4 +80,9 @@ public interface HttpResponse {
     void setContentType(String contentType);
 
     void write(byte[] data) throws IOException;
+
+
+    public String getCharacterEncoding();
+
+    public void setCharacterEncoding(String charset);
 }

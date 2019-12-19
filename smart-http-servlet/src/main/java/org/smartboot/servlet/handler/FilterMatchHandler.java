@@ -1,11 +1,11 @@
 package org.smartboot.servlet.handler;
 
-import org.smartboot.http.utils.AntPathMatcher;
 import org.smartboot.http.utils.StringUtils;
 import org.smartboot.servlet.HandlerContext;
 import org.smartboot.servlet.conf.FilterInfo;
 import org.smartboot.servlet.conf.FilterMappingInfo;
 import org.smartboot.servlet.impl.FilterChainImpl;
+import org.smartboot.servlet.util.ServletPathMatcher;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -21,7 +21,7 @@ import java.util.Map;
  * @version V1.0 , 2019/12/11
  */
 public class FilterMatchHandler extends Handler {
-    private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
+    private static final ServletPathMatcher PATH_MATCHER = new ServletPathMatcher();
 
     @Override
     public void handleRequest(HandlerContext handlerContext) throws Exception {
@@ -34,7 +34,7 @@ public class FilterMatchHandler extends Handler {
         filterMappings.forEach(filterInfo -> {
             switch (filterInfo.getMappingType()) {
                 case URL:
-                    if (PATH_MATCHER.match(contextPath + filterInfo.getMapping(), request.getRequestURI())) {
+                    if (PATH_MATCHER.matches(contextPath + filterInfo.getMapping(), request.getRequestURI())) {
                         filters.add(allFilters.get(filterInfo.getFilterName()).getFilter());
                     }
                     break;

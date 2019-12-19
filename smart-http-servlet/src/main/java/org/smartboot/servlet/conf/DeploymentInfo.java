@@ -1,5 +1,7 @@
 package org.smartboot.servlet.conf;
 
+import javax.servlet.ServletContextListener;
+import javax.servlet.ServletRequestListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -17,7 +19,9 @@ public class DeploymentInfo {
     private final Map<String, FilterInfo> filters = new HashMap<>();
     private final List<FilterMappingInfo> filterMappings = new ArrayList<>();
     private final Map<String, String> initParameters = new HashMap<>();
-    private final Map<String, EventListenerInfo> eventListeners = new HashMap<>();
+    private final List<String> eventListeners = new ArrayList<>();
+    private final List<ServletContextListener> servletContextListeners = new ArrayList<>();
+    private final List<ServletRequestListener> servletRequestListeners = new ArrayList<>();
     private ClassLoader classLoader;
     private String contextPath;
     private String realPath;
@@ -67,13 +71,27 @@ public class DeploymentInfo {
         return this;
     }
 
-    public DeploymentInfo addServletContextListener(final EventListenerInfo listenerInfo) {
-        eventListeners.put(listenerInfo.getListenerClass(), listenerInfo);
+    public DeploymentInfo addEventListener(final String listenerInfo) {
+        eventListeners.add(listenerInfo);
         return this;
     }
 
-    public Map<String, EventListenerInfo> getEventListeners() {
+    public List<String> getEventListeners() {
         return eventListeners;
+    }
+
+    public DeploymentInfo addServletContextListener(ServletContextListener contextListener) {
+        servletContextListeners.add(contextListener);
+        return this;
+    }
+
+    public DeploymentInfo addServletRequestListener(ServletRequestListener requestListener) {
+        servletRequestListeners.add(requestListener);
+        return this;
+    }
+
+    public List<ServletRequestListener> getServletRequestListeners() {
+        return servletRequestListeners;
     }
 
     public DeploymentInfo addFilters(final FilterInfo... filters) {

@@ -21,10 +21,14 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,6 +37,7 @@ import java.util.Set;
  * @version V1.0 , 2018/8/31
  */
 public final class Http11Request implements HttpRequest {
+    private static final Locale defaultLocale = Locale.getDefault();
     /**
      * 解码状态
      */
@@ -322,6 +327,17 @@ public final class Http11Request implements HttpRequest {
         }
         return remoteHost;
     }
+
+    @Override
+    public Locale getLocale() {
+        return defaultLocale;
+    }
+
+    @Override
+    public Enumeration<Locale> getLocales() {
+        return Collections.enumeration(Arrays.asList(defaultLocale));
+    }
+
 
     @Override
     public String getCharacterEncoding() {

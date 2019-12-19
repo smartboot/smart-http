@@ -49,7 +49,6 @@ public class ServletInfo {
 
     public ServletInfo addMapping(final String mapping) {
         if (!mapping.startsWith("/") && !mapping.startsWith("*") && !mapping.isEmpty()) {
-            //if the user adds a mapping like 'index.html' we transparently translate it to '/index.html'
             mappings.add("/" + mapping);
         } else {
             mappings.add(mapping);

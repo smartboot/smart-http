@@ -3,6 +3,8 @@ package org.smartboot.http;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.Enumeration;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -79,6 +81,10 @@ public interface HttpRequest {
      * qualified name of the client
      */
     String getRemoteHost();
+
+    public Locale getLocale();
+
+    public Enumeration<Locale> getLocales();
 
     String getCharacterEncoding();
 }

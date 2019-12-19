@@ -5,7 +5,8 @@ import org.smartboot.http.HttpResponse;
 import org.smartboot.http.server.handle.HttpHandle;
 import org.smartboot.servlet.handler.FilterMatchHandler;
 import org.smartboot.servlet.handler.HandlePipeline;
-import org.smartboot.servlet.handler.ServletMatchtHandler;
+import org.smartboot.servlet.handler.ServletMatchHandler;
+import org.smartboot.servlet.handler.ServletRequestListenerHandler;
 import org.smartboot.servlet.handler.ServletServiceHandler;
 import org.smartboot.servlet.impl.HttpServletRequestImpl;
 import org.smartboot.servlet.impl.HttpServletResponseImpl;
@@ -29,7 +30,8 @@ public class ServletHttpHandle extends HttpHandle implements Lifecycle {
 
     @Override
     public void start() {
-        pipeline.next(new ServletMatchtHandler())
+        pipeline.next(new ServletRequestListenerHandler())
+                .next(new ServletMatchHandler())
                 .next(new FilterMatchHandler())
                 .next(new ServletServiceHandler());
 
@@ -54,7 +56,7 @@ public class ServletHttpHandle extends HttpHandle implements Lifecycle {
             DeploymentRuntime runtime = contextMatcher.matchRuntime(request.getRequestURI());
             Thread.currentThread().setContextClassLoader(runtime.getServletContext().getClassLoader());
 
-            HttpServletRequestImpl servletRequest = new HttpServletRequestImpl(request);
+            HttpServletRequestImpl servletRequest = new HttpServletRequestImpl(request, runtime.getServletContext());
             HttpServletResponseImpl servletResponse = new HttpServletResponseImpl(response);
             HandlerContext exchange = new HandlerContext();
             exchange.setRequest(servletRequest);

@@ -49,8 +49,11 @@ class Http11Response implements HttpResponse {
      */
     private String contentType;
 
+    private String characterEncoding;
+
 
     public Http11Response(Http11Request request, OutputStream outputStream) {
+        characterEncoding = request.getCharacterEncoding();
         this.outputStream = new HttpOutputStream(request, this, outputStream);
     }
 
@@ -62,6 +65,7 @@ class Http11Response implements HttpResponse {
         httpStatus = null;
         contentType = null;
         contentLength = -1;
+        characterEncoding = null;
         this.outputStream.reset();
     }
 
@@ -180,6 +184,16 @@ class Http11Response implements HttpResponse {
 
     public void write(byte[] buffer) throws IOException {
         outputStream.write(buffer);
+    }
+
+    @Override
+    public String getCharacterEncoding() {
+        return characterEncoding;
+    }
+
+    @Override
+    public void setCharacterEncoding(String charset) {
+        this.characterEncoding = charset;
     }
 
     public int getContentLength() {
