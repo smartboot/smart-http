@@ -1,6 +1,8 @@
 package org.smartboot.servlet.impl;
 
 import org.smartboot.http.HttpRequest;
+import org.smartboot.http.logging.Logger;
+import org.smartboot.http.logging.LoggerFactory;
 import org.smartboot.http.server.Cookies;
 import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.http.utils.NumberUtils;
@@ -40,6 +42,7 @@ import java.util.Map;
  * @version V1.0 , 2019/12/11
  */
 public class HttpServletRequestImpl implements HttpServletRequest {
+    private static final Logger LOGGER = LoggerFactory.getLogger(HttpServletRequestImpl.class);
     private HttpRequest request;
     private ServletContext servletContext;
     private String characterEncoding;
@@ -159,7 +162,8 @@ public class HttpServletRequestImpl implements HttpServletRequest {
 
     @Override
     public Principal getUserPrincipal() {
-        throw new UnsupportedOperationException();
+        LOGGER.error("unSupport getUserPrincipal");
+        return null;
     }
 
     @Override
