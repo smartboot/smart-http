@@ -3,7 +3,6 @@ package org.smartboot.servlet.impl;
 import org.smartboot.http.utils.Mimetypes;
 import org.smartboot.servlet.DeploymentRuntime;
 import org.smartboot.servlet.conf.DeploymentInfo;
-import org.smartboot.servlet.util.IteratorEnumeration;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterRegistration;
@@ -21,6 +20,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.EventListener;
 import java.util.Map;
@@ -185,7 +185,7 @@ public class ServletContextImpl implements ServletContext {
 
     @Override
     public Enumeration<String> getInitParameterNames() {
-        return new IteratorEnumeration<>(deploymentInfo.getInitParameters().keySet().iterator());
+        return Collections.enumeration(deploymentInfo.getInitParameters().keySet());
     }
 
     @Override
@@ -204,7 +204,7 @@ public class ServletContextImpl implements ServletContext {
 
     @Override
     public Enumeration<String> getAttributeNames() {
-        return new IteratorEnumeration<>(attributes.keySet().iterator());
+        return Collections.enumeration(attributes.keySet());
     }
 
     @Override

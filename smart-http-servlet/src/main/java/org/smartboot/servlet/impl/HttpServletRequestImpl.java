@@ -6,7 +6,6 @@ import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.http.utils.NumberUtils;
 import org.smartboot.servlet.DeploymentRuntime;
 import org.smartboot.servlet.session.SessionManager;
-import org.smartboot.servlet.util.IteratorEnumeration;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.DispatcherType;
@@ -25,9 +24,11 @@ import javax.servlet.http.Part;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.InetSocketAddress;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -48,9 +49,11 @@ public class HttpServletRequestImpl implements HttpServletRequest {
     private SessionManager sessionManager;
     private Cookie[] cookies;
     private String servletPath;
+    private DispatcherType dispatcherType;
 
-    public HttpServletRequestImpl(HttpRequest request, DeploymentRuntime runtime) {
+    public HttpServletRequestImpl(HttpRequest request, DeploymentRuntime runtime, DispatcherType dispatcherType) {
         this.request = request;
+        this.dispatcherType = dispatcherType;
         this.servletContext = runtime.getServletContext();
         this.sessionManager = runtime.getSessionManager();
     }
@@ -106,12 +109,12 @@ public class HttpServletRequestImpl implements HttpServletRequest {
 
     @Override
     public Enumeration<String> getHeaders(String name) {
-        return new IteratorEnumeration(request.getHeaders(name).iterator());
+        return Collections.enumeration(request.getHeaders(name));
     }
 
     @Override
     public Enumeration<String> getHeaderNames() {
-        return new IteratorEnumeration<>(request.getHeaderNames().iterator());
+        return Collections.enumeration(request.getHeaderNames());
     }
 
     @Override
@@ -262,7 +265,7 @@ public class HttpServletRequestImpl implements HttpServletRequest {
 
     @Override
     public Enumeration<String> getAttributeNames() {
-        return new IteratorEnumeration<String>(attributes == null ? new ArrayList<String>(0).iterator() : attributes.keySet().iterator());
+        return Collections.enumeration(attributes == null ? new ArrayList<String>(0) : attributes.keySet());
     }
 
     @Override
@@ -302,7 +305,7 @@ public class HttpServletRequestImpl implements HttpServletRequest {
 
     @Override
     public Enumeration<String> getParameterNames() {
-        return new IteratorEnumeration<>(request.getParameters().keySet().iterator());
+        return Collections.enumeration(request.getParameters().keySet());
     }
 
     @Override
@@ -342,12 +345,12 @@ public class HttpServletRequestImpl implements HttpServletRequest {
 
     @Override
     public String getRemoteAddr() {
-        throw new UnsupportedOperationException();
+        return getAddress(request.getRemoteAddress());
     }
 
     @Override
     public String getRemoteHost() {
-        throw new UnsupportedOperationException();
+        return request.getRemoteAddress().getHostString();
     }
 
     @Override
@@ -387,27 +390,34 @@ public class HttpServletRequestImpl implements HttpServletRequest {
 
     @Override
     public String getRealPath(String path) {
-        throw new UnsupportedOperationException();
+        return servletContext.getRealPath(path);
     }
 
     @Override
     public int getRemotePort() {
-        throw new UnsupportedOperationException();
+        return request.getRemoteAddress().getPort();
     }
 
     @Override
     public String getLocalName() {
-        throw new UnsupportedOperationException();
+        return request.getLocalAddress().getHostString();
     }
 
     @Override
     public String getLocalAddr() {
-        throw new UnsupportedOperationException();
+        return getAddress(request.getLocalAddress());
+    }
+
+    private String getAddress(InetSocketAddress inetSocketAddress) {
+        if (inetSocketAddress == null) {
+            return "";
+        }
+        return inetSocketAddress.getAddress() == null ? inetSocketAddress.getHostString() : inetSocketAddress.getAddress().getHostAddress();
     }
 
     @Override
     public int getLocalPort() {
-        throw new UnsupportedOperationException();
+        return request.getLocalAddress().getPort();
     }
 
     @Override
@@ -442,6 +452,6 @@ public class HttpServletRequestImpl implements HttpServletRequest {
 
     @Override
     public DispatcherType getDispatcherType() {
-        throw new UnsupportedOperationException();
+        return dispatcherType;
     }
 }

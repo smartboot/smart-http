@@ -2,6 +2,7 @@ package org.smartboot.http;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Locale;
@@ -44,6 +45,7 @@ public interface HttpRequest {
      */
     String getMethod();
 
+    String getScheme();
 
     String getRequestURL();
 
@@ -69,6 +71,10 @@ public interface HttpRequest {
      * IP address of the client that sent the request
      */
     String getRemoteAddr();
+
+    InetSocketAddress getRemoteAddress();
+
+    InetSocketAddress getLocalAddress();
 
     /**
      * Returns the fully qualified name of the client

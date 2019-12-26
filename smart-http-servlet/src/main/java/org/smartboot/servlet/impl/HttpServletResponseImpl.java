@@ -1,7 +1,10 @@
 package org.smartboot.servlet.impl;
 
+import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
 import org.smartboot.http.enums.HttpStatus;
+import org.smartboot.http.logging.Logger;
+import org.smartboot.http.logging.LoggerFactory;
 import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.servlet.util.ServletPathMatcher;
 
@@ -10,7 +13,9 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -18,15 +23,23 @@ import java.util.Locale;
  * @version V1.0 , 2019/12/11
  */
 public class HttpServletResponseImpl implements HttpServletResponse {
+    private static final Logger LOGGER = LoggerFactory.getLogger(HttpServletResponseImpl.class);
     private HttpResponse response;
+    private HttpRequest request;
+    private List<Cookie> cookies;
+    private String contentType;
 
-    public HttpServletResponseImpl(HttpResponse response) {
+    public HttpServletResponseImpl(HttpRequest request, HttpResponse response) {
+        this.request = request;
         this.response = response;
     }
 
     @Override
     public void addCookie(Cookie cookie) {
-        throw new UnsupportedOperationException();
+        if (cookies == null) {
+            cookies = new ArrayList<>();
+        }
+        cookies.add(cookie);
     }
 
     @Override
@@ -61,18 +74,30 @@ public class HttpServletResponseImpl implements HttpServletResponse {
 
     @Override
     public void sendError(int sc) throws IOException {
-        throw new UnsupportedOperationException();
+        HttpStatus status = HttpStatus.valueOf(sc);
+        sendError(sc, status != null ? status.getReasonPhrase() : "Unknow");
     }
 
     @Override
     public void sendRedirect(String location) throws IOException {
         response.setHttpStatus(HttpStatus.FOUND);
-        System.out.println(location);
+        LOGGER.info("location:" + location);
+        String redirect;
         if (ServletPathMatcher.isAbsoluteUrl(location)) {
-            response.setHeader(HttpHeaderConstant.Names.LOCATION, location);
+            redirect = location;
+        } else if (location.charAt(0) == '/') {
+            redirect = request.getScheme() + "://" + getHeader(HttpHeaderConstant.Names.HOST) + location;
         } else {
-            throw new UnsupportedOperationException("sendRedirect:" + location);
+            String url = request.getRequestURL();
+            int last = url.lastIndexOf("/");
+            if (last != 1) {
+                redirect = url.substring(0, last + 1) + location;
+            } else {
+                redirect = url + location;
+            }
         }
+        LOGGER.info("sendRedirect:" + redirect);
+        response.setHeader(HttpHeaderConstant.Names.LOCATION, redirect);
     }
 
     @Override
@@ -147,11 +172,12 @@ public class HttpServletResponseImpl implements HttpServletResponse {
 
     @Override
     public String getContentType() {
-        throw new UnsupportedOperationException();
+        return contentType;
     }
 
     @Override
     public void setContentType(String type) {
+        contentType = type;
         response.setContentType(type);
     }
 

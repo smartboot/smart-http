@@ -1,10 +1,10 @@
 package org.smartboot.servlet.impl;
 
 import org.smartboot.servlet.conf.ServletInfo;
-import org.smartboot.servlet.util.IteratorEnumeration;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
+import java.util.Collections;
 import java.util.Enumeration;
 
 public class ServletConfigImpl implements ServletConfig {
@@ -34,6 +34,6 @@ public class ServletConfigImpl implements ServletConfig {
 
     @Override
     public Enumeration<String> getInitParameterNames() {
-        return new IteratorEnumeration<>(servletInfo.getInitParams().keySet().iterator());
+        return Collections.enumeration(servletInfo.getInitParams().keySet());
     }
 }

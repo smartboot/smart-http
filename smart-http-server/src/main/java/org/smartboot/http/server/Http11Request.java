@@ -304,6 +304,26 @@ public final class Http11Request implements HttpRequest {
         return remoteAddr;
     }
 
+    @Override
+    public InetSocketAddress getRemoteAddress() {
+        try {
+            return aioSession.getRemoteAddress();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public InetSocketAddress getLocalAddress() {
+        try {
+            return aioSession.getLocalAddress();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     /**
      * Returns the fully qualified name of the client
      * or the last proxy that sent the request.

@@ -19,10 +19,10 @@
 package org.smartboot.servlet.impl;
 
 import org.smartboot.servlet.conf.FilterInfo;
-import org.smartboot.servlet.util.IteratorEnumeration;
 
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletContext;
+import java.util.Collections;
 import java.util.Enumeration;
 
 
@@ -53,6 +53,6 @@ public class FilterConfigImpl implements FilterConfig {
 
     @Override
     public Enumeration<String> getInitParameterNames() {
-        return new IteratorEnumeration<>(filterInfo.getInitParams().keySet().iterator());
+        return Collections.enumeration(filterInfo.getInitParams().keySet());
     }
 }

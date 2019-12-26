@@ -12,6 +12,7 @@ import org.smartboot.servlet.impl.HttpServletRequestImpl;
 import org.smartboot.servlet.impl.HttpServletResponseImpl;
 import org.smartboot.servlet.war.WebContextRuntime;
 
+import javax.servlet.DispatcherType;
 import java.io.IOException;
 
 /**
@@ -56,8 +57,8 @@ public class ServletHttpHandle extends HttpHandle implements Lifecycle {
             DeploymentRuntime runtime = contextMatcher.matchRuntime(request.getRequestURI());
             Thread.currentThread().setContextClassLoader(runtime.getServletContext().getClassLoader());
 
-            HttpServletRequestImpl servletRequest = new HttpServletRequestImpl(request, runtime);
-            HttpServletResponseImpl servletResponse = new HttpServletResponseImpl(response);
+            HttpServletRequestImpl servletRequest = new HttpServletRequestImpl(request, runtime, DispatcherType.REQUEST);
+            HttpServletResponseImpl servletResponse = new HttpServletResponseImpl(request, response);
             HandlerContext exchange = new HandlerContext();
             exchange.setRequest(servletRequest);
             exchange.setResponse(servletResponse);

@@ -17,7 +17,6 @@ public class ServletPathMatcher {
                 URI uri = new URI(location);
                 return uri.getScheme() != null;
             } catch (URISyntaxException e) {
-                // ignore invalid locations and consider not absolute
             }
         }
         return false;
