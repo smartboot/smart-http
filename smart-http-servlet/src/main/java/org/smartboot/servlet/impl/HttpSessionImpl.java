@@ -1,28 +1,46 @@
 package org.smartboot.servlet.impl;
 
+import org.smartboot.servlet.DeploymentRuntime;
+
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionContext;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author 三刀
  * @version V1.0 , 2019/12/19
  */
 public class HttpSessionImpl implements HttpSession {
+
+    private final long creationTime = System.currentTimeMillis();
+    private Map<String, Object> attributes = new HashMap<>();
+    private volatile long lastAccessed;
+    private volatile int maxInactiveInterval;
+    private String sessionId;
+    private volatile boolean invalid;
+    private DeploymentRuntime runtime;
+
+    public HttpSessionImpl(String sessionId) {
+        this.sessionId = sessionId;
+    }
+
     @Override
     public long getCreationTime() {
-        return 0;
+        return creationTime;
     }
 
     @Override
     public String getId() {
-        return null;
+        return sessionId;
     }
 
     @Override
     public long getLastAccessedTime() {
-        return 0;
+        return lastAccessed;
     }
 
     @Override
@@ -31,13 +49,13 @@ public class HttpSessionImpl implements HttpSession {
     }
 
     @Override
-    public void setMaxInactiveInterval(int interval) {
-
+    public int getMaxInactiveInterval() {
+        return maxInactiveInterval;
     }
 
     @Override
-    public int getMaxInactiveInterval() {
-        return 0;
+    public void setMaxInactiveInterval(int interval) {
+        this.maxInactiveInterval = interval;
     }
 
     @Override
@@ -47,17 +65,17 @@ public class HttpSessionImpl implements HttpSession {
 
     @Override
     public Object getAttribute(String name) {
-        return null;
+        return attributes.get(name);
     }
 
     @Override
     public Object getValue(String name) {
-        return null;
+        return getAttribute(name);
     }
 
     @Override
     public Enumeration<String> getAttributeNames() {
-        return null;
+        return Collections.enumeration(attributes.keySet());
     }
 
     @Override
@@ -67,22 +85,22 @@ public class HttpSessionImpl implements HttpSession {
 
     @Override
     public void setAttribute(String name, Object value) {
-
+        attributes.put(name, value);
     }
 
     @Override
     public void putValue(String name, Object value) {
-
+        setAttribute(name, value);
     }
 
     @Override
     public void removeAttribute(String name) {
-
+        attributes.remove(name);
     }
 
     @Override
     public void removeValue(String name) {
-
+        removeAttribute(name);
     }
 
     @Override

@@ -1,11 +1,26 @@
 package org.smartboot.servlet.util;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 public class ServletPathMatcher {
 
     private final static ServletPathMatcher INSTANCE = new ServletPathMatcher();
 
     public static ServletPathMatcher getInstance() {
         return INSTANCE;
+    }
+
+    public static boolean isAbsoluteUrl(String location) {
+        if (location != null && location.length() > 0 && location.contains(":")) {
+            try {
+                URI uri = new URI(location);
+                return uri.getScheme() != null;
+            } catch (URISyntaxException e) {
+                // ignore invalid locations and consider not absolute
+            }
+        }
+        return false;
     }
 
     /**
@@ -53,5 +68,4 @@ public class ServletPathMatcher {
         }
         return false;
     }
-
 }

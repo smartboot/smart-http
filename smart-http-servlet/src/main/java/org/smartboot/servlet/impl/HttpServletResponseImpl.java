@@ -2,6 +2,8 @@ package org.smartboot.servlet.impl;
 
 import org.smartboot.http.HttpResponse;
 import org.smartboot.http.enums.HttpStatus;
+import org.smartboot.http.utils.HttpHeaderConstant;
+import org.smartboot.servlet.util.ServletPathMatcher;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
@@ -64,7 +66,13 @@ public class HttpServletResponseImpl implements HttpServletResponse {
 
     @Override
     public void sendRedirect(String location) throws IOException {
-        throw new UnsupportedOperationException();
+        response.setHttpStatus(HttpStatus.FOUND);
+        System.out.println(location);
+        if (ServletPathMatcher.isAbsoluteUrl(location)) {
+            response.setHeader(HttpHeaderConstant.Names.LOCATION, location);
+        } else {
+            throw new UnsupportedOperationException("sendRedirect:" + location);
+        }
     }
 
     @Override

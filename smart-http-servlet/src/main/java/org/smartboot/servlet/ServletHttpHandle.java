@@ -56,7 +56,7 @@ public class ServletHttpHandle extends HttpHandle implements Lifecycle {
             DeploymentRuntime runtime = contextMatcher.matchRuntime(request.getRequestURI());
             Thread.currentThread().setContextClassLoader(runtime.getServletContext().getClassLoader());
 
-            HttpServletRequestImpl servletRequest = new HttpServletRequestImpl(request, runtime.getServletContext());
+            HttpServletRequestImpl servletRequest = new HttpServletRequestImpl(request, runtime);
             HttpServletResponseImpl servletResponse = new HttpServletResponseImpl(response);
             HandlerContext exchange = new HandlerContext();
             exchange.setRequest(servletRequest);

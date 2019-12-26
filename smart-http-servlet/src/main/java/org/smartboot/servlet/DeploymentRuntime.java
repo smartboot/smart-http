@@ -8,6 +8,8 @@ import org.smartboot.servlet.conf.ServletInfo;
 import org.smartboot.servlet.impl.FilterConfigImpl;
 import org.smartboot.servlet.impl.ServletConfigImpl;
 import org.smartboot.servlet.impl.ServletContextImpl;
+import org.smartboot.servlet.session.MemorySessionManager;
+import org.smartboot.servlet.session.SessionManager;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterConfig;
@@ -32,6 +34,7 @@ public class DeploymentRuntime implements Lifecycle {
     private volatile boolean started = false;
     private DeploymentInfo deploymentInfo = new DeploymentInfo();
     private ServletContextImpl servletContext = new ServletContextImpl(deploymentInfo);
+    private SessionManager sessionManager = new MemorySessionManager();
 
 
     public DeploymentInfo getDeploymentInfo() {
@@ -40,6 +43,10 @@ public class DeploymentRuntime implements Lifecycle {
 
     public ServletContextImpl getServletContext() {
         return servletContext;
+    }
+
+    public SessionManager getSessionManager() {
+        return sessionManager;
     }
 
     @Override

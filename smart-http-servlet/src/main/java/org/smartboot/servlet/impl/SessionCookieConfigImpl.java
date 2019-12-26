@@ -7,10 +7,6 @@ import javax.servlet.SessionCookieConfig;
  * @version V1.0 , 2019/12/11
  */
 public class SessionCookieConfigImpl implements SessionCookieConfig {
-    @Override
-    public void setName(String name) {
-
-    }
 
     @Override
     public String getName() {
@@ -18,7 +14,7 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
     }
 
     @Override
-    public void setDomain(String domain) {
+    public void setName(String name) {
 
     }
 
@@ -28,7 +24,7 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
     }
 
     @Override
-    public void setPath(String path) {
+    public void setDomain(String domain) {
 
     }
 
@@ -38,7 +34,7 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
     }
 
     @Override
-    public void setComment(String comment) {
+    public void setPath(String path) {
 
     }
 
@@ -48,7 +44,7 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
     }
 
     @Override
-    public void setHttpOnly(boolean httpOnly) {
+    public void setComment(String comment) {
 
     }
 
@@ -58,7 +54,7 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
     }
 
     @Override
-    public void setSecure(boolean secure) {
+    public void setHttpOnly(boolean httpOnly) {
 
     }
 
@@ -68,12 +64,17 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
     }
 
     @Override
-    public void setMaxAge(int maxAge) {
+    public void setSecure(boolean secure) {
 
     }
 
     @Override
     public int getMaxAge() {
         return 0;
+    }
+
+    @Override
+    public void setMaxAge(int maxAge) {
+
     }
 }

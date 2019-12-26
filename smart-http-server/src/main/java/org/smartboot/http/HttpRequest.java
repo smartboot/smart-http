@@ -47,6 +47,7 @@ public interface HttpRequest {
 
     String getRequestURL();
 
+    String getQueryString();
 
     String getContentType();
 
@@ -87,4 +88,5 @@ public interface HttpRequest {
     public Enumeration<Locale> getLocales();
 
     String getCharacterEncoding();
+
 }

@@ -1,7 +1,11 @@
 package org.smartboot.servlet.impl;
 
 import org.smartboot.http.HttpRequest;
+import org.smartboot.http.server.Cookies;
+import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.http.utils.NumberUtils;
+import org.smartboot.servlet.DeploymentRuntime;
+import org.smartboot.servlet.session.SessionManager;
 import org.smartboot.servlet.util.IteratorEnumeration;
 
 import javax.servlet.AsyncContext;
@@ -26,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -38,10 +43,16 @@ public class HttpServletRequestImpl implements HttpServletRequest {
     private ServletContext servletContext;
     private String characterEncoding;
     private Map<String, Object> attributes;
+    private DeploymentRuntime runtime;
+    private HttpSession httpSession;
+    private SessionManager sessionManager;
+    private Cookie[] cookies;
+    private String servletPath;
 
-    public HttpServletRequestImpl(HttpRequest request, ServletContext servletContext) {
+    public HttpServletRequestImpl(HttpRequest request, DeploymentRuntime runtime) {
         this.request = request;
-        this.servletContext = servletContext;
+        this.servletContext = runtime.getServletContext();
+        this.sessionManager = runtime.getSessionManager();
     }
 
     @Override
@@ -51,7 +62,36 @@ public class HttpServletRequestImpl implements HttpServletRequest {
 
     @Override
     public Cookie[] getCookies() {
-        throw new UnsupportedOperationException();
+        if (cookies != null) {
+            return cookies;
+        }
+
+        Map<String, org.smartboot.http.Cookie> cookieMap = Cookies.parseRequestCookies(200, false,
+                request.getHeaders(HttpHeaderConstant.Names.COOKIE));
+
+        if (cookieMap == null || cookieMap.isEmpty()) {
+            return null;
+        }
+        List<Cookie> cookieList = new ArrayList<>(cookieMap.size());
+        cookieMap.values().forEach(cookie -> {
+            Cookie cookie1 = new Cookie(cookie.getName(), cookie.getValue());
+            cookieList.add(cookie1);
+            if (cookie.getDomain() != null) {
+                cookie1.setDomain(cookie.getDomain());
+            }
+            cookie1.setHttpOnly(cookie.isHttpOnly());
+            if (cookie.getMaxAge() != null) {
+                cookie1.setMaxAge(cookie.getMaxAge());
+            }
+            if (cookie.getPath() != null) {
+                cookie1.setPath(cookie.getPath());
+            }
+            cookie1.setSecure(cookie.isSecure());
+            cookie1.setVersion(cookie.getVersion());
+        });
+        cookies = new Cookie[cookieList.size()];
+        cookieList.toArray(cookies);
+        return cookies;
     }
 
     @Override
@@ -101,7 +141,7 @@ public class HttpServletRequestImpl implements HttpServletRequest {
 
     @Override
     public String getQueryString() {
-        throw new UnsupportedOperationException();
+        return request.getQueryString();
     }
 
     @Override
@@ -136,18 +176,28 @@ public class HttpServletRequestImpl implements HttpServletRequest {
 
     @Override
     public String getServletPath() {
-        throw new UnsupportedOperationException();
+        return servletPath;
+    }
+
+    public void setServletPath(String servletPath) {
+        this.servletPath = "/*".equals(servletPath) ? "" : servletPath;
     }
 
     @Override
     public HttpSession getSession(boolean create) {
-        System.err.println("unS  upport getSession");
-        return null;
+        if (httpSession != null) {
+            return httpSession;
+        }
+        httpSession = sessionManager.getSession(this);
+        if (create && httpSession == null) {
+            httpSession = sessionManager.createSession();
+        }
+        return httpSession;
     }
 
     @Override
     public HttpSession getSession() {
-        throw new UnsupportedOperationException();
+        return getSession(true);
     }
 
     @Override

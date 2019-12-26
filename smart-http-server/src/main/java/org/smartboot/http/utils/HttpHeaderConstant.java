@@ -45,6 +45,7 @@ public class HttpHeaderConstant {
         String CONTENT_MD5 = "Content-MD5";
         String CONTENT_RANGE = "Content-Range";
         String CONTENT_TYPE = "Content-Type";
+        String COOKIE="Cookie";
 
         String DATE = "Date";
 

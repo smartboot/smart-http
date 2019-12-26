@@ -20,8 +20,8 @@ package org.smartboot.http.server;
 
 import org.smartboot.http.Cookie;
 
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -137,11 +137,11 @@ public class Cookies {
         }
     }
 
-    public static Map<String, Cookie> parseRequestCookies(int maxCookies, boolean allowEqualInValue, List<String> cookies) {
+    public static Map<String, Cookie> parseRequestCookies(int maxCookies, boolean allowEqualInValue, Collection<String> cookies) {
         return parseRequestCookies(maxCookies, allowEqualInValue, cookies, true);
     }
 
-    static Map<String, Cookie> parseRequestCookies(int maxCookies, boolean allowEqualInValue, List<String> cookies, boolean commaIsSeperator) {
+    private static Map<String, Cookie> parseRequestCookies(int maxCookies, boolean allowEqualInValue, Collection<String> cookies, boolean commaIsSeperator) {
         if (cookies == null) {
             return new TreeMap<>();
         }

@@ -4,11 +4,11 @@ import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.exception.HttpException;
 import org.smartboot.servlet.HandlerContext;
 import org.smartboot.servlet.conf.ServletInfo;
+import org.smartboot.servlet.impl.HttpServletRequestImpl;
 import org.smartboot.servlet.util.ServletPathMatcher;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 /**
@@ -27,13 +27,14 @@ public class ServletMatchHandler extends Handler {
         ServletContext servletContext = handlerContext.getDeploymentRuntime().getServletContext();
         String contextPath = servletContext.getContextPath();
         Map<String, ServletInfo> servletInfoMap = handlerContext.getDeploymentRuntime().getDeploymentInfo().getServlets();
-        HttpServletRequest request = handlerContext.getRequest();
+        HttpServletRequestImpl request = handlerContext.getRequest();
 
         for (Map.Entry<String, ServletInfo> entry : servletInfoMap.entrySet()) {
             final ServletInfo servletInfo = entry.getValue();
             for (String path : servletInfo.getMappings()) {
                 if (PATH_MATCHER.matches(contextPath + path, request.getRequestURI())) {
                     servlet = servletInfo.getServlet();
+                    request.setServletPath(path);
                     break;
                 }
             }
