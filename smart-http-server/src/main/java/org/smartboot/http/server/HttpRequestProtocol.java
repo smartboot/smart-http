@@ -44,13 +44,13 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
 
     {
         for (int i = 0; i < String_CACHE_URL.length; i++) {
-            String_CACHE_URL[i] = new ArrayList<>();
+            String_CACHE_URL[i] = new ArrayList<>(8);
         }
         for (int i = 0; i < String_CACHE_HEADER_NAME.length; i++) {
-            String_CACHE_HEADER_NAME[i] = new ArrayList<>();
+            String_CACHE_HEADER_NAME[i] = new ArrayList<>(8);
         }
         for (int i = 0; i < String_CACHE_HEADER_VALUE.length; i++) {
-            String_CACHE_HEADER_VALUE[i] = new ArrayList<>();
+            String_CACHE_HEADER_VALUE[i] = new ArrayList<>(8);
         }
     }
 

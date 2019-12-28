@@ -53,7 +53,7 @@ public final class Http11Request implements HttpRequest {
     /**
      * Http请求头
      */
-    private List<HeaderValue> headers = new ArrayList<>();
+    private List<HeaderValue> headers = new ArrayList<>(8);
     /**
      * 请求方法
      */
