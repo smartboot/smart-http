@@ -49,6 +49,7 @@ public final class Http11Request implements HttpRequest {
      * Header Value解码器是否启用
      */
     boolean headValueDecoderEnable = false;
+    private int headerSize = 0;
     /**
      * Http请求头
      */
@@ -106,7 +107,8 @@ public final class Http11Request implements HttpRequest {
 
     @Override
     public String getHeader(String headName) {
-        for (HeaderValue headerValue : headers) {
+        for (int i = 0; i < headerSize; i++) {
+            HeaderValue headerValue = headers.get(i);
             if (headerValue.getName().equalsIgnoreCase(headName)) {
                 return headerValue.getValue();
             }
@@ -117,7 +119,8 @@ public final class Http11Request implements HttpRequest {
     @Override
     public Collection<String> getHeaders(String name) {
         List<String> value = new ArrayList<>(4);
-        for (HeaderValue headerValue : headers) {
+        for (int i = 0; i < headerSize; i++) {
+            HeaderValue headerValue = headers.get(i);
             if (headerValue.getName().equalsIgnoreCase(name)) {
                 value.add(headerValue.getValue());
             }
@@ -128,15 +131,22 @@ public final class Http11Request implements HttpRequest {
     @Override
     public Collection<String> getHeaderNames() {
         Set<String> nameSet = new HashSet<>();
-        for (HeaderValue headerValue : headers) {
-            nameSet.add(headerValue.getName());
+        for (int i = 0; i < headerSize; i++) {
+            nameSet.add(headers.get(i).getName());
         }
         return nameSet;
     }
 
 
     void setHeader(String headerName, String value) {
-        headers.add(new HeaderValue(headerName, value));
+        if (headerSize < headers.size()) {
+            HeaderValue headerValue = headers.get(headerSize);
+            headerValue.setName(headerName);
+            headerValue.setValue(value);
+        } else {
+            headers.add(new HeaderValue(headerName, value));
+        }
+        headerSize++;
     }
 
     @Override
@@ -374,7 +384,7 @@ public final class Http11Request implements HttpRequest {
 
     void rest() {
         _state = State.method;
-        headers.clear();
+        headerSize = 0;
         method = null;
         tmpHeaderName = null;
         headValueDecoderEnable = false;

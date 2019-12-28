@@ -37,12 +37,20 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
             return new byte[1024];
         }
     };
-    private static final byte[] SCAN_URI = new byte[]{'?', Consts.SP};
-    private final List<StringCache>[] String_CACHE = new List[512];
+    private static final byte[] SCAN_URI = new byte[]{Consts.SP, '?'};
+    private final List<StringCache>[] String_CACHE_URL = new List[512];
+    private final List<StringCache>[] String_CACHE_HEADER_NAME = new List[32];
+    private final List<StringCache>[] String_CACHE_HEADER_VALUE = new List[512];
 
     {
-        for (int i = 0; i < String_CACHE.length; i++) {
-            String_CACHE[i] = new ArrayList<>();
+        for (int i = 0; i < String_CACHE_URL.length; i++) {
+            String_CACHE_URL[i] = new ArrayList<>();
+        }
+        for (int i = 0; i < String_CACHE_HEADER_NAME.length; i++) {
+            String_CACHE_HEADER_NAME[i] = new ArrayList<>();
+        }
+        for (int i = 0; i < String_CACHE_HEADER_VALUE.length; i++) {
+            String_CACHE_HEADER_VALUE[i] = new ArrayList<>();
         }
     }
 
@@ -50,7 +58,12 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
     public Http11Request decode(ByteBuffer buffer, AioSession<Http11Request> session) {
         Attachment attachment = session.getAttachment();
         Http11Request request = attachment.get(ATTACH_KEY_REQUEST);
-        byte[] cacheBytes = getCacheBytes(buffer, attachment);
+        byte[] cacheBytes = BYTE_LOCAL.get();
+        if (cacheBytes.length < buffer.remaining()) {
+            cacheBytes = new byte[buffer.remaining()];
+            BYTE_LOCAL.set(cacheBytes);
+        }
+
         buffer.mark();
         State curState = request._state;
         boolean flag;
@@ -183,7 +196,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                     int nameLength = scanUntilAndTrim(buffer, Consts.COLON, cacheBytes);
                     if (nameLength > 0) {
                         curState = State.head_value;
-                        request.tmpHeaderName = convertToString(cacheBytes, nameLength);
+                        request.tmpHeaderName = convertToString(cacheBytes, nameLength, String_CACHE_HEADER_NAME);
                     } else {
                         break;
                     }
@@ -196,7 +209,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                             trim(valueDecoder.getBuffer());
                             byte[] valBytes = new byte[valBuffer.remaining()];
                             valBuffer.get(valBytes);
-                            request.setHeader(request.tmpHeaderName, convertToString(valBytes, valBytes.length));
+                            request.setHeader(request.tmpHeaderName, convertToString(valBytes, valBytes.length, String_CACHE_HEADER_VALUE));
                             valueDecoder.reset();
                         } else {
                             break;
@@ -205,7 +218,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                         int valueLength = scanUntilAndTrim(buffer, Consts.CR, cacheBytes);
                         if (valueLength > 0) {
                             curState = State.head_line_LF;
-                            request.setHeader(request.tmpHeaderName, convertToString(cacheBytes, valueLength));
+                            request.setHeader(request.tmpHeaderName, convertToString(cacheBytes, valueLength, String_CACHE_HEADER_VALUE));
                         }
                         //value字段长度超过readBuffer空间大小
                         else if (buffer.remaining() == buffer.capacity()) {
@@ -284,27 +297,18 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
         return null;
     }
 
-    private byte[] getCacheBytes(ByteBuffer buffer, Attachment attachment) {
-        Thread attachThread = attachment.get(Consts.ATTACH_KEY_CURRENT_THREAD);
-        Thread currentThread = Thread.currentThread();
-        if (attachThread != currentThread) {
-            attachment.put(Consts.ATTACH_KEY_CURRENT_THREAD, currentThread);
-            attachment.put(Consts.ATTACH_KEY_CACHE_BYTES, BYTE_LOCAL.get());
-        }
-        byte[] cacheBytes = attachment.get(Consts.ATTACH_KEY_CACHE_BYTES);
-        if (cacheBytes.length < buffer.remaining()) {
-            cacheBytes = new byte[buffer.remaining()];
-            BYTE_LOCAL.set(cacheBytes);
-            attachment.put(Consts.ATTACH_KEY_CACHE_BYTES, cacheBytes);
-        }
-        return cacheBytes;
+    private String convertToString(byte[] bytes, int length) {
+        return convertToString(bytes, length, String_CACHE_URL);
     }
 
-    private String convertToString(byte[] bytes, int length) {
-        if (length >= String_CACHE.length) {
+    private String convertToString(byte[] bytes, int length, List<StringCache>[] cacheList) {
+        if (cacheList == null) {
+            cacheList = String_CACHE_URL;
+        }
+        if (length >= cacheList.length) {
             return new String(bytes, 0, length, CharsetUtil.US_ASCII);
         }
-        List<StringCache> list = String_CACHE[length];
+        List<StringCache> list = cacheList[length];
         for (int i = list.size() - 1; i > -1; i--) {
             StringCache cache = list.get(i);
             if (equals(cache.bytes, bytes)) {
@@ -351,12 +355,11 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
 
     private int scanUntilAndTrim(ByteBuffer buffer, byte split, byte[] bytes) {
         int avail = buffer.remaining();
-        for (int i = 0; i < avail; ) {
+
+        while ((bytes[0] = buffer.get()) == Consts.SP && --avail > 0) ;
+
+        for (int i = 1; i < avail; ) {
             bytes[i] = buffer.get();
-            if (i == 0 && bytes[i] == Consts.SP) {
-                avail--;
-                continue;
-            }
             if (bytes[i] == split) {
                 buffer.mark();
                 //反向去空格
@@ -373,15 +376,11 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
 
     private int scanUntilAndTrim(ByteBuffer buffer, byte[] splits, byte[] bytes) {
         int avail = buffer.remaining();
-        for (int i = 0; i < avail; ) {
+        while ((bytes[0] = buffer.get()) == Consts.SP && --avail > 0) ;
+        for (int i = 1; i < avail; ) {
             bytes[i] = buffer.get();
-            if (i == 0 && bytes[i] == Consts.SP) {
-                avail--;
-                continue;
-            }
-            byte b = bytes[i];
             for (byte split : splits) {
-                if (b == split) {
+                if (bytes[i] == split) {
                     buffer.mark();
                     //反向去空格
                     while (bytes[i - 1] == Consts.SP) {
