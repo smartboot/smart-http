@@ -354,9 +354,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
 
     private int scanUntilAndTrim(ByteBuffer buffer, byte split, char[] bytes) {
         int avail = buffer.remaining();
-        byte firtByte = 0;
-        while ((firtByte = buffer.get()) == Consts.SP && --avail > 0) ;
-        bytes[0] = (char) (firtByte & 0xFF);
+        while ((bytes[0] = (char) (buffer.get() & 0xFF)) == Consts.SP && --avail > 0) ;
 
         for (int i = 1; i < avail; ) {
             bytes[i] = (char) (buffer.get() & 0xFF);
@@ -376,9 +374,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
 
     private int scanUntilAndTrim(ByteBuffer buffer, char[] splits, char[] cacheChars) {
         int avail = buffer.remaining();
-        byte firstByte = 0;
-        while ((firstByte = buffer.get()) == Consts.SP && --avail > 0) ;
-        cacheChars[0] = (char) (firstByte & 0xFF);
+        while ((cacheChars[0] = (char) (buffer.get() & 0xFF)) == Consts.SP && --avail > 0) ;
         for (int i = 1; i < avail; ) {
             cacheChars[i] = (char) (buffer.get() & 0xFF);
             for (char split : splits) {
