@@ -31,13 +31,13 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
 
     static final AttachKey<Http11Request> ATTACH_KEY_REQUEST = AttachKey.valueOf("request");
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpRequestProtocol.class);
-    private static final ThreadLocal<byte[]> BYTE_LOCAL = new ThreadLocal<byte[]>() {
+    private static final ThreadLocal<char[]> CHAR_CACHE_LOCAL = new ThreadLocal<char[]>() {
         @Override
-        protected byte[] initialValue() {
-            return new byte[1024];
+        protected char[] initialValue() {
+            return new char[1024];
         }
     };
-    private static final byte[] SCAN_URI = new byte[]{Consts.SP, '?'};
+    private static final char[] SCAN_URI = new char[]{' ', '?'};
     private final List<StringCache>[] String_CACHE_URL = new List[512];
     private final List<StringCache>[] String_CACHE_HEADER_NAME = new List[32];
     private final List<StringCache>[] String_CACHE_HEADER_VALUE = new List[512];
@@ -58,10 +58,10 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
     public Http11Request decode(ByteBuffer buffer, AioSession<Http11Request> session) {
         Attachment attachment = session.getAttachment();
         Http11Request request = attachment.get(ATTACH_KEY_REQUEST);
-        byte[] cacheBytes = BYTE_LOCAL.get();
-        if (cacheBytes.length < buffer.remaining()) {
-            cacheBytes = new byte[buffer.remaining()];
-            BYTE_LOCAL.set(cacheBytes);
+        char[] cacheChars = CHAR_CACHE_LOCAL.get();
+        if (cacheChars.length < buffer.remaining()) {
+            cacheChars = new char[buffer.remaining()];
+            CHAR_CACHE_LOCAL.set(cacheChars);
         }
 
         buffer.mark();
@@ -129,9 +129,9 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                         throw new HttpException(HttpStatus.METHOD_NOT_ALLOWED);
                     }
                 case uri:
-                    int uriLength = scanUntilAndTrim(buffer, SCAN_URI, cacheBytes);
+                    int uriLength = scanUntilAndTrim(buffer, SCAN_URI, cacheChars);
                     if (uriLength > 0) {
-                        request._originalUri = convertToString(cacheBytes, uriLength);
+                        request._originalUri = convertToString(cacheChars, uriLength);
                         if (buffer.get(buffer.position() - 1) == '?') {
                             curState = State.queryString;
                         } else {
@@ -143,11 +143,11 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                         break;
                     }
                 case queryString:
-                    int queryLength = scanUntil(buffer, Consts.SP, cacheBytes);
+                    int queryLength = scanUntil(buffer, Consts.SP, cacheChars);
                     if (queryLength == 0) {
                         curState = State.protocol;
                     } else if (queryLength > 0) {
-                        request.setQueryString(convertToString(cacheBytes, queryLength));
+                        request.setQueryString(convertToString(cacheChars, queryLength));
                         curState = State.protocol;
                     } else {
                         break;
@@ -193,10 +193,10 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                         break;
                     }
                 case head_name:
-                    int nameLength = scanUntilAndTrim(buffer, Consts.COLON, cacheBytes);
+                    int nameLength = scanUntilAndTrim(buffer, Consts.COLON, cacheChars);
                     if (nameLength > 0) {
                         curState = State.head_value;
-                        request.tmpHeaderName = convertToString(cacheBytes, nameLength, String_CACHE_HEADER_NAME);
+                        request.tmpHeaderName = convertToString(cacheChars, nameLength, String_CACHE_HEADER_NAME);
                     } else {
                         break;
                     }
@@ -209,16 +209,17 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                             trim(valueDecoder.getBuffer());
                             byte[] valBytes = new byte[valBuffer.remaining()];
                             valBuffer.get(valBytes);
-                            request.setHeader(request.tmpHeaderName, convertToString(valBytes, valBytes.length, String_CACHE_HEADER_VALUE));
+//                            request.setHeader(request.tmpHeaderName, convertToString(valBytes, valBytes.length, String_CACHE_HEADER_VALUE));
+                            request.setHeader(request.tmpHeaderName, new String(valBytes, CharsetUtil.US_ASCII));
                             valueDecoder.reset();
                         } else {
                             break;
                         }
                     } else {
-                        int valueLength = scanUntilAndTrim(buffer, Consts.CR, cacheBytes);
+                        int valueLength = scanUntilAndTrim(buffer, Consts.CR, cacheChars);
                         if (valueLength > 0) {
                             curState = State.head_line_LF;
-                            request.setHeader(request.tmpHeaderName, convertToString(cacheBytes, valueLength, String_CACHE_HEADER_VALUE));
+                            request.setHeader(request.tmpHeaderName, convertToString(cacheChars, valueLength, String_CACHE_HEADER_VALUE));
                         }
                         //value字段长度超过readBuffer空间大小
                         else if (buffer.remaining() == buffer.capacity()) {
@@ -297,16 +298,16 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
         return null;
     }
 
-    private String convertToString(byte[] bytes, int length) {
+    private String convertToString(char[] bytes, int length) {
         return convertToString(bytes, length, String_CACHE_URL);
     }
 
-    private String convertToString(byte[] bytes, int length, List<StringCache>[] cacheList) {
+    private String convertToString(char[] bytes, int length, List<StringCache>[] cacheList) {
         if (cacheList == null) {
             cacheList = String_CACHE_URL;
         }
         if (length >= cacheList.length) {
-            return new String(bytes, 0, length, CharsetUtil.US_ASCII);
+            return new String(bytes, 0, length);
         }
         List<StringCache> list = cacheList[length];
         for (int i = list.size() - 1; i > -1; i--) {
@@ -321,15 +322,13 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                     return cache.value;
                 }
             }
-            String str = new String(bytes, 0, length, CharsetUtil.US_ASCII);
-            byte[] bak = new byte[length];
-            System.arraycopy(bytes, 0, bak, 0, bak.length);
-            list.add(new StringCache(bak, str));
+            String str = new String(bytes, 0, length);
+            list.add(new StringCache(str.toCharArray(), str));
             return str;
         }
     }
 
-    private boolean equals(byte[] b0, byte[] b1) {
+    private boolean equals(char[] b0, char[] b1) {
         for (int i = b0.length - 1; i > 0; i--) {
             if (b0[i] != b1[i]) {
                 return false;
@@ -339,10 +338,10 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
     }
 
 
-    private int scanUntil(ByteBuffer buffer, byte split, byte[] bytes) {
+    private int scanUntil(ByteBuffer buffer, byte split, char[] bytes) {
         int avail = buffer.remaining();
         for (int i = 0; i < avail; ) {
-            bytes[i] = buffer.get();
+            bytes[i] = (char) (buffer.get() & 0xFF);
             if (bytes[i] == split) {
                 buffer.mark();
                 return i;
@@ -353,13 +352,14 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
         return -1;
     }
 
-    private int scanUntilAndTrim(ByteBuffer buffer, byte split, byte[] bytes) {
+    private int scanUntilAndTrim(ByteBuffer buffer, byte split, char[] bytes) {
         int avail = buffer.remaining();
-
-        while ((bytes[0] = buffer.get()) == Consts.SP && --avail > 0) ;
+        byte firtByte = 0;
+        while ((firtByte = buffer.get()) == Consts.SP && --avail > 0) ;
+        bytes[0] = (char) (firtByte & 0xFF);
 
         for (int i = 1; i < avail; ) {
-            bytes[i] = buffer.get();
+            bytes[i] = (char) (buffer.get() & 0xFF);
             if (bytes[i] == split) {
                 buffer.mark();
                 //反向去空格
@@ -374,16 +374,18 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
         return 0;
     }
 
-    private int scanUntilAndTrim(ByteBuffer buffer, byte[] splits, byte[] bytes) {
+    private int scanUntilAndTrim(ByteBuffer buffer, char[] splits, char[] cacheChars) {
         int avail = buffer.remaining();
-        while ((bytes[0] = buffer.get()) == Consts.SP && --avail > 0) ;
+        byte firstByte = 0;
+        while ((firstByte = buffer.get()) == Consts.SP && --avail > 0) ;
+        cacheChars[0] = (char) (firstByte & 0xFF);
         for (int i = 1; i < avail; ) {
-            bytes[i] = buffer.get();
-            for (byte split : splits) {
-                if (bytes[i] == split) {
+            cacheChars[i] = (char) (buffer.get() & 0xFF);
+            for (char split : splits) {
+                if (cacheChars[i] == split) {
                     buffer.mark();
                     //反向去空格
-                    while (bytes[i - 1] == Consts.SP) {
+                    while (cacheChars[i - 1] == Consts.SP) {
                         i--;
                     }
                     return i;
@@ -420,10 +422,10 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
 
 
     private class StringCache {
-        final byte[] bytes;
+        final char[] bytes;
         final String value;
 
-        public StringCache(byte[] bytes, String value) {
+        public StringCache(char[] bytes, String value) {
             this.bytes = bytes;
             this.value = value;
         }
