@@ -28,7 +28,6 @@ import java.util.List;
 public class HttpRequestProtocol implements Protocol<Http11Request> {
 
     static final AttachKey<Http11Request> ATTACH_KEY_REQUEST = AttachKey.valueOf("request");
-    private static final Logger LOGGER = LoggerFactory.getLogger(HttpRequestProtocol.class);
     private static final ThreadLocal<char[]> CHAR_CACHE_LOCAL = new ThreadLocal<char[]>() {
         @Override
         protected char[] initialValue() {

@@ -17,7 +17,7 @@
     <dependencies>
         <dependency>
             <groupId>org.smartboot.http</groupId>
-            <artifactId>smart-http-servlet</artifactId>
+            <artifactId>smart-http-server</artifactId>
             <version>${smarthttp.version}</version>
         </dependency>
 
