@@ -12,7 +12,7 @@
     <dependencies>
         <dependency>
             <groupId>org.smartboot.socket</groupId>
-            <artifactId>aio-core</artifactId>
+            <artifactId>aio-pro</artifactId>
         </dependency>
     </dependencies>
     <!--<build>-->
