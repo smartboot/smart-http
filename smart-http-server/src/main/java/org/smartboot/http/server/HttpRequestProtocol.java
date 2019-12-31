@@ -296,9 +296,6 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
     }
 
     private String convertToString(char[] bytes, int length, List<StringCache>[] cacheList) {
-        if (cacheList == null) {
-            cacheList = String_CACHE_URL;
-        }
         if (length >= cacheList.length) {
             return new String(bytes, 0, length);
         }
