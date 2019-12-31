@@ -1,10 +1,10 @@
-/*
- * Copyright (c) 2018, org.smartboot. All rights reserved.
- * project name: smart-socket
+/*******************************************************************************
+ * Copyright (c) 2017-2020, org.smartboot. All rights reserved.
+ * project name: smart-http
  * file name: HttpBootstrap.java
- * Date: 2018-01-28
- * Author: sandao
- */
+ * Date: 2020-01-01
+ * Author: sandao (zhengjunweimail@163.com)
+ ******************************************************************************/
 
 package org.smartboot.http;
 

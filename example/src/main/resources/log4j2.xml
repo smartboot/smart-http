@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ~ Copyright (c) 2017-2020, org.smartboot. All rights reserved.
+  ~ project name: smart-http
+  ~ file name: log4j2.xml
+  ~ Date: 2020-01-01
+  ~ Author: sandao (zhengjunweimail@163.com)
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+
 <Configuration status='fatal' packages="org.smartboot.socket">
 
     <Properties>
