@@ -42,7 +42,6 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
             return new char[1024];
         }
     };
-    private static final char[] SCAN_URI = new char[]{' ', '?'};
     private final List<StringCache>[] String_CACHE_URL = new List[512];
     private final List<StringCache>[] String_CACHE_HEADER_NAME = new List[32];
     private final List<StringCache>[] String_CACHE_HEADER_VALUE = new List[512];
@@ -133,7 +132,7 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                         throw new HttpException(HttpStatus.METHOD_NOT_ALLOWED);
                     }
                 case uri:
-                    int uriLength = scanUntilAndTrim(buffer, SCAN_URI, cacheChars);
+                    int uriLength = scanURI(buffer, cacheChars);
                     if (uriLength > 0) {
                         request._originalUri = convertToString(cacheChars, uriLength);
                         if (buffer.get(buffer.position() - 1) == '?') {
@@ -369,20 +368,14 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
         return 0;
     }
 
-    private int scanUntilAndTrim(ByteBuffer buffer, char[] splits, char[] cacheChars) {
+    private int scanURI(ByteBuffer buffer, char[] cacheChars) {
         while ((cacheChars[0] = (char) (buffer.get() & 0xFF)) == Consts.SP) ;
         int i = 1;
         while (buffer.hasRemaining()) {
             cacheChars[i] = (char) (buffer.get() & 0xFF);
-            for (char split : splits) {
-                if (cacheChars[i] == split) {
-                    buffer.mark();
-                    //反向去空格
-                    while (cacheChars[i - 1] == Consts.SP) {
-                        i--;
-                    }
-                    return i;
-                }
+            if (cacheChars[i] == ' ' || cacheChars[i] == '?') {
+                buffer.mark();
+                return i;
             }
             i++;
         }
