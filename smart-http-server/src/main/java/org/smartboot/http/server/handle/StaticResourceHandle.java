@@ -12,8 +12,7 @@ import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
 import org.smartboot.http.enums.HttpMethodEnum;
 import org.smartboot.http.enums.HttpStatus;
-import org.smartboot.http.logging.Logger;
-import org.smartboot.http.logging.LoggerFactory;
+import org.smartboot.http.logging.RunLogger;
 import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.http.utils.Mimetypes;
 import org.smartboot.http.utils.StringUtils;
@@ -26,6 +25,7 @@ import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.logging.Level;
 
 /**
  * 静态资源加载Handle
@@ -34,7 +34,6 @@ import java.util.Locale;
  * @version V1.0 , 2018/2/7
  */
 public class StaticResourceHandle extends HttpHandle {
-    private static final Logger LOGGER = LoggerFactory.getLogger(StaticResourceHandle.class);
     private static final int READ_BUFFER = 1024 * 1024;
     private static final String URL_404 =
             "<html>" +
@@ -56,7 +55,7 @@ public class StaticResourceHandle extends HttpHandle {
         if (!this.baseDir.isDirectory()) {
             throw new RuntimeException(baseDir + " is not a directory");
         }
-        LOGGER.info("dir is:" + this.baseDir.getAbsolutePath());
+        RunLogger.getLogger().log(Level.INFO, "dir is:" + this.baseDir.getAbsolutePath());
     }
 
     @Override
@@ -66,11 +65,11 @@ public class StaticResourceHandle extends HttpHandle {
         if (StringUtils.endsWith(fileName, "/")) {
             fileName += "index.html";
         }
-        LOGGER.info("请求URL:" + fileName);
+        RunLogger.getLogger().log(Level.INFO, "请求URL:" + fileName);
         File file = new File(baseDir, fileName);
         //404
         if (!file.isFile()) {
-            LOGGER.warn("file:" + request.getRequestURI() + " not found!");
+            RunLogger.getLogger().log(Level.WARNING, "file:" + request.getRequestURI() + " not found!");
             response.setHttpStatus(HttpStatus.NOT_FOUND);
             response.setHeader(HttpHeaderConstant.Names.CONTENT_TYPE, "text/html; charset=utf-8");
 
@@ -88,7 +87,7 @@ public class StaticResourceHandle extends HttpHandle {
                 return;
             }
         } catch (Exception e) {
-            LOGGER.error("exception", e);
+            RunLogger.getLogger().log(Level.SEVERE, "exception", e);
         }
         response.setHeader(HttpHeaderConstant.Names.LAST_MODIFIED, sdf.get().format(lastModifyDate));
 
