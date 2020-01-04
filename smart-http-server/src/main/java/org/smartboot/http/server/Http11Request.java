@@ -103,6 +103,8 @@ public final class Http11Request implements HttpRequest {
      */
     private Http11Response response;
 
+    private String hostHeader;
+
 
     private byte[] postData = null;
 
@@ -113,6 +115,13 @@ public final class Http11Request implements HttpRequest {
 
     Http11Response getResponse() {
         return response;
+    }
+
+    public String getHost() {
+        if (hostHeader == null) {
+            hostHeader = getHeader(HttpHeaderConstant.Names.HOST);
+        }
+        return hostHeader;
     }
 
     @Override
