@@ -16,7 +16,7 @@ import java.util.Date;
  * @author 三刀
  * @version V1.0 , 2018/8/31
  */
-public class CookieImpl implements Cookie {
+ class CookieImpl implements Cookie {
 
     private final String name;
     private String value;

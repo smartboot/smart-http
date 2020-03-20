@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 
-public class Cookies {
+class Cookies {
 
     public static final String DOMAIN = "$Domain";
     public static final String VERSION = "$Version";
