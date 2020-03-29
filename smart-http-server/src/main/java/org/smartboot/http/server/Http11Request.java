@@ -108,6 +108,8 @@ public final class Http11Request implements HttpRequest {
 
     private byte[] postData = null;
 
+    private boolean websocket = false;
+
     Http11Request(AioSession<Http11Request> aioSession) {
         this.aioSession = aioSession;
         response = new Http11Response(this, aioSession.writeBuffer());
@@ -432,11 +434,20 @@ public final class Http11Request implements HttpRequest {
         return headerValueDecoder;
     }
 
+    public void setWebsocket(boolean websocket) {
+        this.websocket = websocket;
+    }
+
+    public boolean isWebsocket() {
+        return websocket;
+    }
+
     void rest() {
         _state = State.method;
         headerSize = 0;
         method = null;
         tmpHeaderName = null;
+        websocket=false;
         headValueDecoderEnable = false;
         if (headerValueDecoder != null) {
             headerValueDecoder.reset();

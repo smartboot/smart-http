@@ -163,7 +163,7 @@ final class HttpOutputStream extends OutputStream {
     }
 
     private byte[] getHeadPart(HttpStatus httpStatus, String contentType, int contentLength) {
-        chunked = contentLength < 0;
+        chunked = contentLength < 0 && !request.isWebsocket();
         byte[] data = null;
         //成功消息优先从缓存中加载
         if (httpStatus == HttpStatus.OK) {

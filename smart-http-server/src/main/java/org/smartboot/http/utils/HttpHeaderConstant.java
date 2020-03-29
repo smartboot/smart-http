@@ -90,6 +90,10 @@ public class HttpHeaderConstant {
 
         String WARNING = "Warning";
         String WWW_AUTHENTICATE = "WWW-Authenticate";
+
+        String Sec_WebSocket_Key="Sec-WebSocket-Key";
+
+        String Sec_WebSocket_Accept="Sec-WebSocket-Accept";
     }
 
     public interface Values {

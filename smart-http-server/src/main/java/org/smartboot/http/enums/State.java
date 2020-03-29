@@ -23,5 +23,7 @@ public enum State {
     head_line_end,
     head_finished,
     body,
-    finished;
+    finished,
+    ws_handshake,
+    ws_data;
 }

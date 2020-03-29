@@ -29,6 +29,7 @@ import java.io.IOException;
  */
 public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
     private final HandlePipeline pipeline = new HandlePipeline();
+    private WebSocketMessageProcessor webSocketMessageProcessor = new WebSocketMessageProcessor();
 
     public HttpMessageProcessor() {
         pipeline.next(new RFC2612RequestHandle());
@@ -37,6 +38,13 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
     @Override
     public void process(AioSession<Http11Request> session, Http11Request request) {
         try {
+            Attachment attachment = session.getAttachment();
+            WebSocketRequest webSocketRequest = attachment.get(HttpRequestProtocol.ATTACH_KEY_WS_REQ);
+            if (webSocketRequest != null) {
+                AioSession aioSession = session;
+                webSocketMessageProcessor.process(aioSession, webSocketRequest);
+                return;
+            }
             Http11Response httpResponse = request.getResponse();
             try {
                 pipeline.doHandle(request, httpResponse);

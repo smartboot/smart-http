@@ -36,6 +36,7 @@ import java.util.List;
 public class HttpRequestProtocol implements Protocol<Http11Request> {
 
     static final AttachKey<Http11Request> ATTACH_KEY_REQUEST = AttachKey.valueOf("request");
+    static final AttachKey<WebSocketRequest> ATTACH_KEY_WS_REQ = AttachKey.valueOf("ws");
     private static final ThreadLocal<char[]> CHAR_CACHE_LOCAL = new ThreadLocal<char[]>() {
         @Override
         protected char[] initialValue() {
@@ -258,8 +259,18 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                         throw new RuntimeException();
                     }
                 case head_finished:
+                    //websocket通信
+                    if (request.getMethodEnum() == HttpMethodEnum.GET
+                            && HttpHeaderConstant.Values.WEBSOCKET.equals(request.getHeader(HttpHeaderConstant.Names.UPGRADE))
+                            && HttpHeaderConstant.Values.UPGRADE.equals(request.getHeader(HttpHeaderConstant.Names.CONNECTION))) {
+                        request.setWebsocket(true);
+                        WebSocketRequest webSocketRequest = new WebSocketRequest(request);
+                        attachment.put(ATTACH_KEY_WS_REQ, webSocketRequest);
+                        curState = State.ws_handshake;
+                        break;
+                    }
                     //Post请求
-                    if (HttpMethodEnum.POST == request.getMethodEnum()
+                    else if (HttpMethodEnum.POST == request.getMethodEnum()
                             && StringUtils.startsWith(request.getContentType(), HttpHeaderConstant.Values.X_WWW_FORM_URLENCODED)) {
                         int postLength = request.getContentLength();
                         if (postLength > Consts.maxPostSize) {
@@ -282,13 +293,17 @@ public class HttpRequestProtocol implements Protocol<Http11Request> {
                     }
                     buffer.mark();
                     break;
+                case ws_data:
+                    if (buffer.remaining() >= 2) {
+
+                    }
                 case finished:
                     break;
                 default:
                     throw new RuntimeException("aa");
             }
         } while (flag);
-        if (curState == State.finished) {
+        if (curState == State.finished || curState == State.ws_handshake) {
             return request;
         }
         request._state = curState;
