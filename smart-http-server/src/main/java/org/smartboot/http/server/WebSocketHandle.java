@@ -21,14 +21,16 @@ import java.util.Base64;
  * @author 三刀
  * @version V1.0 , 2020/3/29
  */
-public class WebSocketMessageProcessor extends HttpHandle<WebSocketRequest> {
+public class WebSocketHandle extends HttpHandle<WebSocketRequest> {
     public static final String WEBSOCKET_13_ACCEPT_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
-    private RFC2612RequestHandle rfc2612RequestHandle = new RFC2612RequestHandle();
+    private final RFC2612RequestHandle rfc2612RequestHandle = new RFC2612RequestHandle();
 
     @Override
     public void doHandle(WebSocketRequest request, HttpResponse response) throws IOException {
         if (request.getWebsocketStatus() == WebSocketRequest.WebsocketStatus.HandShake) {
+            //Http规范校验
             rfc2612RequestHandle.doHandle(request, response);
+
             String key = request.getHeader(HttpHeaderConstant.Names.Sec_WebSocket_Key);
             String acceptSeed = key + WEBSOCKET_13_ACCEPT_GUID;
             byte[] sha1 = SHA1.encode(acceptSeed);
@@ -37,7 +39,6 @@ public class WebSocketMessageProcessor extends HttpHandle<WebSocketRequest> {
             response.setHeader(HttpHeaderConstant.Names.UPGRADE, HttpHeaderConstant.Values.WEBSOCKET);
             response.setHeader(HttpHeaderConstant.Names.CONNECTION, HttpHeaderConstant.Values.UPGRADE);
             response.setHeader(HttpHeaderConstant.Names.Sec_WebSocket_Accept, accept);
-
             request.setWebsocketStatus(WebSocketRequest.WebsocketStatus.DataFrame);
         } else {
             System.out.println(new String(request.getPladload()));

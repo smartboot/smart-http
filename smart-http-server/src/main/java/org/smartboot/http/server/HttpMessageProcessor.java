@@ -37,7 +37,7 @@ public class HttpMessageProcessor implements MessageProcessor<BaseHttpRequest> {
 
     public HttpMessageProcessor() {
         httpPipeline.next(new RFC2612RequestHandle());
-        wsPipeline.next(new WebSocketMessageProcessor());
+        wsPipeline.next(new WebSocketHandle());
     }
 
     @Override
