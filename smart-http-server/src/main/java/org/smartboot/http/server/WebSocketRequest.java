@@ -14,7 +14,7 @@ import java.io.InputStream;
  * @author 三刀
  * @version V1.0 , 2018/8/31
  */
-public class WebSocketRequest extends AbstractHttpRequest {
+public class WebSocketRequest extends AbstractRequest {
     private WebsocketStatus websocketStatus;
     private boolean readingFrame = false;
     private long playLoadLen;

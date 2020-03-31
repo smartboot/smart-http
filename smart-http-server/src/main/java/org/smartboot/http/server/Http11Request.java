@@ -16,20 +16,14 @@ import org.smartboot.http.utils.PostInputStream;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 
 /**
  * @author 三刀
  * @version V1.0 , 2018/8/31
  */
-public final class Http11Request extends AbstractHttpRequest {
+public final class Http11Request extends AbstractRequest {
 
     private InputStream inputStream;
-
-
-    private String formUrlencoded;
-
-    private boolean paramDecoded = false;
 
     Http11Request(BaseHttpRequest request) {
         init(request, new Http11Response(this, request.getAioSession().writeBuffer()));
@@ -42,7 +36,7 @@ public final class Http11Request extends AbstractHttpRequest {
         }
         if (!HttpMethodEnum.POST.getMethod().equalsIgnoreCase(getMethod())) {
             inputStream = new EmptyInputStream();
-        } else if (formUrlencoded == null) {
+        } else if (request.getFormUrlencoded() == null) {
             inputStream = new PostInputStream(request.getAioSession().getInputStream(getContentLength()), getContentLength());
         } else {
             throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -51,19 +45,8 @@ public final class Http11Request extends AbstractHttpRequest {
     }
 
 
-    @Override
-    public String[] getParameterValues(String name) {
-        Map<String, String[]> parameters = request.getParameters();
-
-        if (!paramDecoded && formUrlencoded != null) {
-            request.decodeParamString(formUrlencoded, parameters);
-        }
-        return parameters.get(name);
-    }
-
     public void reset() {
         super.reset();
-        formUrlencoded = null;
         if (inputStream != null) {
             try {
                 inputStream.close();

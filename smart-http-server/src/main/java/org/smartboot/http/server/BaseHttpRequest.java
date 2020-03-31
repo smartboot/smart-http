@@ -82,6 +82,11 @@ public final class BaseHttpRequest implements HttpRequest, Reset {
 
     private boolean websocket = false;
 
+    /**
+     * Post表单
+     */
+    private String formUrlencoded;
+
     BaseHttpRequest(AioSession<BaseHttpRequest> aioSession) {
         this.aioSession = aioSession;
     }
@@ -247,6 +252,9 @@ public final class BaseHttpRequest implements HttpRequest, Reset {
             decodeParamString(urlParamStr, parameters);
         }
 
+        if (formUrlencoded != null) {
+            decodeParamString(formUrlencoded, parameters);
+        }
         return getParameterValues(name);
     }
 
@@ -383,8 +391,12 @@ public final class BaseHttpRequest implements HttpRequest, Reset {
         this.websocket = websocket;
     }
 
-    public void setFormUrlencoded(String formUrlencoded) {
+    public String getFormUrlencoded() {
+        return formUrlencoded;
+    }
 
+    public void setFormUrlencoded(String formUrlencoded) {
+        this.formUrlencoded = formUrlencoded;
     }
 
     public void reset() {

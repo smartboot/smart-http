@@ -20,7 +20,7 @@ import java.util.Map;
  * @author 三刀
  * @version V1.0 , 2018/8/31
  */
-abstract class AbstractHttpRequest implements HttpRequest, Reset, BaseHttpRequestHook {
+abstract class AbstractRequest implements HttpRequest, Reset, BaseHttpRequestHook {
 
     protected BaseHttpRequest request;
     /**
@@ -104,7 +104,7 @@ abstract class AbstractHttpRequest implements HttpRequest, Reset, BaseHttpReques
     }
 
     @Override
-    public String[] getParameterValues(String name) {
+    public final String[] getParameterValues(String name) {
         return request.getParameters().get(name);
     }
 
