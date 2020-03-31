@@ -34,7 +34,7 @@ public class HttpHeaderDecoder implements DecodeChain<Http11Request> {
             }
             //head end
             if (length == 1) {
-                return decoder.deocde(byteBuffer, aioSession, request);
+                return decoder.deocde(byteBuffer, cacheChars, aioSession, request);
             }
             int colonIndex = 0;
             for (; colonIndex < length; colonIndex++) {

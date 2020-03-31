@@ -35,7 +35,7 @@ public class HttpUriDecoder implements DecodeChain<Http11Request> {
                 case Consts.SP:
                     return protocolDecoder.deocde(byteBuffer, cacheChars, aioSession, request);
                 case '?':
-                    return uriQueryDecoder.deocde(byteBuffer, aioSession, request);
+                    return uriQueryDecoder.deocde(byteBuffer, cacheChars, aioSession, request);
                 default:
                     throw new HttpException(HttpStatus.BAD_REQUEST);
             }
