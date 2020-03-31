@@ -24,12 +24,17 @@ public class WebSocketRequest extends AbstractRequest {
     private int frameOpcode;
 
     private byte[] pladload;
+    private WebSocketResponse response;
 
     public WebSocketRequest(BaseHttpRequest baseHttpRequest) {
-        init(baseHttpRequest, new WebSocketResponse(this, baseHttpRequest.getAioSession().writeBuffer()));
+        init(baseHttpRequest);
         this.websocketStatus = WebsocketStatus.HandShake;
+        this.response = new WebSocketResponse(this, baseHttpRequest.getAioSession().writeBuffer());
     }
 
+    public final WebSocketResponse getResponse() {
+        return response;
+    }
 
     public WebsocketStatus getWebsocketStatus() {
         return websocketStatus;

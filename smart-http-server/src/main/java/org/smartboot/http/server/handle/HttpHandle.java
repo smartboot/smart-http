@@ -21,7 +21,7 @@ public abstract class HttpHandle<T extends HttpRequest> {
     /**
      * 持有下一个处理器的句柄
      */
-    protected HttpHandle nextHandle;
+    protected HttpHandle<T> nextHandle;
 
     /**
      * 执行当前处理器逻辑。

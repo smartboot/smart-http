@@ -23,19 +23,11 @@ import java.util.Map;
 abstract class AbstractRequest implements HttpRequest, Reset, BaseHttpRequestHook {
 
     protected BaseHttpRequest request;
-    /**
-     * Http响应
-     */
-    private AbstractResponse response;
 
-    protected void init(BaseHttpRequest request, AbstractResponse response) {
+    protected void init(BaseHttpRequest request) {
         this.request = request;
-        this.response = response;
     }
 
-    public final AbstractResponse getResponse() {
-        return response;
-    }
 
     @Override
     public final String getHeader(String headName) {
@@ -146,7 +138,6 @@ abstract class AbstractRequest implements HttpRequest, Reset, BaseHttpRequestHoo
 
     public void reset() {
         request.reset();
-        response.reset();
     }
 
     @Override

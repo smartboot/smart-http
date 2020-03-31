@@ -21,7 +21,7 @@ import java.util.Base64;
  * @author 三刀
  * @version V1.0 , 2020/3/29
  */
-public class WebSocketHandle extends HttpHandle<WebSocketRequest> {
+class WebSocketHandle extends HttpHandle<WebSocketRequest> {
     public static final String WEBSOCKET_13_ACCEPT_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
     private final RFC2612RequestHandle rfc2612RequestHandle = new RFC2612RequestHandle();
 
@@ -46,6 +46,5 @@ public class WebSocketHandle extends HttpHandle<WebSocketRequest> {
         } else {
             doNext(request, response);
         }
-
     }
 }

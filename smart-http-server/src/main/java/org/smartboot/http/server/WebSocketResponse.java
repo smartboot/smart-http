@@ -14,7 +14,7 @@ import java.io.OutputStream;
  * @author 三刀
  * @version V1.0 , 2018/2/3
  */
-class WebSocketResponse extends AbstractResponse {
+public class WebSocketResponse extends AbstractResponse {
 
 
     public WebSocketResponse(WebSocketRequest request, OutputStream outputStream) {

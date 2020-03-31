@@ -12,8 +12,10 @@ import org.smartboot.http.HttpBootstrap;
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
 import org.smartboot.http.server.WebSocketRequest;
+import org.smartboot.http.server.WebSocketResponse;
 import org.smartboot.http.server.handle.HttpHandle;
 import org.smartboot.http.server.handle.RouteHandle;
+import org.smartboot.http.server.handle.WebSocketHandle;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -104,19 +106,20 @@ public class SmartHttpDemo {
         HttpBootstrap bootstrap = new HttpBootstrap();
         //配置HTTP消息处理管道
         bootstrap.pipeline().next(routeHandle);
-        bootstrap.wsPipeline().next(new HttpHandle<WebSocketRequest>() {
-            @Override
-            public void doHandle(WebSocketRequest request, HttpResponse response) throws IOException {
-                switch (request.getWebsocketStatus()) {
-                    case HandShake:
-                        System.out.println("握手请求");
-                        break;
-                    case DataFrame:
-                        System.out.println(new String(request.getPladload()));
-                }
 
+        RouteHandle wsRouteHandle = new RouteHandle();
+        wsRouteHandle.route("/ws", new WebSocketHandle() {
+            @Override
+            public void onHandShark(WebSocketRequest request, WebSocketResponse webSocketResponse) {
+                System.out.println("收到心跳消息");
+            }
+
+            @Override
+            public void onDataFrame(WebSocketRequest request, WebSocketResponse webSocketResponse) {
+                System.out.println("收到数据");
             }
         });
+        bootstrap.wsPipeline().next(wsRouteHandle);
 
         //设定服务器配置并启动
         bootstrap.setPort(8080)

@@ -25,8 +25,15 @@ public final class Http11Request extends AbstractRequest {
 
     private InputStream inputStream;
 
+    private Http11Response response;
+
     Http11Request(BaseHttpRequest request) {
-        init(request, new Http11Response(this, request.getAioSession().writeBuffer()));
+        init(request);
+        this.response = new Http11Response(this, request.getAioSession().writeBuffer());
+    }
+
+    public final Http11Response getResponse() {
+        return response;
     }
 
     @Override
@@ -47,6 +54,7 @@ public final class Http11Request extends AbstractRequest {
 
     public void reset() {
         super.reset();
+        response.reset();
         if (inputStream != null) {
             try {
                 inputStream.close();
