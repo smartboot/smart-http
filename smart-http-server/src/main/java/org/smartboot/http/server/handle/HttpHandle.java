@@ -17,7 +17,7 @@ import java.io.IOException;
  * @author 三刀
  * @version V1.0 , 2018/2/6
  */
-public abstract class HttpHandle {
+public abstract class HttpHandle<T extends HttpRequest> {
     /**
      * 持有下一个处理器的句柄
      */
@@ -33,9 +33,9 @@ public abstract class HttpHandle {
      * @param response
      * @throws IOException
      */
-    public abstract void doHandle(HttpRequest request, HttpResponse response) throws IOException;
+    public abstract void doHandle(T request, HttpResponse response) throws IOException;
 
-    protected final void doNext(HttpRequest request, HttpResponse response) throws IOException {
+    protected final void doNext(T request, HttpResponse response) throws IOException {
         if (nextHandle != null) {
             nextHandle.doHandle(request, response);
         }

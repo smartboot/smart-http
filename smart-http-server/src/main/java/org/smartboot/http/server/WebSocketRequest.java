@@ -8,43 +8,28 @@
 
 package org.smartboot.http.server;
 
-import org.smartboot.http.utils.FixedLengthFrameDecoder;
-
 import java.io.InputStream;
 
 /**
  * @author 三刀
  * @version V1.0 , 2018/8/31
  */
-public class WebSocketRequest {
-    public static final int BUFFER_LIMIT = 1024 * 64;
-    private Http11Request httpRequest;
-
-
+public class WebSocketRequest extends AbstractHttpRequest {
     private WebsocketStatus websocketStatus;
     private boolean readingFrame = false;
     private long playLoadLen;
-    private FixedLengthFrameDecoder fixedLengthFrameDecoder;
     private boolean frameFinalFlag;
     private boolean frameMasked;
     private int frameRsv;
     private int frameOpcode;
 
-    private InputStream inputStream;
+    private byte[] pladload;
 
-
-    public WebSocketRequest(Http11Request httpRequest) {
-        this.httpRequest = httpRequest;
+    public WebSocketRequest(BaseHttpRequest baseHttpRequest) {
+        init(baseHttpRequest, new WebSocketResponse(this, baseHttpRequest.getAioSession().writeBuffer()));
         this.websocketStatus = WebsocketStatus.HandShake;
     }
 
-    public Http11Request getHttpRequest() {
-        return httpRequest;
-    }
-
-    public void setHttpRequest(Http11Request httpRequest) {
-        this.httpRequest = httpRequest;
-    }
 
     public WebsocketStatus getWebsocketStatus() {
         return websocketStatus;
@@ -70,21 +55,57 @@ public class WebSocketRequest {
         this.playLoadLen = playLoadLen;
     }
 
+
     public InputStream getInputStream() {
-        return inputStream;
+        throw new UnsupportedOperationException();
     }
 
-    public void setInputStream(InputStream inputStream) {
-        this.inputStream = inputStream;
+
+    @Override
+    public void reset() {
+//        super.reset();
     }
 
-    public FixedLengthFrameDecoder getFixedLengthFrameDecoder() {
-        return fixedLengthFrameDecoder;
+    public boolean isFrameFinalFlag() {
+        return frameFinalFlag;
     }
 
-    public void setFixedLengthFrameDecoder(FixedLengthFrameDecoder fixedLengthFrameDecoder) {
-        this.fixedLengthFrameDecoder = fixedLengthFrameDecoder;
+    public void setFrameFinalFlag(boolean frameFinalFlag) {
+        this.frameFinalFlag = frameFinalFlag;
     }
+
+    public boolean isFrameMasked() {
+        return frameMasked;
+    }
+
+    public void setFrameMasked(boolean frameMasked) {
+        this.frameMasked = frameMasked;
+    }
+
+    public int getFrameRsv() {
+        return frameRsv;
+    }
+
+    public void setFrameRsv(int frameRsv) {
+        this.frameRsv = frameRsv;
+    }
+
+    public int getFrameOpcode() {
+        return frameOpcode;
+    }
+
+    public void setFrameOpcode(int frameOpcode) {
+        this.frameOpcode = frameOpcode;
+    }
+
+    public byte[] getPladload() {
+        return pladload;
+    }
+
+    public void setPladload(byte[] pladload) {
+        this.pladload = pladload;
+    }
+
 
     public enum WebsocketStatus {
         HandShake,

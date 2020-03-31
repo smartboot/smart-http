@@ -8,6 +8,7 @@
 
 package org.smartboot.http.server.decode;
 
+import org.smartboot.http.server.BaseHttpRequest;
 import org.smartboot.socket.transport.AioSession;
 
 import java.nio.ByteBuffer;
@@ -16,7 +17,8 @@ import java.nio.ByteBuffer;
  * @author 三刀
  * @version V1.0 , 2020/3/30
  */
-public interface DecodeChain<T> {
+public interface DecodeChain {
 
-    public DecodeChain<T> deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession<T> aioSession, T t);
+    public DecodeChain deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession<BaseHttpRequest> aioSession, BaseHttpRequest httpHeader);
+
 }

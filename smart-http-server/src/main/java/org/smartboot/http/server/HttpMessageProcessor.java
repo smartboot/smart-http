@@ -8,12 +8,15 @@
 
 package org.smartboot.http.server;
 
+import org.smartboot.http.HttpRequest;
+import org.smartboot.http.HttpResponse;
 import org.smartboot.http.Pipeline;
 import org.smartboot.http.enums.HttpMethodEnum;
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.exception.HttpException;
 import org.smartboot.http.server.handle.HandlePipeline;
 import org.smartboot.http.server.handle.HttpHandle;
+import org.smartboot.http.utils.AttachKey;
 import org.smartboot.http.utils.Attachment;
 import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.http.utils.StringUtils;
@@ -27,38 +30,52 @@ import java.io.IOException;
  * @author 三刀
  * @version V1.0 , 2018/6/10
  */
-public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
-    private final HandlePipeline pipeline = new HandlePipeline();
-    private WebSocketMessageProcessor webSocketMessageProcessor = new WebSocketMessageProcessor();
+public class HttpMessageProcessor implements MessageProcessor<BaseHttpRequest> {
+    private final AttachKey<Http11Request> ATTACH_KEY_HTTP_REQUEST = AttachKey.valueOf("httpRequest");
+    private final HandlePipeline httpPipeline = new HandlePipeline();
+    private final HandlePipeline wsPipeline = new HandlePipeline();
 
     public HttpMessageProcessor() {
-        pipeline.next(new RFC2612RequestHandle());
+        httpPipeline.next(new RFC2612RequestHandle());
+        wsPipeline.next(new WebSocketMessageProcessor());
     }
 
     @Override
-    public void process(AioSession<Http11Request> session, Http11Request request) {
+    public void process(AioSession<BaseHttpRequest> session, BaseHttpRequest baseHttpRequest) {
         try {
             Attachment attachment = session.getAttachment();
-            WebSocketRequest webSocketRequest = attachment.get(HttpRequestProtocol.ATTACH_KEY_WS_REQ);
-            if (webSocketRequest != null) {
-                AioSession aioSession = session;
-                webSocketMessageProcessor.process(aioSession, webSocketRequest);
-                return;
+            HttpRequest request;
+            HttpResponse response;
+            HandlePipeline pipeline;
+            if (baseHttpRequest.isWebsocket()) {
+                WebSocketRequest webSocketRequest = attachment.get(HttpRequestProtocol.ATTACH_KEY_WS_REQ);
+                request = webSocketRequest;
+                response = webSocketRequest.getResponse();
+                pipeline = wsPipeline;
+            } else {
+                Http11Request http11Request = attachment.get(ATTACH_KEY_HTTP_REQUEST);
+                if (http11Request == null) {
+                    http11Request = new Http11Request(baseHttpRequest);
+                    attachment.put(ATTACH_KEY_HTTP_REQUEST, http11Request);
+                }
+                request = http11Request;
+                response = http11Request.getResponse();
+                pipeline = httpPipeline;
             }
-            Http11Response httpResponse = request.getResponse();
+
             try {
-                pipeline.doHandle(request, httpResponse);
+                pipeline.doHandle(request, response);
             } catch (HttpException e) {
                 e.printStackTrace();
-                httpResponse.setHttpStatus(HttpStatus.valueOf(e.getHttpCode()));
-                httpResponse.getOutputStream().write(e.getDesc().getBytes());
+                response.setHttpStatus(HttpStatus.valueOf(e.getHttpCode()));
+                response.getOutputStream().write(e.getDesc().getBytes());
             } catch (Exception e) {
                 e.printStackTrace();
-                httpResponse.setHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR);
-                httpResponse.getOutputStream().write(e.fillInStackTrace().toString().getBytes());
+                response.setHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+                response.getOutputStream().write(e.fillInStackTrace().toString().getBytes());
             }
-            if (!httpResponse.isClosed()) {
-                httpResponse.getOutputStream().close();
+            if (!((AbstractOutputStream) response.getOutputStream()).isClosed()) {
+                response.getOutputStream().close();
             }
             //Post请求没有读完Body，关闭通道
             if (HttpMethodEnum.POST.getMethod().equals(request.getMethod())
@@ -66,7 +83,7 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
                     && request.getInputStream().available() > 0) {
                 session.close(false);
             } else {
-                request.rest();
+                ((Reset) request).reset();
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -76,11 +93,11 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
     }
 
     @Override
-    public void stateEvent(AioSession<Http11Request> session, StateMachineEnum stateMachineEnum, Throwable throwable) {
+    public void stateEvent(AioSession<BaseHttpRequest> session, StateMachineEnum stateMachineEnum, Throwable throwable) {
         switch (stateMachineEnum) {
             case NEW_SESSION:
                 Attachment attachment = new Attachment();
-                attachment.put(HttpRequestProtocol.ATTACH_KEY_REQUEST, new Http11Request(session));
+                attachment.put(HttpRequestProtocol.ATTACH_KEY_REQUEST, new BaseHttpRequest(session));
                 session.setAttachment(attachment);
                 break;
             case PROCESS_EXCEPTION:
@@ -109,10 +126,10 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
     }
 
     public Pipeline pipeline(HttpHandle httpHandle) {
-        return pipeline.next(httpHandle);
+        return httpPipeline.next(httpHandle);
     }
 
     public Pipeline pipeline() {
-        return pipeline;
+        return httpPipeline;
     }
 }

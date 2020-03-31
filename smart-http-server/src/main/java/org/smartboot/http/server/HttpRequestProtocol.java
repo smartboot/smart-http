@@ -9,8 +9,8 @@
 package org.smartboot.http.server;
 
 import org.smartboot.http.server.decode.DecodeChain;
-import org.smartboot.http.server.decode.FinishDecoder;
 import org.smartboot.http.server.decode.HttpMethodDecoder;
+import org.smartboot.http.server.decode.WsFrameDecoder;
 import org.smartboot.http.utils.AttachKey;
 import org.smartboot.http.utils.Attachment;
 import org.smartboot.socket.Protocol;
@@ -22,39 +22,57 @@ import java.nio.ByteBuffer;
  * @author 三刀
  * @version V1.0 , 2018/8/31
  */
-public class HttpRequestProtocol implements Protocol<Http11Request> {
+public class HttpRequestProtocol implements Protocol<BaseHttpRequest> {
 
     public static final AttachKey<WebSocketRequest> ATTACH_KEY_WS_REQ = AttachKey.valueOf("ws");
-    public static final FinishDecoder FINISH_DECODER = new FinishDecoder();
-    static final AttachKey<Http11Request> ATTACH_KEY_REQUEST = AttachKey.valueOf("request");
+    /**
+     * 普通Http消息解码完成
+     */
+    public static final DecodeChain HTTP_FINISH_DECODER = (byteBuffer, cacheChars, aioSession, request) -> null;
+    /**
+     * websocket握手消息
+     */
+    public static final DecodeChain WS_HANDSHARK_DECODER = (byteBuffer, cacheChars, aioSession, request) -> null;
+    /**
+     * websocket负载数据读取成功
+     */
+    public static final DecodeChain WS_FRAME_DECODER = (byteBuffer, cacheChars, aioSession, request) -> null;
+    static final AttachKey<BaseHttpRequest> ATTACH_KEY_REQUEST = AttachKey.valueOf("request");
+
     private static final ThreadLocal<char[]> CHAR_CACHE_LOCAL = new ThreadLocal<char[]>() {
         @Override
         protected char[] initialValue() {
             return new char[1024];
         }
     };
-    private static final AttachKey<DecodeChain<Http11Request>> ATTACH_KEY_DECHDE_CHAIN = AttachKey.valueOf("decodeChain");
+    private static final AttachKey<DecodeChain> ATTACH_KEY_DECHDE_CHAIN = AttachKey.valueOf("decodeChain");
 
     private final HttpMethodDecoder httpMethodDecoder = new HttpMethodDecoder();
 
+    private final WsFrameDecoder wsFrameDecoder = new WsFrameDecoder();
+
     @Override
-    public Http11Request decode(ByteBuffer buffer, AioSession<Http11Request> session) {
+    public BaseHttpRequest decode(ByteBuffer buffer, AioSession<BaseHttpRequest> session) {
         Attachment attachment = session.getAttachment();
-        Http11Request request = attachment.get(ATTACH_KEY_REQUEST);
+        BaseHttpRequest request = attachment.get(ATTACH_KEY_REQUEST);
         char[] cacheChars = CHAR_CACHE_LOCAL.get();
         if (cacheChars.length < buffer.remaining()) {
             cacheChars = new char[buffer.remaining()];
             CHAR_CACHE_LOCAL.set(cacheChars);
         }
-        DecodeChain<Http11Request> decodeChain = attachment.get(ATTACH_KEY_DECHDE_CHAIN);
+        DecodeChain decodeChain = attachment.get(ATTACH_KEY_DECHDE_CHAIN);
         if (decodeChain == null) {
             decodeChain = httpMethodDecoder;
         }
 
         decodeChain = decodeChain.deocde(buffer, cacheChars, session, request);
 
-        if (decodeChain == FINISH_DECODER) {
-            attachment.remove(ATTACH_KEY_DECHDE_CHAIN);
+        if (decodeChain == HTTP_FINISH_DECODER || decodeChain == WS_HANDSHARK_DECODER || decodeChain == WS_FRAME_DECODER) {
+            if (decodeChain == HTTP_FINISH_DECODER) {
+                attachment.remove(ATTACH_KEY_DECHDE_CHAIN);
+            } else {
+                attachment.put(ATTACH_KEY_DECHDE_CHAIN, wsFrameDecoder);
+            }
             return request;
         }
         attachment.put(ATTACH_KEY_DECHDE_CHAIN, decodeChain);

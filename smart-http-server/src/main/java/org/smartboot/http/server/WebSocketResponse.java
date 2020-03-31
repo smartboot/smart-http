@@ -1,27 +1,24 @@
 /*******************************************************************************
  * Copyright (c) 2017-2020, org.smartboot. All rights reserved.
  * project name: smart-http
- * file name: SetRequest.java
- * Date: 2020-03-30
+ * file name: Http11Response.java
+ * Date: 2020-01-01
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
 package org.smartboot.http.server;
 
+import java.io.OutputStream;
+
 /**
  * @author 三刀
- * @version V1.0 , 2020/3/30
+ * @version V1.0 , 2018/2/3
  */
-public interface RequestBuilder {
-    void setMethod(String method);
+class WebSocketResponse extends AbstractResponse {
 
-    void setUri(String uri);
 
-    void setQueryString(String queryString);
+    public WebSocketResponse(WebSocketRequest request, OutputStream outputStream) {
+        init(request, new WebSocketOutputStream(request, this, outputStream));
+    }
 
-    void setProtocol(String protocol);
-
-    void setHeader(String name, String value);
-
-    void setFormUrlencoded(String formUrlencoded);
 }

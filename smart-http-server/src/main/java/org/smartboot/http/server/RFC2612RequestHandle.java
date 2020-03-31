@@ -26,7 +26,7 @@ public class RFC2612RequestHandle extends HttpHandle {
 
     @Override
     public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
-        Http11Request http11Request = (Http11Request) request;
+        BaseHttpRequest http11Request = ((BaseHttpRequestHook) request).getRequest();
         methodCheck(http11Request);
         hostCheck(http11Request);
         uriCheck(http11Request);
@@ -45,7 +45,7 @@ public class RFC2612RequestHandle extends HttpHandle {
      *
      * @param request
      */
-    private void methodCheck(Http11Request request) {
+    private void methodCheck(HttpRequest request) {
         if (request.getMethod() == null) {
             throw new HttpException(HttpStatus.NOT_IMPLEMENTED);
         }
@@ -58,7 +58,7 @@ public class RFC2612RequestHandle extends HttpHandle {
      *
      * @param request
      */
-    private void hostCheck(Http11Request request) {
+    private void hostCheck(BaseHttpRequest request) {
         if (request.getHost() == null) {
             throw new HttpException(HttpStatus.BAD_REQUEST);
         }
@@ -72,8 +72,8 @@ public class RFC2612RequestHandle extends HttpHandle {
      *
      * @param request
      */
-    private void uriCheck(Http11Request request) {
-        String originalUri = request.uri;
+    private void uriCheck(BaseHttpRequest request) {
+        String originalUri = request.getUri();
         if (StringUtils.length(originalUri) > MAX_LENGTH) {
             throw new HttpException(HttpStatus.URI_TOO_LONG);
         }

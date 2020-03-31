@@ -40,8 +40,10 @@ public class PostInputStream extends InputStream {
 
     @Override
     public void close() throws IOException {
-        inputStream.close();
-        inputStream = null;
+        if (inputStream != null) {
+            inputStream.close();
+            inputStream = null;
+        }
     }
 
     @Override
