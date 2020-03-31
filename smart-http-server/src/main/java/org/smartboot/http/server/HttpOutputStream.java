@@ -10,13 +10,13 @@ package org.smartboot.http.server;
 
 import org.smartboot.http.enums.HttpMethodEnum;
 import org.smartboot.http.enums.HttpStatus;
-import org.smartboot.http.utils.CharsetUtil;
 import org.smartboot.http.utils.Consts;
 import org.smartboot.http.utils.HeaderNameEnum;
 import org.smartboot.http.utils.HttpHeaderConstant;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -40,7 +40,7 @@ final class HttpOutputStream extends OutputStream {
      * Key：status+contentType
      */
     private static final Map<String, byte[]> CACHE_CHUNKED_AND_LENGTH = new HashMap<>();
-    private static final byte[] CHUNKED_END_BYTES = "0\r\n\r\n".getBytes(CharsetUtil.US_ASCII);
+    private static final byte[] CHUNKED_END_BYTES = "0\r\n\r\n".getBytes(StandardCharsets.US_ASCII);
     private static final ScheduledExecutorService SCHEDULED_EXECUTOR_SERVICE = new ScheduledThreadPoolExecutor(1, new ThreadFactory() {
         @Override
         public Thread newThread(Runnable r) {
@@ -108,8 +108,8 @@ final class HttpOutputStream extends OutputStream {
      */
     public final void write(byte b[], int off, int len) throws IOException {
         writeHead();
-        if (HttpMethodEnum.HEAD == request.getMethodEnum()) {
-            throw new UnsupportedOperationException(request.getMethodEnum() + " can not write http body");
+        if (HttpMethodEnum.HEAD.getMethod().equals(request.getMethod())) {
+            throw new UnsupportedOperationException(request.getMethod() + " can not write http body");
         }
         if (chunked) {
             byte[] start = getBytes(Integer.toHexString(len) + "\r\n");
@@ -233,7 +233,7 @@ final class HttpOutputStream extends OutputStream {
 
 
     private byte[] getBytes(String str) {
-        return str.getBytes(CharsetUtil.US_ASCII);
+        return str.getBytes(StandardCharsets.US_ASCII);
     }
 
     public boolean isClosed() {

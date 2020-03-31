@@ -61,7 +61,7 @@ public class HttpMessageProcessor implements MessageProcessor<Http11Request> {
                 httpResponse.getOutputStream().close();
             }
             //Post请求没有读完Body，关闭通道
-            if (request.getMethodEnum() == HttpMethodEnum.POST
+            if (HttpMethodEnum.POST.getMethod().equals(request.getMethod())
                     && !StringUtils.startsWith(request.getContentType(), HttpHeaderConstant.Values.X_WWW_FORM_URLENCODED)
                     && request.getInputStream().available() > 0) {
                 session.close(false);

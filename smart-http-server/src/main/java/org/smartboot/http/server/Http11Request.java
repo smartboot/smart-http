@@ -11,10 +11,8 @@ package org.smartboot.http.server;
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.enums.HttpMethodEnum;
 import org.smartboot.http.enums.HttpStatus;
-import org.smartboot.http.enums.State;
 import org.smartboot.http.exception.HttpException;
 import org.smartboot.http.utils.Consts;
-import org.smartboot.http.utils.DelimiterFrameDecoder;
 import org.smartboot.http.utils.EmptyInputStream;
 import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.http.utils.NumberUtils;
@@ -44,21 +42,13 @@ import java.util.Set;
  * @author 三刀
  * @version V1.0 , 2018/8/31
  */
-public final class Http11Request implements HttpRequest {
+public final class Http11Request implements HttpRequest, RequestBuilder {
     private static final Locale defaultLocale = Locale.getDefault();
-    /**
-     * 解码状态
-     */
-    State _state = State.method;
+
     /**
      * 原始的完整请求
      */
-    String _originalUri;
-    String tmpHeaderName;
-    /**
-     * Header Value解码器是否启用
-     */
-    boolean headValueDecoderEnable = false;
+    String uri;
     private int headerSize = 0;
     /**
      * Http请求头
@@ -67,15 +57,12 @@ public final class Http11Request implements HttpRequest {
     /**
      * 请求方法
      */
-    private HttpMethodEnum method;
+    private String method;
     /**
      * Http协议版本
      */
     private String protocol;
-    /**
-     * 消息头Value值解码器
-     */
-    private DelimiterFrameDecoder headerValueDecoder = null;
+
     /**
      * 请求参数
      */
@@ -106,7 +93,8 @@ public final class Http11Request implements HttpRequest {
     private String hostHeader;
 
 
-    private byte[] postData = null;
+    private String formUrlencoded;
+
 
     private boolean websocket = false;
 
@@ -159,7 +147,7 @@ public final class Http11Request implements HttpRequest {
     }
 
 
-    void setHeader(String headerName, String value) {
+    public void setHeader(String headerName, String value) {
         if (headerSize < headers.size()) {
             HeaderValue headerValue = headers.get(headerSize);
             headerValue.setName(headerName);
@@ -171,13 +159,18 @@ public final class Http11Request implements HttpRequest {
     }
 
     @Override
+    public void setFormUrlencoded(String formUrlencoded) {
+        this.formUrlencoded = formUrlencoded;
+    }
+
+    @Override
     public InputStream getInputStream() throws IOException {
         if (inputStream != null) {
             return inputStream;
         }
-        if (method != HttpMethodEnum.POST) {
+        if (!HttpMethodEnum.POST.getMethod().equalsIgnoreCase(method)) {
             inputStream = new EmptyInputStream();
-        } else if (postData == null) {
+        } else if (formUrlencoded == null) {
             inputStream = new PostInputStream(aioSession.getInputStream(getContentLength()), getContentLength());
         } else {
             throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -199,20 +192,22 @@ public final class Http11Request implements HttpRequest {
         return protocol;
     }
 
-    void setProtocol(String protocol) {
+    public void setProtocol(String protocol) {
         this.protocol = protocol;
     }
 
     public String getMethod() {
-        return method.getMethod();
+        return method;
     }
 
-    void setMethod(HttpMethodEnum method) {
+    @Override
+    public void setMethod(String method) {
         this.method = method;
     }
 
-    HttpMethodEnum getMethodEnum() {
-        return method;
+    @Override
+    public void setUri(String uri) {
+        this.uri = uri;
     }
 
     @Override
@@ -228,7 +223,6 @@ public final class Http11Request implements HttpRequest {
         return requestUrl;
     }
 
-
     public String getScheme() {
         return scheme;
     }
@@ -241,7 +235,7 @@ public final class Http11Request implements HttpRequest {
         return queryString;
     }
 
-    void setQueryString(String queryString) {
+    public void setQueryString(String queryString) {
         this.queryString = queryString;
     }
 
@@ -282,18 +276,10 @@ public final class Http11Request implements HttpRequest {
             decodeParamString(urlParamStr, parameters);
         }
         //识别body中的参数
-        parsePostParameters();
-        return getParameterValues(name);
-    }
-
-    void setPostData(byte[] postData) {
-        this.postData = postData;
-    }
-
-    private void parsePostParameters() {
-        if (postData != null && postData.length > 0) {
-            decodeParamString(new String(postData), parameters);
+        if (formUrlencoded != null) {
+            decodeParamString(formUrlencoded, parameters);
         }
+        return getParameterValues(name);
     }
 
 
@@ -387,7 +373,6 @@ public final class Http11Request implements HttpRequest {
         return Collections.enumeration(Arrays.asList(defaultLocale));
     }
 
-
     @Override
     public String getCharacterEncoding() {
         return "utf8";
@@ -422,36 +407,19 @@ public final class Http11Request implements HttpRequest {
         }
     }
 
-    /**
-     * 获取解码器
-     *
-     * @return
-     */
-    public DelimiterFrameDecoder getHeaderValueDecoder() {
-        if (headerValueDecoder == null) {
-            headerValueDecoder = new DelimiterFrameDecoder(new byte[]{Consts.CR}, 1024);
-        }
-        return headerValueDecoder;
+    public boolean isWebsocket() {
+        return websocket;
     }
 
     public void setWebsocket(boolean websocket) {
         this.websocket = websocket;
     }
 
-    public boolean isWebsocket() {
-        return websocket;
-    }
-
     void rest() {
-        _state = State.method;
         headerSize = 0;
         method = null;
-        tmpHeaderName = null;
-        websocket=false;
-        headValueDecoderEnable = false;
-        if (headerValueDecoder != null) {
-            headerValueDecoder.reset();
-        }
+        websocket = false;
+        formUrlencoded = null;
         if (inputStream != null) {
             try {
                 inputStream.close();
@@ -460,7 +428,7 @@ public final class Http11Request implements HttpRequest {
             }
             inputStream = null;
         }
-        _originalUri = null;
+        uri = null;
         requestUrl = null;
         parameters = null;
         contentType = null;

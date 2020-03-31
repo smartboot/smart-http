@@ -7,6 +7,7 @@
  ******************************************************************************/
 package org.smartboot.http.utils;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -119,6 +120,21 @@ public class StringUtils {
      * @since 2.1
      */
     public static final int INDEX_NOT_FOUND = -1;
+    public static final List<StringCache>[] String_CACHE_URL = new List[512];
+    public static final List<StringCache>[] String_CACHE_HEADER_NAME = new List[32];
+    public static final List<StringCache>[] String_CACHE_HEADER_VALUE = new List[512];
+
+    static {
+        for (int i = 0; i < String_CACHE_URL.length; i++) {
+            String_CACHE_URL[i] = new ArrayList<>(8);
+        }
+        for (int i = 0; i < String_CACHE_HEADER_NAME.length; i++) {
+            String_CACHE_HEADER_NAME[i] = new ArrayList<>(8);
+        }
+        for (int i = 0; i < String_CACHE_HEADER_VALUE.length; i++) {
+            String_CACHE_HEADER_VALUE[i] = new ArrayList<>(8);
+        }
+    }
 
     /**
      * <p>{@code StringUtils} instances should NOT be constructed in
@@ -132,8 +148,41 @@ public class StringUtils {
         super();
     }
 
-    // Empty checks
-    //-----------------------------------------------------------------------
+    public static String convertToString(char[] bytes, int length, List<StringCache>[] cacheList) {
+        return convertToString(bytes, 0, length, cacheList);
+    }
+
+    public static String convertToString(char[] bytes, int offset, int length, List<StringCache>[] cacheList) {
+        if (length >= cacheList.length) {
+            return new String(bytes, offset, length);
+        }
+        List<StringCache> list = cacheList[length];
+        for (int i = list.size() - 1; i > -1; i--) {
+            StringCache cache = list.get(i);
+            if (equals(cache.bytes, bytes)) {
+                return cache.value;
+            }
+        }
+        synchronized (list) {
+            for (StringCache cache : list) {
+                if (equals(cache.bytes, bytes)) {
+                    return cache.value;
+                }
+            }
+            String str = new String(bytes, offset, length);
+            list.add(new StringCache(str.toCharArray(), str));
+            return str;
+        }
+    }
+
+    private static boolean equals(char[] b0, char[] b1) {
+        for (int i = b0.length - 1; i > 0; i--) {
+            if (b0[i] != b1[i]) {
+                return false;
+            }
+        }
+        return b0[0] == b1[0];
+    }
 
     /**
      * <p>Checks if a CharSequence is empty ("") or null.</p>
@@ -158,6 +207,8 @@ public class StringUtils {
         return cs == null || cs.length() == 0;
     }
 
+    // Empty checks
+    //-----------------------------------------------------------------------
 
     /**
      * <p>Checks if a CharSequence is whitespace, empty ("") or null.</p>
@@ -209,10 +260,6 @@ public class StringUtils {
         return !StringUtils.isBlank(cs);
     }
 
-
-    // Equals
-    //-----------------------------------------------------------------------
-
     /**
      * <p>Compares two CharSequences, returning {@code true} if they represent
      * equal sequences of characters.</p>
@@ -246,6 +293,10 @@ public class StringUtils {
         }
         return regionMatches(cs1, false, 0, cs2, 0, Math.max(cs1.length(), cs2.length()));
     }
+
+
+    // Equals
+    //-----------------------------------------------------------------------
 
     private static boolean regionMatches(final CharSequence cs, final boolean ignoreCase, final int thisStart,
                                          final CharSequence substring, final int start, final int length) {
@@ -319,10 +370,6 @@ public class StringUtils {
         return seq.toString().indexOf(searchSeq.toString(), startPos);
     }
 
-
-    // Substring
-    //-----------------------------------------------------------------------
-
     /**
      * <p>Gets a substring from the specified String avoiding exceptions.</p>
      *
@@ -366,6 +413,10 @@ public class StringUtils {
 
         return str.substring(start);
     }
+
+
+    // Substring
+    //-----------------------------------------------------------------------
 
     /**
      * <p>Gets a substring from the specified String avoiding exceptions.</p>
@@ -435,9 +486,6 @@ public class StringUtils {
         return str.substring(start, end);
     }
 
-    // SubStringAfter/SubStringBefore
-    //-----------------------------------------------------------------------
-
     /**
      * <p>Gets the substring before the first occurrence of a separator.
      * The separator is not returned.</p>
@@ -478,6 +526,9 @@ public class StringUtils {
         }
         return str.substring(0, pos);
     }
+
+    // SubStringAfter/SubStringBefore
+    //-----------------------------------------------------------------------
 
     /**
      * <p>Gets the substring after the first occurrence of a separator.
@@ -521,7 +572,6 @@ public class StringUtils {
         return str.substring(pos + separator.length());
     }
 
-
     /**
      * <p>Splits the provided text into an array, separators specified.
      * This is an alternative to using StringTokenizer.</p>
@@ -550,7 +600,6 @@ public class StringUtils {
     public static String[] split(final String str, final String separatorChars) {
         return splitWorker(str, separatorChars, -1, false);
     }
-
 
     /**
      * <p>Splits the provided text into an array, separators specified,
@@ -588,7 +637,6 @@ public class StringUtils {
     public static String[] splitPreserveAllTokens(final String str, final String separatorChars) {
         return splitWorker(str, separatorChars, -1, true);
     }
-
 
     /**
      * Performs the logic for the {@code split} and
@@ -689,7 +737,6 @@ public class StringUtils {
         return list.toArray(new String[list.size()]);
     }
 
-
     public static boolean hasLength(CharSequence str) {
         return (str != null && str.length() > 0);
     }
@@ -705,7 +752,6 @@ public class StringUtils {
     public static boolean hasLength(String str) {
         return hasLength((CharSequence) str);
     }
-
 
     public static String[] tokenizeToStringArray(
             String str, String delimiters, boolean trimTokens, boolean ignoreEmptyTokens) {
@@ -734,8 +780,6 @@ public class StringUtils {
         return collection.toArray(new String[collection.size()]);
     }
 
-
-
     /**
      * Gets a CharSequence length or {@code 0} if the CharSequence is
      * {@code null}.
@@ -749,13 +793,6 @@ public class StringUtils {
     public static int length(final CharSequence cs) {
         return cs == null ? 0 : cs.length();
     }
-
-
-
-
-
-    // startsWith
-    //-----------------------------------------------------------------------
 
     /**
      * <p>Check if a CharSequence starts with a specified prefix.</p>
@@ -783,6 +820,10 @@ public class StringUtils {
         return startsWith(str, prefix, false);
     }
 
+
+    // startsWith
+    //-----------------------------------------------------------------------
+
     /**
      * <p>Check if a CharSequence starts with a specified prefix (optionally case insensitive).</p>
      *
@@ -803,10 +844,6 @@ public class StringUtils {
         }
         return regionMatches(str, ignoreCase, 0, prefix, 0, prefix.length());
     }
-
-
-    // endsWith
-    //-----------------------------------------------------------------------
 
     /**
      * <p>Check if a CharSequence ends with a specified suffix.</p>
@@ -836,6 +873,9 @@ public class StringUtils {
     }
 
 
+    // endsWith
+    //-----------------------------------------------------------------------
+
     /**
      * <p>Check if a CharSequence ends with a specified suffix (optionally case insensitive).</p>
      *
@@ -858,6 +898,37 @@ public class StringUtils {
         return regionMatches(str, ignoreCase, strOffset, suffix, 0, suffix.length());
     }
 
+    public static int scanUntilAndTrim(ByteBuffer buffer, byte split, char[] cacheChars, boolean trim) {
+        buffer.mark();
+        int i = 0;
+        if (trim) {
+            while ((cacheChars[0] = (char) (buffer.get() & 0xFF)) == Consts.SP) ;
+            i = 1;
+        }
+        while (buffer.hasRemaining()) {
+            cacheChars[i] = (char) (buffer.get() & 0xFF);
+            if (cacheChars[i] == split) {
+                //反向去空格
+                while (trim && cacheChars[i - 1] == Consts.SP) {
+                    i--;
+                }
+                return i;
+            }
+            i++;
+        }
+        buffer.reset();
+        return -1;
+    }
+
+    static class StringCache {
+        final char[] bytes;
+        final String value;
+
+        public StringCache(char[] bytes, String value) {
+            this.bytes = bytes;
+            this.value = value;
+        }
+    }
 
 
 }

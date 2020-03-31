@@ -16,6 +16,7 @@ import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Base64;
 
 /**
@@ -27,21 +28,29 @@ public class WebSocketMessageProcessor implements MessageProcessor<WebSocketRequ
 
     @Override
     public void process(AioSession<WebSocketRequest> session, WebSocketRequest webSocketRequest) {
-        String key = webSocketRequest.getHttpRequest().getHeader(HttpHeaderConstant.Names.Sec_WebSocket_Key);
-        String acceptSeed = key + WEBSOCKET_13_ACCEPT_GUID;
-        byte[] sha1 = SHA1.encode(acceptSeed);
-        String accept = Base64.getEncoder().encodeToString(sha1);
-        Http11Response httpResponse = new Http11Response(webSocketRequest.getHttpRequest(), session.writeBuffer());
-        httpResponse.setHttpStatus(HttpStatus.SWITCHING_PROTOCOLS);
-        httpResponse.setHeader(HttpHeaderConstant.Names.UPGRADE, HttpHeaderConstant.Values.WEBSOCKET);
-        httpResponse.setHeader(HttpHeaderConstant.Names.CONNECTION, HttpHeaderConstant.Values.UPGRADE);
-        httpResponse.setHeader(HttpHeaderConstant.Names.Sec_WebSocket_Accept, accept);
-        if (!httpResponse.isClosed()) {
-            try {
-                httpResponse.getOutputStream().close();
-            } catch (IOException e) {
-                e.printStackTrace();
+        if (webSocketRequest.getWebsocketStatus() == WebSocketRequest.WebsocketStatus.HandShake) {
+            String key = webSocketRequest.getHttpRequest().getHeader(HttpHeaderConstant.Names.Sec_WebSocket_Key);
+            String acceptSeed = key + WEBSOCKET_13_ACCEPT_GUID;
+            byte[] sha1 = SHA1.encode(acceptSeed);
+            String accept = Base64.getEncoder().encodeToString(sha1);
+            Http11Response httpResponse = new Http11Response(webSocketRequest.getHttpRequest(), session.writeBuffer());
+            httpResponse.setHttpStatus(HttpStatus.SWITCHING_PROTOCOLS);
+            httpResponse.setHeader(HttpHeaderConstant.Names.UPGRADE, HttpHeaderConstant.Values.WEBSOCKET);
+            httpResponse.setHeader(HttpHeaderConstant.Names.CONNECTION, HttpHeaderConstant.Values.UPGRADE);
+            httpResponse.setHeader(HttpHeaderConstant.Names.Sec_WebSocket_Accept, accept);
+            if (!httpResponse.isClosed()) {
+                try {
+                    httpResponse.getOutputStream().close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
+            webSocketRequest.setWebsocketStatus(WebSocketRequest.WebsocketStatus.DataFrame);
+        } else {
+            ByteBuffer byteBuffer = webSocketRequest.getFixedLengthFrameDecoder().getBuffer();
+            byte[] b = new byte[byteBuffer.remaining()];
+            byteBuffer.get(b);
+            System.out.println(new String(b));
         }
     }
 

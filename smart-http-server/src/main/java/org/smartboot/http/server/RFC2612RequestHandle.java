@@ -46,7 +46,7 @@ public class RFC2612RequestHandle extends HttpHandle {
      * @param request
      */
     private void methodCheck(Http11Request request) {
-        if (request.getMethodEnum() == null) {
+        if (request.getMethod() == null) {
             throw new HttpException(HttpStatus.NOT_IMPLEMENTED);
         }
     }
@@ -73,7 +73,7 @@ public class RFC2612RequestHandle extends HttpHandle {
      * @param request
      */
     private void uriCheck(Http11Request request) {
-        String originalUri = request._originalUri;
+        String originalUri = request.uri;
         if (StringUtils.length(originalUri) > MAX_LENGTH) {
             throw new HttpException(HttpStatus.URI_TOO_LONG);
         }
