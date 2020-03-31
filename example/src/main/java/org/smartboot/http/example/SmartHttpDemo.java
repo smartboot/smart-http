@@ -11,8 +11,8 @@ package org.smartboot.http.example;
 import org.smartboot.http.HttpBootstrap;
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
+import org.smartboot.http.WebSocketResponse;
 import org.smartboot.http.server.WebSocketRequest;
-import org.smartboot.http.server.WebSocketResponse;
 import org.smartboot.http.server.handle.HttpHandle;
 import org.smartboot.http.server.handle.RouteHandle;
 import org.smartboot.http.server.handle.WebSocketHandle;
@@ -110,13 +110,14 @@ public class SmartHttpDemo {
         RouteHandle wsRouteHandle = new RouteHandle();
         wsRouteHandle.route("/ws", new WebSocketHandle() {
             @Override
-            public void onHandShark(WebSocketRequest request, WebSocketResponse webSocketResponse) {
+            public void finishHandshark(WebSocketRequest request, WebSocketResponse webSocketResponse) {
                 System.out.println("收到心跳消息");
             }
 
             @Override
-            public void onDataFrame(WebSocketRequest request, WebSocketResponse webSocketResponse) {
-                System.out.println("收到数据");
+            public void handleTextMessage(WebSocketRequest request, WebSocketResponse webSocketResponse, String data) {
+                System.out.println("收到请求消息:" + data);
+                webSocketResponse.sendTextMessage(data);
             }
         });
         bootstrap.wsPipeline().next(wsRouteHandle);

@@ -76,8 +76,9 @@ public class WsFrameDecoder implements DecodeChain {
         }
         byte[] playload = new byte[length];
         byteBuffer.get(playload);
-        webSocketRequest.setPladload(playload);
-        return HttpRequestProtocol.WS_FRAME_DECODER;
+        webSocketRequest.setPlayload(playload);
+
+        return fin ? HttpRequestProtocol.WS_FRAME_DECODER : this;
     }
 
     private void unmask(ByteBuffer frame, byte[] maskingKey) {

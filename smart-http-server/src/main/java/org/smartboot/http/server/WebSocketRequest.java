@@ -8,6 +8,8 @@
 
 package org.smartboot.http.server;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 /**
@@ -15,6 +17,12 @@ import java.io.InputStream;
  * @version V1.0 , 2018/8/31
  */
 public class WebSocketRequest extends AbstractRequest {
+    public static final byte OPCODE_CONT = 0x0;
+    public static final byte OPCODE_TEXT = 0x1;
+    public static final byte OPCODE_BINARY = 0x2;
+    public static final byte OPCODE_CLOSE = 0x8;
+    public static final byte OPCODE_PING = 0x9;
+    public static final byte OPCODE_PONG = 0xA;
     private WebsocketStatus websocketStatus;
     private boolean readingFrame = false;
     private long playLoadLen;
@@ -23,16 +31,16 @@ public class WebSocketRequest extends AbstractRequest {
     private int frameRsv;
     private int frameOpcode;
 
-    private byte[] pladload;
-    private WebSocketResponse response;
+    private ByteArrayOutputStream playload = new ByteArrayOutputStream();
+    private WebSocketResponseImpl response;
 
     public WebSocketRequest(BaseHttpRequest baseHttpRequest) {
         init(baseHttpRequest);
         this.websocketStatus = WebsocketStatus.HandShake;
-        this.response = new WebSocketResponse(this, baseHttpRequest.getAioSession().writeBuffer());
+        this.response = new WebSocketResponseImpl(this, baseHttpRequest.getAioSession().writeBuffer());
     }
 
-    public final WebSocketResponse getResponse() {
+    public final WebSocketResponseImpl getResponse() {
         return response;
     }
 
@@ -68,6 +76,7 @@ public class WebSocketRequest extends AbstractRequest {
 
     @Override
     public void reset() {
+        playload.reset();
 //        super.reset();
     }
 
@@ -103,12 +112,16 @@ public class WebSocketRequest extends AbstractRequest {
         this.frameOpcode = frameOpcode;
     }
 
-    public byte[] getPladload() {
-        return pladload;
+    public byte[] getPlayload() {
+        return playload.toByteArray();
     }
 
-    public void setPladload(byte[] pladload) {
-        this.pladload = pladload;
+    public void setPlayload(byte[] playload) {
+        try {
+            this.playload.write(playload);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 
