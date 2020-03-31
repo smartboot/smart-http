@@ -39,9 +39,13 @@ public class WebSocketHandle extends HttpHandle<WebSocketRequest> {
             response.setHeader(HttpHeaderConstant.Names.UPGRADE, HttpHeaderConstant.Values.WEBSOCKET);
             response.setHeader(HttpHeaderConstant.Names.CONNECTION, HttpHeaderConstant.Values.UPGRADE);
             response.setHeader(HttpHeaderConstant.Names.Sec_WebSocket_Accept, accept);
+            response.getOutputStream().flush();
+
+            doNext(request, response);
             request.setWebsocketStatus(WebSocketRequest.WebsocketStatus.DataFrame);
         } else {
-            System.out.println(new String(request.getPladload()));
+            doNext(request, response);
         }
+
     }
 }

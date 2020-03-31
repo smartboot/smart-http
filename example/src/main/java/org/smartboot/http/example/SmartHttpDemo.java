@@ -11,6 +11,7 @@ package org.smartboot.http.example;
 import org.smartboot.http.HttpBootstrap;
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
+import org.smartboot.http.server.WebSocketRequest;
 import org.smartboot.http.server.handle.HttpHandle;
 import org.smartboot.http.server.handle.RouteHandle;
 
@@ -103,6 +104,19 @@ public class SmartHttpDemo {
         HttpBootstrap bootstrap = new HttpBootstrap();
         //配置HTTP消息处理管道
         bootstrap.pipeline().next(routeHandle);
+        bootstrap.wsPipeline().next(new HttpHandle<WebSocketRequest>() {
+            @Override
+            public void doHandle(WebSocketRequest request, HttpResponse response) throws IOException {
+                switch (request.getWebsocketStatus()) {
+                    case HandShake:
+                        System.out.println("握手请求");
+                        break;
+                    case DataFrame:
+                        System.out.println(new String(request.getPladload()));
+                }
+
+            }
+        });
 
         //设定服务器配置并启动
         bootstrap.setPort(8080)

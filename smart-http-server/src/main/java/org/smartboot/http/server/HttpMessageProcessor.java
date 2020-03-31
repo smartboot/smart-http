@@ -132,4 +132,13 @@ public class HttpMessageProcessor implements MessageProcessor<BaseHttpRequest> {
     public Pipeline pipeline() {
         return httpPipeline;
     }
+
+    public Pipeline wsPipeline(HttpHandle httpHandle) {
+        return wsPipeline.next(httpHandle);
+    }
+
+    public Pipeline wsPipeline() {
+        return wsPipeline;
+    }
+
 }

@@ -59,6 +59,10 @@ public class HttpBootstrap {
         return processor.pipeline();
     }
 
+    public Pipeline wsPipeline() {
+        return processor.wsPipeline();
+    }
+
     /**
      * 设置read缓冲区大小
      *
