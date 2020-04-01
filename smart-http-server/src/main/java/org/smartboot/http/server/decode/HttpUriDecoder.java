@@ -11,7 +11,7 @@ package org.smartboot.http.server.decode;
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.exception.HttpException;
 import org.smartboot.http.server.BaseHttpRequest;
-import org.smartboot.http.utils.Consts;
+import org.smartboot.http.utils.Constant;
 import org.smartboot.http.utils.StringUtils;
 import org.smartboot.socket.transport.AioSession;
 
@@ -21,18 +21,18 @@ import java.nio.ByteBuffer;
  * @author 三刀
  * @version V1.0 , 2020/3/30
  */
-public class HttpUriDecoder implements DecodeChain {
+public class HttpUriDecoder implements Decoder {
     private HttpUriQueryDecoder uriQueryDecoder = new HttpUriQueryDecoder();
     private HttpProtocolDecoder protocolDecoder = new HttpProtocolDecoder();
 
     @Override
-    public DecodeChain deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession<BaseHttpRequest> aioSession, BaseHttpRequest request) {
+    public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession<BaseHttpRequest> aioSession, BaseHttpRequest request) {
         int length = scanURI(byteBuffer, cacheChars);
         if (length > 0) {
             String uri = StringUtils.convertToString(cacheChars, length, StringUtils.String_CACHE_URL);
             request.setUri(uri);
             switch (cacheChars[length]) {
-                case Consts.SP:
+                case Constant.SP:
                     return protocolDecoder.deocde(byteBuffer, cacheChars, aioSession, request);
                 case '?':
                     return uriQueryDecoder.deocde(byteBuffer, cacheChars, aioSession, request);
@@ -45,7 +45,7 @@ public class HttpUriDecoder implements DecodeChain {
     }
 
     private int scanURI(ByteBuffer buffer, char[] cacheChars) {
-        while ((cacheChars[0] = (char) (buffer.get() & 0xFF)) == Consts.SP) ;
+        while ((cacheChars[0] = (char) (buffer.get() & 0xFF)) == Constant.SP) ;
         int i = 1;
         while (buffer.hasRemaining()) {
             cacheChars[i] = (char) (buffer.get() & 0xFF);

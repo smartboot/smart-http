@@ -9,7 +9,7 @@
 package org.smartboot.http.server;
 
 import org.smartboot.http.HttpRequest;
-import org.smartboot.http.utils.Consts;
+import org.smartboot.http.utils.Constant;
 import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.http.utils.NumberUtils;
 import org.smartboot.http.utils.StringUtils;
@@ -71,7 +71,7 @@ public final class BaseHttpRequest implements HttpRequest, Reset {
     /**
      * 协议
      */
-    private String scheme = Consts.SCHEMA_HTTP;
+    private String scheme = Constant.SCHEMA_HTTP;
     private int contentLength = -1;
     private String remoteAddr;
 

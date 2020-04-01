@@ -11,11 +11,12 @@ package org.smartboot.http.example;
 import org.smartboot.http.HttpBootstrap;
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
+import org.smartboot.http.WebSocketRequest;
 import org.smartboot.http.WebSocketResponse;
-import org.smartboot.http.server.WebSocketRequest;
 import org.smartboot.http.server.handle.HttpHandle;
-import org.smartboot.http.server.handle.RouteHandle;
-import org.smartboot.http.server.handle.WebSocketHandle;
+import org.smartboot.http.server.handle.HttpRouteHandle;
+import org.smartboot.http.server.handle.WebSocketDefaultHandle;
+import org.smartboot.http.server.handle.WebSocketRouteHandle;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,7 +32,7 @@ public class SmartHttpDemo {
     public static void main(String[] args) {
         System.setProperty("smartHttp.server.alias", "SANDAO base on ");
 
-        RouteHandle routeHandle = new RouteHandle();
+        HttpRouteHandle routeHandle = new HttpRouteHandle();
         routeHandle.route("/", new HttpHandle() {
             byte[] body = ("<html>" +
                     "<head><title>smart-http demo</title></head>" +
@@ -107,17 +108,17 @@ public class SmartHttpDemo {
         //配置HTTP消息处理管道
         bootstrap.pipeline().next(routeHandle);
 
-        RouteHandle wsRouteHandle = new RouteHandle();
-        wsRouteHandle.route("/ws", new WebSocketHandle() {
+        WebSocketRouteHandle wsRouteHandle = new WebSocketRouteHandle();
+        wsRouteHandle.route("/ws", new WebSocketDefaultHandle() {
             @Override
             public void finishHandshark(WebSocketRequest request, WebSocketResponse webSocketResponse) {
-                System.out.println("收到心跳消息");
+                System.out.println("收到握手消息");
             }
 
             @Override
             public void handleTextMessage(WebSocketRequest request, WebSocketResponse webSocketResponse, String data) {
                 System.out.println("收到请求消息:" + data);
-                webSocketResponse.sendTextMessage(data);
+                webSocketResponse.sendTextMessage("服务端收到响应:" + data);
             }
         });
         bootstrap.wsPipeline().next(wsRouteHandle);

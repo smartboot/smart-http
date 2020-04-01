@@ -1,21 +1,25 @@
 /*******************************************************************************
  * Copyright (c) 2017-2020, org.smartboot. All rights reserved.
  * project name: smart-http
- * file name: WebSocketResponse.java
- * Date: 2020-03-31
+ * file name: WebSocketRequest.java
+ * Date: 2020-04-01
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
 package org.smartboot.http;
 
+import org.smartboot.http.enums.WebsocketStatus;
+
 /**
  * @author 三刀
- * @version V1.0 , 2020/3/31
+ * @version V1.0 , 2020/4/1
  */
-public interface WebSocketResponse {
-    void sendTextMessage(String text);
+public interface WebSocketRequest {
+    public WebsocketStatus getWebsocketStatus();
 
-    void sendBinaryMessage(byte[] bytes);
+    public int getFrameOpcode();
 
-    void onError(Throwable throwable);
+    public byte[] getPlayload();
+
+    String getRequestURI();
 }

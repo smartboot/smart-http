@@ -8,8 +8,6 @@
 
 package org.smartboot.http.server.handle;
 
-import org.smartboot.http.HttpRequest;
-import org.smartboot.http.HttpResponse;
 import org.smartboot.http.Pipeline;
 
 import java.io.IOException;
@@ -18,11 +16,11 @@ import java.io.IOException;
  * @author 三刀
  * @version V1.0 , 2019/11/3
  */
-public final class HandlePipeline extends HttpHandle implements Pipeline {
+public final class HandlePipeline<REQ, RSP> extends Handle<REQ, RSP> implements Pipeline<REQ, RSP> {
     /**
      * 管道尾
      */
-    private HttpHandle tailHandle;
+    private Handle tailHandle;
 
     /**
      * 添加HttpHandle至末尾
@@ -30,12 +28,12 @@ public final class HandlePipeline extends HttpHandle implements Pipeline {
      * @param handle 尾部handle
      * @return 当前管道对象
      */
-    public Pipeline next(HttpHandle handle) {
+    public Pipeline<REQ, RSP> next(Handle<REQ, RSP> handle) {
         if (nextHandle == null) {
             nextHandle = tailHandle = handle;
             return this;
         }
-        HttpHandle httpHandle = tailHandle;
+        Handle httpHandle = tailHandle;
         while (httpHandle.nextHandle != null) {
             httpHandle = httpHandle.nextHandle;
         }
@@ -44,7 +42,7 @@ public final class HandlePipeline extends HttpHandle implements Pipeline {
     }
 
     @Override
-    public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
+    public void doHandle(REQ request, RSP response) throws IOException {
         nextHandle.doHandle(request, response);
     }
 }

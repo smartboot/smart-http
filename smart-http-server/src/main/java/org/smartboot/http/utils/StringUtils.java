@@ -902,14 +902,14 @@ public class StringUtils {
         buffer.mark();
         int i = 0;
         if (trim) {
-            while ((cacheChars[0] = (char) (buffer.get() & 0xFF)) == Consts.SP) ;
+            while ((cacheChars[0] = (char) (buffer.get() & 0xFF)) == Constant.SP) ;
             i = 1;
         }
         while (buffer.hasRemaining()) {
             cacheChars[i] = (char) (buffer.get() & 0xFF);
             if (cacheChars[i] == split) {
                 //反向去空格
-                while (trim && cacheChars[i - 1] == Consts.SP) {
+                while (trim && cacheChars[i - 1] == Constant.SP) {
                     i--;
                 }
                 return i;

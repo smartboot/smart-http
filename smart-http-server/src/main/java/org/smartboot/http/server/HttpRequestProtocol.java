@@ -8,9 +8,9 @@
 
 package org.smartboot.http.server;
 
-import org.smartboot.http.server.decode.DecodeChain;
+import org.smartboot.http.server.decode.Decoder;
 import org.smartboot.http.server.decode.HttpMethodDecoder;
-import org.smartboot.http.server.decode.WsFrameDecoder;
+import org.smartboot.http.server.decode.WebSocketFrameDecoder;
 import org.smartboot.http.utils.AttachKey;
 import org.smartboot.http.utils.Attachment;
 import org.smartboot.socket.Protocol;
@@ -24,19 +24,19 @@ import java.nio.ByteBuffer;
  */
 public class HttpRequestProtocol implements Protocol<BaseHttpRequest> {
 
-    public static final AttachKey<WebSocketRequest> ATTACH_KEY_WS_REQ = AttachKey.valueOf("ws");
+    public static final AttachKey<WebSocketRequestImpl> ATTACH_KEY_WS_REQ = AttachKey.valueOf("ws");
     /**
      * 普通Http消息解码完成
      */
-    public static final DecodeChain HTTP_FINISH_DECODER = (byteBuffer, cacheChars, aioSession, request) -> null;
+    public static final Decoder HTTP_FINISH_DECODER = (byteBuffer, cacheChars, aioSession, request) -> null;
     /**
      * websocket握手消息
      */
-    public static final DecodeChain WS_HANDSHARK_DECODER = (byteBuffer, cacheChars, aioSession, request) -> null;
+    public static final Decoder WS_HANDSHARK_DECODER = (byteBuffer, cacheChars, aioSession, request) -> null;
     /**
      * websocket负载数据读取成功
      */
-    public static final DecodeChain WS_FRAME_DECODER = (byteBuffer, cacheChars, aioSession, request) -> null;
+    public static final Decoder WS_FRAME_DECODER = (byteBuffer, cacheChars, aioSession, request) -> null;
     static final AttachKey<BaseHttpRequest> ATTACH_KEY_REQUEST = AttachKey.valueOf("request");
 
     private static final ThreadLocal<char[]> CHAR_CACHE_LOCAL = new ThreadLocal<char[]>() {
@@ -45,11 +45,11 @@ public class HttpRequestProtocol implements Protocol<BaseHttpRequest> {
             return new char[1024];
         }
     };
-    private static final AttachKey<DecodeChain> ATTACH_KEY_DECHDE_CHAIN = AttachKey.valueOf("decodeChain");
+    private static final AttachKey<Decoder> ATTACH_KEY_DECHDE_CHAIN = AttachKey.valueOf("decodeChain");
 
     private final HttpMethodDecoder httpMethodDecoder = new HttpMethodDecoder();
 
-    private final WsFrameDecoder wsFrameDecoder = new WsFrameDecoder();
+    private final WebSocketFrameDecoder wsFrameDecoder = new WebSocketFrameDecoder();
 
     @Override
     public BaseHttpRequest decode(ByteBuffer buffer, AioSession<BaseHttpRequest> session) {
@@ -60,7 +60,7 @@ public class HttpRequestProtocol implements Protocol<BaseHttpRequest> {
             cacheChars = new char[buffer.remaining()];
             CHAR_CACHE_LOCAL.set(cacheChars);
         }
-        DecodeChain decodeChain = attachment.get(ATTACH_KEY_DECHDE_CHAIN);
+        Decoder decodeChain = attachment.get(ATTACH_KEY_DECHDE_CHAIN);
         if (decodeChain == null) {
             decodeChain = httpMethodDecoder;
         }

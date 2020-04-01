@@ -21,7 +21,7 @@ import java.util.Map;
  */
 final class WebSocketOutputStream extends AbstractOutputStream {
 
-    public WebSocketOutputStream(WebSocketRequest request, WebSocketResponseImpl response, OutputStream outputStream) {
+    public WebSocketOutputStream(WebSocketRequestImpl request, WebSocketResponseImpl response, OutputStream outputStream) {
         super(request, response, outputStream);
         super.chunked = false;
 

@@ -17,8 +17,8 @@ import java.nio.ByteBuffer;
  * @author 三刀
  * @version V1.0 , 2020/3/30
  */
-public interface DecodeChain {
+public interface Decoder {
 
-    public DecodeChain deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession<BaseHttpRequest> aioSession, BaseHttpRequest httpHeader);
+    public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession<BaseHttpRequest> aioSession, BaseHttpRequest httpHeader);
 
 }

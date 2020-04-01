@@ -22,11 +22,11 @@ import java.nio.ByteBuffer;
  * @author 三刀
  * @version V1.0 , 2020/3/30
  */
-public class HttpBodyDecoder implements DecodeChain {
+public class HttpBodyDecoder implements Decoder {
     private AttachKey<SmartDecoder> ATTACH_KEY_FIX_LENGTH_DECODER = AttachKey.valueOf("fixLengthDecoder");
 
     @Override
-    public DecodeChain deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession<BaseHttpRequest> aioSession, BaseHttpRequest request) {
+    public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession<BaseHttpRequest> aioSession, BaseHttpRequest request) {
         Attachment attachment = aioSession.getAttachment();
         SmartDecoder smartDecoder = attachment.get(ATTACH_KEY_FIX_LENGTH_DECODER);
         if (smartDecoder == null) {

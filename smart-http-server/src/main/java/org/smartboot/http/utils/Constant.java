@@ -10,7 +10,10 @@ package org.smartboot.http.utils;
 
 import java.nio.charset.Charset;
 
-public interface Consts {
+public interface Constant {
+
+    String LOGGER_NAME_HTTP = "smart-http";
+    String LOGGER_NAME_WS = "smart-websocket";
     /**
      * Post 最大长度
      */
@@ -73,14 +76,10 @@ public interface Consts {
      */
     public static final char SP_CHAR = (char) SP;
 
-    public static final byte[] CRLF = {Consts.CR, Consts.LF};
+    public static final byte[] CRLF = {Constant.CR, Constant.LF};
 
     byte[] COLON_ARRAY = {COLON};
 
     byte[] SP_ARRAY = {SP};
-
-    AttachKey<Thread> ATTACH_KEY_CURRENT_THREAD = AttachKey.valueOf("thread");
-
-    AttachKey<byte[]> ATTACH_KEY_CACHE_BYTES = AttachKey.valueOf("cacheBytes");
 
 }

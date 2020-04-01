@@ -11,33 +11,11 @@ package org.smartboot.http.server.handle;
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
 
-import java.io.IOException;
-
 /**
+ * Http消息处理器
+ *
  * @author 三刀
  * @version V1.0 , 2018/2/6
  */
-public abstract class HttpHandle<T extends HttpRequest> {
-    /**
-     * 持有下一个处理器的句柄
-     */
-    protected HttpHandle<T> nextHandle;
-
-    /**
-     * 执行当前处理器逻辑。
-     * <p>
-     * 当前handle运行完后若还有后续的处理器，需要调用doNext
-     * </p>
-     *
-     * @param request
-     * @param response
-     * @throws IOException
-     */
-    public abstract void doHandle(T request, HttpResponse response) throws IOException;
-
-    protected final void doNext(T request, HttpResponse response) throws IOException {
-        if (nextHandle != null) {
-            nextHandle.doHandle(request, response);
-        }
-    }
+public abstract class HttpHandle extends Handle<HttpRequest, HttpResponse> {
 }

@@ -55,11 +55,11 @@ public class HttpBootstrap {
         return this;
     }
 
-    public Pipeline pipeline() {
+    public Pipeline<HttpRequest, HttpResponse> pipeline() {
         return processor.pipeline();
     }
 
-    public Pipeline wsPipeline() {
+    public Pipeline<WebSocketRequest, WebSocketResponse> wsPipeline() {
         return processor.wsPipeline();
     }
 

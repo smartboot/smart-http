@@ -12,7 +12,7 @@ import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.exception.HttpException;
 import org.smartboot.http.server.BaseHttpRequest;
 import org.smartboot.http.server.HttpRequestProtocol;
-import org.smartboot.http.server.WebSocketRequest;
+import org.smartboot.http.server.WebSocketRequestImpl;
 import org.smartboot.http.utils.Attachment;
 import org.smartboot.socket.transport.AioSession;
 
@@ -23,13 +23,13 @@ import java.nio.ByteOrder;
  * @author 三刀
  * @version V1.0 , 2020/3/30
  */
-public class WsFrameDecoder implements DecodeChain {
-    private static final int DEFAULT_MAX_FRAME_SIZE = 16384;
-    private static final int PLAY_LOAD_126 = 126;
-    private static final int PLAY_LOAD_127 = 127;
+public class WebSocketFrameDecoder implements Decoder {
+    public static final int DEFAULT_MAX_FRAME_SIZE = 16384;
+    public static final int PLAY_LOAD_126 = 126;
+    public static final int PLAY_LOAD_127 = 127;
 
     @Override
-    public DecodeChain deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession<BaseHttpRequest> aioSession, BaseHttpRequest request) {
+    public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession<BaseHttpRequest> aioSession, BaseHttpRequest request) {
         if (byteBuffer.remaining() < 2) {
             return this;
         }
@@ -62,7 +62,7 @@ public class WsFrameDecoder implements DecodeChain {
         int opcode = first & 0x0f;
 
         Attachment attachment = aioSession.getAttachment();
-        WebSocketRequest webSocketRequest = attachment.get(HttpRequestProtocol.ATTACH_KEY_WS_REQ);
+        WebSocketRequestImpl webSocketRequest = attachment.get(HttpRequestProtocol.ATTACH_KEY_WS_REQ);
         webSocketRequest.setFrameFinalFlag(fin);
         webSocketRequest.setFrameRsv(rsv);
         webSocketRequest.setFrameOpcode(opcode);
@@ -76,6 +76,7 @@ public class WsFrameDecoder implements DecodeChain {
         }
         byte[] playload = new byte[length];
         byteBuffer.get(playload);
+        System.out.println("read...");
         webSocketRequest.setPlayload(playload);
 
         return fin ? HttpRequestProtocol.WS_FRAME_DECODER : this;

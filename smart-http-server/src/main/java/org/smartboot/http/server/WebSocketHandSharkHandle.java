@@ -8,9 +8,11 @@
 
 package org.smartboot.http.server;
 
-import org.smartboot.http.HttpResponse;
+import org.smartboot.http.WebSocketRequest;
+import org.smartboot.http.WebSocketResponse;
 import org.smartboot.http.enums.HttpStatus;
-import org.smartboot.http.server.handle.HttpHandle;
+import org.smartboot.http.enums.WebsocketStatus;
+import org.smartboot.http.server.handle.WebSocketHandle;
 import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.http.utils.SHA1;
 
@@ -18,16 +20,20 @@ import java.io.IOException;
 import java.util.Base64;
 
 /**
+ * websocket握手请求
+ *
  * @author 三刀
  * @version V1.0 , 2020/3/29
  */
-class WebSocketHandle extends HttpHandle<WebSocketRequest> {
+class WebSocketHandSharkHandle extends WebSocketHandle {
     public static final String WEBSOCKET_13_ACCEPT_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
     private final RFC2612RequestHandle rfc2612RequestHandle = new RFC2612RequestHandle();
 
     @Override
-    public void doHandle(WebSocketRequest request, HttpResponse response) throws IOException {
-        if (request.getWebsocketStatus() == WebSocketRequest.WebsocketStatus.HandShake) {
+    public void doHandle(WebSocketRequest req, WebSocketResponse resp) throws IOException {
+        WebSocketResponseImpl response = (WebSocketResponseImpl) resp;
+        WebSocketRequestImpl request = (WebSocketRequestImpl) req;
+        if (request.getWebsocketStatus() == WebsocketStatus.HandShake) {
             //Http规范校验
             rfc2612RequestHandle.doHandle(request, response);
 
@@ -42,7 +48,7 @@ class WebSocketHandle extends HttpHandle<WebSocketRequest> {
             response.getOutputStream().flush();
 
             doNext(request, response);
-            request.setWebsocketStatus(WebSocketRequest.WebsocketStatus.DataFrame);
+            request.setWebsocketStatus(WebsocketStatus.DataFrame);
         } else {
             doNext(request, response);
         }

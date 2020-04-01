@@ -11,11 +11,14 @@ package org.smartboot.http.server;
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
 import org.smartboot.http.Pipeline;
+import org.smartboot.http.WebSocketRequest;
+import org.smartboot.http.WebSocketResponse;
 import org.smartboot.http.enums.HttpMethodEnum;
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.exception.HttpException;
 import org.smartboot.http.server.handle.HandlePipeline;
 import org.smartboot.http.server.handle.HttpHandle;
+import org.smartboot.http.server.handle.WebSocketHandle;
 import org.smartboot.http.utils.AttachKey;
 import org.smartboot.http.utils.Attachment;
 import org.smartboot.http.utils.HttpHeaderConstant;
@@ -32,12 +35,12 @@ import java.io.IOException;
  */
 public class HttpMessageProcessor implements MessageProcessor<BaseHttpRequest> {
     private final AttachKey<Http11Request> ATTACH_KEY_HTTP_REQUEST = AttachKey.valueOf("httpRequest");
-    private final HandlePipeline httpPipeline = new HandlePipeline();
-    private final HandlePipeline wsPipeline = new HandlePipeline();
+    private final HandlePipeline<HttpRequest, HttpResponse> httpPipeline = new HandlePipeline<>();
+    private final HandlePipeline<WebSocketRequest, WebSocketResponse> wsPipeline = new HandlePipeline<>();
 
     public HttpMessageProcessor() {
         httpPipeline.next(new RFC2612RequestHandle());
-        wsPipeline.next(new WebSocketHandle());
+        wsPipeline.next(new WebSocketHandSharkHandle());
     }
 
     @Override
@@ -48,7 +51,7 @@ public class HttpMessageProcessor implements MessageProcessor<BaseHttpRequest> {
             HttpResponse response;
             HandlePipeline pipeline;
             if (baseHttpRequest.isWebsocket()) {
-                WebSocketRequest webSocketRequest = attachment.get(HttpRequestProtocol.ATTACH_KEY_WS_REQ);
+                WebSocketRequestImpl webSocketRequest = attachment.get(HttpRequestProtocol.ATTACH_KEY_WS_REQ);
                 request = webSocketRequest;
                 response = webSocketRequest.getResponse();
                 pipeline = wsPipeline;
@@ -125,19 +128,19 @@ public class HttpMessageProcessor implements MessageProcessor<BaseHttpRequest> {
         }
     }
 
-    public Pipeline pipeline(HttpHandle httpHandle) {
+    public Pipeline<HttpRequest, HttpResponse> pipeline(HttpHandle httpHandle) {
         return httpPipeline.next(httpHandle);
     }
 
-    public Pipeline pipeline() {
+    public Pipeline<HttpRequest, HttpResponse> pipeline() {
         return httpPipeline;
     }
 
-    public Pipeline wsPipeline(HttpHandle httpHandle) {
+    public Pipeline<WebSocketRequest, WebSocketResponse> wsPipeline(WebSocketHandle httpHandle) {
         return wsPipeline.next(httpHandle);
     }
 
-    public Pipeline wsPipeline() {
+    public Pipeline<WebSocketRequest, WebSocketResponse> wsPipeline() {
         return wsPipeline;
     }
 

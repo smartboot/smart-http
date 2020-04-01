@@ -15,7 +15,7 @@ import org.smartboot.http.HttpBootstrap;
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
 import org.smartboot.http.server.handle.HttpHandle;
-import org.smartboot.http.server.handle.RouteHandle;
+import org.smartboot.http.server.handle.HttpRouteHandle;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,7 +27,7 @@ import java.io.InputStream;
 public class FileUploadDemo {
     public static void main(String[] args) {
 
-        RouteHandle routeHandle = new RouteHandle();
+        HttpRouteHandle routeHandle = new HttpRouteHandle();
         routeHandle.route("/", new HttpHandle() {
             byte[] body = ("<html>" +
                     "<head><title>smart-http demo</title></head>" +

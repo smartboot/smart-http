@@ -10,7 +10,7 @@ package org.smartboot.http.server;
 
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.enums.HttpMethodEnum;
-import org.smartboot.http.utils.Consts;
+import org.smartboot.http.utils.Constant;
 import org.smartboot.http.utils.HeaderNameEnum;
 import org.smartboot.http.utils.HttpHeaderConstant;
 
@@ -102,7 +102,7 @@ abstract class AbstractOutputStream extends OutputStream implements Reset {
             byte[] start = getBytes(Integer.toHexString(len) + "\r\n");
             outputStream.write(start);
             outputStream.write(b, off, len);
-            outputStream.write(Consts.CRLF);
+            outputStream.write(Constant.CRLF);
         } else {
             outputStream.write(b, off, len);
         }

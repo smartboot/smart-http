@@ -21,7 +21,7 @@ import java.io.IOException;
  * @author 三刀
  * @version V1.0 , 2018/6/3
  */
-public class RFC2612RequestHandle extends HttpHandle {
+class RFC2612RequestHandle extends HttpHandle {
     public static final int MAX_LENGTH = 255 * 1024;
 
     @Override

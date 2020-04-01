@@ -8,6 +8,9 @@
 
 package org.smartboot.http.server;
 
+import org.smartboot.http.WebSocketRequest;
+import org.smartboot.http.enums.WebsocketStatus;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,7 +19,7 @@ import java.io.InputStream;
  * @author 三刀
  * @version V1.0 , 2018/8/31
  */
-public class WebSocketRequest extends AbstractRequest {
+public class WebSocketRequestImpl extends AbstractRequest implements WebSocketRequest {
     public static final byte OPCODE_CONT = 0x0;
     public static final byte OPCODE_TEXT = 0x1;
     public static final byte OPCODE_BINARY = 0x2;
@@ -24,7 +27,6 @@ public class WebSocketRequest extends AbstractRequest {
     public static final byte OPCODE_PING = 0x9;
     public static final byte OPCODE_PONG = 0xA;
     private WebsocketStatus websocketStatus;
-    private boolean readingFrame = false;
     private long playLoadLen;
     private boolean frameFinalFlag;
     private boolean frameMasked;
@@ -34,7 +36,7 @@ public class WebSocketRequest extends AbstractRequest {
     private ByteArrayOutputStream playload = new ByteArrayOutputStream();
     private WebSocketResponseImpl response;
 
-    public WebSocketRequest(BaseHttpRequest baseHttpRequest) {
+    public WebSocketRequestImpl(BaseHttpRequest baseHttpRequest) {
         init(baseHttpRequest);
         this.websocketStatus = WebsocketStatus.HandShake;
         this.response = new WebSocketResponseImpl(this, baseHttpRequest.getAioSession().writeBuffer());
@@ -52,13 +54,6 @@ public class WebSocketRequest extends AbstractRequest {
         this.websocketStatus = websocketStatus;
     }
 
-    public boolean isReadingFrame() {
-        return readingFrame;
-    }
-
-    public void setReadingFrame(boolean readingFrame) {
-        this.readingFrame = readingFrame;
-    }
 
     public long getPlayLoadLen() {
         return playLoadLen;
@@ -125,8 +120,4 @@ public class WebSocketRequest extends AbstractRequest {
     }
 
 
-    public enum WebsocketStatus {
-        HandShake,
-        DataFrame;
-    }
 }

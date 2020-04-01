@@ -33,7 +33,7 @@ import java.util.logging.Level;
  * @author 三刀
  * @version V1.0 , 2018/2/7
  */
-public class StaticResourceHandle extends HttpHandle {
+public class HttpStaticResourceHandle extends HttpHandle {
     private static final int READ_BUFFER = 1024 * 1024;
     private static final String URL_404 =
             "<html>" +
@@ -50,7 +50,7 @@ public class StaticResourceHandle extends HttpHandle {
     };
     private File baseDir;
 
-    public StaticResourceHandle(String baseDir) {
+    public HttpStaticResourceHandle(String baseDir) {
         this.baseDir = new File(baseDir);
         if (!this.baseDir.isDirectory()) {
             throw new RuntimeException(baseDir + " is not a directory");
