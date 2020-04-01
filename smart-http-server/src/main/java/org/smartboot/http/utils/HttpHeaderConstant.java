@@ -8,6 +8,8 @@
 
 package org.smartboot.http.utils;
 
+import org.smartboot.http.enums.HeaderNameEnum;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

@@ -9,9 +9,9 @@
 package org.smartboot.http.server;
 
 import org.smartboot.http.HttpRequest;
+import org.smartboot.http.enums.HeaderNameEnum;
 import org.smartboot.http.enums.HttpMethodEnum;
 import org.smartboot.http.utils.Constant;
-import org.smartboot.http.utils.HeaderNameEnum;
 import org.smartboot.http.utils.HttpHeaderConstant;
 
 import java.io.IOException;
