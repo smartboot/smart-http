@@ -11,7 +11,10 @@ package org.smartboot.http.example;
 import org.smartboot.http.HttpBootstrap;
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
+import org.smartboot.http.WebSocketRequest;
+import org.smartboot.http.WebSocketResponse;
 import org.smartboot.http.server.handle.HttpHandle;
+import org.smartboot.http.server.handle.WebSocketDefaultHandle;
 
 import java.io.IOException;
 
@@ -24,10 +27,18 @@ import java.io.IOException;
 public class SimpleSmartHttp {
     public static void main(String[] args) {
         HttpBootstrap bootstrap = new HttpBootstrap();
+        // 普通http请求
         bootstrap.pipeline().next(new HttpHandle() {
             @Override
             public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
                 response.write("hello world<br/>".getBytes());
+            }
+        });
+        // websocket请求
+        bootstrap.wsPipeline().next(new WebSocketDefaultHandle() {
+            @Override
+            public void handleTextMessage(WebSocketRequest request, WebSocketResponse response, String data) {
+                response.sendTextMessage("Hello World");
             }
         });
         bootstrap.setPort(8080).start();
