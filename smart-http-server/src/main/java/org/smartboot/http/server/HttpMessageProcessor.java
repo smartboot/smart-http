@@ -15,6 +15,7 @@ import org.smartboot.http.WebSocketResponse;
 import org.smartboot.http.enums.HttpMethodEnum;
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.exception.HttpException;
+import org.smartboot.http.logging.RunLogger;
 import org.smartboot.http.server.handle.HandlePipeline;
 import org.smartboot.http.server.handle.HttpHandle;
 import org.smartboot.http.server.handle.Pipeline;
@@ -28,6 +29,7 @@ import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
+import java.util.logging.Level;
 
 /**
  * @author 三刀
@@ -106,7 +108,7 @@ public class HttpMessageProcessor implements MessageProcessor<BaseHttpRequest> {
                 session.setAttachment(attachment);
                 break;
             case PROCESS_EXCEPTION:
-                throwable.printStackTrace();
+                RunLogger.getLogger().log(Level.WARNING, "process exception", throwable);
                 session.close();
                 break;
 //            case INPUT_SHUTDOWN:
