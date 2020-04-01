@@ -14,6 +14,7 @@ import org.smartboot.http.server.BaseHttpRequest;
 import org.smartboot.http.server.HttpRequestProtocol;
 import org.smartboot.http.server.WebSocketRequestImpl;
 import org.smartboot.http.utils.Attachment;
+import org.smartboot.http.utils.Constant;
 import org.smartboot.socket.transport.AioSession;
 
 import java.nio.ByteBuffer;
@@ -24,9 +25,7 @@ import java.nio.ByteOrder;
  * @version V1.0 , 2020/3/30
  */
 public class WebSocketFrameDecoder implements Decoder {
-    public static final int DEFAULT_MAX_FRAME_SIZE = 16384;
-    public static final int PLAY_LOAD_126 = 126;
-    public static final int PLAY_LOAD_127 = 127;
+
 
     @Override
     public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession<BaseHttpRequest> aioSession, BaseHttpRequest request) {
@@ -38,17 +37,17 @@ public class WebSocketFrameDecoder implements Decoder {
         int second = byteBuffer.get();
         boolean mask = (second & 0x80) != 0;
         int length = second & 0x7F;
-        if (length == PLAY_LOAD_127) {
+        if (length == Constant.WS_PLAY_LOAD_127) {
             throw new HttpException(HttpStatus.PAYLOAD_TOO_LARGE);
         }
-        if (length == PLAY_LOAD_126) {
+        if (length == Constant.WS_PLAY_LOAD_126) {
             if (byteBuffer.remaining() < Short.BYTES) {
                 byteBuffer.reset();
                 return this;
             }
             length = Short.toUnsignedInt(byteBuffer.getShort());
         }
-        if (length > DEFAULT_MAX_FRAME_SIZE) {
+        if (length > Constant.WS_DEFAULT_MAX_FRAME_SIZE) {
             throw new HttpException(HttpStatus.PAYLOAD_TOO_LARGE);
         }
         if (byteBuffer.remaining() < (mask ? length + 4 : length)) {

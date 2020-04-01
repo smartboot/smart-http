@@ -10,6 +10,7 @@ package org.smartboot.http.server.handle;
 
 import org.smartboot.http.WebSocketRequest;
 import org.smartboot.http.WebSocketResponse;
+import org.smartboot.http.logging.RunLogger;
 import org.smartboot.http.utils.AntPathMatcher;
 
 import java.io.IOException;
@@ -31,7 +32,7 @@ public final class WebSocketRouteHandle extends WebSocketHandle {
     private WebSocketHandle defaultHandle = new WebSocketHandle() {
         @Override
         public void doHandle(WebSocketRequest request, WebSocketResponse response) throws IOException {
-            LOGGER.log(Level.WARNING, "not found");
+            RunLogger.getLogger().log(Level.WARNING, "not found");
         }
     };
 

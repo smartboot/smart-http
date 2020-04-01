@@ -14,6 +14,11 @@ public interface Constant {
 
     String LOGGER_NAME_HTTP = "smart-http";
     String LOGGER_NAME_WS = "smart-websocket";
+
+    public static final int WS_DEFAULT_MAX_FRAME_SIZE = 16384;
+    public static final int WS_PLAY_LOAD_126 = 126;
+    public static final int WS_PLAY_LOAD_127 = 127;
+
     /**
      * Post 最大长度
      */

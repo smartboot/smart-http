@@ -19,7 +19,7 @@ import java.nio.ByteBuffer;
  * @author 三刀
  * @version V1.0 , 2020/3/30
  */
-public class HttpUriQueryDecoder implements Decoder {
+class HttpUriQueryDecoder implements Decoder {
 
     private final HttpProtocolDecoder decoder = new HttpProtocolDecoder();
 

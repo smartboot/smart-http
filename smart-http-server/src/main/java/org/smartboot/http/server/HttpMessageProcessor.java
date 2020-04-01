@@ -10,7 +10,6 @@ package org.smartboot.http.server;
 
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
-import org.smartboot.http.Pipeline;
 import org.smartboot.http.WebSocketRequest;
 import org.smartboot.http.WebSocketResponse;
 import org.smartboot.http.enums.HttpMethodEnum;
@@ -18,6 +17,7 @@ import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.exception.HttpException;
 import org.smartboot.http.server.handle.HandlePipeline;
 import org.smartboot.http.server.handle.HttpHandle;
+import org.smartboot.http.server.handle.Pipeline;
 import org.smartboot.http.server.handle.WebSocketHandle;
 import org.smartboot.http.utils.AttachKey;
 import org.smartboot.http.utils.Attachment;

@@ -55,7 +55,7 @@ public class HttpStaticResourceHandle extends HttpHandle {
         if (!this.baseDir.isDirectory()) {
             throw new RuntimeException(baseDir + " is not a directory");
         }
-        RunLogger.getLogger().log(Level.INFO, "dir is:" + this.baseDir.getAbsolutePath());
+        RunLogger.getLogger().log(Level.FINEST, "dir is:" + this.baseDir.getAbsolutePath());
     }
 
     @Override
@@ -65,7 +65,7 @@ public class HttpStaticResourceHandle extends HttpHandle {
         if (StringUtils.endsWith(fileName, "/")) {
             fileName += "index.html";
         }
-        RunLogger.getLogger().log(Level.INFO, "请求URL:" + fileName);
+        RunLogger.getLogger().log(Level.FINEST, "请求URL:" + fileName);
         File file = new File(baseDir, fileName);
         //404
         if (!file.isFile()) {

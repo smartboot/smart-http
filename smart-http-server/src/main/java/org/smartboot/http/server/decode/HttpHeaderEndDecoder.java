@@ -28,7 +28,7 @@ import static org.smartboot.http.server.HttpRequestProtocol.ATTACH_KEY_WS_REQ;
  * @author 三刀
  * @version V1.0 , 2020/3/30
  */
-public class HttpHeaderEndDecoder implements Decoder {
+class HttpHeaderEndDecoder implements Decoder {
 
     private final HttpBodyDecoder decoder = new HttpBodyDecoder();
 

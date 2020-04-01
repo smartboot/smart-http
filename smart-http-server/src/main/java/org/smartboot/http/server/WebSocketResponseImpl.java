@@ -10,7 +10,7 @@ package org.smartboot.http.server;
 
 import org.smartboot.http.WebSocketResponse;
 import org.smartboot.http.logging.RunLogger;
-import org.smartboot.http.server.decode.WebSocketFrameDecoder;
+import org.smartboot.http.utils.Constant;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -22,7 +22,6 @@ import java.util.logging.Level;
  * @version V1.0 , 2018/2/3
  */
 public class WebSocketResponseImpl extends AbstractResponse implements WebSocketResponse {
-    private static final int DEFAULT_MAX_FRAME_SIZE = 16384;
 
     public WebSocketResponseImpl(WebSocketRequestImpl request, OutputStream outputStream) {
         init(request, new WebSocketOutputStream(request, this, outputStream));
@@ -30,7 +29,7 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
 
     @Override
     public void sendTextMessage(String text) {
-        RunLogger.getLogger().log(Level.INFO, "发送字符串消息:" + text);
+        RunLogger.getLogger().log(Level.FINEST, "发送字符串消息:" + text);
         byte[] bytes = text.getBytes(StandardCharsets.UTF_8);
         try {
             send(WebSocketRequestImpl.OPCODE_TEXT, bytes);
@@ -41,7 +40,7 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
 
     @Override
     public void sendBinaryMessage(byte[] bytes) {
-        System.out.println("发送二进制消息:" + bytes);
+        RunLogger.getLogger().log(Level.FINEST, "发送二进制消息:" + bytes);
         try {
             send(WebSocketRequestImpl.OPCODE_BINARY, bytes);
         } catch (IOException e) {
@@ -56,20 +55,20 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
 
     private void send(byte opCode, byte[] bytes) throws IOException {
         int maxlength;
-        if (bytes.length < WebSocketFrameDecoder.PLAY_LOAD_126) {
+        if (bytes.length < Constant.WS_PLAY_LOAD_126) {
             maxlength = 2 + bytes.length;
-        } else if (bytes.length < DEFAULT_MAX_FRAME_SIZE) {
+        } else if (bytes.length < Constant.WS_DEFAULT_MAX_FRAME_SIZE) {
             maxlength = 4 + bytes.length;
         } else {
-            maxlength = 4 + DEFAULT_MAX_FRAME_SIZE;
+            maxlength = 4 + Constant.WS_DEFAULT_MAX_FRAME_SIZE;
         }
         byte[] writBytes = new byte[maxlength];
         int offset = 0;
 
         while (offset < bytes.length) {
             int length = bytes.length - offset;
-            if (length > DEFAULT_MAX_FRAME_SIZE) {
-                length = DEFAULT_MAX_FRAME_SIZE;
+            if (length > Constant.WS_DEFAULT_MAX_FRAME_SIZE) {
+                length = Constant.WS_DEFAULT_MAX_FRAME_SIZE;
             }
             byte firstByte = offset + length < bytes.length ? (byte) 0x00 : (byte) 0x80;
             if (offset == 0) {
@@ -77,18 +76,17 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
             } else {
                 firstByte |= WebSocketRequestImpl.OPCODE_CONT;
             }
-            byte secondByte = length < WebSocketFrameDecoder.PLAY_LOAD_126 ? (byte) length : WebSocketFrameDecoder.PLAY_LOAD_126;
+            byte secondByte = length < Constant.WS_PLAY_LOAD_126 ? (byte) length : Constant.WS_PLAY_LOAD_126;
             writBytes[0] = firstByte;
             writBytes[1] = secondByte;
-            if (secondByte == WebSocketFrameDecoder.PLAY_LOAD_126) {
+            if (secondByte == Constant.WS_PLAY_LOAD_126) {
                 writBytes[2] = (byte) (length >> 8 & 0xff);
                 writBytes[3] = (byte) (length & 0xff);
                 System.arraycopy(bytes, offset, writBytes, 4, length);
             } else {
                 System.arraycopy(bytes, offset, writBytes, 2, length);
             }
-            System.out.println("write..");
-            this.getOutputStream().write(writBytes, 0, length < WebSocketFrameDecoder.PLAY_LOAD_126 ? 2 + length : 4 + length);
+            this.getOutputStream().write(writBytes, 0, length < Constant.WS_PLAY_LOAD_126 ? 2 + length : 4 + length);
             offset += length;
         }
     }

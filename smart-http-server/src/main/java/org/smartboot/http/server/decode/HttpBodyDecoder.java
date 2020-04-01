@@ -22,7 +22,7 @@ import java.nio.ByteBuffer;
  * @author 三刀
  * @version V1.0 , 2020/3/30
  */
-public class HttpBodyDecoder implements Decoder {
+class HttpBodyDecoder implements Decoder {
     private AttachKey<SmartDecoder> ATTACH_KEY_FIX_LENGTH_DECODER = AttachKey.valueOf("fixLengthDecoder");
 
     @Override
