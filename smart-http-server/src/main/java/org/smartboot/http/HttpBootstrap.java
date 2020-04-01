@@ -8,7 +8,7 @@
 
 package org.smartboot.http;
 
-import org.smartboot.http.server.BaseHttpRequest;
+import org.smartboot.http.server.BasicHttpRequest;
 import org.smartboot.http.server.HttpMessageProcessor;
 import org.smartboot.http.server.HttpRequestProtocol;
 import org.smartboot.http.server.handle.Pipeline;
@@ -19,7 +19,7 @@ import java.io.IOException;
 public class HttpBootstrap {
 
 
-    private AioQuickServer<BaseHttpRequest> server;
+    private AioQuickServer<BasicHttpRequest> server;
 
     /**
      * Http服务端口号

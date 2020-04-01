@@ -35,7 +35,7 @@ import java.util.logging.Level;
  * @author 三刀
  * @version V1.0 , 2018/6/10
  */
-public class HttpMessageProcessor implements MessageProcessor<BaseHttpRequest> {
+public class HttpMessageProcessor implements MessageProcessor<BasicHttpRequest> {
     private final AttachKey<Http11Request> ATTACH_KEY_HTTP_REQUEST = AttachKey.valueOf("httpRequest");
     private final HandlePipeline<HttpRequest, HttpResponse> httpPipeline = new HandlePipeline<>();
     private final HandlePipeline<WebSocketRequest, WebSocketResponse> wsPipeline = new HandlePipeline<>();
@@ -46,7 +46,7 @@ public class HttpMessageProcessor implements MessageProcessor<BaseHttpRequest> {
     }
 
     @Override
-    public void process(AioSession<BaseHttpRequest> session, BaseHttpRequest baseHttpRequest) {
+    public void process(AioSession<BasicHttpRequest> session, BasicHttpRequest baseHttpRequest) {
         try {
             Attachment attachment = session.getAttachment();
             HttpRequest request;
@@ -100,11 +100,11 @@ public class HttpMessageProcessor implements MessageProcessor<BaseHttpRequest> {
     }
 
     @Override
-    public void stateEvent(AioSession<BaseHttpRequest> session, StateMachineEnum stateMachineEnum, Throwable throwable) {
+    public void stateEvent(AioSession<BasicHttpRequest> session, StateMachineEnum stateMachineEnum, Throwable throwable) {
         switch (stateMachineEnum) {
             case NEW_SESSION:
                 Attachment attachment = new Attachment();
-                attachment.put(HttpRequestProtocol.ATTACH_KEY_REQUEST, new BaseHttpRequest(session));
+                attachment.put(HttpRequestProtocol.ATTACH_KEY_REQUEST, new BasicHttpRequest(session));
                 session.setAttachment(attachment);
                 break;
             case PROCESS_EXCEPTION:

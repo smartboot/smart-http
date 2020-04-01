@@ -22,9 +22,9 @@ import java.util.Map;
  */
 abstract class AbstractRequest implements HttpRequest, Reset, BaseHttpRequestHook {
 
-    protected BaseHttpRequest request;
+    protected BasicHttpRequest request;
 
-    protected void init(BaseHttpRequest request) {
+    protected void init(BasicHttpRequest request) {
         this.request = request;
     }
 
@@ -141,7 +141,7 @@ abstract class AbstractRequest implements HttpRequest, Reset, BaseHttpRequestHoo
     }
 
     @Override
-    public final BaseHttpRequest getRequest() {
+    public final BasicHttpRequest getRequest() {
         return request;
     }
 

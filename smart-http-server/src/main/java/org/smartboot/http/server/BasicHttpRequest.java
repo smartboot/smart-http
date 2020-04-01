@@ -37,9 +37,9 @@ import java.util.Set;
  * @author 三刀
  * @version V1.0 , 2018/8/31
  */
-public final class BaseHttpRequest implements HttpRequest, Reset {
+public final class BasicHttpRequest implements HttpRequest, Reset {
     private static final Locale defaultLocale = Locale.getDefault();
-    private final AioSession<BaseHttpRequest> aioSession;
+    private final AioSession<BasicHttpRequest> aioSession;
     /**
      * 请求参数
      */
@@ -87,11 +87,11 @@ public final class BaseHttpRequest implements HttpRequest, Reset {
      */
     private String formUrlencoded;
 
-    BaseHttpRequest(AioSession<BaseHttpRequest> aioSession) {
+    BasicHttpRequest(AioSession<BasicHttpRequest> aioSession) {
         this.aioSession = aioSession;
     }
 
-    public AioSession<BaseHttpRequest> getAioSession() {
+    public AioSession<BasicHttpRequest> getAioSession() {
         return aioSession;
     }
 

@@ -35,7 +35,7 @@ public class WebSocketRequestImpl extends AbstractRequest implements WebSocketRe
     private ByteArrayOutputStream payload = new ByteArrayOutputStream();
     private WebSocketResponseImpl response;
 
-    public WebSocketRequestImpl(BaseHttpRequest baseHttpRequest) {
+    public WebSocketRequestImpl(BasicHttpRequest baseHttpRequest) {
         init(baseHttpRequest);
         this.websocketStatus = WebsocketStatus.HandShake;
         this.response = new WebSocketResponseImpl(this, baseHttpRequest.getAioSession().writeBuffer());

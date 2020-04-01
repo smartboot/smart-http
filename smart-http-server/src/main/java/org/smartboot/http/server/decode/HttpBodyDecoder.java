@@ -8,7 +8,7 @@
 
 package org.smartboot.http.server.decode;
 
-import org.smartboot.http.server.BaseHttpRequest;
+import org.smartboot.http.server.BasicHttpRequest;
 import org.smartboot.http.server.HttpRequestProtocol;
 import org.smartboot.http.utils.AttachKey;
 import org.smartboot.http.utils.Attachment;
@@ -26,7 +26,7 @@ class HttpBodyDecoder implements Decoder {
     private AttachKey<SmartDecoder> ATTACH_KEY_FIX_LENGTH_DECODER = AttachKey.valueOf("fixLengthDecoder");
 
     @Override
-    public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession<BaseHttpRequest> aioSession, BaseHttpRequest request) {
+    public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession<BasicHttpRequest> aioSession, BasicHttpRequest request) {
         Attachment attachment = aioSession.getAttachment();
         SmartDecoder smartDecoder = attachment.get(ATTACH_KEY_FIX_LENGTH_DECODER);
         if (smartDecoder == null) {

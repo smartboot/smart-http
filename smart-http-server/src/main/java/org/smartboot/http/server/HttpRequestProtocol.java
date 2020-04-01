@@ -22,7 +22,7 @@ import java.nio.ByteBuffer;
  * @author 三刀
  * @version V1.0 , 2018/8/31
  */
-public class HttpRequestProtocol implements Protocol<BaseHttpRequest> {
+public class HttpRequestProtocol implements Protocol<BasicHttpRequest> {
 
     public static final AttachKey<WebSocketRequestImpl> ATTACH_KEY_WS_REQ = AttachKey.valueOf("ws");
     /**
@@ -37,7 +37,7 @@ public class HttpRequestProtocol implements Protocol<BaseHttpRequest> {
      * websocket负载数据读取成功
      */
     public static final Decoder WS_FRAME_DECODER = (byteBuffer, cacheChars, aioSession, request) -> null;
-    static final AttachKey<BaseHttpRequest> ATTACH_KEY_REQUEST = AttachKey.valueOf("request");
+    static final AttachKey<BasicHttpRequest> ATTACH_KEY_REQUEST = AttachKey.valueOf("request");
 
     private static final ThreadLocal<char[]> CHAR_CACHE_LOCAL = new ThreadLocal<char[]>() {
         @Override
@@ -52,9 +52,9 @@ public class HttpRequestProtocol implements Protocol<BaseHttpRequest> {
     private final WebSocketFrameDecoder wsFrameDecoder = new WebSocketFrameDecoder();
 
     @Override
-    public BaseHttpRequest decode(ByteBuffer buffer, AioSession<BaseHttpRequest> session) {
+    public BasicHttpRequest decode(ByteBuffer buffer, AioSession<BasicHttpRequest> session) {
         Attachment attachment = session.getAttachment();
-        BaseHttpRequest request = attachment.get(ATTACH_KEY_REQUEST);
+        BasicHttpRequest request = attachment.get(ATTACH_KEY_REQUEST);
         char[] cacheChars = CHAR_CACHE_LOCAL.get();
         if (cacheChars.length < buffer.remaining()) {
             cacheChars = new char[buffer.remaining()];

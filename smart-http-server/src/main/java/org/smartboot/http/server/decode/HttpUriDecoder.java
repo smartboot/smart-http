@@ -10,7 +10,7 @@ package org.smartboot.http.server.decode;
 
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.exception.HttpException;
-import org.smartboot.http.server.BaseHttpRequest;
+import org.smartboot.http.server.BasicHttpRequest;
 import org.smartboot.http.utils.Constant;
 import org.smartboot.http.utils.StringUtils;
 import org.smartboot.socket.transport.AioSession;
@@ -26,7 +26,7 @@ class HttpUriDecoder implements Decoder {
     private HttpProtocolDecoder protocolDecoder = new HttpProtocolDecoder();
 
     @Override
-    public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession<BaseHttpRequest> aioSession, BaseHttpRequest request) {
+    public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession<BasicHttpRequest> aioSession, BasicHttpRequest request) {
         int length = scanURI(byteBuffer, cacheChars);
         if (length > 0) {
             String uri = StringUtils.convertToString(cacheChars, length, StringUtils.String_CACHE_URL);
