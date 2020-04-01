@@ -159,13 +159,13 @@ public class StringUtils {
         List<StringCache> list = cacheList[length];
         for (int i = list.size() - 1; i > -1; i--) {
             StringCache cache = list.get(i);
-            if (equals(cache.bytes, bytes)) {
+            if (equals(cache.bytes, bytes, offset)) {
                 return cache.value;
             }
         }
         synchronized (list) {
             for (StringCache cache : list) {
-                if (equals(cache.bytes, bytes)) {
+                if (equals(cache.bytes, bytes, offset)) {
                     return cache.value;
                 }
             }
@@ -175,13 +175,13 @@ public class StringUtils {
         }
     }
 
-    private static boolean equals(char[] b0, char[] b1) {
+    private static boolean equals(char[] b0, char[] b1, int offset) {
         for (int i = b0.length - 1; i > 0; i--) {
-            if (b0[i] != b1[i]) {
+            if (b0[i] != b1[i + offset]) {
                 return false;
             }
         }
-        return b0[0] == b1[0];
+        return b0[0] == b1[offset];
     }
 
     /**

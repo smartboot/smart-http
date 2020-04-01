@@ -76,9 +76,6 @@ abstract class AbstractOutputStream extends OutputStream implements Reset {
                 + HttpHeaderConstant.Names.SERVER + ":" + SERVER_ALIAS_NAME + "\r\n\r\n").getBytes();
     }
 
-    public final void reset() {
-        committed = closed = chunked = false;
-    }
 
     @Override
     public final void write(int b) {
@@ -143,6 +140,10 @@ abstract class AbstractOutputStream extends OutputStream implements Reset {
 
     protected final byte[] getBytes(String str) {
         return str.getBytes(StandardCharsets.US_ASCII);
+    }
+
+    public final void reset() {
+        committed = closed = chunked = false;
     }
 
     public final boolean isClosed() {
