@@ -30,7 +30,7 @@ class AbstractResponse implements HttpResponse, Reset {
     /**
      * 输入流
      */
-    private OutputStream outputStream;
+    private AbstractOutputStream outputStream;
 
     /**
      * 响应消息头
@@ -55,13 +55,14 @@ class AbstractResponse implements HttpResponse, Reset {
     private String characterEncoding;
 
 
-    protected void init(HttpRequest request, OutputStream outputStream) {
+    protected void init(HttpRequest request, AbstractOutputStream outputStream) {
         this.request = request;
         this.outputStream = outputStream;
     }
 
 
     public final void reset() {
+        outputStream.reset();
         if (headers != null) {
             headers.clear();
         }
