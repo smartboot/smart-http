@@ -27,13 +27,12 @@ public class WebSocketRequestImpl extends AbstractRequest implements WebSocketRe
     public static final byte OPCODE_PING = 0x9;
     public static final byte OPCODE_PONG = 0xA;
     private WebsocketStatus websocketStatus;
-    private long playLoadLen;
     private boolean frameFinalFlag;
     private boolean frameMasked;
     private int frameRsv;
     private int frameOpcode;
 
-    private ByteArrayOutputStream playload = new ByteArrayOutputStream();
+    private ByteArrayOutputStream payload = new ByteArrayOutputStream();
     private WebSocketResponseImpl response;
 
     public WebSocketRequestImpl(BaseHttpRequest baseHttpRequest) {
@@ -54,16 +53,6 @@ public class WebSocketRequestImpl extends AbstractRequest implements WebSocketRe
         this.websocketStatus = websocketStatus;
     }
 
-
-    public long getPlayLoadLen() {
-        return playLoadLen;
-    }
-
-    public void setPlayLoadLen(long playLoadLen) {
-        this.playLoadLen = playLoadLen;
-    }
-
-
     public InputStream getInputStream() {
         throw new UnsupportedOperationException();
     }
@@ -71,8 +60,7 @@ public class WebSocketRequestImpl extends AbstractRequest implements WebSocketRe
 
     @Override
     public void reset() {
-        playload.reset();
-//        super.reset();
+        payload.reset();
     }
 
     public boolean isFrameFinalFlag() {
@@ -107,13 +95,13 @@ public class WebSocketRequestImpl extends AbstractRequest implements WebSocketRe
         this.frameOpcode = frameOpcode;
     }
 
-    public byte[] getPlayload() {
-        return playload.toByteArray();
+    public byte[] getPayload() {
+        return payload.toByteArray();
     }
 
-    public void setPlayload(byte[] playload) {
+    public void setPayload(byte[] payload) {
         try {
-            this.playload.write(playload);
+            this.payload.write(payload);
         } catch (IOException e) {
             e.printStackTrace();
         }

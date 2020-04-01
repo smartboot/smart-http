@@ -213,14 +213,4 @@ class AbstractResponse implements HttpResponse, Reset {
     public final void setContentType(String contentType) {
         this.contentType = contentType;
     }
-
-    /**
-     * 输出流是否已关闭
-     *
-     * @return
-     */
-    public boolean isClosed() {
-        throw new UnsupportedOperationException();
-    }
-
 }

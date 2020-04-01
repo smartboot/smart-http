@@ -19,7 +19,7 @@ public interface WebSocketRequest {
 
     public int getFrameOpcode();
 
-    public byte[] getPlayload();
+    public byte[] getPayload();
 
     String getRequestURI();
 }

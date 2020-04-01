@@ -10,6 +10,7 @@ package org.smartboot.http.server.decode;
 
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.exception.HttpException;
+import org.smartboot.http.logging.RunLogger;
 import org.smartboot.http.server.BaseHttpRequest;
 import org.smartboot.http.server.HttpRequestProtocol;
 import org.smartboot.http.server.WebSocketRequestImpl;
@@ -19,6 +20,7 @@ import org.smartboot.socket.transport.AioSession;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.logging.Level;
 
 /**
  * @author 三刀
@@ -55,7 +57,6 @@ public class WebSocketFrameDecoder implements Decoder {
             return this;
         }
 
-
         boolean fin = (first & 0x80) != 0;
         int rsv = (first & 0x70) >> 4;
         int opcode = first & 0x0f;
@@ -65,7 +66,6 @@ public class WebSocketFrameDecoder implements Decoder {
         webSocketRequest.setFrameFinalFlag(fin);
         webSocketRequest.setFrameRsv(rsv);
         webSocketRequest.setFrameOpcode(opcode);
-        webSocketRequest.setPlayLoadLen(length);
         webSocketRequest.setFrameMasked(mask);
 
         if (mask) {
@@ -73,10 +73,10 @@ public class WebSocketFrameDecoder implements Decoder {
             byteBuffer.get(maskingKey);
             unmask(byteBuffer, maskingKey);
         }
-        byte[] playload = new byte[length];
-        byteBuffer.get(playload);
-        System.out.println("read...");
-        webSocketRequest.setPlayload(playload);
+        byte[] payload = new byte[length];
+        byteBuffer.get(payload);
+        RunLogger.getLogger().log(Level.FINEST, "read ws data...");
+        webSocketRequest.setPayload(payload);
 
         return fin ? HttpRequestProtocol.WS_FRAME_DECODER : this;
     }

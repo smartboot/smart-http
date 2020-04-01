@@ -33,13 +33,13 @@ public class WebSocketDefaultHandle extends WebSocketHandle {
             case DataFrame: {
                 switch (request.getFrameOpcode()) {
                     case WebSocketRequestImpl.OPCODE_TEXT:
-                        handleTextMessage(request, response, new String(request.getPlayload(), StandardCharsets.UTF_8));
+                        handleTextMessage(request, response, new String(request.getPayload(), StandardCharsets.UTF_8));
                         break;
                     case WebSocketRequestImpl.OPCODE_BINARY:
-                        handleBinaryMessage(request, response, request.getPlayload());
+                        handleBinaryMessage(request, response, request.getPayload());
                         break;
                     case WebSocketRequestImpl.OPCODE_CLOSE:
-                        System.out.println("close:" + new String(request.getPlayload()));
+                        System.out.println("close:" + new String(request.getPayload()));
 //                        request.getRequest().getAioSession().close(false);
                         break;
                     case WebSocketRequestImpl.OPCODE_PING:
