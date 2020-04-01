@@ -12,10 +12,12 @@ import org.smartboot.http.WebSocketRequest;
 import org.smartboot.http.WebSocketResponse;
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.exception.HttpException;
+import org.smartboot.http.logging.RunLogger;
 import org.smartboot.http.server.WebSocketRequestImpl;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.logging.Level;
 
 
 /**
@@ -28,7 +30,7 @@ public class WebSocketDefaultHandle extends WebSocketHandle {
     public final void doHandle(WebSocketRequest request, WebSocketResponse response) throws IOException {
         switch (request.getWebsocketStatus()) {
             case HandShake:
-                finishHandshark(request, response);
+                onHandShark(request, response);
                 break;
             case DataFrame: {
                 switch (request.getFrameOpcode()) {
@@ -39,12 +41,13 @@ public class WebSocketDefaultHandle extends WebSocketHandle {
                         handleBinaryMessage(request, response, request.getPayload());
                         break;
                     case WebSocketRequestImpl.OPCODE_CLOSE:
-                        System.out.println("close:" + new String(request.getPayload()));
-//                        request.getRequest().getAioSession().close(false);
+                        onClose(request, response);
                         break;
                     case WebSocketRequestImpl.OPCODE_PING:
+                        RunLogger.getLogger().log(Level.FINE, "unSupport ping now");
                         break;
                     case WebSocketRequestImpl.OPCODE_PONG:
+                        RunLogger.getLogger().log(Level.FINE, "unSupport pong now");
                         break;
                     default:
                         throw new UnsupportedOperationException();
@@ -60,20 +63,30 @@ public class WebSocketDefaultHandle extends WebSocketHandle {
      * 握手成功
      *
      * @param request
-     * @param webSocketResponse
+     * @param response
      */
-    public void finishHandshark(WebSocketRequest request, WebSocketResponse webSocketResponse) {
+    public void onHandShark(WebSocketRequest request, WebSocketResponse response) {
+        RunLogger.getLogger().log(Level.FINE, "handShark success");
+    }
 
+    /**
+     * 握手成功
+     *
+     * @param request
+     * @param response
+     */
+    public void onClose(WebSocketRequest request, WebSocketResponse response) {
+        RunLogger.getLogger().log(Level.FINE, "close connection");
     }
 
     /**
      * 处理字符串请求消息
      *
      * @param request
-     * @param webSocketResponse
+     * @param response
      * @param data
      */
-    public void handleTextMessage(WebSocketRequest request, WebSocketResponse webSocketResponse, String data) {
+    public void handleTextMessage(WebSocketRequest request, WebSocketResponse response, String data) {
         System.out.println(data);
     }
 
@@ -81,10 +94,10 @@ public class WebSocketDefaultHandle extends WebSocketHandle {
      * 处理二进制请求消息
      *
      * @param request
-     * @param webSocketResponse
+     * @param response
      * @param data
      */
-    public void handleBinaryMessage(WebSocketRequest request, WebSocketResponse webSocketResponse, byte[] data) {
+    public void handleBinaryMessage(WebSocketRequest request, WebSocketResponse response, byte[] data) {
         System.out.println(data);
     }
 

@@ -50,11 +50,13 @@ public class HttpMessageProcessor implements MessageProcessor<BaseHttpRequest> {
             HttpRequest request;
             HttpResponse response;
             HandlePipeline pipeline;
+            boolean needClose = false;
             if (baseHttpRequest.isWebsocket()) {
                 WebSocketRequestImpl webSocketRequest = attachment.get(HttpRequestProtocol.ATTACH_KEY_WS_REQ);
                 request = webSocketRequest;
                 response = webSocketRequest.getResponse();
                 pipeline = wsPipeline;
+                needClose = webSocketRequest.getFrameOpcode() == WebSocketRequestImpl.OPCODE_CLOSE;
             } else {
                 Http11Request http11Request = attachment.get(ATTACH_KEY_HTTP_REQUEST);
                 if (http11Request == null) {
@@ -81,7 +83,7 @@ public class HttpMessageProcessor implements MessageProcessor<BaseHttpRequest> {
                 response.getOutputStream().close();
             }
             //Post请求没有读完Body，关闭通道
-            if (HttpMethodEnum.POST.getMethod().equals(request.getMethod())
+            if (needClose || HttpMethodEnum.POST.getMethod().equals(request.getMethod())
                     && !StringUtils.startsWith(request.getContentType(), HttpHeaderConstant.Values.X_WWW_FORM_URLENCODED)
                     && request.getInputStream().available() > 0) {
                 session.close(false);
