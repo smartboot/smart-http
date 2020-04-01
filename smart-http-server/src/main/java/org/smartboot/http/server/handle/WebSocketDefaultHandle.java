@@ -28,34 +28,39 @@ public class WebSocketDefaultHandle extends WebSocketHandle {
 
     @Override
     public final void doHandle(WebSocketRequest request, WebSocketResponse response) throws IOException {
-        switch (request.getWebsocketStatus()) {
-            case HandShake:
-                onHandShark(request, response);
-                break;
-            case DataFrame: {
-                switch (request.getFrameOpcode()) {
-                    case WebSocketRequestImpl.OPCODE_TEXT:
-                        handleTextMessage(request, response, new String(request.getPayload(), StandardCharsets.UTF_8));
-                        break;
-                    case WebSocketRequestImpl.OPCODE_BINARY:
-                        handleBinaryMessage(request, response, request.getPayload());
-                        break;
-                    case WebSocketRequestImpl.OPCODE_CLOSE:
-                        onClose(request, response);
-                        break;
-                    case WebSocketRequestImpl.OPCODE_PING:
-                        RunLogger.getLogger().log(Level.FINE, "unSupport ping now");
-                        break;
-                    case WebSocketRequestImpl.OPCODE_PONG:
-                        RunLogger.getLogger().log(Level.FINE, "unSupport pong now");
-                        break;
-                    default:
-                        throw new UnsupportedOperationException();
+        try {
+            switch (request.getWebsocketStatus()) {
+                case HandShake:
+                    onHandShark(request, response);
+                    break;
+                case DataFrame: {
+                    switch (request.getFrameOpcode()) {
+                        case WebSocketRequestImpl.OPCODE_TEXT:
+                            handleTextMessage(request, response, new String(request.getPayload(), StandardCharsets.UTF_8));
+                            break;
+                        case WebSocketRequestImpl.OPCODE_BINARY:
+                            handleBinaryMessage(request, response, request.getPayload());
+                            break;
+                        case WebSocketRequestImpl.OPCODE_CLOSE:
+                            onClose(request, response);
+                            break;
+                        case WebSocketRequestImpl.OPCODE_PING:
+                            RunLogger.getLogger().log(Level.FINE, "unSupport ping now");
+                            break;
+                        case WebSocketRequestImpl.OPCODE_PONG:
+                            RunLogger.getLogger().log(Level.FINE, "unSupport pong now");
+                            break;
+                        default:
+                            throw new UnsupportedOperationException();
+                    }
                 }
+                break;
+                default:
+                    throw new HttpException(HttpStatus.BAD_REQUEST);
             }
-            break;
-            default:
-                throw new HttpException(HttpStatus.BAD_REQUEST);
+        } catch (Throwable throwable) {
+            onError(throwable);
+            throw throwable;
         }
     }
 
@@ -101,4 +106,7 @@ public class WebSocketDefaultHandle extends WebSocketHandle {
         System.out.println(data);
     }
 
+    public void onError(Throwable throwable) {
+        throwable.printStackTrace();
+    }
 }

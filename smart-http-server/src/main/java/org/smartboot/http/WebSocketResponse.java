@@ -17,5 +17,4 @@ public interface WebSocketResponse {
 
     void sendBinaryMessage(byte[] bytes);
 
-    void onError(Throwable throwable);
 }

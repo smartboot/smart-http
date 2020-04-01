@@ -116,9 +116,19 @@ public class SmartHttpDemo {
             }
 
             @Override
-            public void handleTextMessage(WebSocketRequest request, WebSocketResponse webSocketResponse, String data) {
+            public void handleTextMessage(WebSocketRequest request, WebSocketResponse response, String data) {
                 System.out.println("收到请求消息:" + data);
-                webSocketResponse.sendTextMessage("服务端收到响应:" + data);
+                response.sendTextMessage("服务端收到响应:" + data);
+            }
+
+            @Override
+            public void onClose(WebSocketRequest request, WebSocketResponse response) {
+                super.onClose(request, response);
+            }
+
+            @Override
+            public void handleBinaryMessage(WebSocketRequest request, WebSocketResponse response, byte[] data) {
+                response.sendBinaryMessage(data);
             }
         });
         bootstrap.wsPipeline().next(wsRouteHandle);

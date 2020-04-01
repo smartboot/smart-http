@@ -34,7 +34,7 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
         try {
             send(WebSocketRequestImpl.OPCODE_TEXT, bytes);
         } catch (IOException e) {
-            onError(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -44,13 +44,8 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
         try {
             send(WebSocketRequestImpl.OPCODE_BINARY, bytes);
         } catch (IOException e) {
-            onError(e);
+            throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public void onError(Throwable throwable) {
-        throwable.printStackTrace();
     }
 
     private void send(byte opCode, byte[] bytes) throws IOException {
