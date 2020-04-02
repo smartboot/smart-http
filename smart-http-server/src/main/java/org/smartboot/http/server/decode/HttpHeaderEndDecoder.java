@@ -11,8 +11,8 @@ package org.smartboot.http.server.decode;
 import org.smartboot.http.enums.HttpMethodEnum;
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.exception.HttpException;
-import org.smartboot.http.server.BasicHttpRequest;
 import org.smartboot.http.server.HttpRequestProtocol;
+import org.smartboot.http.server.Request;
 import org.smartboot.http.server.WebSocketRequestImpl;
 import org.smartboot.http.utils.Attachment;
 import org.smartboot.http.utils.Constant;
@@ -33,7 +33,7 @@ class HttpHeaderEndDecoder implements Decoder {
     private final HttpBodyDecoder decoder = new HttpBodyDecoder();
 
     @Override
-    public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession<BasicHttpRequest> aioSession, BasicHttpRequest request) {
+    public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession<Request> aioSession, Request request) {
         //websocket通信
         if (HttpMethodEnum.GET.getMethod().equals(request.getMethod())
                 && HttpHeaderConstant.Values.WEBSOCKET.equals(request.getHeader(HttpHeaderConstant.Names.UPGRADE))

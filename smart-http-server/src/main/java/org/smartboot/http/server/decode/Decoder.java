@@ -8,7 +8,7 @@
 
 package org.smartboot.http.server.decode;
 
-import org.smartboot.http.server.BasicHttpRequest;
+import org.smartboot.http.server.Request;
 import org.smartboot.socket.transport.AioSession;
 
 import java.nio.ByteBuffer;
@@ -19,6 +19,6 @@ import java.nio.ByteBuffer;
  */
 public interface Decoder {
 
-    public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession<BasicHttpRequest> aioSession, BasicHttpRequest httpHeader);
+    public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession<Request> aioSession, Request httpHeader);
 
 }

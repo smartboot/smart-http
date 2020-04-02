@@ -8,7 +8,7 @@
 
 package org.smartboot.http.server.decode;
 
-import org.smartboot.http.server.BasicHttpRequest;
+import org.smartboot.http.server.Request;
 import org.smartboot.http.utils.Constant;
 import org.smartboot.http.utils.StringUtils;
 import org.smartboot.socket.transport.AioSession;
@@ -24,7 +24,7 @@ public class HttpMethodDecoder implements Decoder {
     private final HttpUriDecoder decoder = new HttpUriDecoder();
 
     @Override
-    public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession<BasicHttpRequest> aioSession, BasicHttpRequest request) {
+    public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession<Request> aioSession, Request request) {
         int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.SP, cacheChars, true);
         if (length > 0) {
             String method = StringUtils.convertToString(cacheChars, length, StringUtils.String_CACHE_URL);

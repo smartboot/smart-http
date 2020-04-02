@@ -11,8 +11,8 @@ package org.smartboot.http.server.decode;
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.exception.HttpException;
 import org.smartboot.http.logging.RunLogger;
-import org.smartboot.http.server.BasicHttpRequest;
 import org.smartboot.http.server.HttpRequestProtocol;
+import org.smartboot.http.server.Request;
 import org.smartboot.http.server.WebSocketRequestImpl;
 import org.smartboot.http.utils.Attachment;
 import org.smartboot.http.utils.Constant;
@@ -30,7 +30,7 @@ public class WebSocketFrameDecoder implements Decoder {
 
 
     @Override
-    public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession<BasicHttpRequest> aioSession, BasicHttpRequest request) {
+    public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession<Request> aioSession, Request request) {
         if (byteBuffer.remaining() < 2) {
             return this;
         }

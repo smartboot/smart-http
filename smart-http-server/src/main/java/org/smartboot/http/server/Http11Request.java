@@ -27,7 +27,7 @@ public final class Http11Request extends AbstractRequest {
 
     private Http11Response response;
 
-    Http11Request(BasicHttpRequest request) {
+    Http11Request(Request request) {
         init(request);
         this.response = new Http11Response(this, request.getAioSession().writeBuffer());
     }

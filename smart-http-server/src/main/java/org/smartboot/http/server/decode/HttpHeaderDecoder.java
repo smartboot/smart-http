@@ -10,7 +10,7 @@ package org.smartboot.http.server.decode;
 
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.exception.HttpException;
-import org.smartboot.http.server.BasicHttpRequest;
+import org.smartboot.http.server.Request;
 import org.smartboot.http.utils.Constant;
 import org.smartboot.http.utils.StringUtils;
 import org.smartboot.socket.transport.AioSession;
@@ -26,7 +26,7 @@ class HttpHeaderDecoder implements Decoder {
     private final HttpHeaderEndDecoder decoder = new HttpHeaderEndDecoder();
 
     @Override
-    public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession<BasicHttpRequest> aioSession, BasicHttpRequest request) {
+    public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession<Request> aioSession, Request request) {
         int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.LF, cacheChars, true);
         if (length != -1) {
             if (cacheChars[length - 1] != Constant.CR) {
