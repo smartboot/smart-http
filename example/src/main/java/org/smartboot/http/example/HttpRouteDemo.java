@@ -1,0 +1,53 @@
+/*******************************************************************************
+ * Copyright (c) 2017-2020, org.smartboot. All rights reserved.
+ * project name: smart-http
+ * file name: HttpRouteDemo.java
+ * Date: 2020-04-01
+ * Author: sandao (zhengjunweimail@163.com)
+ ******************************************************************************/
+
+package org.smartboot.http.example;
+
+import org.smartboot.http.HttpBootstrap;
+import org.smartboot.http.HttpRequest;
+import org.smartboot.http.HttpResponse;
+import org.smartboot.http.server.handle.HttpHandle;
+import org.smartboot.http.server.handle.HttpRouteHandle;
+
+import java.io.IOException;
+
+/**
+ * 请求路由示例
+ *
+ * @author 三刀
+ * @version V1.0 , 2020/4/1
+ */
+public class HttpRouteDemo {
+    public static void main(String[] args) {
+        //1. 实例化路由Handle
+        HttpRouteHandle routeHandle = new HttpRouteHandle();
+
+        //2. 指定路由规则以及请求的处理实现
+        routeHandle.route("/", new HttpHandle() {
+            @Override
+            public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
+                response.write("smart-http".getBytes());
+            }
+        }).route("/test1", new HttpHandle() {
+            @Override
+            public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
+                response.write(("test1").getBytes());
+            }
+        }).route("/test2", new HttpHandle() {
+            @Override
+            public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
+                response.write(("test2").getBytes());
+            }
+        });
+
+        // 3. 启动服务
+        HttpBootstrap bootstrap = new HttpBootstrap();
+        bootstrap.pipeline().next(routeHandle);
+        bootstrap.start();
+    }
+}
