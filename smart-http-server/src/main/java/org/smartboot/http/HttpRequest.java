@@ -17,6 +17,8 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
+ * Http消息请求接口
+ *
  * @author 三刀
  * @version V1.0 , 2018/8/7
  */

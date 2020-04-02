@@ -8,12 +8,7 @@
 
 package org.smartboot.http.utils;
 
-import java.nio.charset.Charset;
-
 public interface Constant {
-
-    String LOGGER_NAME_HTTP = "smart-http";
-    String LOGGER_NAME_WS = "smart-websocket";
 
     public static final int WS_DEFAULT_MAX_FRAME_SIZE = 16384;
     public static final int WS_PLAY_LOAD_126 = 126;
@@ -71,10 +66,6 @@ public interface Constant {
      */
     public static final byte DOUBLE_QUOTE = '"';
 
-    /**
-     * Default character set (UTF-8)
-     */
-    public static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
 
     /**
      * Horizontal space

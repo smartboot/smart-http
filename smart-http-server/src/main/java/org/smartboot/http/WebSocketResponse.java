@@ -9,12 +9,24 @@
 package org.smartboot.http;
 
 /**
+ * WebSocket消息响应接口
+ *
  * @author 三刀
  * @version V1.0 , 2020/3/31
  */
 public interface WebSocketResponse {
+    /**
+     * 发送文本响应
+     *
+     * @param text
+     */
     void sendTextMessage(String text);
 
+    /**
+     * 发送二进制响应
+     *
+     * @param bytes
+     */
     void sendBinaryMessage(byte[] bytes);
 
 }

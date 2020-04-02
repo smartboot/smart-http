@@ -11,6 +11,8 @@ package org.smartboot.http;
 import org.smartboot.http.enums.WebsocketStatus;
 
 /**
+ * WebSocket消息请求接口
+ *
  * @author 三刀
  * @version V1.0 , 2020/4/1
  */

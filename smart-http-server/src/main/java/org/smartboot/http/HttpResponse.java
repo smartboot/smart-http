@@ -15,16 +15,32 @@ import java.io.OutputStream;
 import java.util.Collection;
 
 /**
+ * Http消息响应接口
+ *
  * @author 三刀
  * @version V1.0 , 2018/2/3
  */
 public interface HttpResponse {
 
-
+    /**
+     * 响应消息输出流
+     *
+     * @return
+     */
     OutputStream getOutputStream();
 
+    /**
+     * 获取Http响应状态
+     *
+     * @return
+     */
     HttpStatus getHttpStatus();
 
+    /**
+     * 设置Http响应状态,若不设置默认{@link HttpStatus#OK}
+     *
+     * @param httpStatus
+     */
     void setHttpStatus(HttpStatus httpStatus);
 
     /**
