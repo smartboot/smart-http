@@ -51,8 +51,9 @@ public class HttpStaticResourceHandle extends HttpHandle {
     private File baseDir;
 
     public HttpStaticResourceHandle(String baseDir) {
-        this.baseDir = new File(baseDir);
+        this.baseDir = new File(new File(baseDir).getAbsolutePath());
         if (!this.baseDir.isDirectory()) {
+
             throw new RuntimeException(baseDir + " is not a directory");
         }
         RunLogger.getLogger().log(Level.FINEST, "dir is:" + this.baseDir.getAbsolutePath());

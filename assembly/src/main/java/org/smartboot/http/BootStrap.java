@@ -11,8 +11,6 @@ package org.smartboot.http;
 import org.smartboot.http.server.handle.HttpStaticResourceHandle;
 import org.smartboot.http.utils.ParamReflect;
 
-import java.io.File;
-
 /**
  * 打开浏览器请求：http://127.0.0.0:8080/
  *
@@ -26,7 +24,6 @@ public class BootStrap {
     public static void main(String[] args) {
         Config config = new Config();
         ParamReflect.reflect(System.getProperty(PROPERTY_CONFIG), config);
-        System.out.println(new File(config.getWebapps()).isFile());
         HttpBootstrap bootstrap = new HttpBootstrap();
         //配置HTTP消息处理管道
         bootstrap.pipeline().next(new HttpStaticResourceHandle(config.getWebapps()));
