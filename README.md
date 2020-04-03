@@ -6,7 +6,7 @@ smart-http 是一款比较简易的 http服务器，其通信内核采用了[**s
 smart-socket 的每次性能测试都是基于该服务器进行的，相信 smart-http 的表现不会让您失望的。
 
 
-感兴趣的朋友请记得 Star一下该项目。
+感兴趣的朋友请记得 Star一下该项目。[下载体验包](https://gitee.com/smartboot/smart-http/attach_files)
 ## 功能列表
 1. 支持GET、POST的HTTP请求。
 2. 提供了URL路由组件，可以快速搭建一套静态服务器。
