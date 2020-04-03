@@ -20,6 +20,7 @@ import org.smartboot.http.utils.StringUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
@@ -67,7 +68,7 @@ public class HttpStaticResourceHandle extends HttpHandle {
             fileName += "index.html";
         }
         RunLogger.getLogger().log(Level.FINEST, "请求URL:" + fileName);
-        File file = new File(baseDir, fileName);
+        File file = new File(baseDir, URLDecoder.decode(fileName, "utf8"));
         //404
         if (!file.isFile()) {
             RunLogger.getLogger().log(Level.WARNING, "file:" + request.getRequestURI() + " not found!");
