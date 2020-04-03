@@ -13,11 +13,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.smartboot.http</groupId>
-    <artifactId>example</artifactId>
-    <version>1.0.0</version>
+    <artifactId>assembly</artifactId>
+    <version>1.0.13</version>
 
     <properties>
-        <!--<smartsocket.version>1.4.4</smartsocket.version>-->
         <smarthttp.version>1.0.13</smarthttp.version>
         <commons.fileupload.version>1.4</commons.fileupload.version>
     </properties>
@@ -50,9 +49,8 @@
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
-                    <!--<descriptorRefs>-->
-                    <!--<descriptorRef>jar-with-dependencies</descriptorRef>-->
-                    <!--</descriptorRefs>-->
+                    <finalName>smart-http</finalName>
+                    <appendAssemblyId>true</appendAssemblyId>
                     <descriptors>
                         <descriptor>release.xml</descriptor>
                     </descriptors>
