@@ -20,6 +20,9 @@ public class Config {
     @Param
     private String webapps;
 
+    @Param
+    private String host;
+
     public int getPort() {
         return port;
     }
@@ -36,11 +39,12 @@ public class Config {
         this.webapps = webapps;
     }
 
-    @Override
-    public String toString() {
-        return "Config{" +
-                "port=" + port +
-                ", webapps='" + webapps + '\'' +
-                '}';
+    public String getHost() {
+        return host;
     }
+
+    public void setHost(String host) {
+        this.host = host;
+    }
+    
 }

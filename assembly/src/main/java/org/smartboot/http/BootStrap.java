@@ -8,8 +8,11 @@
 
 package org.smartboot.http;
 
+import org.smartboot.http.logging.RunLogger;
 import org.smartboot.http.server.handle.HttpStaticResourceHandle;
 import org.smartboot.http.utils.ParamReflect;
+
+import java.util.logging.Level;
 
 /**
  * 打开浏览器请求：http://127.0.0.0:8080/
@@ -29,7 +32,8 @@ public class BootStrap {
         bootstrap.pipeline().next(new HttpStaticResourceHandle(config.getWebapps()));
 
         //设定服务器配置并启动
-        bootstrap.setPort(config.getPort()).start();
+        bootstrap.host(config.getHost()).setPort(config.getPort()).start();
+        RunLogger.getLogger().log(Level.SEVERE, "start smart-http http://" + config.getHost() + ":" + config.getPort());
     }
 
 

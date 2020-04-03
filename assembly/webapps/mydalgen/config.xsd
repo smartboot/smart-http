@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<xsd:schema xmlns="http://smartboot.oschina.io/schema/mydalgen/config"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://smartboot.oschina.io/schema/mydalgen/config">
+
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+
+    <xsd:simpleType name="typeMapEnum">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="java.sql.Date" />
+            <xsd:enumeration value="java.sql.Timestamp" />
+            <xsd:enumeration value="java.math.BigDecimal" />
+            <xsd:enumeration value="java.util.Date" />
+            <xsd:enumeration value="java.lang.Double" />
+            <xsd:enumeration value="java.lang.Byte"/>
+            <xsd:enumeration value="java.lang.Short"/>
+            <xsd:enumeration value="java.lang.Integer"/>
+            <xsd:enumeration value="java.lang.Long"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Top-level <tables> tag -->
+    <xsd:element name="tables">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[
+					maven-mydalgen-plugin主配置文件根标签
+				]]></xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element ref="tableprefix" maxOccurs="1" minOccurs="0" />
+                <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                    <xsd:element ref="typemap" />
+                    <xsd:element ref="include" />
+                    <xsd:any namespace="##other" processContents="strict"
+                             minOccurs="0" maxOccurs="unbounded" />
+                </xsd:choice>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="tableprefix">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[
+				表名前缀
+			]]></xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:attribute name="prefix" use="required" type="xsd:string" />
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="typemap">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[
+			自定义Select操作返回的字段列表
+			]]></xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:attribute name="from" type="typeMapEnum" use="required" />
+            <xsd:attribute name="to" type="typeMapEnum" use="required"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="include">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[
+			定义一句SQL语句
+			]]></xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType mixed="true">
+            <xsd:attribute name="table" type="xsd:string" use="required" />
+        </xsd:complexType>
+    </xsd:element>
+
+</xsd:schema>

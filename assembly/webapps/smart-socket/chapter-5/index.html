@@ -1,0 +1,819 @@
+
+<!DOCTYPE HTML>
+<html lang="en" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>第四章 内存池 · smartboot 中文指南</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.2">
+        
+        
+        
+    
+    <link rel="stylesheet" href="../../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../../gitbook/gitbook-plugin-search-plus/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="../../gitbook/gitbook-plugin-expandable-chapters-interactive/expandable-chapters.css">
+                
+            
+                
+                <link rel="stylesheet" href="../../gitbook/gitbook-plugin-tbfed-pagefooter/footer.css">
+                
+            
+                
+                <link rel="stylesheet" href="../../gitbook/gitbook-plugin-highlight/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../../gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+        
+
+    
+
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+        
+    
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="../chapter-6/" />
+    
+    
+    <link rel="prev" href="../BLANK.html" />
+    
+
+    <style>
+    @media only screen and (max-width: 640px) {
+        .book-header .hidden-mobile {
+            display: none;
+        }
+    }
+    </style>
+    <script>
+        window["gitbook-plugin-github-buttons"] = {"buttons":[{"user":"smartboot","repo":"smart-socket","type":"star","size":"small","count":true}]};
+    </script>
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="Type to search" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="../../">
+            
+                <a href="../../">
+            
+                    
+                    关于smartboot
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" >
+            
+                <span>
+            
+                    
+                    smart-socket 使用手册
+            
+                </span>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.2.1" data-path="../">
+            
+                <a href="../">
+            
+                    
+                    前言
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.2" >
+            
+                <span>
+            
+                    
+                    第一章 smart-socket开发指南
+            
+                </span>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.2.2.1" data-path="../chapter-1/2.1-基础应用/">
+            
+                <a href="../chapter-1/2.1-基础应用/">
+            
+                    
+                    1.1 快速上手
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.2.2" data-path="../chapter-1/2.2-Spring集成/">
+            
+                <a href="../chapter-1/2.2-Spring集成/">
+            
+                    
+                    1.2 Spring集成smart-socket
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.2.3" data-path="../chapter-1/SUMMARY.html">
+            
+                <a href="../chapter-1/SUMMARY.html">
+            
+                    
+                    小结
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.3" data-path="../chapter-2/">
+            
+                <a href="../chapter-2/">
+            
+                    
+                    第二章 源码解析
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.2.3.1" data-path="../chapter-2/核心接口/">
+            
+                <a href="../chapter-2/核心接口/">
+            
+                    
+                    2.1 核心接口与状态机
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.3.2" data-path="../chapter-2/服务端/">
+            
+                <a href="../chapter-2/服务端/">
+            
+                    
+                    2.2 服务端
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.3.3" data-path="../chapter-2/客户端/">
+            
+                <a href="../chapter-2/客户端/">
+            
+                    
+                    2.3 客户端
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.3.4" data-path="../chapter-2/AioSession/">
+            
+                <a href="../chapter-2/AioSession/">
+            
+                    
+                    2.4 会话AioSession
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.3.5" data-path="../chapter-2/SUMMARY.html">
+            
+                <a href="../chapter-2/SUMMARY.html">
+            
+                    
+                    2.5 小结
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.4" data-path="../chapter-3/">
+            
+                <a href="../chapter-3/">
+            
+                    
+                    第三章 通信协议
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.2.4.1" data-path="../chapter-3/1-消息归类/">
+            
+                <a href="../chapter-3/1-消息归类/">
+            
+                    
+                    3.1 消息归类
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.4.2" data-path="../BLANK.html">
+            
+                <a href="../BLANK.html">
+            
+                    
+                    3.2 半包/粘包
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.4.3" data-path="../BLANK.html">
+            
+                <a href="../BLANK.html">
+            
+                    
+                    3.3 Http消息解析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.4.4" data-path="../BLANK.html">
+            
+                <a href="../BLANK.html">
+            
+                    
+                    3.4 RPC消息解析
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter active" data-level="1.2.5" data-path="./">
+            
+                <a href="./">
+            
+                    
+                    第四章 内存池
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.6" data-path="../chapter-6/">
+            
+                <a href="../chapter-6/">
+            
+                    
+                    第五章 未来规划
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.7" data-path="../end/">
+            
+                <a href="../end/">
+            
+                    
+                    附录
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3" >
+            
+                <span>
+            
+                    
+                    smart-http 实战手册
+            
+                </span>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.3.1" data-path="../../smart-http/">
+            
+                <a href="../../smart-http/">
+            
+                    
+                    关于smart-http
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.2" >
+            
+                <span>
+            
+                    
+                    第一章 smart-http开发指南
+            
+                </span>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.3.2.1" data-path="../../smart-http/chapter-1/">
+            
+                <a href="../../smart-http/chapter-1/">
+            
+                    
+                    1.1 快速上手
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.2.2" data-path="../../smart-http/chapter-1/http_route.html">
+            
+                <a href="../../smart-http/chapter-1/http_route.html">
+            
+                    
+                    1.2 请求路由
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.2.3" data-path="../../smart-http/chapter-1/file_upload.html">
+            
+                <a href="../../smart-http/chapter-1/file_upload.html">
+            
+                    
+                    1.3 文件上传/下载
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.2.4" data-path="../../smart-http/chapter-1/websocket.html">
+            
+                <a href="../../smart-http/chapter-1/websocket.html">
+            
+                    
+                    1.4 WebSocket
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4" >
+            
+                <span>
+            
+                    
+                    技术分享
+            
+                </span>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.4.1" data-path="../../share/rpc/smart-socket-rpc.html">
+            
+                <a href="../../share/rpc/smart-socket-rpc.html">
+            
+                    
+                    smart-socket实现RPC
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.2" data-path="../../share/firstfit/readme.html">
+            
+                <a href="../../share/firstfit/readme.html">
+            
+                    
+                    内存管理-首次适应算法
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.3" data-path="../../share/thread/readme.html">
+            
+                <a href="../../share/thread/readme.html">
+            
+                    
+                    Thread知多少
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5" data-path="../../donation.html">
+            
+                <a href="../../donation.html">
+            
+                    
+                    关于捐赠
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            Published with GitBook
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href="../.." >第四章 内存池</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div class="search-plus" id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <h1 id="&#x7B2C;&#x56DB;&#x7AE0;-&#x5185;&#x5B58;&#x6C60;">&#x7B2C;&#x56DB;&#x7AE0; &#x5185;&#x5B58;&#x6C60;</h1>
+<p><img src="buffer_pool_uml.png" alt="image-20190112151726641"></p>
+<p>&#x5185;&#x5B58;&#x6C60;&#x4F3C;&#x4E4E;&#x5DF2;&#x7ECF;&#x5F53;&#x4E0B;&#x5404;&#x4E2A;&#x725B;&#x903C;&#x6846;&#x67B6;&#x7684;&#x6807;&#x914D;&#xFF0C;&#x6211;&#x4EEC;&#x4E5F;&#x4E13;&#x95E8;&#x4E3A;smart-socket&#x5EA6;&#x8EAB;&#x6253;&#x9020;&#x4E86;&#x4E00;&#x6B3E;&#x5185;&#x5B58;&#x6C60;&#x89E3;&#x51B3;&#x65B9;&#x6848;&#x3002;&#x5F53;&#x7136;&#x6211;&#x4EEC;&#x5E76;&#x4E0D;&#x662F;&#x4E3A;&#x4E86;&#x76F2;&#x76EE;&#x8DDF;&#x98CE;&#xFF0C;&#x786E;&#x5B9E;&#x662F;&#x6709;&#x4E00;&#x4E9B;&#x95EE;&#x9898;&#x9700;&#x8981;&#x901A;&#x8FC7;&#x8BE5;&#x9879;&#x6280;&#x672F;&#x5F97;&#x4EE5;&#x89E3;&#x51B3;&#xFF0C;&#x5E76;&#x4E14;smart-socket&#x7684;&#x5185;&#x5B58;&#x6C60;&#x8868;&#x73B0;&#x975E;&#x5E38;&#x4EE4;&#x4EBA;&#x6EE1;&#x610F;&#x3002;&#x5728;&#x6B64;&#x8DDF;&#x5927;&#x5BB6;&#x5206;&#x4EAB;&#x4E00;&#x4E0B;smart-socket&#x5185;&#x5B58;&#x6C60;&#x7684;&#x8BBE;&#x8BA1;&#x7406;&#x5FF5;&#xFF0C;&#x4F46;&#x613F;&#x80FD;&#x4E0E;&#x8BFB;&#x8005;&#x670B;&#x53CB;&#x4EA7;&#x751F;&#x5171;&#x9E23;&#x3002;</p>
+<p>smart-socket&#x5F15;&#x5165;&#x5185;&#x5B58;&#x6C60;&#x8BBE;&#x8BA1;&#xFF0C;&#x4E3B;&#x8981;&#x4E3A;&#x4E86;&#x89E3;&#x51B3;&#x4E24;&#x4E2A;&#x95EE;&#x9898;&#xFF1A;&#x96F6;&#x62F7;&#x8D1D;&#x3001;&#x5BF9;&#x8C61;&#x590D;&#x7528;&#x3002;</p>
+<ul>
+<li><p>&#x96F6;&#x62F7;&#x8D1D;&#xFF1B;</p>
+<p>&#x63A5;&#x89E6;&#x8FC7;Netty&#x7684;&#x670B;&#x53CB;&#x5E94;&#x8BE5;&#x90FD;&#x542C;&#x8BF4;&#x8FC7;&#x8BE5;&#x9879;&#x6280;&#x672F;&#xFF0C;&#x8FD9;&#x9879;&#x6280;&#x672F;&#x7684;&#x539F;&#x7406;&#x4E5F;&#x5F88;&#x7B80;&#x5355;&#x3002;&#x5728;&#x6570;&#x636E;&#x4F20;&#x8F93;&#x65F6;&#xFF0C;&#x5982;&#x679C;&#x5B58;&#x50A8;&#x6570;&#x636E;&#x7684;ByteBuffer&#x662F;&#x5806;&#x5185;&#x7F13;&#x51B2;&#x533A;&#x5BF9;&#x8C61;HeapByteBuffer&#xFF0C;&#x5219;&#x5728;&#x8F93;&#x51FA;&#x65F6;JVM&#x4F1A;&#x5C06;&#x8BE5;&#x7F13;&#x51B2;&#x533A;&#x7684;&#x6570;&#x636E;&#x62F7;&#x8D1D;&#x5230;&#x5806;&#x5916;&#x7684;&#x76F4;&#x63A5;&#x7F13;&#x51B2;&#x533A;DirectByteBuffer&#x518D;&#x8F93;&#x51FA;&#xFF0C;&#x8BE5;&#x573A;&#x666F;&#x5C31;&#x5B58;&#x5728;&#x4E00;&#x6B21;&#x5185;&#x5B58;&#x62F7;&#x8D1D;&#x3002;&#x800C;&#x5982;&#x679C;&#x4E00;&#x5F00;&#x59CB;&#x6211;&#x4EEC;&#x5C31;&#x5C06;&#x6570;&#x636E;&#x5199;&#x5165;&#x76F4;&#x63A5;&#x7F13;&#x51B2;&#x533A;DirectByteBuffer&#xFF0C;&#x5219;&#x65E0;&#x9700;&#x8FDB;&#x884C;&#x6570;&#x636E;&#x62F7;&#x8D1D;&#x4FBF;&#x53EF;&#x8F93;&#x51FA;&#x6570;&#x636E;&#xFF0C;&#x8FD9;&#x5C31;&#x662F;&#x6240;&#x8C13;&#x7684;&#x96F6;&#x62F7;&#x8D1D;&#xFF0C;&#x800C;&#x96F6;&#x62F7;&#x8D1D;&#x6240;&#x5E26;&#x6765;&#x7684;&#x597D;&#x5904;&#x5C31;&#x662F;&#x8282;&#x7701;&#x4E86;&#x4E34;&#x65F6;&#x5185;&#x5B58;&#x548C;CPU&#x7684;&#x6D88;&#x8017;&#xFF0C;&#x4EE5;&#x4E0B;&#x4FBF;&#x662F;JVM&#x6267;&#x884C;&#x6570;&#x636E;&#x8F93;&#x51FA;&#x7684;&#x5904;&#x7406;&#x65B9;&#x5F0F;&#xFF0C;&#x9605;&#x8BFB;&#x6E90;&#x7801;&#x6709;&#x52A9;&#x4E8E;&#x8BFB;&#x8005;&#x670B;&#x53CB;&#x66F4;&#x6DF1;&#x523B;&#x7684;&#x7406;&#x89E3;&#x96F6;&#x62F7;&#x8D1D;&#x3002;</p>
+<pre><code class="lang-java"><span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">int</span> <span class="hljs-title">write</span><span class="hljs-params">(FileDescriptor var0, ByteBuffer var1, <span class="hljs-keyword">long</span> var2, NativeDispatcher var4)</span> <span class="hljs-keyword">throws</span> IOException </span>{
+        <span class="hljs-keyword">if</span> (var1 <span class="hljs-keyword">instanceof</span> DirectBuffer) {
+            <span class="hljs-keyword">return</span> writeFromNativeBuffer(var0, var1, var2, var4);
+        } <span class="hljs-keyword">else</span> {
+            <span class="hljs-keyword">int</span> var5 = var1.position();
+            <span class="hljs-keyword">int</span> var6 = var1.limit();
+
+            <span class="hljs-keyword">assert</span> var5 &lt;= var6;
+
+            <span class="hljs-keyword">int</span> var7 = var5 &lt;= var6 ? var6 - var5 : <span class="hljs-number">0</span>;
+            ByteBuffer var8 = Util.getTemporaryDirectBuffer(var7);
+
+            <span class="hljs-keyword">int</span> var10;
+            <span class="hljs-keyword">try</span> {
+                var8.put(var1);
+                var8.flip();
+                var1.position(var5);
+                <span class="hljs-keyword">int</span> var9 = writeFromNativeBuffer(var0, var8, var2, var4);
+                <span class="hljs-keyword">if</span> (var9 &gt; <span class="hljs-number">0</span>) {
+                    var1.position(var5 + var9);
+                }
+                var10 = var9;
+            } <span class="hljs-keyword">finally</span> {
+                Util.offerFirstTemporaryDirectBuffer(var8);
+            }
+            <span class="hljs-keyword">return</span> var10;
+        }
+    }
+</code></pre>
+</li>
+</ul>
+<ul>
+<li><p>&#x590D;&#x7528;&#x5BF9;&#x8C61;&#xFF1B;</p>
+<p>&#x5B9E;&#x73B0;&#x5BF9;&#x8C61;&#x7684;&#x590D;&#x7528;&#x4E00;&#x65B9;&#x9762;&#x53EF;&#x4EE5;&#x8282;&#x7701;&#x5BF9;&#x8C61;&#x6784;&#x9020;&#x9020;&#x6210;&#x7684;&#x65F6;&#x95F4;&#x6210;&#x672C;&#xFF0C;&#x53E6;&#x4E00;&#x65B9;&#x9762;&#x53EF;&#x4EE5;&#x5927;&#x5927;&#x51CF;&#x5C11;&#x8FD0;&#x884C;&#x8FC7;&#x7A0B;&#x4E2D;&#x4EA7;&#x751F;&#x7684;&#x5BF9;&#x8C61;&#x6570;&#xFF0C;&#x7F13;&#x89E3;GC&#x538B;&#x529B;&#x3002;&#x7279;&#x522B;&#x5BF9;&#x4E8E;&#x76F4;&#x63A5;&#x7F13;&#x51B2;&#x533A;DirectByteBuffer&#x5BF9;&#x8C61;&#xFF0C;&#x4E0D;&#x4EC5;&#x521B;&#x5EFA;&#x8017;&#x65F6;&#x957F;&#xFF0C;&#x800C;&#x4E14;&#x56E0;&#x5176;&#x5B58;&#x5728;&#x4E8E;&#x5806;&#x5916;&#x5185;&#x5B58;&#x4E2D;&#x5BFC;&#x81F4;&#x65E0;&#x6CD5;&#x901A;&#x8FC7;&#x5783;&#x573E;&#x56DE;&#x6536;&#x5668;&#x91CA;&#x653E;&#x5185;&#x5B58;&#xFF0C;&#x975E;&#x5E38;&#x9002;&#x5408;&#x901A;&#x8FC7;&#x6C60;&#x5316;&#x7BA1;&#x7406;&#x63D0;&#x5347;&#x5BF9;&#x8C61;&#x590D;&#x7528;&#x7387;&#x3002;</p>
+</li>
+</ul>
+<h2 id="41-&#x8BBE;&#x8BA1;&#x539F;&#x7406;">4.1 &#x8BBE;&#x8BA1;&#x539F;&#x7406;</h2>
+<p>&#x200B;    smart-socket&#x5185;&#x5B58;&#x6C60;&#x7684;&#x8BBE;&#x8BA1;&#x539F;&#x7406;&#x6BD4;&#x8F83;&#x7B80;&#x5355;&#xFF0C;&#x4E8B;&#x5148;&#x5728;&#x5806;&#x5916;&#x5185;&#x5B58;&#x4E2D;&#x7533;&#x8BF7;&#x4E00;&#x4E2A;&#x5927;&#x7684;DirectByteBuffer&#xFF0C;&#x540E;&#x7EED;&#x4F7F;&#x7528;&#x65F6;&#x901A;&#x8FC7;DirectByteBuffer&#x6620;&#x5C04;&#x51FA;&#x5B9E;&#x9645;&#x6240;&#x9700;&#x5927;&#x5C0F;&#x7684;&#x865A;&#x62DF;Buffer&#x4E8E;&#x5806;&#x5185;&#x7A7A;&#x95F4;&#x4E2D;&#x3002;&#x6240;&#x4EE5;&#x8FD9;VirtualBuffer&#x5176;&#x5B9E;&#x5C31;&#x662F;&#x5806;&#x5916;&#x5185;&#x5B58;&#x5728;&#x5806;&#x5185;&#x5185;&#x5B58;&#x4E2D;&#x521B;&#x5EFA;&#x7684;&#x4E00;&#x4E2A;&#x7D22;&#x5F15;&#xFF0C;smart-socket&#x5728;&#x5806;&#x5185;&#x7A7A;&#x95F4;&#x4E2D;&#x5BF9;VirtualBuffer&#x7684;&#x4E00;&#x5207;&#x6570;&#x636E;&#x8BFB;&#x5199;&#x64CD;&#x4F5C;&#x90FD;&#x4F1A;&#x540C;&#x6B65;&#x53CD;&#x5E94;&#x81F3;&#x5806;&#x5916;&#x7684;DirectByteBuffer&#x4E2D;&#x3002;</p>
+<p><img src="bufferpool_1.png" width="60%"></p>
+<center>&#x56FE;4-1-1</center>
+
+<p>&#x63A5;&#x4E0B;&#x6765;&#x901A;&#x8FC7;&#x51E0;&#x5F20;&#x56FE;&#x793A;&#x8303;&#x4E00;&#x4E0B;&#x5185;&#x5B58;&#x6C60;&#x7684;&#x8FD0;&#x4F5C;&#x6D41;&#x7A0B;&#x3002;&#x4F8B;&#x5982;&#xFF1A;</p>
+<ol>
+<li><p>&#x6211;&#x4EEC;&#x9700;&#x8981;&#x4E00;&#x5757;&#x957F;&#x5EA6;&#x4E3A;2&#x7684;ByteBuffer&#xFF0C;&#x90A3;&#x4E48;&#x6211;&#x4EEC;&#x5C31;&#x6620;&#x5C04;&#x51FA;&#x4E00;&#x4E2A;VirtualBuffer&#x5360;&#x7528;&#x5806;&#x5916;&#x5185;&#x5B58;&#x4E2D;&#x7684;&#x4E24;&#x4E2A;&#x5B57;&#x8282;&#x7A7A;&#x95F4;&#x3002;</p>
+</li>
+<li><p>&#x4E4B;&#x540E;&#x6211;&#x4EEC;&#x8FD8;&#x9700;&#x8981;&#x4E00;&#x5757;&#x957F;&#x5EA6;&#x4E3A;4&#x7684;ByteBuffer&#xFF0C;&#x90A3;&#x5C31;&#x53EA;&#x80FD;&#x7533;&#x8BF7;&#x4E0B;&#x6807;3&#x81F3;6&#x7684;&#x7A7A;&#x95F4;&#x3002;</p>
+<p><img src="bufferpool_2.png" width="60%"></p>
+<center>&#x56FE;4-1-2</center>
+</li>
+<li><p>&#x5F53;&#x865A;&#x62DF;&#x5185;&#x5B58;&#x4F7F;&#x7528;&#x5B8C;&#x6BD5;&#x540E;&#xFF0C;&#x8981;&#x53CA;&#x65F6;&#x91CA;&#x653E;&#x5360;&#x7528;&#x7684;&#x5806;&#x5916;&#x5185;&#x5B58;&#x3002;</p>
+<p><img src="bufferpool_3.png" width="60%"></p>
+<center>&#x56FE;4-1-3</center>
+</li>
+<li><p>&#x4E0B;&#x4E00;&#x6B21;&#x518D;&#x9700;&#x8981;&#x7A7A;&#x95F4;&#x65F6;&#x7EE7;&#x7EED;&#x4ECE;&#x53EF;&#x7528;&#x7A7A;&#x95F4;&#x4E2D;&#x7533;&#x8BF7;&#x3002;</p>
+<p><img src="bufferpool_4.png" width="60%"></p>
+</li>
+</ol>
+<center>&#x56FE;4-1-4</center>
+
+<p>&#x200B;    &#x901A;&#x8FC7;&#x4E0D;&#x65AD;&#x7684;&#x7533;&#x8BF7;&#x3001;&#x91CA;&#x653E;&#xFF0C;smart-socket&#x5185;&#x5B58;&#x6C60;&#x4FBF;&#x8FD0;&#x8F6C;&#x8D77;&#x6765;&#x4E86;&#x3002;&#x9700;&#x8981;&#x6CE8;&#x610F;&#x7684;&#x4E8B;&#xFF0C;&#x5185;&#x5B58;&#x7684;&#x7533;&#x8BF7;&#x662F;&#x4ECE;&#x5934;&#x5230;&#x5C3E;&#x8FDB;&#x884C;&#x626B;&#x63CF;&#xFF0C;&#x800C;&#x91CA;&#x653E;&#x56DE;&#x6536;&#x662F;&#x65E0;&#x65F6;&#x5E8F;&#x7684;&#xFF0C;&#x5982;&#x56FE;4-1-4&#x3002;&#x6240;&#x4EE5;&#x5728;&#x5B9E;&#x9645;&#x8FD0;&#x884C;&#x4E2D;&#x4F1A;&#x4EA7;&#x751F;&#x4E00;&#x4E9B;&#x4E0D;&#x8FDE;&#x7EED;&#x7684;&#x5C0F;&#x5185;&#x5B58;&#x5757;&#xFF0C;&#x4E5F;&#x5C31;&#x662F;&#x5185;&#x5B58;&#x788E;&#x7247;&#x3002;&#x5185;&#x5B58;&#x788E;&#x7247;&#x5316;&#x662F;&#x4E2A;&#x5FC5;&#x7136;&#x5B58;&#x5728;&#x7684;&#x72B6;&#x51B5;&#xFF0C;&#x5047;&#x5982;&#x8FD9;&#x79CD;&#x5C0F;&#x9897;&#x7C92;&#x5185;&#x5B58;&#x788E;&#x7247;&#x5360;&#x6BD4;&#x589E;&#x9AD8;&#xFF0C;&#x4F1A;&#x964D;&#x4F4E;&#x865A;&#x62DF;&#x5185;&#x5B58;&#x7533;&#x8BF7;&#x7684;&#x6210;&#x529F;&#x7387;&#x3002;&#x5982;&#x679C;&#x865A;&#x62DF;&#x5185;&#x5B58;&#x7533;&#x8BF7;&#x5931;&#x8D25;&#xFF0C;smart-socket&#x5185;&#x5B58;&#x6C60;&#x4F1A;&#x542F;&#x7528;&#x5907;&#x7528;&#x65B9;&#x6848;,&#x91C7;&#x7528;&#x7533;&#x8BF7;&#x5806;&#x5185;&#x7F13;&#x51B2;&#x533A;&#x7684;&#x65B9;&#x5F0F;&#x6EE1;&#x8DB3;&#x5E94;&#x7528;&#x6240;&#x9700;&#xFF0C;&#x6B64;&#x7C7B;&#x7F13;&#x51B2;&#x533A;&#x4F7F;&#x7528;&#x5B8C;&#x6BD5;&#x540E;&#x53EF;&#x7531;&#x5783;&#x573E;&#x56DE;&#x6536;&#x5668;&#x91CA;&#x653E;&#x3002;&#x8FD9;&#x6837;&#x4E00;&#x79CD;&#x5806;&#x5916;&#x4E3A;&#x4E3B;&#xFF0C;&#x5806;&#x5185;&#x4E3A;&#x8F85;&#x7684;&#x8BBE;&#x8BA1;&#x65B9;&#x6848;&#xFF0C;&#x4FDD;&#x969C;&#x4E86;smart-socket&#x5185;&#x5B58;&#x6C60;&#x7684;&#x7A33;&#x5B9A;&#x3001;&#x9AD8;&#x6548;&#x3002;</p>
+<h2 id="42-&#x5185;&#x5B58;&#x6C60;&#x5B9E;&#x8DF5;">4.2 &#x5185;&#x5B58;&#x6C60;&#x5B9E;&#x8DF5;</h2>
+<p>&#x200B;    &#x524D;&#x6587;&#x8BB2;&#x5B8C;&#x4E86;smart-socket&#x5185;&#x5B58;&#x6C60;&#x7684;&#x8BBE;&#x8BA1;&#x539F;&#x7406;&#xFF0C;&#x4F46;&#x5728;&#x5B9E;&#x8DF5;&#x4E2D;&#x8FD8;&#x4F1A;&#x9762;&#x4E34;&#x4E00;&#x4E2A;&#x60C5;&#x51B5;&#xFF0C;&#x4FBF;&#x662F;&#x5185;&#x5B58;&#x5206;&#x914D;&#x3001;&#x56DE;&#x6536;&#x65F6;&#x9762;&#x4E34;&#x7684;&#x5E76;&#x53D1;&#x95EE;&#x9898;&#x3002;&#x5C3D;&#x7BA1;&#x53EA;&#x9700;&#x52A0;&#x540C;&#x6B65;&#x9501;&#x63A7;&#x4FBF;&#x80FD;&#x89E3;&#x51B3;&#xFF0C;&#x4F46;&#x662F;&#x5728;&#x9AD8;&#x5E76;&#x53D1;&#x573A;&#x666F;&#x4E0B;&#x7684;&#x9501;&#x7ADE;&#x4E89;&#x4F1A;&#x6BD4;&#x8F83;&#x6FC0;&#x70C8;&#xFF0C;&#x4E3A;&#x4E86;&#x7F13;&#x89E3;&#x8FD9;&#x4E00;&#x72B6;&#x51B5;&#x3002;smart-socket&#x5185;&#x5B58;&#x6C60;&#x4E2D;&#x5F15;&#x5165;&#x4E86;&#x5185;&#x5B58;&#x9875;BufferPage&#x7684;&#x6982;&#x5FF5;&#x3002;&#x5185;&#x5B58;&#x6C60;&#x4E2D;&#x521B;&#x5EFA;&#x4E00;&#x7EC4;BufferPage&#xFF0C;&#x6BCF;&#x4E2A;BufferPage&#x5404;&#x81EA;&#x5C01;&#x88C5;&#x4E00;&#x4E2A;&#x5927;&#x7684;DirectByteBuffer&#x3002;&#x518D;&#x6839;&#x636E;&#x7279;&#x5B9A;&#x7684;&#x5206;&#x914D;&#x7B56;&#x7565;&#x5C06;&#x7F51;&#x7EDC;&#x4F1A;&#x8BDD;AIOSession&#x4E0E;&#x67D0;&#x4E2A;BufferPage&#x5173;&#x8054;&#x8D77;&#x6765;&#xFF0C;&#x7531;&#x6B64;&#x964D;&#x4F4E;&#x5E76;&#x53D1;&#x60C5;&#x51B5;&#x4E0B;&#x7684;&#x9501;&#x7ADE;&#x4E89;&#x538B;&#x529B;&#x3002;</p>
+<p><img src="bufferpage_1.png" width="100%"></p>
+<p>&#x200B;    &#x6700;&#x7EC8;&#x6211;&#x4EEC;&#x7684;smart-socket&#x5185;&#x5B58;&#x6C60;&#x5B9E;&#x73B0;&#x5982;&#x4E0B;&#x6240;&#x793A;&#x3002;&#x521D;&#x59CB;&#x5316;&#x5185;&#x5B58;&#x6C60;&#x65F6;&#x9700;&#x8981;&#x6307;&#x5B9A;&#x5185;&#x5B58;&#x9875;&#x7684;&#x4E2A;&#x6570;&#xFF0C;&#x4E3A;&#x6BCF;&#x4E2A;&#x5185;&#x5B58;&#x9875;&#x5206;&#x914D;&#x7684;&#x7A7A;&#x95F4;&#x5927;&#x5C0F;&#xFF0C;&#x4EE5;&#x53CA;&#x662F;&#x5426;&#x4F7F;&#x7528;&#x76F4;&#x63A5;&#x7F13;&#x51B2;&#x533A;&#x3002;&#x81F3;&#x4E8E;&#x5185;&#x5B58;&#x9875;&#x7684;&#x5206;&#x914D;&#xFF0C;&#x91C7;&#x7528;&#x7684;&#x662F;&#x8F6E;&#x8BAD;&#x7B56;&#x7565;&#x3002;</p>
+<pre><code class="lang-java"><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">BufferPagePool</span> </span>{
+    <span class="hljs-keyword">private</span> BufferPage[] bufferPageList;
+    <span class="hljs-comment">/**
+     * &#x5185;&#x5B58;&#x9875;&#x6E38;&#x6807;
+     */</span>
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">int</span> cursor = -<span class="hljs-number">1</span>;
+
+    <span class="hljs-comment">/**
+     * <span class="hljs-doctag">@param</span> pageSize &#x5185;&#x5B58;&#x9875;&#x5927;&#x5C0F;
+     * <span class="hljs-doctag">@param</span> poolSize &#x5185;&#x5B58;&#x9875;&#x4E2A;&#x6570;
+     * <span class="hljs-doctag">@param</span> isDirect &#x662F;&#x5426;&#x4F7F;&#x7528;&#x76F4;&#x63A5;&#x7F13;&#x51B2;&#x533A;
+     */</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">BufferPagePool</span><span class="hljs-params">(<span class="hljs-keyword">final</span> <span class="hljs-keyword">int</span> pageSize, <span class="hljs-keyword">final</span> <span class="hljs-keyword">int</span> poolSize, <span class="hljs-keyword">final</span> <span class="hljs-keyword">boolean</span> isDirect)</span> </span>{
+        bufferPageList = <span class="hljs-keyword">new</span> BufferPage[poolSize];
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = <span class="hljs-number">0</span>; i &lt; poolSize; i++) {
+            bufferPageList[i] = <span class="hljs-keyword">new</span> BufferPage(pageSize, isDirect);
+        }
+    }
+
+    <span class="hljs-comment">/**
+     * &#x7533;&#x8BF7;&#x5185;&#x5B58;&#x9875;
+     *
+     * <span class="hljs-doctag">@return</span>
+     */</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> BufferPage <span class="hljs-title">allocateBufferPage</span><span class="hljs-params">()</span> </span>{
+        <span class="hljs-comment">//&#x8F6E;&#x8BAD;&#x6E38;&#x6807;&#xFF0C;&#x5747;&#x8861;&#x5206;&#x914D;&#x5185;&#x5B58;&#x9875;</span>
+        cursor = (cursor + <span class="hljs-number">1</span>) % bufferPageList.length;
+        BufferPage page = bufferPageList[cursor];
+        <span class="hljs-keyword">return</span> page;
+    }
+
+}
+</code></pre>
+<h2 id="43-&#x603B;&#x7ED3;">4.3 &#x603B;&#x7ED3;</h2>
+<p>&#x200B;    smart-socket&#x5185;&#x5B58;&#x6C60;&#x7684;&#x8BBE;&#x8BA1;&#x53EF;&#x80FD;&#x5728;&#x7406;&#x8BBA;&#x5C42;&#x9762;&#x7684;&#x63A2;&#x8BA8;&#x4F1A;&#x66F4;&#x6709;&#x610F;&#x4E49;&#xFF0C;&#x5B83;&#x6240;&#x5E26;&#x6765;&#x7684;&#x6027;&#x80FD;&#x63D0;&#x5347;&#x548C;&#x5185;&#x5B58;&#x4F18;&#x5316;&#xFF0C;&#x5F88;&#x8F7B;&#x6613;&#x7684;&#x5C31;&#x4F1A;&#x88AB;&#x5B9E;&#x9645;&#x4E1A;&#x52A1;&#x573A;&#x666F;&#x4E0B;&#x7684;&#x7CFB;&#x7EDF;&#x4E1A;&#x52A1;&#x62B5;&#x6D88;&#x6389;&#x3002;&#x800C;smart-socket&#x82B1;&#x8D39;&#x5927;&#x91CF;&#x7CBE;&#x529B;&#x8BBE;&#x8BA1;&#x7684;&#x5185;&#x5B58;&#x6C60;&#xFF0C;&#x662F;&#x4E3A;&#x4E86;&#x8FBE;&#x5230;&#x5B9E;&#x9A8C;&#x5BA4;&#x73AF;&#x5883;&#x4E0B;&#x7684;&#x6700;&#x4F18;&#x89E3;&#x3002;&#x6846;&#x67B6;&#x5C42;&#x9762;&#x505A;&#x7684;&#x6BCF;&#x4E00;&#x6B21;&#x52AA;&#x529B;&#xFF0C;&#x90FD;&#x662F;&#x671F;&#x671B;&#x8BA9;&#x66F4;&#x591A;&#x7684;&#x786C;&#x4EF6;&#x8D44;&#x6E90;&#x670D;&#x52A1;&#x4E8E;&#x7528;&#x6237;&#x7684;&#x4E1A;&#x52A1;&#xFF0C;&#x63D0;&#x5347;&#x8D44;&#x6E90;&#x5229;&#x7528;&#x7387;&#x3002;</p>
+<footer class="page-footer"><span class="copyright">Copyright &#xA9; smartboot.org 2018 all right reserved&#xFF0C;powered by Gitbook</span><span class="footer-modification">&#x8BE5;&#x6587;&#x4EF6;&#x4FEE;&#x8BA2;&#x65F6;&#x95F4;&#xFF1A;
+2019-04-14 20:47:13
+</span></footer>
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="../BLANK.html" class="navigation navigation-prev " aria-label="Previous page: 3.4 RPC消息解析">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="../chapter-6/" class="navigation navigation-next " aria-label="Next page: 第五章 未来规划">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"第四章 内存池","level":"1.2.5","depth":2,"next":{"title":"第五章 未来规划","level":"1.2.6","depth":2,"path":"smart-socket/chapter-6/README.md","ref":"smart-socket/chapter-6/README.md","articles":[]},"previous":{"title":"3.4 RPC消息解析","level":"1.2.4.4","depth":3,"path":"smart-socket/BLANK.md","ref":"smart-socket/BLANK.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-sharing","search-plus","expandable-chapters-interactive","tbfed-pagefooter","github","github-buttons","edit-link"],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"tbfed-pagefooter":{"copyright":"Copyright &copy smartboot.org 2018","modify_label":"该文件修订时间：","modify_format":"YYYY-MM-DD HH:mm:ss"},"github":{"url":"https://github.com/smartboot/smart-socket"},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"expandable-chapters-interactive":{},"github-buttons":{"buttons":[{"user":"smartboot","repo":"smart-socket","type":"star","size":"small","count":true}]},"edit-link":{"label":"Edit This Page","base":"https://gitee.com/smartboot/book/edit/master"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"search-plus":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"smartboot 中文指南","language":"en","gitbook":"*","description":"本文涵盖了smartboot下所有项目的技术手册"},"file":{"path":"smart-socket/chapter-5/README.md","mtime":"2019-04-14T12:47:13.541Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2020-04-02T05:22:17.739Z"},"basePath":"../..","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    <script src="../../gitbook/gitbook.js"></script>
+    <script src="../../gitbook/theme.js"></script>
+    
+        
+        <script src="../../gitbook/gitbook-plugin-search-plus/jquery.mark.min.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-search-plus/search.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-expandable-chapters-interactive/expandable-chapters.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-github/plugin.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-github-buttons/plugin.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-edit-link/plugin.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+
+    </body>
+</html>
+

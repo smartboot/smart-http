@@ -39,6 +39,7 @@ public class HttpBootstrap {
     private int pageNum = threadNum;
 
     private int chunkSize = 1024;
+    private String host;
     private HttpMessageProcessor processor = new HttpMessageProcessor();
     /**
      * http消息解码器
@@ -53,6 +54,11 @@ public class HttpBootstrap {
      */
     public HttpBootstrap setPort(int port) {
         this.port = port;
+        return this;
+    }
+
+    public HttpBootstrap host(String host) {
+        this.host = host;
         return this;
     }
 
@@ -122,7 +128,7 @@ public class HttpBootstrap {
      * 启动HTTP服务
      */
     public void start() {
-        server = new AioQuickServer<>(port, protocol, processor);
+        server = new AioQuickServer<>(host, port, protocol, processor);
         server.setReadBufferSize(readBufferSize)
                 .setThreadNum(threadNum)
                 .setBufferPoolPageSize(pageSize)
