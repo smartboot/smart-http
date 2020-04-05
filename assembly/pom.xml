@@ -48,6 +48,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.1.0</version>
                 <configuration>
                     <finalName>smart-http</finalName>
                     <appendAssemblyId>true</appendAssemblyId>
