@@ -21,18 +21,18 @@ import java.io.InputStream;
  * @author 三刀
  * @version V1.0 , 2018/8/31
  */
-public final class Http11Request extends AbstractRequest {
+final class HttpRequestImpl extends AbstractRequest {
 
     private InputStream inputStream;
 
-    private Http11Response response;
+    private HttpResponseImpl response;
 
-    Http11Request(Request request) {
+    HttpRequestImpl(Request request) {
         init(request);
-        this.response = new Http11Response(this, request.getAioSession().writeBuffer());
+        this.response = new HttpResponseImpl(this, request.getAioSession().writeBuffer());
     }
 
-    public final Http11Response getResponse() {
+    public final HttpResponseImpl getResponse() {
         return response;
     }
 

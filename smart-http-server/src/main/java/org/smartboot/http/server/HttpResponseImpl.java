@@ -14,9 +14,9 @@ import java.io.OutputStream;
  * @author 三刀
  * @version V1.0 , 2018/2/3
  */
-class Http11Response extends AbstractResponse {
+class HttpResponseImpl extends AbstractResponse {
 
-    public Http11Response(Http11Request request, OutputStream outputStream) {
-        init(request, new Http11OutputStream(request, this, outputStream));
+    public HttpResponseImpl(HttpRequestImpl request, OutputStream outputStream) {
+        init(request, new HttpOutputStream(request, this, outputStream));
     }
 }

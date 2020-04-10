@@ -36,7 +36,7 @@ import java.util.logging.Level;
  * @version V1.0 , 2018/6/10
  */
 public class HttpMessageProcessor implements MessageProcessor<Request> {
-    private final AttachKey<Http11Request> ATTACH_KEY_HTTP_REQUEST = AttachKey.valueOf("httpRequest");
+    private final AttachKey<HttpRequestImpl> ATTACH_KEY_HTTP_REQUEST = AttachKey.valueOf("httpRequest");
     private final HandlePipeline<HttpRequest, HttpResponse> httpPipeline = new HandlePipeline<>();
     private final HandlePipeline<WebSocketRequest, WebSocketResponse> wsPipeline = new HandlePipeline<>();
 
@@ -60,9 +60,9 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
                 pipeline = wsPipeline;
                 needClose = webSocketRequest.getFrameOpcode() == WebSocketRequestImpl.OPCODE_CLOSE;
             } else {
-                Http11Request http11Request = attachment.get(ATTACH_KEY_HTTP_REQUEST);
+                HttpRequestImpl http11Request = attachment.get(ATTACH_KEY_HTTP_REQUEST);
                 if (http11Request == null) {
-                    http11Request = new Http11Request(baseHttpRequest);
+                    http11Request = new HttpRequestImpl(baseHttpRequest);
                     attachment.put(ATTACH_KEY_HTTP_REQUEST, http11Request);
                 }
                 request = http11Request;

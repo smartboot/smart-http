@@ -21,7 +21,7 @@ import java.util.Map;
  * @author 三刀
  * @version V1.0 , 2018/2/3
  */
-final class Http11OutputStream extends AbstractOutputStream {
+final class HttpOutputStream extends AbstractOutputStream {
     private static final byte[] CHUNKED_END_BYTES = "0\r\n\r\n".getBytes(StandardCharsets.US_ASCII);
     /**
      * key:status+contentType
@@ -40,7 +40,7 @@ final class Http11OutputStream extends AbstractOutputStream {
 
     private final OutputStream outputStream;
 
-    public Http11OutputStream(Http11Request request, Http11Response response, OutputStream outputStream) {
+    public HttpOutputStream(HttpRequestImpl request, HttpResponseImpl response, OutputStream outputStream) {
         super(request, response, outputStream);
         this.outputStream = outputStream;
     }
