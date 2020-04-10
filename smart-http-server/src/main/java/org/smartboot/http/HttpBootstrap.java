@@ -12,6 +12,8 @@ import org.smartboot.http.server.HttpMessageProcessor;
 import org.smartboot.http.server.HttpRequestProtocol;
 import org.smartboot.http.server.Request;
 import org.smartboot.http.server.handle.Pipeline;
+import org.smartboot.socket.buffer.BufferFactory;
+import org.smartboot.socket.buffer.BufferPagePool;
 import org.smartboot.socket.transport.AioQuickServer;
 
 import java.io.IOException;
@@ -38,7 +40,7 @@ public class HttpBootstrap {
 
     private int pageNum = threadNum;
 
-    private int chunkSize = 1024;
+    private int writeBufferSize = 1024;
     private String host;
     private HttpMessageProcessor processor = new HttpMessageProcessor();
     /**
@@ -95,7 +97,7 @@ public class HttpBootstrap {
     public HttpBootstrap setBufferPool(int pageSize, int pageNum, int chunkSize) {
         this.pageSize = pageSize;
         this.pageNum = pageNum;
-        this.chunkSize = chunkSize;
+        this.writeBufferSize = chunkSize;
         return this;
     }
     /**
@@ -131,9 +133,13 @@ public class HttpBootstrap {
         server = new AioQuickServer<>(host, port, protocol, processor);
         server.setReadBufferSize(readBufferSize)
                 .setThreadNum(threadNum)
-                .setBufferPoolPageSize(pageSize)
-                .setBufferPoolPageNum(pageNum)
-                .setBufferPoolChunkSize(chunkSize);
+                .setBufferFactory(new BufferFactory() {
+                    @Override
+                    public BufferPagePool create() {
+                        return new BufferPagePool(pageSize, pageNum, true);
+                    }
+                })
+                .setWriteBuffer(writeBufferSize, 16);
         try {
             server.start();
         } catch (IOException e) {
