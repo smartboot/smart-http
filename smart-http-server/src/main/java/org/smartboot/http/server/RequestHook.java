@@ -12,6 +12,6 @@ package org.smartboot.http.server;
  * @author 三刀
  * @version V1.0 , 2020/3/31
  */
-interface BaseHttpRequestHook {
+interface RequestHook {
     Request getRequest();
 }

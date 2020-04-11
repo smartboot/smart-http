@@ -26,7 +26,7 @@ class RFC2612RequestHandle extends HttpHandle {
 
     @Override
     public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
-        Request http11Request = ((BaseHttpRequestHook) request).getRequest();
+        Request http11Request = ((RequestHook) request).getRequest();
         methodCheck(http11Request);
         hostCheck(http11Request);
         uriCheck(http11Request);
