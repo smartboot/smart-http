@@ -29,4 +29,8 @@ public interface WebSocketResponse {
      */
     void sendBinaryMessage(byte[] bytes);
 
+    /**
+     * 关闭ws通道
+     */
+    void close();
 }

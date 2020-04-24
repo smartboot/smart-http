@@ -9,7 +9,6 @@
 package org.smartboot.http.server;
 
 import org.smartboot.http.HttpRequest;
-import org.smartboot.http.HttpResponse;
 import org.smartboot.http.enums.HttpStatus;
 
 import java.io.IOException;
@@ -26,7 +25,7 @@ import java.util.Vector;
  * @author 三刀
  * @version V1.0 , 2018/2/3
  */
-class AbstractResponse implements HttpResponse, Reset {
+class AbstractResponse implements CloseableResponse, Reset {
     /**
      * 输入流
      */
@@ -53,7 +52,10 @@ class AbstractResponse implements HttpResponse, Reset {
     private HttpRequest request;
 
     private String characterEncoding;
-
+    /**
+     * 是否关闭Socket连接通道
+     */
+    private boolean channelClosed = false;
 
     protected void init(HttpRequest request, AbstractOutputStream outputStream) {
         this.request = request;
@@ -70,6 +72,7 @@ class AbstractResponse implements HttpResponse, Reset {
         contentType = null;
         contentLength = -1;
         characterEncoding = null;
+        this.channelClosed = false;
     }
 
 
@@ -199,6 +202,21 @@ class AbstractResponse implements HttpResponse, Reset {
         this.characterEncoding = charset;
     }
 
+    @Override
+    public final void close() {
+        if (channelClosed) {
+            return;
+        }
+        try {
+            if (outputStream != null && !outputStream.isClosed()) {
+                outputStream.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        channelClosed = true;
+    }
+
     public int getContentLength() {
         return contentLength;
     }
@@ -213,5 +231,10 @@ class AbstractResponse implements HttpResponse, Reset {
 
     public final void setContentType(String contentType) {
         this.contentType = contentType;
+    }
+
+    @Override
+    public final boolean isChannelClosed() {
+        return channelClosed;
     }
 }

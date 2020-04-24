@@ -24,7 +24,6 @@ final class WebSocketOutputStream extends AbstractOutputStream {
     public WebSocketOutputStream(WebSocketRequestImpl request, WebSocketResponseImpl response, OutputStream outputStream) {
         super(request, response, outputStream);
         super.chunked = false;
-
     }
 
     /**
@@ -68,8 +67,4 @@ final class WebSocketOutputStream extends AbstractOutputStream {
         committed = true;
     }
 
-    @Override
-    public void close() throws IOException {
-        writeHead();
-    }
 }

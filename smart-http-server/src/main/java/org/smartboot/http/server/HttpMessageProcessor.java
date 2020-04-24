@@ -41,7 +41,17 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
     private final HandlePipeline<WebSocketRequest, WebSocketResponse> wsPipeline = new HandlePipeline<>();
 
     public HttpMessageProcessor() {
-        httpPipeline.next(new RFC2612RequestHandle());
+        httpPipeline.next(new HttpHandle() {
+            @Override
+            public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
+                doNext(request, response);
+                if (HttpMethodEnum.POST.getMethod().equals(request.getMethod())
+                        && !StringUtils.startsWith(request.getContentType(), HttpHeaderConstant.Values.X_WWW_FORM_URLENCODED)
+                        && request.getInputStream().available() > 0) {
+                    response.close();
+                }
+            }
+        }).next(new RFC2612RequestHandle());
         wsPipeline.next(new WebSocketHandSharkHandle());
     }
 
@@ -50,15 +60,13 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
         try {
             Attachment attachment = session.getAttachment();
             HttpRequest request;
-            HttpResponse response;
+            CloseableResponse response;
             HandlePipeline pipeline;
-            boolean needClose = false;
             if (baseHttpRequest.isWebsocket()) {
                 WebSocketRequestImpl webSocketRequest = attachment.get(HttpRequestProtocol.ATTACH_KEY_WS_REQ);
                 request = webSocketRequest;
                 response = webSocketRequest.getResponse();
                 pipeline = wsPipeline;
-                needClose = webSocketRequest.getFrameOpcode() == WebSocketRequestImpl.OPCODE_CLOSE;
             } else {
                 HttpRequestImpl http11Request = attachment.get(ATTACH_KEY_HTTP_REQUEST);
                 if (http11Request == null) {
@@ -85,9 +93,7 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
                 response.getOutputStream().close();
             }
             //Post请求没有读完Body，关闭通道
-            if (needClose || HttpMethodEnum.POST.getMethod().equals(request.getMethod())
-                    && !StringUtils.startsWith(request.getContentType(), HttpHeaderConstant.Values.X_WWW_FORM_URLENCODED)
-                    && request.getInputStream().available() > 0) {
+            if (response.isChannelClosed()) {
                 session.close(false);
             } else {
                 ((Reset) request).reset();

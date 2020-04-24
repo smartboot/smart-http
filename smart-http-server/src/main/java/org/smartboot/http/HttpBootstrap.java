@@ -100,31 +100,6 @@ public class HttpBootstrap {
         this.writeBufferSize = chunkSize;
         return this;
     }
-    /**
-     * 只配置keyStore则使用单向认证
-     *
-     * @param keyStore
-     * @param storePassword
-     * @return
-     */
-//    public HttpBootstrap sslKeyStore(String keyStore, String storePassword) {
-//        this.keyStore = keyStore;
-//        this.storePassword = storePassword;
-//        return this;
-//    }
-
-    /**
-     * 配合sslKeyStore提供双向认证
-     *
-     * @param trust
-     * @param password
-     * @return
-     */
-//    public HttpBootstrap sslTrustStore(String trust, String password) {
-//        this.trust = trust;
-//        this.trustPassword = password;
-//        return this;
-//    }
 
     /**
      * 启动HTTP服务

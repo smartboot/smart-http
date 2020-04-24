@@ -117,19 +117,6 @@ final class HttpOutputStream extends AbstractOutputStream {
             }
         }
         return data;
-
     }
 
-    @Override
-    public final void close() throws IOException {
-        if (closed) {
-            throw new IOException("outputStream has already closed");
-        }
-        writeHead();
-
-        if (chunked) {
-            outputStream.write(CHUNKED_END_BYTES);
-        }
-        closed = true;
-    }
 }

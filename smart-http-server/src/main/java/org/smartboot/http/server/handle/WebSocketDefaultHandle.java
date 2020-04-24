@@ -42,7 +42,11 @@ public class WebSocketDefaultHandle extends WebSocketHandle {
                             handleBinaryMessage(request, response, request.getPayload());
                             break;
                         case WebSocketRequestImpl.OPCODE_CLOSE:
-                            onClose(request, response);
+                            try {
+                                onClose(request, response);
+                            } finally {
+                                response.close();
+                            }
                             break;
                         case WebSocketRequestImpl.OPCODE_PING:
                             RunLogger.getLogger().log(Level.FINE, "unSupport ping now");

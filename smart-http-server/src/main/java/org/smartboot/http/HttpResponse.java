@@ -101,4 +101,6 @@ public interface HttpResponse {
     public String getCharacterEncoding();
 
     public void setCharacterEncoding(String charset);
+
+    public void close();
 }

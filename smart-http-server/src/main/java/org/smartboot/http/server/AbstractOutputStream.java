@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
  * @version V1.0 , 2018/2/3
  */
 abstract class AbstractOutputStream extends OutputStream implements Reset {
-
+    private static final byte[] CHUNKED_END_BYTES = "0\r\n\r\n".getBytes(StandardCharsets.US_ASCII);
     private static final ScheduledExecutorService SCHEDULED_EXECUTOR_SERVICE = new ScheduledThreadPoolExecutor(1, new ThreadFactory() {
         @Override
         public Thread newThread(Runnable r) {
@@ -61,7 +61,11 @@ abstract class AbstractOutputStream extends OutputStream implements Reset {
     protected final AbstractResponse response;
     protected final OutputStream outputStream;
     private final HttpRequest request;
-    protected boolean committed = false, closed = false;
+    protected boolean committed = false;
+    /**
+     * 当前流是否完结
+     */
+    protected boolean closed = false;
     protected boolean chunked = false;
 
     public AbstractOutputStream(HttpRequest request, AbstractResponse response, OutputStream outputStream) {
@@ -121,7 +125,17 @@ abstract class AbstractOutputStream extends OutputStream implements Reset {
     }
 
     @Override
-    public abstract void close() throws IOException;
+    public final void close() throws IOException {
+        if (closed) {
+            throw new IOException("outputStream has already closed");
+        }
+        writeHead();
+
+        if (chunked) {
+            outputStream.write(CHUNKED_END_BYTES);
+        }
+        closed = true;
+    }
 
     final protected byte[] getHeaderNameBytes(String name) {
         HeaderNameEnum headerNameEnum = HttpHeaderConstant.HEADER_NAME_ENUM_MAP.get(name);
