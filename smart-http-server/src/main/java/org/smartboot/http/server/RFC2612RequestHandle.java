@@ -10,9 +10,11 @@ package org.smartboot.http.server;
 
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
+import org.smartboot.http.enums.HttpMethodEnum;
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.exception.HttpException;
 import org.smartboot.http.server.handle.HttpHandle;
+import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.http.utils.StringUtils;
 
 import java.io.IOException;
@@ -30,7 +32,26 @@ class RFC2612RequestHandle extends HttpHandle {
         methodCheck(http11Request);
         hostCheck(http11Request);
         uriCheck(http11Request);
+
+        boolean keepAlive = true;
+        // http/1.0兼容长连接
+        if (HttpRequest.HTTP_1_0_STRING.equals(request.getProtocol())) {
+            keepAlive = HttpHeaderConstant.Values.KEEPALIVE.equalsIgnoreCase(request.getHeader(HttpHeaderConstant.Names.CONNECTION));
+            if (keepAlive) {
+                response.setHeader(HttpHeaderConstant.Names.CONNECTION, HttpHeaderConstant.Values.KEEPALIVE);
+            }
+        }
+
         doNext(request, response);
+
+        if (!keepAlive) {
+            response.close();
+        }
+        if (HttpMethodEnum.POST.getMethod().equals(request.getMethod())
+                && !StringUtils.startsWith(request.getContentType(), HttpHeaderConstant.Values.X_WWW_FORM_URLENCODED)
+                && request.getInputStream().available() > 0) {
+            response.close();
+        }
     }
 
     /**

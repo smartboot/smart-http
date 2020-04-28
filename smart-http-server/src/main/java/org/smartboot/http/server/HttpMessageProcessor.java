@@ -12,7 +12,6 @@ import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
 import org.smartboot.http.WebSocketRequest;
 import org.smartboot.http.WebSocketResponse;
-import org.smartboot.http.enums.HttpMethodEnum;
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.exception.HttpException;
 import org.smartboot.http.logging.RunLogger;
@@ -22,8 +21,6 @@ import org.smartboot.http.server.handle.Pipeline;
 import org.smartboot.http.server.handle.WebSocketHandle;
 import org.smartboot.http.utils.AttachKey;
 import org.smartboot.http.utils.Attachment;
-import org.smartboot.http.utils.HttpHeaderConstant;
-import org.smartboot.http.utils.StringUtils;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.transport.AioSession;
@@ -41,17 +38,7 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
     private final HandlePipeline<WebSocketRequest, WebSocketResponse> wsPipeline = new HandlePipeline<>();
 
     public HttpMessageProcessor() {
-        httpPipeline.next(new HttpHandle() {
-            @Override
-            public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
-                doNext(request, response);
-                if (HttpMethodEnum.POST.getMethod().equals(request.getMethod())
-                        && !StringUtils.startsWith(request.getContentType(), HttpHeaderConstant.Values.X_WWW_FORM_URLENCODED)
-                        && request.getInputStream().available() > 0) {
-                    response.close();
-                }
-            }
-        }).next(new RFC2612RequestHandle());
+        httpPipeline.next(new RFC2612RequestHandle());
         wsPipeline.next(new WebSocketHandSharkHandle());
     }
 
@@ -84,10 +71,12 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
                 e.printStackTrace();
                 response.setHttpStatus(HttpStatus.valueOf(e.getHttpCode()));
                 response.getOutputStream().write(e.getDesc().getBytes());
+                response.close();
             } catch (Exception e) {
                 e.printStackTrace();
                 response.setHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR);
                 response.getOutputStream().write(e.fillInStackTrace().toString().getBytes());
+                response.close();
             }
             if (!((AbstractOutputStream) response.getOutputStream()).isClosed()) {
                 response.getOutputStream().close();
