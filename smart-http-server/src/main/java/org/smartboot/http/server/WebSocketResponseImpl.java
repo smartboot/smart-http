@@ -48,6 +48,15 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
         }
     }
 
+    @Override
+    public void flush() {
+        try {
+            getOutputStream().flush();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private void send(byte opCode, byte[] bytes) throws IOException {
         int maxlength;
         if (bytes.length < Constant.WS_PLAY_LOAD_126) {

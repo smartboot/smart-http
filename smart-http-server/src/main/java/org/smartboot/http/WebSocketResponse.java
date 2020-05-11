@@ -33,4 +33,9 @@ public interface WebSocketResponse {
      * 关闭ws通道
      */
     void close();
+
+    /**
+     * 输出数据
+     */
+    void flush();
 }

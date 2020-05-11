@@ -14,10 +14,10 @@
 
     <groupId>org.smartboot.http</groupId>
     <artifactId>assembly</artifactId>
-    <version>1.0.14</version>
+    <version>1.0.14-SNAPSHOT</version>
 
     <properties>
-        <smarthttp.version>1.0.14</smarthttp.version>
+        <smarthttp.version>1.0.14-SNAPSHOT</smarthttp.version>
         <commons.fileupload.version>1.4</commons.fileupload.version>
     </properties>
 
@@ -41,8 +41,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
