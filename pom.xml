@@ -5,12 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.smartboot.http</groupId>
     <artifactId>smart-http-parent</artifactId>
-    <version>1.0.14-SNAPSHOT</version>
+    <version>1.0.15-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
-        <smartsocket.version>1.4.10-SNAPSHOT</smartsocket.version>
-        <smarthttp.version>1.0.14-SNAPSHOT</smarthttp.version>
+        <smartsocket.version>1.4.12-SNAPSHOT</smartsocket.version>
+        <smarthttp.version>1.0.15-SNAPSHOT</smarthttp.version>
     </properties>
 
     <dependencyManagement>
