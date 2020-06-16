@@ -8,6 +8,8 @@
 
 package org.smartboot.http.example;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import org.smartboot.http.HttpBootstrap;
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
@@ -22,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -50,9 +53,15 @@ public class IMDemo {
 
             @Override
             public void handleTextMessage(WebSocketRequest request, WebSocketResponse response, String data) {
+                JSONObject jsonObject = JSON.parseObject(data);
+                jsonObject.put("sendTime", System.currentTimeMillis());
+                jsonObject.put("id", UUID.randomUUID().toString());
+                jsonObject.put("from", request.hashCode());
+                jsonObject.put("avatar","https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png");
                 sessionMap.values().forEach(rsp -> {
-                    rsp.sendTextMessage(data);
-                    rsp.flush();
+                    System.out.println("收到消息");
+                    rsp.sendTextMessage(jsonObject.toJSONString());
+//                    rsp.flush();
                 });
             }
 
@@ -74,6 +83,6 @@ public class IMDemo {
         bootstrap.wsPipeline().next(webSocketRouteHandle);
 
         //设定服务器配置并启动
-        bootstrap.setPort(8080).start();
+        bootstrap.setPort(8081).start();
     }
 }
