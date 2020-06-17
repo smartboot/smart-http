@@ -10,6 +10,7 @@ package org.smartboot.http.server;
 
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
+import org.smartboot.http.enums.HttpMethodEnum;
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.exception.HttpException;
 import org.smartboot.http.server.handle.HttpHandle;
@@ -47,7 +48,9 @@ class RFC2612RequestHandle extends HttpHandle {
             response.close();
         }
         //body部分未读取完毕,释放连接资源
-        if (request.getContentLength() > 0 && request.getInputStream().available() > 0) {
+        if (!HttpMethodEnum.GET.getMethod().equals(request.getMethod())
+                && request.getContentLength() > 0
+                && request.getInputStream().available() > 0) {
             response.close();
         }
     }
