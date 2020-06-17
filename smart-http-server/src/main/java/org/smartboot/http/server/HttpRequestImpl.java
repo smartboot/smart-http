@@ -8,9 +8,6 @@
 
 package org.smartboot.http.server;
 
-import org.smartboot.http.enums.HttpMethodEnum;
-import org.smartboot.http.enums.HttpStatus;
-import org.smartboot.http.exception.HttpException;
 import org.smartboot.http.utils.EmptyInputStream;
 import org.smartboot.http.utils.PostInputStream;
 
@@ -41,12 +38,11 @@ final class HttpRequestImpl extends AbstractRequest {
         if (inputStream != null) {
             return inputStream;
         }
-        if (!HttpMethodEnum.POST.getMethod().equalsIgnoreCase(getMethod())) {
+        int contentLength = getContentLength();
+        if (contentLength <= 0 || request.getFormUrlencoded() != null) {
             inputStream = new EmptyInputStream();
-        } else if (request.getFormUrlencoded() == null) {
-            inputStream = new PostInputStream(request.getAioSession().getInputStream(getContentLength()), getContentLength());
         } else {
-            throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR);
+            inputStream = new PostInputStream(request.getAioSession().getInputStream(contentLength), contentLength);
         }
         return inputStream;
     }

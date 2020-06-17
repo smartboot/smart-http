@@ -10,7 +10,6 @@ package org.smartboot.http.server;
 
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
-import org.smartboot.http.enums.HttpMethodEnum;
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.exception.HttpException;
 import org.smartboot.http.server.handle.HttpHandle;
@@ -47,8 +46,8 @@ class RFC2612RequestHandle extends HttpHandle {
         if (!keepAlive) {
             response.close();
         }
-        if (HttpMethodEnum.POST.getMethod().equals(request.getMethod())
-                && !StringUtils.startsWith(request.getContentType(), HttpHeaderConstant.Values.X_WWW_FORM_URLENCODED)
+        if (request.getContentLength() > 0
+//                && !StringUtils.startsWith(request.getContentType(), HttpHeaderConstant.Values.X_WWW_FORM_URLENCODED)
                 && request.getInputStream().available() > 0) {
             response.close();
         }
