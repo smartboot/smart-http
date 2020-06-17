@@ -48,7 +48,12 @@ public class PostInputStream extends InputStream {
 
     @Override
     public int read() throws IOException {
-        return inputStream.read();
+        if (remaining > 0) {
+            remaining--;
+            return inputStream.read();
+        } else {
+            return -1;
+        }
 //        throw new UnsupportedOperationException("unSupport because of the value byte is returned as an int in the range 0 to 255");
     }
 }
