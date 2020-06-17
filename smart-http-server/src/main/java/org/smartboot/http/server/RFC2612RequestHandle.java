@@ -46,9 +46,8 @@ class RFC2612RequestHandle extends HttpHandle {
         if (!keepAlive) {
             response.close();
         }
-        if (request.getContentLength() > 0
-//                && !StringUtils.startsWith(request.getContentType(), HttpHeaderConstant.Values.X_WWW_FORM_URLENCODED)
-                && request.getInputStream().available() > 0) {
+        //body部分未读取完毕,释放连接资源
+        if (request.getContentLength() > 0 && request.getInputStream().available() > 0) {
             response.close();
         }
     }

@@ -8,7 +8,6 @@
 
 package org.smartboot.http.server;
 
-import org.smartboot.http.utils.EmptyInputStream;
 import org.smartboot.http.utils.PostInputStream;
 
 import java.io.IOException;
@@ -19,7 +18,15 @@ import java.io.InputStream;
  * @version V1.0 , 2018/8/31
  */
 final class HttpRequestImpl extends AbstractRequest {
-
+    /**
+     * 空流
+     */
+    private static final InputStream EMPTY_INPUT_STREAM = new InputStream() {
+        @Override
+        public int read() {
+            return -1;
+        }
+    };
     private InputStream inputStream;
 
     private HttpResponseImpl response;
@@ -40,7 +47,7 @@ final class HttpRequestImpl extends AbstractRequest {
         }
         int contentLength = getContentLength();
         if (contentLength <= 0 || request.getFormUrlencoded() != null) {
-            inputStream = new EmptyInputStream();
+            inputStream = EMPTY_INPUT_STREAM;
         } else {
             inputStream = new PostInputStream(request.getAioSession().getInputStream(contentLength), contentLength);
         }
