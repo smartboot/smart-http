@@ -39,6 +39,7 @@ import java.util.Set;
  */
 public final class Request implements HttpRequest, Reset {
     private static final Locale defaultLocale = Locale.getDefault();
+    private static final int INIT_CONTENT_LENGTH = -2;
     private final AioSession<Request> aioSession;
     /**
      * 请求参数
@@ -72,7 +73,7 @@ public final class Request implements HttpRequest, Reset {
      * 协议
      */
     private String scheme = Constant.SCHEMA_HTTP;
-    private int contentLength = -1;
+    private int contentLength = INIT_CONTENT_LENGTH;
     private String remoteAddr;
 
     private String remoteHost;
@@ -226,9 +227,10 @@ public final class Request implements HttpRequest, Reset {
 
     @Override
     public final int getContentLength() {
-        if (contentLength > -1) {
+        if (contentLength > INIT_CONTENT_LENGTH) {
             return contentLength;
         }
+        //不包含content-length,则为：-1
         contentLength = NumberUtils.toInt(getHeader(HttpHeaderConstant.Names.CONTENT_LENGTH), -1);
         return contentLength;
     }
@@ -407,7 +409,7 @@ public final class Request implements HttpRequest, Reset {
         requestUrl = null;
         parameters = null;
         contentType = null;
-        contentLength = -1;
+        contentLength = INIT_CONTENT_LENGTH;
         formUrlencoded = null;
     }
 }
