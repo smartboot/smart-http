@@ -40,6 +40,7 @@ import java.util.Set;
 public final class Request implements HttpRequest, Reset {
     private static final Locale defaultLocale = Locale.getDefault();
     private static final int INIT_CONTENT_LENGTH = -2;
+    private static final int NONE_CONTENT_LENGTH = -1;
     private final AioSession<Request> aioSession;
     /**
      * 请求参数
@@ -231,7 +232,7 @@ public final class Request implements HttpRequest, Reset {
             return contentLength;
         }
         //不包含content-length,则为：-1
-        contentLength = NumberUtils.toInt(getHeader(HttpHeaderConstant.Names.CONTENT_LENGTH), -1);
+        contentLength = NumberUtils.toInt(getHeader(HttpHeaderConstant.Names.CONTENT_LENGTH), NONE_CONTENT_LENGTH);
         return contentLength;
     }
 
