@@ -84,6 +84,7 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
             if (response.isClosed()) {
                 session.close(false);
             } else {
+                //复用长连接
                 request.reset();
             }
         } catch (IOException e) {
