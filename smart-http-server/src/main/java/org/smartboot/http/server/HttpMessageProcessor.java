@@ -53,8 +53,8 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
     public void process(AioSession<Request> session, Request baseHttpRequest) {
         try {
             Attachment attachment = session.getAttachment();
-            HttpRequest request;
-            CloseableResponse response;
+            AbstractRequest request;
+            AbstractResponse response;
             HandlePipeline pipeline;
             if (baseHttpRequest.isWebsocket()) {
                 WebSocketRequestImpl webSocketRequest = attachment.get(HttpRequestProtocol.ATTACH_KEY_WS_REQ);
@@ -75,15 +75,16 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
             //消息处理
             pipeline.doHandle(request, response);
 
-
-            if (!((AbstractOutputStream) response.getOutputStream()).isClosed()) {
+            //关闭本次请求的输出流
+            if (!response.getOutputStream().isClosed()) {
                 response.getOutputStream().close();
             }
-            //Post请求没有读完Body，关闭通道
-            if (response.isChannelClosed()) {
+
+            //response被closed,则断开TCP连接
+            if (response.isClosed()) {
                 session.close(false);
             } else {
-                ((Reset) request).reset();
+                request.reset();
             }
         } catch (IOException e) {
             e.printStackTrace();

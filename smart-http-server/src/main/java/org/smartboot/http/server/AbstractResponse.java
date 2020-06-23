@@ -9,15 +9,14 @@
 package org.smartboot.http.server;
 
 import org.smartboot.http.HttpRequest;
+import org.smartboot.http.HttpResponse;
 import org.smartboot.http.enums.HttpStatus;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
@@ -25,7 +24,7 @@ import java.util.Vector;
  * @author 三刀
  * @version V1.0 , 2018/2/3
  */
-class AbstractResponse implements CloseableResponse, Reset {
+class AbstractResponse implements HttpResponse, Reset {
     /**
      * 输入流
      */
@@ -55,7 +54,7 @@ class AbstractResponse implements CloseableResponse, Reset {
     /**
      * 是否关闭Socket连接通道
      */
-    private boolean channelClosed = false;
+    private boolean closed = false;
 
     protected void init(HttpRequest request, AbstractOutputStream outputStream) {
         this.request = request;
@@ -72,11 +71,11 @@ class AbstractResponse implements CloseableResponse, Reset {
         contentType = null;
         contentLength = -1;
         characterEncoding = null;
-        this.channelClosed = false;
+        this.closed = false;
     }
 
 
-    public final OutputStream getOutputStream() {
+    public final AbstractOutputStream getOutputStream() {
         return outputStream;
     }
 
@@ -135,10 +134,6 @@ class AbstractResponse implements CloseableResponse, Reset {
 
     /**
      * 部分header需要特殊处理
-     *
-     * @param name
-     * @param value
-     * @return
      */
     private boolean checkSpecialHeader(String name, String value) {
         if (name.equalsIgnoreCase("Content-Type")) {
@@ -180,11 +175,7 @@ class AbstractResponse implements CloseableResponse, Reset {
         if (headers == null) {
             return Collections.emptyList();
         }
-        List<String> result = new ArrayList<>(headers.size());
-        for (String key : headers.keySet()) {
-            result.add(key);
-        }
-        return result;
+        return new ArrayList<>(headers.keySet());
     }
 
 
@@ -204,7 +195,7 @@ class AbstractResponse implements CloseableResponse, Reset {
 
     @Override
     public final void close() {
-        if (channelClosed) {
+        if (closed) {
             return;
         }
         try {
@@ -214,7 +205,7 @@ class AbstractResponse implements CloseableResponse, Reset {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        channelClosed = true;
+        closed = true;
     }
 
     public int getContentLength() {
@@ -233,8 +224,12 @@ class AbstractResponse implements CloseableResponse, Reset {
         this.contentType = contentType;
     }
 
-    @Override
-    public final boolean isChannelClosed() {
-        return channelClosed;
+    /**
+     * 是否要断开TCP连接
+     *
+     * @return true/false
+     */
+    public final boolean isClosed() {
+        return closed;
     }
 }

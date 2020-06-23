@@ -135,11 +135,6 @@ abstract class AbstractRequest implements HttpRequest, Reset, RequestHook {
         return request.getCharacterEncoding();
     }
 
-
-    public void reset() {
-        request.reset();
-    }
-
     @Override
     public final Request getRequest() {
         return request;
