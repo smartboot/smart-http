@@ -12,8 +12,6 @@ import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
 import org.smartboot.http.WebSocketRequest;
 import org.smartboot.http.WebSocketResponse;
-import org.smartboot.http.enums.HttpStatus;
-import org.smartboot.http.exception.HttpException;
 import org.smartboot.http.logging.RunLogger;
 import org.smartboot.http.server.handle.HandlePipeline;
 import org.smartboot.http.server.handle.HttpHandle;
@@ -33,12 +31,21 @@ import java.util.logging.Level;
  * @version V1.0 , 2018/6/10
  */
 public class HttpMessageProcessor implements MessageProcessor<Request> {
+    /**
+     * HttpRequest附件Key
+     */
     private final AttachKey<HttpRequestImpl> ATTACH_KEY_HTTP_REQUEST = AttachKey.valueOf("httpRequest");
+    /**
+     * Http消息处理管道
+     */
     private final HandlePipeline<HttpRequest, HttpResponse> httpPipeline = new HandlePipeline<>();
+    /**
+     * Websocket处理管道
+     */
     private final HandlePipeline<WebSocketRequest, WebSocketResponse> wsPipeline = new HandlePipeline<>();
 
     public HttpMessageProcessor() {
-        httpPipeline.next(new RFC2612RequestHandle());
+        httpPipeline.next(new HttpExceptionHandle()).next(new RFC2612RequestHandle());
         wsPipeline.next(new WebSocketHandSharkHandle());
     }
 
@@ -65,19 +72,10 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
                 pipeline = httpPipeline;
             }
 
-            try {
-                pipeline.doHandle(request, response);
-            } catch (HttpException e) {
-                e.printStackTrace();
-                response.setHttpStatus(HttpStatus.valueOf(e.getHttpCode()));
-                response.getOutputStream().write(e.getDesc().getBytes());
-                response.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-                response.setHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR);
-                response.getOutputStream().write(e.fillInStackTrace().toString().getBytes());
-                response.close();
-            }
+            //消息处理
+            pipeline.doHandle(request, response);
+
+
             if (!((AbstractOutputStream) response.getOutputStream()).isClosed()) {
                 response.getOutputStream().close();
             }
@@ -90,8 +88,6 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
     }
 
     @Override

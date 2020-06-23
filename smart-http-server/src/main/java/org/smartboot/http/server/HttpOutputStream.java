@@ -13,7 +13,6 @@ import org.smartboot.http.utils.HttpHeaderConstant;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,7 +21,6 @@ import java.util.Map;
  * @version V1.0 , 2018/2/3
  */
 final class HttpOutputStream extends AbstractOutputStream {
-    private static final byte[] CHUNKED_END_BYTES = "0\r\n\r\n".getBytes(StandardCharsets.US_ASCII);
     /**
      * key:status+contentType
      */
