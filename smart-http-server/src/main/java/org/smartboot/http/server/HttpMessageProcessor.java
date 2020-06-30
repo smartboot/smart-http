@@ -50,7 +50,7 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
     }
 
     @Override
-    public void process(AioSession<Request> session, Request baseHttpRequest) {
+    public void process(AioSession session, Request baseHttpRequest) {
         try {
             Attachment attachment = session.getAttachment();
             AbstractRequest request;
@@ -93,7 +93,7 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
     }
 
     @Override
-    public void stateEvent(AioSession<Request> session, StateMachineEnum stateMachineEnum, Throwable throwable) {
+    public void stateEvent(AioSession session, StateMachineEnum stateMachineEnum, Throwable throwable) {
         switch (stateMachineEnum) {
             case NEW_SESSION:
                 Attachment attachment = new Attachment();

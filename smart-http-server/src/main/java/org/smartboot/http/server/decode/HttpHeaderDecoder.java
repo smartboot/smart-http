@@ -26,7 +26,7 @@ class HttpHeaderDecoder implements Decoder {
     private final HttpHeaderEndDecoder decoder = new HttpHeaderEndDecoder();
 
     @Override
-    public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession<Request> aioSession, Request request) {
+    public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession aioSession, Request request) {
         int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.LF, cacheChars, true);
         if (length != -1) {
             if (cacheChars[length - 1] != Constant.CR) {

@@ -24,7 +24,7 @@ public class HttpMethodDecoder implements Decoder {
     private final HttpUriDecoder decoder = new HttpUriDecoder();
 
     @Override
-    public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession<Request> aioSession, Request request) {
+    public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession aioSession, Request request) {
         int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.SP, cacheChars, true);
         if (length > 0) {
             String method = StringUtils.convertToString(cacheChars, length, StringUtils.String_CACHE_URL);

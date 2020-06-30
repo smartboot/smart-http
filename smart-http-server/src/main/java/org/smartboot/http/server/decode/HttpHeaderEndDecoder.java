@@ -33,7 +33,7 @@ class HttpHeaderEndDecoder implements Decoder {
     private final HttpBodyDecoder decoder = new HttpBodyDecoder();
 
     @Override
-    public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession<Request> aioSession, Request request) {
+    public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession aioSession, Request request) {
         //websocket通信
         if (HttpMethodEnum.GET.getMethod().equals(request.getMethod())
                 && HttpHeaderConstant.Values.WEBSOCKET.equals(request.getHeader(HttpHeaderConstant.Names.UPGRADE))

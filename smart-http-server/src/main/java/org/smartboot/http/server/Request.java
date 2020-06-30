@@ -41,7 +41,7 @@ public final class Request implements HttpRequest, Reset {
     private static final Locale defaultLocale = Locale.getDefault();
     private static final int INIT_CONTENT_LENGTH = -2;
     private static final int NONE_CONTENT_LENGTH = -1;
-    private final AioSession<Request> aioSession;
+    private final AioSession aioSession;
     /**
      * 请求参数
      */
@@ -89,11 +89,11 @@ public final class Request implements HttpRequest, Reset {
      */
     private String formUrlencoded;
 
-    Request(AioSession<Request> aioSession) {
+    Request(AioSession aioSession) {
         this.aioSession = aioSession;
     }
 
-    public AioSession<Request> getAioSession() {
+    public AioSession getAioSession() {
         return aioSession;
     }
 

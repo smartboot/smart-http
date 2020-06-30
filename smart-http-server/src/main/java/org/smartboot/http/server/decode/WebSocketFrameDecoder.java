@@ -30,7 +30,7 @@ public class WebSocketFrameDecoder implements Decoder {
 
 
     @Override
-    public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession<Request> aioSession, Request request) {
+    public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession aioSession, Request request) {
         if (byteBuffer.remaining() < 2) {
             return this;
         }

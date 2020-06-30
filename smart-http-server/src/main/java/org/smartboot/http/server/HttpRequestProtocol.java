@@ -52,7 +52,7 @@ public class HttpRequestProtocol implements Protocol<Request> {
     private final WebSocketFrameDecoder wsFrameDecoder = new WebSocketFrameDecoder();
 
     @Override
-    public Request decode(ByteBuffer buffer, AioSession<Request> session) {
+    public Request decode(ByteBuffer buffer, AioSession session) {
         Attachment attachment = session.getAttachment();
         Request request = attachment.get(ATTACH_KEY_REQUEST);
         char[] cacheChars = CHAR_CACHE_LOCAL.get();

@@ -26,7 +26,7 @@ class HttpUriDecoder implements Decoder {
     private HttpProtocolDecoder protocolDecoder = new HttpProtocolDecoder();
 
     @Override
-    public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession<Request> aioSession, Request request) {
+    public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession aioSession, Request request) {
         int length = scanURI(byteBuffer, cacheChars);
         if (length > 0) {
             String uri = StringUtils.convertToString(cacheChars, length, StringUtils.String_CACHE_URL);
