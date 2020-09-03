@@ -34,18 +34,21 @@ class HttpHeaderEndDecoder implements Decoder {
 
     @Override
     public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession aioSession, Request request) {
-        //websocket通信
-        if (HttpMethodEnum.GET.getMethod().equals(request.getMethod())
-                && HttpHeaderConstant.Values.WEBSOCKET.equals(request.getHeader(HttpHeaderConstant.Names.UPGRADE))
-                && HttpHeaderConstant.Values.UPGRADE.equals(request.getHeader(HttpHeaderConstant.Names.CONNECTION))) {
-            request.setWebsocket(true);
-            WebSocketRequestImpl webSocketRequest = new WebSocketRequestImpl(request);
-            Attachment attachment = aioSession.getAttachment();
-            attachment.put(ATTACH_KEY_WS_REQ, webSocketRequest);
-            return HttpRequestProtocol.WS_HANDSHARK_DECODER;
+        if (HttpMethodEnum.GET.getMethod().equals(request.getMethod())) {
+            //websocket通信
+            if (HttpHeaderConstant.Values.WEBSOCKET.equals(request.getHeader(HttpHeaderConstant.Names.UPGRADE))
+                    && HttpHeaderConstant.Values.UPGRADE.equals(request.getHeader(HttpHeaderConstant.Names.CONNECTION))) {
+                request.setWebsocket(true);
+                WebSocketRequestImpl webSocketRequest = new WebSocketRequestImpl(request);
+                Attachment attachment = aioSession.getAttachment();
+                attachment.put(ATTACH_KEY_WS_REQ, webSocketRequest);
+                return HttpRequestProtocol.WS_HANDSHARK_DECODER;
+            } else {
+                return HttpRequestProtocol.HTTP_FINISH_DECODER;
+            }
         }
         //Post请求
-        else if (HttpMethodEnum.POST.getMethod().equals(request.getMethod())
+        if (HttpMethodEnum.POST.getMethod().equals(request.getMethod())
                 && StringUtils.startsWith(request.getContentType(), HttpHeaderConstant.Values.X_WWW_FORM_URLENCODED)) {
             int postLength = request.getContentLength();
             if (postLength > Constant.maxPostSize) {

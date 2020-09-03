@@ -23,7 +23,7 @@ import java.nio.ByteBuffer;
  * @version V1.0 , 2020/3/30
  */
 class HttpBodyDecoder implements Decoder {
-    private AttachKey<SmartDecoder> ATTACH_KEY_FIX_LENGTH_DECODER = AttachKey.valueOf("fixLengthDecoder");
+    private final AttachKey<SmartDecoder> ATTACH_KEY_FIX_LENGTH_DECODER = AttachKey.valueOf("fixLengthDecoder");
 
     @Override
     public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession aioSession, Request request) {

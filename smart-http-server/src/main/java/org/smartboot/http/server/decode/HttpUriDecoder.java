@@ -22,14 +22,14 @@ import java.nio.ByteBuffer;
  * @version V1.0 , 2020/3/30
  */
 class HttpUriDecoder implements Decoder {
-    private HttpUriQueryDecoder uriQueryDecoder = new HttpUriQueryDecoder();
-    private HttpProtocolDecoder protocolDecoder = new HttpProtocolDecoder();
+    private final HttpUriQueryDecoder uriQueryDecoder = new HttpUriQueryDecoder();
+    private final HttpProtocolDecoder protocolDecoder = new HttpProtocolDecoder();
 
     @Override
     public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession aioSession, Request request) {
         int length = scanURI(byteBuffer, cacheChars);
         if (length > 0) {
-            String uri = StringUtils.convertToString(cacheChars, length, StringUtils.String_CACHE_URL);
+            String uri = StringUtils.convertToString(cacheChars, 0, length, StringUtils.String_CACHE_URL);
             request.setUri(uri);
             switch (cacheChars[length]) {
                 case Constant.SP:

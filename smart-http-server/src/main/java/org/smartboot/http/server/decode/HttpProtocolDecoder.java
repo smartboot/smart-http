@@ -32,7 +32,7 @@ class HttpProtocolDecoder implements Decoder {
             if (cacheChars[length - 1] != Constant.CR) {
                 throw new HttpException(HttpStatus.BAD_REQUEST);
             }
-            String protocol = StringUtils.convertToString(cacheChars, length - 1, StringUtils.String_CACHE_URL);
+            String protocol = StringUtils.convertToString(cacheChars, 0, length - 1, StringUtils.String_CACHE_URL);
             request.setProtocol(protocol);
             return decoder.deocde(byteBuffer, cacheChars, aioSession, request);
         } else {
