@@ -54,7 +54,7 @@ public final class Request implements HttpRequest, Reset {
     /**
      * Http请求头
      */
-    private List<HeaderValue> headers = new ArrayList<>(8);
+    private final List<HeaderValue> headers = new ArrayList<>(8);
     /**
      * 请求方法
      */
