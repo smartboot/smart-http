@@ -43,6 +43,10 @@ public final class Request implements HttpRequest, Reset {
     private static final int NONE_CONTENT_LENGTH = -1;
     private final AioSession aioSession;
     /**
+     * Http请求头
+     */
+    private final List<HeaderValue> headers = new ArrayList<>(8);
+    /**
      * 请求参数
      */
     private Map<String, String[]> parameters;
@@ -51,10 +55,6 @@ public final class Request implements HttpRequest, Reset {
      */
     private String uri;
     private int headerSize = 0;
-    /**
-     * Http请求头
-     */
-    private final List<HeaderValue> headers = new ArrayList<>(8);
     /**
      * 请求方法
      */
@@ -108,7 +108,8 @@ public final class Request implements HttpRequest, Reset {
     public final String getHeader(String headName) {
         for (int i = 0; i < headerSize; i++) {
             HeaderValue headerValue = headers.get(i);
-            if (headerValue.getName().equalsIgnoreCase(headName)) {
+            if (headerValue.getName().equals(headName)
+                    || headerValue.getName().equalsIgnoreCase(headName)) {
                 return headerValue.getValue();
             }
         }
