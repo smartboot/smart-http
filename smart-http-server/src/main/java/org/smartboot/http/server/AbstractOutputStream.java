@@ -20,10 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Semaphore;
 
 /**
  * @author 三刀
@@ -31,18 +28,11 @@ import java.util.concurrent.TimeUnit;
  */
 abstract class AbstractOutputStream extends OutputStream implements Reset {
     private static final byte[] CHUNKED_END_BYTES = "0\r\n\r\n".getBytes(StandardCharsets.US_ASCII);
-    private static final ScheduledExecutorService SCHEDULED_EXECUTOR_SERVICE = new ScheduledThreadPoolExecutor(1, new ThreadFactory() {
-        @Override
-        public Thread newThread(Runnable r) {
-            Thread thread = new Thread(r, "flushDate");
-            thread.setDaemon(true);
-            return thread;
-        }
-    });
+    private static final SimpleDateFormat sdf = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
+    private static final Semaphore flushDateSemaphore = new Semaphore(1);
+    private static final Date currentDate = new Date(0);
     protected static byte[] date;
     private static String SERVER_ALIAS_NAME = "smart-http";
-    private static SimpleDateFormat sdf = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
-    private static Date currentDate = new Date();
 
     static {
         String aliasServer = System.getProperty("smartHttp.server.alias");
@@ -50,12 +40,6 @@ abstract class AbstractOutputStream extends OutputStream implements Reset {
             SERVER_ALIAS_NAME = aliasServer + "smart-http";
         }
         flushDate();
-        SCHEDULED_EXECUTOR_SERVICE.scheduleWithFixedDelay(new Runnable() {
-            @Override
-            public void run() {
-                AbstractOutputStream.flushDate();
-            }
-        }, 900, 900, TimeUnit.MILLISECONDS);
     }
 
     protected final AbstractResponse response;
@@ -74,10 +58,16 @@ abstract class AbstractOutputStream extends OutputStream implements Reset {
         this.outputStream = outputStream;
     }
 
-    private static void flushDate() {
-        currentDate.setTime(System.currentTimeMillis());
-        AbstractOutputStream.date = ("\r\n" + HttpHeaderConstant.Names.DATE + ":" + sdf.format(currentDate) + "\r\n"
-                + HttpHeaderConstant.Names.SERVER + ":" + SERVER_ALIAS_NAME + "\r\n\r\n").getBytes();
+    protected static void flushDate() {
+        if ((System.currentTimeMillis() - currentDate.getTime() > 900) && flushDateSemaphore.tryAcquire()) {
+            try {
+                currentDate.setTime(System.currentTimeMillis());
+                AbstractOutputStream.date = ("\r\n" + HttpHeaderConstant.Names.DATE + ":" + sdf.format(currentDate) + "\r\n"
+                        + HttpHeaderConstant.Names.SERVER + ":" + SERVER_ALIAS_NAME + "\r\n\r\n").getBytes();
+            } finally {
+                flushDateSemaphore.release();
+            }
+        }
     }
 
 

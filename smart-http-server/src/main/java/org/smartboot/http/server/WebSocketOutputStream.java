@@ -63,6 +63,7 @@ final class WebSocketOutputStream extends AbstractOutputStream {
          * RFC2616 3.3.1
          * 只能用 RFC 1123 里定义的日期格式来填充头域 (header field)的值里用到 HTTP-date 的地方
          */
+        flushDate();
         outputStream.write(date);
         committed = true;
     }
