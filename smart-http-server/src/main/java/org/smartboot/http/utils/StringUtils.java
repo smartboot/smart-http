@@ -898,18 +898,18 @@ public class StringUtils {
         return regionMatches(str, ignoreCase, strOffset, suffix, 0, suffix.length());
     }
 
-    public static int scanUntilAndTrim(ByteBuffer buffer, byte split, char[] cacheChars, boolean trim) {
+    public static int scanUntilAndTrim(ByteBuffer buffer, byte split, char[] cacheChars, int charsIndex, boolean trim) {
         buffer.mark();
         int i = 0;
         if (trim) {
-            while ((cacheChars[0] = (char) (buffer.get() & 0xFF)) == Constant.SP) ;
+            while ((cacheChars[charsIndex] = (char) (buffer.get() & 0xFF)) == Constant.SP) ;
             i = 1;
         }
         while (buffer.hasRemaining()) {
-            cacheChars[i] = (char) (buffer.get() & 0xFF);
-            if (cacheChars[i] == split) {
+            cacheChars[charsIndex + i] = (char) (buffer.get() & 0xFF);
+            if (cacheChars[charsIndex + i] == split) {
                 //反向去空格
-                while (trim && cacheChars[i - 1] == Constant.SP) {
+                while (trim && cacheChars[charsIndex + i - 1] == Constant.SP) {
                     i--;
                 }
                 return i;
@@ -918,6 +918,10 @@ public class StringUtils {
         }
         buffer.reset();
         return -1;
+    }
+
+    public static int scanUntilAndTrim(ByteBuffer buffer, byte split, char[] cacheChars, boolean trim) {
+        return scanUntilAndTrim(buffer, split, cacheChars, 0, trim);
     }
 
     static class StringCache {

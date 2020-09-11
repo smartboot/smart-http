@@ -9,6 +9,7 @@
 package org.smartboot.http.server;
 
 import org.smartboot.http.HttpRequest;
+import org.smartboot.http.utils.CharArray;
 import org.smartboot.http.utils.Constant;
 import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.http.utils.NumberUtils;
@@ -46,6 +47,10 @@ public final class Request implements HttpRequest, Reset {
      * Http请求头
      */
     private final List<HeaderValue> headers = new ArrayList<>(8);
+
+    private final CharArray headerValueCache = new CharArray(16 * 1024);
+
+    private String headerTemp;
     /**
      * 请求参数
      */
@@ -108,8 +113,7 @@ public final class Request implements HttpRequest, Reset {
     public final String getHeader(String headName) {
         for (int i = 0; i < headerSize; i++) {
             HeaderValue headerValue = headers.get(i);
-            if (headerValue.getName().equals(headName)
-                    || headerValue.getName().equalsIgnoreCase(headName)) {
+            if (headerValue.getName().equalsIgnoreCase(headName)) {
                 return headerValue.getValue();
             }
         }
@@ -142,6 +146,20 @@ public final class Request implements HttpRequest, Reset {
         throw new UnsupportedOperationException();
     }
 
+    public void setHeader(int start, int length) {
+        if (headerSize < headers.size()) {
+            HeaderValue headerValue = headers.get(headerSize);
+            headerValue.setName(headerTemp);
+            headerValue.setValue(null);
+            headerValue.setValue(start, length);
+        } else {
+            HeaderValue headerValue = new HeaderValue(headerTemp, null);
+            headerValue.setValue(start, length);
+            headerValue.setCharArray(headerValueCache.getData());
+            headers.add(headerValue);
+        }
+        headerSize++;
+    }
 
     public final void setHeader(String headerName, String value) {
         if (headerSize < headers.size()) {
@@ -187,6 +205,14 @@ public final class Request implements HttpRequest, Reset {
 
     public final void setUri(String uri) {
         this.uri = uri;
+    }
+
+    public String getHeaderTemp() {
+        return headerTemp;
+    }
+
+    public void setHeaderTemp(String headerTemp) {
+        this.headerTemp = headerTemp;
     }
 
     @Override
@@ -403,7 +429,12 @@ public final class Request implements HttpRequest, Reset {
         this.formUrlencoded = formUrlencoded;
     }
 
+    public CharArray getHeaderValueCache() {
+        return headerValueCache;
+    }
+
     public void reset() {
+        headerValueCache.setWriteIndex(0);
         headerSize = 0;
         method = null;
         websocket = false;
