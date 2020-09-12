@@ -14,10 +14,10 @@
 
     <groupId>org.smartboot.http</groupId>
     <artifactId>assembly</artifactId>
-    <version>1.0.16</version>
+    <version>1.0.17-SNAPSHOT</version>
 
     <properties>
-        <smarthttp.version>1.0.16</smarthttp.version>
+        <smarthttp.version>1.0.17-SNAPSHOT</smarthttp.version>
         <commons.fileupload.version>1.4</commons.fileupload.version>
     </properties>
 
