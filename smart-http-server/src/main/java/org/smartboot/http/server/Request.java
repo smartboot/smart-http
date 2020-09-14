@@ -87,7 +87,7 @@ public final class Request implements HttpRequest, Reset {
     private String hostHeader;
 
 
-    private boolean websocket = false;
+    private Boolean websocket = null;
 
     /**
      * Post表单
@@ -413,11 +413,11 @@ public final class Request implements HttpRequest, Reset {
         }
     }
 
-    public final boolean isWebsocket() {
+    public final Boolean isWebsocket() {
         return websocket;
     }
 
-    public final void setWebsocket(boolean websocket) {
+    public final void setWebsocket(Boolean websocket) {
         this.websocket = websocket;
     }
 
@@ -437,7 +437,6 @@ public final class Request implements HttpRequest, Reset {
         headerValueCache.setWriteIndex(0);
         headerSize = 0;
         method = null;
-        websocket = false;
         uri = null;
         requestUrl = null;
         parameters = null;
