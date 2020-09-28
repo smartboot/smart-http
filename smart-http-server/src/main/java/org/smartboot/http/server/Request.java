@@ -443,5 +443,6 @@ public final class Request implements HttpRequest, Reset {
         contentType = null;
         contentLength = INIT_CONTENT_LENGTH;
         formUrlencoded = null;
+        queryString = null;
     }
 }
