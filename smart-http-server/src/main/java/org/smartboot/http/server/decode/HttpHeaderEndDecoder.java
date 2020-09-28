@@ -34,13 +34,12 @@ class HttpHeaderEndDecoder implements Decoder {
 
     @Override
     public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession aioSession, Request request) {
+        //识别是否websocket通信
+        if (request.isWebsocket() == null) {
+            request.setWebsocket(HttpHeaderConstant.Values.WEBSOCKET.equals(request.getHeader(HttpHeaderConstant.Names.UPGRADE))
+                    && HttpHeaderConstant.Values.UPGRADE.equals(request.getHeader(HttpHeaderConstant.Names.CONNECTION)));
+        }
         if (HttpMethodEnum.GET.getMethod().equals(request.getMethod())) {
-            //识别是否websocket通信
-            if (request.isWebsocket() == null) {
-                request.setWebsocket(HttpHeaderConstant.Values.WEBSOCKET.equals(request.getHeader(HttpHeaderConstant.Names.UPGRADE))
-                        && HttpHeaderConstant.Values.UPGRADE.equals(request.getHeader(HttpHeaderConstant.Names.CONNECTION)));
-            }
-
             if (request.isWebsocket()) {
                 WebSocketRequestImpl webSocketRequest = new WebSocketRequestImpl(request);
                 Attachment attachment = aioSession.getAttachment();
