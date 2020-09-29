@@ -42,6 +42,10 @@ public class HttpBootstrap {
 
     private int writeBufferSize = 1024;
     private String host;
+    /**
+     * 是否启用控制台banner
+     */
+    private boolean bannerEnabled = true;
     private HttpMessageProcessor processor = new HttpMessageProcessor();
     /**
      * http消息解码器
@@ -108,6 +112,7 @@ public class HttpBootstrap {
         server = new AioQuickServer<>(host, port, protocol, processor);
         server.setReadBufferSize(readBufferSize)
                 .setThreadNum(threadNum)
+                .setBannerEnabled(this.bannerEnabled)
                 .setBufferFactory(new BufferFactory() {
                     @Override
                     public BufferPagePool create() {
@@ -122,6 +127,9 @@ public class HttpBootstrap {
         }
     }
 
+    public void setBannerEnabled(boolean bannerEnabled) {
+        this.bannerEnabled = bannerEnabled;
+    }
 
     /**
      * 停止服务
