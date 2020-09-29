@@ -9,6 +9,7 @@
 package org.smartboot.http.server;
 
 import org.smartboot.http.HttpRequest;
+import org.smartboot.http.enums.YesNoEnum;
 import org.smartboot.http.utils.CharArray;
 import org.smartboot.http.utils.Constant;
 import org.smartboot.http.utils.HttpHeaderConstant;
@@ -87,7 +88,7 @@ public final class Request implements HttpRequest, Reset {
     private String hostHeader;
 
 
-    private Boolean websocket = null;
+    private YesNoEnum websocket = null;
 
     /**
      * Post表单
@@ -413,11 +414,11 @@ public final class Request implements HttpRequest, Reset {
         }
     }
 
-    public final Boolean isWebsocket() {
+    public final YesNoEnum isWebsocket() {
         return websocket;
     }
 
-    public final void setWebsocket(Boolean websocket) {
+    public final void setWebsocket(YesNoEnum websocket) {
         this.websocket = websocket;
     }
 

@@ -12,6 +12,7 @@ import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
 import org.smartboot.http.WebSocketRequest;
 import org.smartboot.http.WebSocketResponse;
+import org.smartboot.http.enums.YesNoEnum;
 import org.smartboot.http.logging.RunLogger;
 import org.smartboot.http.server.handle.HandlePipeline;
 import org.smartboot.http.server.handle.HttpHandle;
@@ -56,7 +57,7 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
             AbstractRequest request;
             AbstractResponse response;
             HandlePipeline pipeline;
-            if (baseHttpRequest.isWebsocket()) {
+            if (baseHttpRequest.isWebsocket() == YesNoEnum.Yes) {
                 WebSocketRequestImpl webSocketRequest = attachment.get(HttpRequestProtocol.ATTACH_KEY_WS_REQ);
                 request = webSocketRequest;
                 response = webSocketRequest.getResponse();
