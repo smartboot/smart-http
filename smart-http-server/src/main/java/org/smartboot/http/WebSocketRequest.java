@@ -10,6 +10,8 @@ package org.smartboot.http;
 
 import org.smartboot.http.enums.WebsocketStatus;
 
+import java.net.InetSocketAddress;
+
 /**
  * WebSocket消息请求接口
  *
@@ -24,4 +26,13 @@ public interface WebSocketRequest {
     public byte[] getPayload();
 
     String getRequestURI();
+
+    InetSocketAddress getRemoteAddress();
+
+    /**
+     * 获取套接字绑定的本地地址。
+     *
+     * @return
+     */
+    InetSocketAddress getLocalAddress();
 }

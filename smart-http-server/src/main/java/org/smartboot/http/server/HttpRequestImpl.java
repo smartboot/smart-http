@@ -29,7 +29,7 @@ final class HttpRequestImpl extends AbstractRequest {
     };
     private InputStream inputStream;
 
-    private HttpResponseImpl response;
+    private final HttpResponseImpl response;
 
     HttpRequestImpl(Request request) {
         init(request);
