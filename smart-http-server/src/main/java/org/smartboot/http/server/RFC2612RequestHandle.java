@@ -35,7 +35,7 @@ class RFC2612RequestHandle extends HttpHandle {
 
         boolean keepAlive = true;
         // http/1.0兼容长连接
-        if (HttpRequest.HTTP_1_0_STRING.equals(request.getProtocol())) {
+        if (request.getProtocol().endsWith("1.0")) {
             keepAlive = HttpHeaderConstant.Values.KEEPALIVE.equalsIgnoreCase(request.getHeader(HttpHeaderConstant.Names.CONNECTION));
             if (keepAlive) {
                 response.setHeader(HttpHeaderConstant.Names.CONNECTION, HttpHeaderConstant.Values.KEEPALIVE);
