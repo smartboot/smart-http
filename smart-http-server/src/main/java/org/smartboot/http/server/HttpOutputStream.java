@@ -91,7 +91,7 @@ final class HttpOutputStream extends AbstractOutputStream {
         if (httpStatus == HttpStatus.OK) {
             if (chunked) {
                 data = CACHE_CHUNKED_AND_LENGTH.get(contentType);
-            } else if (contentLength >= 0 && contentLength < CACHE_CONTENT_TYPE_AND_LENGTH.length) {
+            } else if (contentLength < CACHE_CONTENT_TYPE_AND_LENGTH.length) {
                 data = CACHE_CONTENT_TYPE_AND_LENGTH[contentLength].get(contentType);
             }
             if (data != null) {
