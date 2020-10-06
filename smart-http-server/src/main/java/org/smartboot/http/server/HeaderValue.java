@@ -8,8 +8,6 @@
 
 package org.smartboot.http.server;
 
-import org.smartboot.http.utils.StringUtils;
-
 /**
  * 支持多Value的Header
  *
@@ -25,13 +23,6 @@ class HeaderValue {
      * Value 值
      */
     private String value;
-
-
-    private int valuePosition;
-
-    private int valueLength;
-
-    private char[] charArray;
     /**
      * 同名Value
      */
@@ -43,9 +34,6 @@ class HeaderValue {
     }
 
     public String getValue() {
-        if (value == null) {
-            value = StringUtils.convertToString(charArray, valuePosition, valueLength, StringUtils.String_CACHE_HEADER_VALUE);
-        }
         return value;
     }
 
@@ -59,15 +47,6 @@ class HeaderValue {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public void setValue(int position, int length) {
-        this.valuePosition = position;
-        this.valueLength = length;
-    }
-
-    public void setCharArray(char[] charArray) {
-        this.charArray = charArray;
     }
 
     public HeaderValue getNextValue() {

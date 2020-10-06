@@ -11,7 +11,6 @@ package org.smartboot.http.server.decode;
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.exception.HttpException;
 import org.smartboot.http.server.Request;
-import org.smartboot.http.utils.CharArray;
 import org.smartboot.http.utils.Constant;
 import org.smartboot.http.utils.StringUtils;
 import org.smartboot.socket.transport.AioSession;
@@ -56,14 +55,11 @@ class HttpHeaderDecoder implements Decoder {
     class HeaderValueDecoder implements Decoder {
         @Override
         public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession aioSession, Request request) {
-            CharArray charArray = request.getHeaderValueCache();
-            int startIndex = charArray.getWriteIndex();
-            int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.LF, charArray.getData(), startIndex, true);
+            int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.LF, cacheChars, true);
             if (length == -1) {
                 return this;
             }
-            charArray.setWriteIndex(startIndex + length - 1);
-            request.setHeader(startIndex, length - 1);
+            request.setHeadValue(StringUtils.convertToString(cacheChars, 0, length - 1, StringUtils.String_CACHE_HEADER_VALUE));
             return HttpHeaderDecoder.this.deocde(byteBuffer, cacheChars, aioSession, request);
         }
     }
