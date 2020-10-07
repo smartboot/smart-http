@@ -20,7 +20,16 @@ import java.io.IOException;
 
 public class HttpBootstrap {
 
+    private static final String BANNER = "                               _       _      _    _          \n" +
+            "                              ( )_    ( )    ( )_ ( )_        \n" +
+            "  ___   ___ ___     _ _  _ __ | ,_)   | |__  | ,_)| ,_) _ _   \n" +
+            "/',__)/' _ ` _ `\\ /'_` )( '__)| |     |  _ `\\| |  | |  ( '_`\\ \n" +
+            "\\__, \\| ( ) ( ) |( (_| || |   | |_    | | | || |_ | |_ | (_) )\n" +
+            "(____/(_) (_) (_)`\\__,_)(_)   `\\__)   (_) (_)`\\__)`\\__)| ,__/'\n" +
+            "                                                       | |    \n" +
+            "                                                       (_)   ";
 
+    private static final String VERSION = "1.0.7";
     private AioQuickServer<Request> server;
 
     /**
@@ -112,7 +121,7 @@ public class HttpBootstrap {
         server = new AioQuickServer<>(host, port, protocol, processor);
         server.setReadBufferSize(readBufferSize)
                 .setThreadNum(threadNum)
-                .setBannerEnabled(this.bannerEnabled)
+                .setBannerEnabled(false)
                 .setBufferFactory(new BufferFactory() {
                     @Override
                     public BufferPagePool create() {
@@ -121,6 +130,9 @@ public class HttpBootstrap {
                 })
                 .setWriteBuffer(writeBufferSize, 16);
         try {
+            if (bannerEnabled) {
+                System.out.println(BANNER + "\r\n :: smart-http :: (" + VERSION + ")");
+            }
             server.start();
         } catch (IOException e) {
             e.printStackTrace();
