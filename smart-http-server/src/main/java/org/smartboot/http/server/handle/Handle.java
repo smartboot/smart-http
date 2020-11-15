@@ -16,11 +16,14 @@ import java.io.IOException;
  * @author 三刀
  * @version V1.0 , 2018/2/6
  */
-abstract class Handle<REQ, RSP> {
+public abstract class Handle<REQ, RSP> {
     /**
      * 持有下一个处理器的句柄
      */
     protected Handle<REQ, RSP> nextHandle;
+
+    Handle() {
+    }
 
     /**
      * 执行当前处理器逻辑。

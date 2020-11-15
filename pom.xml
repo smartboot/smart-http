@@ -9,7 +9,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <smartsocket.version>1.5.0</smartsocket.version>
+        <smartsocket.version>1.5.1-SNAPSHOT</smartsocket.version>
         <smarthttp.version>1.0.17-SNAPSHOT</smarthttp.version>
     </properties>
 
@@ -23,11 +23,6 @@
             <dependency>
                 <groupId>org.smartboot.http</groupId>
                 <artifactId>smart-http-server</artifactId>
-                <version>${smarthttp.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.smartboot.http</groupId>
-                <artifactId>smart-http-mvc</artifactId>
                 <version>${smarthttp.version}</version>
             </dependency>
         </dependencies>

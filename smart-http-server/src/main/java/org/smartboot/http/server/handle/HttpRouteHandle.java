@@ -28,7 +28,7 @@ public final class HttpRouteHandle extends HttpHandle {
     /**
      * 默认404
      */
-    private HttpHandle defaultHandle = new HttpHandle() {
+    private final HttpHandle defaultHandle = new HttpHandle() {
         @Override
         public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
             response.setHttpStatus(HttpStatus.NOT_FOUND);
