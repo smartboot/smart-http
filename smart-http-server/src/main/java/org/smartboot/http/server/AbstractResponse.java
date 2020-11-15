@@ -113,7 +113,11 @@ class AbstractResponse implements HttpResponse, Reset {
             headers = new HashMap<>();
         }
         if (replace) {
-            headers.put(name, new HeaderValue(null, value));
+            if (value == null) {
+                headers.remove(name);
+            } else {
+                headers.put(name, new HeaderValue(null, value));
+            }
             return;
         }
 
