@@ -71,7 +71,7 @@ public class WebSocketFrameDecoder implements Decoder {
         if (mask) {
             byte[] maskingKey = new byte[4];
             byteBuffer.get(maskingKey);
-            unmask(byteBuffer, maskingKey);
+            unmask(byteBuffer, maskingKey, length);
         }
         byte[] payload = new byte[length];
         byteBuffer.get(payload);
@@ -81,9 +81,9 @@ public class WebSocketFrameDecoder implements Decoder {
         return fin ? HttpRequestProtocol.WS_FRAME_DECODER : this;
     }
 
-    private void unmask(ByteBuffer frame, byte[] maskingKey) {
+    private void unmask(ByteBuffer frame, byte[] maskingKey, int length) {
         int i = frame.position();
-        int end = frame.limit();
+        int end = i + length;
 
         ByteOrder order = frame.order();
 
