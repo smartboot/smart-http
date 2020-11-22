@@ -12,16 +12,15 @@ import org.smartboot.http.HttpRequest;
 import org.smartboot.http.enums.YesNoEnum;
 import org.smartboot.http.utils.Constant;
 import org.smartboot.http.utils.HttpHeaderConstant;
+import org.smartboot.http.utils.HttpUtils;
 import org.smartboot.http.utils.NumberUtils;
 import org.smartboot.http.utils.StringUtils;
 import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -262,11 +261,11 @@ public final class Request implements HttpRequest, Reset {
         String urlParamStr = queryString;
         if (StringUtils.isNotBlank(urlParamStr)) {
             urlParamStr = StringUtils.substringBefore(urlParamStr, "#");
-            decodeParamString(urlParamStr, parameters);
+            HttpUtils.decodeParamString(urlParamStr, parameters);
         }
 
         if (formUrlencoded != null) {
-            decodeParamString(formUrlencoded, parameters);
+            HttpUtils.decodeParamString(formUrlencoded, parameters);
         }
         return getParameterValues(name);
     }
@@ -365,35 +364,6 @@ public final class Request implements HttpRequest, Reset {
     @Override
     public final String getCharacterEncoding() {
         return "utf8";
-    }
-
-    void decodeParamString(String paramStr, Map<String, String[]> paramMap) {
-        if (StringUtils.isBlank(paramStr)) {
-            return;
-        }
-        String[] uriParamStrArray = StringUtils.split(paramStr, "&");
-        for (String param : uriParamStrArray) {
-            int index = param.indexOf("=");
-            if (index == -1) {
-                continue;
-            }
-            try {
-                String key = StringUtils.substring(param, 0, index);
-                String value = URLDecoder.decode(StringUtils.substring(param, index + 1), "utf8");
-                String[] values = paramMap.get(key);
-                if (values == null) {
-                    paramMap.put(key, new String[]{value});
-                } else {
-                    String[] newValue = new String[values.length + 1];
-                    System.arraycopy(values, 0, newValue, 0, values.length);
-                    newValue[values.length] = value;
-                    paramMap.put(key, newValue);
-                }
-
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-        }
     }
 
     public final YesNoEnum isWebsocket() {
