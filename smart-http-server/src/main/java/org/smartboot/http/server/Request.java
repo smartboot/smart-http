@@ -91,6 +91,8 @@ public final class Request implements HttpRequest, Reset {
      */
     private String formUrlencoded;
 
+    private Cookie[] cookies;
+
     Request(AioSession aioSession) {
         this.aioSession = aioSession;
     }
@@ -366,6 +368,26 @@ public final class Request implements HttpRequest, Reset {
         return "utf8";
     }
 
+    @Override
+    public Cookie[] getCookies() {
+        if (cookies != null) {
+            return cookies;
+        }
+        String cookieValue = getHeader(HttpHeaderConstant.Names.COOKIE);
+        if (StringUtils.isBlank(cookieValue)) {
+            return new Cookie[0];
+        }
+        String[] array = StringUtils.split(cookieValue, ";");
+        List<Cookie> cookieList = new ArrayList<>(array.length);
+        for (String str : array) {
+            String[] s = StringUtils.split(str, "=");
+            cookieList.add(new Cookie(s[0].trim(), s[1].trim()));
+        }
+        cookies = new Cookie[cookieList.size()];
+        cookieList.toArray(cookies);
+        return cookies;
+    }
+
     public final YesNoEnum isWebsocket() {
         return websocket;
     }
@@ -393,5 +415,6 @@ public final class Request implements HttpRequest, Reset {
         contentLength = INIT_CONTENT_LENGTH;
         formUrlencoded = null;
         queryString = null;
+        cookies = null;
     }
 }

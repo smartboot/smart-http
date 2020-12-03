@@ -140,4 +140,8 @@ abstract class AbstractRequest implements HttpRequest, Reset, RequestHook {
         return request;
     }
 
+    @Override
+    public Cookie[] getCookies() {
+        return request.getCookies();
+    }
 }

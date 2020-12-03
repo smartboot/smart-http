@@ -13,6 +13,7 @@ import org.smartboot.http.HttpResponse;
 import org.smartboot.http.enums.HttpMethodEnum;
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.logging.RunLogger;
+import org.smartboot.http.utils.DateUtils;
 import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.http.utils.Mimetypes;
 import org.smartboot.http.utils.StringUtils;
@@ -23,9 +24,7 @@ import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Locale;
 import java.util.logging.Level;
 
 /**
@@ -43,13 +42,8 @@ public class HttpStaticResourceHandle extends HttpHandle {
                     "</head>" +
                     "<body><h1>smart-http 找不到你所请求的地址资源，404</h1></body>" +
                     "</html>";
-    private ThreadLocal<SimpleDateFormat> sdf = new ThreadLocal<SimpleDateFormat>() {
-        @Override
-        protected SimpleDateFormat initialValue() {
-            return new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
-        }
-    };
-    private File baseDir;
+
+    private final File baseDir;
 
     public HttpStaticResourceHandle(String baseDir) {
         this.baseDir = new File(new File(baseDir).getAbsolutePath());
@@ -84,14 +78,14 @@ public class HttpStaticResourceHandle extends HttpHandle {
         Date lastModifyDate = new Date(file.lastModified());
         try {
             String requestModified = request.getHeader(HttpHeaderConstant.Names.IF_MODIFIED_SINCE);
-            if (StringUtils.isNotBlank(requestModified) && lastModifyDate.getTime() <= sdf.get().parse(requestModified).getTime()) {
+            if (StringUtils.isNotBlank(requestModified) && lastModifyDate.getTime() <= DateUtils.parseLastModified(requestModified).getTime()) {
                 response.setHttpStatus(HttpStatus.NOT_MODIFIED);
                 return;
             }
         } catch (Exception e) {
             RunLogger.getLogger().log(Level.SEVERE, "exception", e);
         }
-        response.setHeader(HttpHeaderConstant.Names.LAST_MODIFIED, sdf.get().format(lastModifyDate));
+        response.setHeader(HttpHeaderConstant.Names.LAST_MODIFIED, DateUtils.formatLastModified(lastModifyDate));
 
 
         String contentType = Mimetypes.getInstance().getMimetype(file);

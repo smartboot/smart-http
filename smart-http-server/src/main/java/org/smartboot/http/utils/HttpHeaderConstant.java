@@ -47,7 +47,8 @@ public class HttpHeaderConstant {
         String CONTENT_MD5 = "Content-MD5";
         String CONTENT_RANGE = "Content-Range";
         String CONTENT_TYPE = "Content-Type";
-        String COOKIE="Cookie";
+        String COOKIE = "Cookie";
+        String SET_COOKIE = "Set-Cookie";
 
         String DATE = "Date";
 
@@ -93,9 +94,9 @@ public class HttpHeaderConstant {
         String WARNING = "Warning";
         String WWW_AUTHENTICATE = "WWW-Authenticate";
 
-        String Sec_WebSocket_Key="Sec-WebSocket-Key";
+        String Sec_WebSocket_Key = "Sec-WebSocket-Key";
 
-        String Sec_WebSocket_Accept="Sec-WebSocket-Accept";
+        String Sec_WebSocket_Accept = "Sec-WebSocket-Accept";
     }
 
     public interface Values {
@@ -103,7 +104,7 @@ public class HttpHeaderConstant {
 
         String MULTIPART_FORM_DATA = "multipart/form-data";
 
-        String X_WWW_FORM_URLENCODED="application/x-www-form-urlencoded";
+        String X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
 
         String UPGRADE = "Upgrade";
 

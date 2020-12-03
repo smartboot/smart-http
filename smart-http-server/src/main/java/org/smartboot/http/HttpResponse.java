@@ -9,6 +9,7 @@
 package org.smartboot.http;
 
 import org.smartboot.http.enums.HttpStatus;
+import org.smartboot.http.server.Cookie;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -103,4 +104,11 @@ public interface HttpResponse {
     public void setCharacterEncoding(String charset);
 
     public void close();
+
+    /**
+     * 添加Cookie信息
+     *
+     * @param cookie
+     */
+    void addCookie(Cookie cookie);
 }

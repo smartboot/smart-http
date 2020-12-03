@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
@@ -56,6 +57,8 @@ class AbstractResponse implements HttpResponse, Reset {
      */
     private boolean closed = false;
 
+    private List<Cookie> cookies;
+
     protected void init(HttpRequest request, AbstractOutputStream outputStream) {
         this.request = request;
         this.outputStream = outputStream;
@@ -71,6 +74,7 @@ class AbstractResponse implements HttpResponse, Reset {
         contentType = null;
         contentLength = -1;
         characterEncoding = null;
+        cookies = null;
         this.closed = false;
     }
 
@@ -210,6 +214,18 @@ class AbstractResponse implements HttpResponse, Reset {
             e.printStackTrace();
         }
         closed = true;
+    }
+
+    public List<Cookie> getCookies() {
+        return cookies;
+    }
+
+    @Override
+    public void addCookie(Cookie cookie) {
+        if (cookies == null) {
+            cookies = new ArrayList<>();
+        }
+        cookies.add(cookie);
     }
 
     public int getContentLength() {

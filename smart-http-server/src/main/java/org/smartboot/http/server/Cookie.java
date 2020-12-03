@@ -8,7 +8,8 @@
 
 package org.smartboot.http.server;
 
-import org.smartboot.http.Cookie;
+import org.smartboot.http.utils.DateUtils;
+import org.smartboot.http.utils.StringUtils;
 
 import java.util.Date;
 
@@ -16,27 +17,26 @@ import java.util.Date;
  * @author 三刀
  * @version V1.0 , 2018/8/31
  */
- class CookieImpl implements Cookie {
+public class Cookie {
 
     private final String name;
     private String value;
     private String path;
     private String domain;
-    private Integer maxAge;
+    private int maxAge = -1;
     private Date expires;
-    private boolean discard;
     private boolean secure;
     private boolean httpOnly;
     private int version = 0;
     private String comment;
 
 
-    public CookieImpl(final String name, final String value) {
+    public Cookie(final String name, final String value) {
         this.name = name;
         this.value = value;
     }
 
-    public CookieImpl(final String name) {
+    public Cookie(final String name) {
         this.name = name;
     }
 
@@ -48,7 +48,7 @@ import java.util.Date;
         return value;
     }
 
-    public CookieImpl setValue(final String value) {
+    public Cookie setValue(final String value) {
         this.value = value;
         return this;
     }
@@ -57,7 +57,7 @@ import java.util.Date;
         return path;
     }
 
-    public CookieImpl setPath(final String path) {
+    public Cookie setPath(final String path) {
         this.path = path;
         return this;
     }
@@ -66,7 +66,7 @@ import java.util.Date;
         return domain;
     }
 
-    public CookieImpl setDomain(final String domain) {
+    public Cookie setDomain(final String domain) {
         this.domain = domain;
         return this;
     }
@@ -75,17 +75,8 @@ import java.util.Date;
         return maxAge;
     }
 
-    public CookieImpl setMaxAge(final Integer maxAge) {
+    public Cookie setMaxAge(final Integer maxAge) {
         this.maxAge = maxAge;
-        return this;
-    }
-
-    public boolean isDiscard() {
-        return discard;
-    }
-
-    public CookieImpl setDiscard(final boolean discard) {
-        this.discard = discard;
         return this;
     }
 
@@ -93,7 +84,7 @@ import java.util.Date;
         return secure;
     }
 
-    public CookieImpl setSecure(final boolean secure) {
+    public Cookie setSecure(final boolean secure) {
         this.secure = secure;
         return this;
     }
@@ -102,7 +93,7 @@ import java.util.Date;
         return version;
     }
 
-    public CookieImpl setVersion(final int version) {
+    public Cookie setVersion(final int version) {
         this.version = version;
         return this;
     }
@@ -111,7 +102,7 @@ import java.util.Date;
         return httpOnly;
     }
 
-    public CookieImpl setHttpOnly(final boolean httpOnly) {
+    public Cookie setHttpOnly(final boolean httpOnly) {
         this.httpOnly = httpOnly;
         return this;
     }
@@ -120,7 +111,7 @@ import java.util.Date;
         return expires;
     }
 
-    public CookieImpl setExpires(final Date expires) {
+    public Cookie setExpires(final Date expires) {
         this.expires = expires;
         return this;
     }
@@ -132,5 +123,35 @@ import java.util.Date;
     public Cookie setComment(final String comment) {
         this.comment = comment;
         return this;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getName()).append('=').append(getValue());
+        if (StringUtils.isNotBlank(getPath())) {
+            sb.append("; Path=").append(getPath());
+        }
+        if (StringUtils.isNotBlank(this.domain)) {
+            sb.append("; Domain=").append(this.domain);
+        }
+        if (this.expires != null) {
+            sb.append("; Expires=");
+            sb.append(DateUtils.formatCookieExpire(expires));
+        } else if (this.maxAge >= 0) {
+            sb.append("; Max-Age=").append(this.maxAge);
+            Date expires = new Date();
+            expires.setTime(expires.getTime() + maxAge * 1000L);
+            sb.append("; Expires=");
+            sb.append(DateUtils.formatCookieExpire(expires));
+        }
+
+        if (this.secure) {
+            sb.append("; Secure");
+        }
+        if (this.httpOnly) {
+            sb.append("; HttpOnly");
+        }
+        return sb.toString();
     }
 }

@@ -14,6 +14,7 @@ import org.smartboot.http.utils.HttpHeaderConstant;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -62,6 +63,9 @@ final class HttpOutputStream extends AbstractOutputStream {
 
         //输出http状态行、contentType,contentLength、Transfer-Encoding、server等信息
         outputStream.write(getHeadPart(response.getHttpStatus(), contentType, response.getContentLength()));
+
+        //转换Cookie
+        convertCookieToHeader(response);
 
         //输出Header部分
         if (response.getHeaders() != null) {
@@ -118,4 +122,14 @@ final class HttpOutputStream extends AbstractOutputStream {
         return data;
     }
 
+    private void convertCookieToHeader(AbstractResponse response) {
+        List<Cookie> cookies = response.getCookies();
+        if (cookies == null || cookies.size() == 0) {
+            return;
+        }
+        cookies.forEach(cookie -> {
+            response.addHeader(HttpHeaderConstant.Names.SET_COOKIE, cookie.toString());
+        });
+
+    }
 }

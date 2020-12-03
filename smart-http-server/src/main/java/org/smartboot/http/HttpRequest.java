@@ -8,6 +8,8 @@
 
 package org.smartboot.http;
 
+import org.smartboot.http.server.Cookie;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
@@ -107,4 +109,8 @@ public interface HttpRequest {
 
     String getCharacterEncoding();
 
+    /**
+     * 获取Cookie
+     */
+    Cookie[] getCookies();
 }
