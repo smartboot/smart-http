@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -360,7 +359,7 @@ public final class Request implements HttpRequest, Reset {
 
     @Override
     public final Enumeration<Locale> getLocales() {
-        return Collections.enumeration(Arrays.asList(defaultLocale));
+        return Collections.enumeration(Collections.singletonList(defaultLocale));
     }
 
     @Override
