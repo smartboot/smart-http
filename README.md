@@ -13,7 +13,7 @@ smart-socket 的每次性能测试都是基于该服务器进行的，相信 sma
 3. 支持部分RFC2612规范，后续会逐渐完善。
 4. 支持Https协议，由smart-socket为其赋能。
 5. 具备文件上传的能力。
-6. 支持 websocket
+6. 支持 websocket、Cookie
 
 ## 快速体验
 1. 在您的Maven工程中引入smart-http依赖。
@@ -21,7 +21,7 @@ smart-socket 的每次性能测试都是基于该服务器进行的，相信 sma
     <dependency>
         <groupId>org.smartboot.http</groupId>
         <artifactId>smart-http-server</artifactId>
-        <version>1.0.14</version>
+        <version>1.0.19</version>
     </dependency>
     ```
 2. 拷贝以下代码并启动。
