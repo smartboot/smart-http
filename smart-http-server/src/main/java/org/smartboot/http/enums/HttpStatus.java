@@ -455,7 +455,7 @@ public enum HttpStatus {
         this.valueStringBytes = String.valueOf(value).getBytes();
         this.reasonPhrase = reasonPhrase;
         this.reasonPhraseBytes = reasonPhrase.getBytes();
-        this.httpStatusLine = "HTTP/1.1 " + value + " " + reasonPhrase;
+        this.httpStatusLine = " " + value + " " + reasonPhrase;
     }
 
     /**

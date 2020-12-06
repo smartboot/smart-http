@@ -62,7 +62,7 @@ final class HttpOutputStream extends AbstractOutputStream {
         }
 
         //输出http状态行、contentType,contentLength、Transfer-Encoding、server等信息
-        outputStream.write(getHeadPart(response.getHttpStatus(), contentType, response.getContentLength()));
+        outputStream.write(getHeadPart(contentType));
 
         //转换Cookie
         convertCookieToHeader(response);
@@ -88,11 +88,15 @@ final class HttpOutputStream extends AbstractOutputStream {
         committed = true;
     }
 
-    private byte[] getHeadPart(HttpStatus httpStatus, String contentType, int contentLength) {
+    private byte[] getHeadPart(String contentType) {
+        HttpStatus httpStatus = response.getHttpStatus();
+        int contentLength = response.getContentLength();
         chunked = contentLength < 0;
         byte[] data = null;
         //成功消息优先从缓存中加载
-        if (httpStatus == HttpStatus.OK) {
+        boolean cache = httpStatus == HttpStatus.OK;
+        boolean http10 = Request.HTTP_1_0_STRING.equals(request.getProtocol());
+        if (cache && !http10) {
             if (chunked) {
                 data = CACHE_CHUNKED_AND_LENGTH.get(contentType);
             } else if (contentLength < CACHE_CONTENT_TYPE_AND_LENGTH.length) {
@@ -103,7 +107,7 @@ final class HttpOutputStream extends AbstractOutputStream {
             }
         }
 
-        String str = httpStatus.getHttpStatusLine() + "\r\n"
+        String str = request.getProtocol() + httpStatus.getHttpStatusLine() + "\r\n"
                 + HttpHeaderConstant.Names.CONTENT_TYPE + ":" + contentType;
         if (contentLength >= 0) {
             str += "\r\n" + HttpHeaderConstant.Names.CONTENT_LENGTH + ":" + contentLength;
@@ -112,12 +116,16 @@ final class HttpOutputStream extends AbstractOutputStream {
         }
         data = str.getBytes();
         //缓存响应头
-        if (httpStatus == HttpStatus.OK) {
+        if (cache && !http10) {
             if (chunked) {
                 CACHE_CHUNKED_AND_LENGTH.put(contentType, data);
             } else if (contentLength >= 0 && contentLength < CACHE_CONTENT_TYPE_AND_LENGTH.length) {
                 CACHE_CONTENT_TYPE_AND_LENGTH[contentLength].put(contentType, data);
             }
+        }
+        // http 1.0 不支持 chunked
+        if (chunked && http10) {
+            chunked = false;
         }
         return data;
     }

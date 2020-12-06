@@ -44,7 +44,7 @@ final class WebSocketOutputStream extends AbstractOutputStream {
         }
 
         //输出http状态行、contentType,contentLength、Transfer-Encoding、server等信息
-        outputStream.write(getBytes(response.getHttpStatus().getHttpStatusLine() + "\r\n"
+        outputStream.write(getBytes(request.getProtocol() + response.getHttpStatus().getHttpStatusLine() + "\r\n"
                 + HttpHeaderConstant.Names.CONTENT_TYPE + ":" + contentType));
 
         //输出Header部分

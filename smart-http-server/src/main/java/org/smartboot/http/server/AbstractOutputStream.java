@@ -44,7 +44,7 @@ abstract class AbstractOutputStream extends OutputStream implements Reset {
 
     protected final AbstractResponse response;
     protected final OutputStream outputStream;
-    private final HttpRequest request;
+    protected final HttpRequest request;
     protected boolean committed = false;
     /**
      * 当前流是否完结
