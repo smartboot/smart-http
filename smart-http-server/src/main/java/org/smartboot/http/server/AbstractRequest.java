@@ -144,4 +144,14 @@ abstract class AbstractRequest implements HttpRequest, Reset, RequestHook {
     public Cookie[] getCookies() {
         return request.getCookies();
     }
+
+    @Override
+    public <A> A getAttachment() {
+        return request.getAttachment();
+    }
+
+    @Override
+    public <A> void setAttachment(A attachment) {
+        request.setAttachment(attachment);
+    }
 }

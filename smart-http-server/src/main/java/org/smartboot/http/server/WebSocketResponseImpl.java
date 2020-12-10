@@ -11,9 +11,9 @@ package org.smartboot.http.server;
 import org.smartboot.http.WebSocketResponse;
 import org.smartboot.http.logging.RunLogger;
 import org.smartboot.http.utils.Constant;
+import org.smartboot.socket.transport.WriteBuffer;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 
@@ -23,7 +23,7 @@ import java.util.logging.Level;
  */
 public class WebSocketResponseImpl extends AbstractResponse implements WebSocketResponse {
 
-    public WebSocketResponseImpl(WebSocketRequestImpl request, OutputStream outputStream) {
+    public WebSocketResponseImpl(WebSocketRequestImpl request, WriteBuffer outputStream) {
         init(request, new WebSocketOutputStream(request, this, outputStream));
     }
 

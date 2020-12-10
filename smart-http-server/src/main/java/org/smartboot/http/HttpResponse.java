@@ -12,7 +12,6 @@ import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.server.Cookie;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Collection;
 
 /**
@@ -28,7 +27,7 @@ public interface HttpResponse {
      *
      * @return
      */
-    OutputStream getOutputStream();
+    BufferOutputStream getOutputStream();
 
     /**
      * 获取Http响应状态

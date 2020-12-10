@@ -10,9 +10,9 @@ package org.smartboot.http.server;
 
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.utils.HttpHeaderConstant;
+import org.smartboot.socket.transport.WriteBuffer;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Map;
 
 /**
@@ -21,8 +21,8 @@ import java.util.Map;
  */
 final class WebSocketOutputStream extends AbstractOutputStream {
 
-    public WebSocketOutputStream(WebSocketRequestImpl request, WebSocketResponseImpl response, OutputStream outputStream) {
-        super(request, response, outputStream);
+    public WebSocketOutputStream(WebSocketRequestImpl request, WebSocketResponseImpl response, WriteBuffer writeBuffer) {
+        super(request, response, writeBuffer);
         super.chunked = false;
     }
 
@@ -44,7 +44,7 @@ final class WebSocketOutputStream extends AbstractOutputStream {
         }
 
         //输出http状态行、contentType,contentLength、Transfer-Encoding、server等信息
-        outputStream.write(getBytes(request.getProtocol() + response.getHttpStatus().getHttpStatusLine() + "\r\n"
+        writeBuffer.write(getBytes(request.getProtocol() + response.getHttpStatus().getHttpStatusLine() + "\r\n"
                 + HttpHeaderConstant.Names.CONTENT_TYPE + ":" + contentType));
 
         //输出Header部分
@@ -52,8 +52,8 @@ final class WebSocketOutputStream extends AbstractOutputStream {
             for (Map.Entry<String, HeaderValue> entry : response.getHeaders().entrySet()) {
                 HeaderValue headerValue = entry.getValue();
                 while (headerValue != null) {
-                    outputStream.write(getHeaderNameBytes(entry.getKey()));
-                    outputStream.write(getBytes(headerValue.getValue()));
+                    writeBuffer.write(getHeaderNameBytes(entry.getKey()));
+                    writeBuffer.write(getBytes(headerValue.getValue()));
                     headerValue = headerValue.getNextValue();
                 }
             }
@@ -64,7 +64,7 @@ final class WebSocketOutputStream extends AbstractOutputStream {
          * 只能用 RFC 1123 里定义的日期格式来填充头域 (header field)的值里用到 HTTP-date 的地方
          */
         flushDate();
-        outputStream.write(date);
+        writeBuffer.write(date);
         committed = true;
     }
 

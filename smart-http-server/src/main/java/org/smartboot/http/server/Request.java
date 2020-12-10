@@ -92,6 +92,11 @@ public final class Request implements HttpRequest, Reset {
 
     private Cookie[] cookies;
 
+    /**
+     * 附件对象
+     */
+    private Object attachment;
+
     Request(AioSession aioSession) {
         this.aioSession = aioSession;
     }
@@ -453,6 +458,26 @@ public final class Request implements HttpRequest, Reset {
         this.formUrlencoded = formUrlencoded;
     }
 
+
+    /**
+     * 获取附件对象
+     *
+     * @param <A> 附件对象类型
+     * @return 附件
+     */
+    public final <A> A getAttachment() {
+        return (A) attachment;
+    }
+
+    /**
+     * 存放附件，支持任意类型
+     *
+     * @param <A>        附件对象类型
+     * @param attachment 附件对象
+     */
+    public final <A> void setAttachment(A attachment) {
+        this.attachment = attachment;
+    }
 
     public void reset() {
         headerSize = 0;

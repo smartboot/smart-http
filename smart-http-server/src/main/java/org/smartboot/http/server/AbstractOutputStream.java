@@ -8,14 +8,17 @@
 
 package org.smartboot.http.server;
 
+import org.smartboot.http.BufferOutputStream;
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.enums.HeaderNameEnum;
 import org.smartboot.http.enums.HttpMethodEnum;
 import org.smartboot.http.utils.Constant;
 import org.smartboot.http.utils.HttpHeaderConstant;
+import org.smartboot.socket.buffer.VirtualBuffer;
+import org.smartboot.socket.transport.WriteBuffer;
 
 import java.io.IOException;
-import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -26,7 +29,7 @@ import java.util.concurrent.Semaphore;
  * @author 三刀
  * @version V1.0 , 2018/2/3
  */
-abstract class AbstractOutputStream extends OutputStream implements Reset {
+abstract class AbstractOutputStream extends BufferOutputStream implements Reset {
     private static final byte[] CHUNKED_END_BYTES = "0\r\n\r\n".getBytes(StandardCharsets.US_ASCII);
     private static final SimpleDateFormat sdf = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
     private static final Semaphore flushDateSemaphore = new Semaphore(1);
@@ -43,7 +46,7 @@ abstract class AbstractOutputStream extends OutputStream implements Reset {
     }
 
     protected final AbstractResponse response;
-    protected final OutputStream outputStream;
+    protected final WriteBuffer writeBuffer;
     protected final HttpRequest request;
     protected boolean committed = false;
     /**
@@ -52,10 +55,10 @@ abstract class AbstractOutputStream extends OutputStream implements Reset {
     protected boolean closed = false;
     protected boolean chunked = false;
 
-    public AbstractOutputStream(HttpRequest request, AbstractResponse response, OutputStream outputStream) {
+    public AbstractOutputStream(HttpRequest request, AbstractResponse response, WriteBuffer writeBuffer) {
         this.response = response;
         this.request = request;
-        this.outputStream = outputStream;
+        this.writeBuffer = writeBuffer;
     }
 
     protected static void flushDate() {
@@ -91,13 +94,44 @@ abstract class AbstractOutputStream extends OutputStream implements Reset {
         }
         if (chunked) {
             byte[] start = getBytes(Integer.toHexString(len) + "\r\n");
-            outputStream.write(start);
-            outputStream.write(b, off, len);
-            outputStream.write(Constant.CRLF);
+            writeBuffer.write(start);
+            writeBuffer.write(b, off, len);
+            writeBuffer.write(Constant.CRLF);
         } else {
-            outputStream.write(b, off, len);
+            writeBuffer.write(b, off, len);
         }
 
+    }
+
+    public final void write(ByteBuffer buffer) throws IOException {
+        writeHead();
+        if (HttpMethodEnum.HEAD.getMethod().equals(request.getMethod())) {
+            throw new UnsupportedOperationException(request.getMethod() + " can not write http body");
+        }
+        if (chunked) {
+            byte[] start = getBytes(Integer.toHexString(buffer.remaining()) + "\r\n");
+            writeBuffer.write(start);
+            writeBuffer.write(buffer);
+            writeBuffer.write(Constant.CRLF);
+        } else {
+            writeBuffer.write(buffer);
+        }
+    }
+
+    @Override
+    public final void write(VirtualBuffer virtualBuffer) throws IOException {
+        writeHead();
+        if (HttpMethodEnum.HEAD.getMethod().equals(request.getMethod())) {
+            throw new UnsupportedOperationException(request.getMethod() + " can not write http body");
+        }
+        if (chunked) {
+            byte[] start = getBytes(Integer.toHexString(virtualBuffer.buffer().remaining()) + "\r\n");
+            writeBuffer.write(start);
+            writeBuffer.write(virtualBuffer);
+            writeBuffer.write(Constant.CRLF);
+        } else {
+            writeBuffer.write(virtualBuffer);
+        }
     }
 
     /**
@@ -111,7 +145,7 @@ abstract class AbstractOutputStream extends OutputStream implements Reset {
     @Override
     public final void flush() throws IOException {
         writeHead();
-        outputStream.flush();
+        writeBuffer.flush();
     }
 
     @Override
@@ -122,7 +156,7 @@ abstract class AbstractOutputStream extends OutputStream implements Reset {
         writeHead();
 
         if (chunked) {
-            outputStream.write(CHUNKED_END_BYTES);
+            writeBuffer.write(CHUNKED_END_BYTES);
         }
         closed = true;
     }

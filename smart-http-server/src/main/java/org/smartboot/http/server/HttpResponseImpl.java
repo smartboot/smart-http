@@ -8,7 +8,7 @@
 
 package org.smartboot.http.server;
 
-import java.io.OutputStream;
+import org.smartboot.socket.transport.WriteBuffer;
 
 /**
  * @author 三刀
@@ -16,7 +16,7 @@ import java.io.OutputStream;
  */
 class HttpResponseImpl extends AbstractResponse {
 
-    public HttpResponseImpl(HttpRequestImpl request, OutputStream outputStream) {
+    public HttpResponseImpl(HttpRequestImpl request, WriteBuffer outputStream) {
         init(request, new HttpOutputStream(request, this, outputStream));
     }
 }
