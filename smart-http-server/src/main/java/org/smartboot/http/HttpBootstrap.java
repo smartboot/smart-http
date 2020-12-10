@@ -29,7 +29,7 @@ public class HttpBootstrap {
             "                                                       | |    \n" +
             "                                                       (_)   ";
 
-    private static final String VERSION = "1.0.19";
+    private static final String VERSION = "1.0.20";
     private AioQuickServer<Request> server;
 
     /**
