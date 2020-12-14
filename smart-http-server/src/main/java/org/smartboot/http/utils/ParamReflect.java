@@ -59,8 +59,12 @@ public class ParamReflect {
                     continue;
                 }
                 Param p = f.getAnnotation(Param.class);// 配置项默认值
+                String name = f.getName();
+                if (StringUtils.isBlank(name)) {
+                    name = p.name();
+                }
                 String fieldType = f.getGenericType().toString();
-                String value = property.getProperty(f.getName(), "");
+                String value = property.getProperty(name, "");
                 if ("".equals(value) && p.value() != null) {
                     value = p.value();
                 }
