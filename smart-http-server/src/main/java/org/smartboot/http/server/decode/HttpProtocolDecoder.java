@@ -26,7 +26,7 @@ class HttpProtocolDecoder implements Decoder {
     private final HttpHeaderDecoder decoder = new HttpHeaderDecoder();
 
     @Override
-    public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession aioSession, Request request) {
+    public Decoder decode(ByteBuffer byteBuffer, char[] cacheChars, AioSession aioSession, Request request) {
         int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.LF, cacheChars, true);
         if (length > 0) {
             if (cacheChars[length - 1] != Constant.CR) {
@@ -34,7 +34,7 @@ class HttpProtocolDecoder implements Decoder {
             }
             String protocol = StringUtils.convertToString(cacheChars, 0, length - 1, StringUtils.String_CACHE_URL);
             request.setProtocol(protocol);
-            return decoder.deocde(byteBuffer, cacheChars, aioSession, request);
+            return decoder.decode(byteBuffer, cacheChars, aioSession, request);
         } else {
             return this;
         }

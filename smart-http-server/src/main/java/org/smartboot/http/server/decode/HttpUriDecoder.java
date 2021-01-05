@@ -26,16 +26,16 @@ class HttpUriDecoder implements Decoder {
     private final HttpProtocolDecoder protocolDecoder = new HttpProtocolDecoder();
 
     @Override
-    public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession aioSession, Request request) {
+    public Decoder decode(ByteBuffer byteBuffer, char[] cacheChars, AioSession aioSession, Request request) {
         int length = scanURI(byteBuffer, cacheChars);
         if (length > 0) {
             String uri = StringUtils.convertToString(cacheChars, 0, length, StringUtils.String_CACHE_URL);
             request.setUri(uri);
             switch (cacheChars[length]) {
                 case Constant.SP:
-                    return protocolDecoder.deocde(byteBuffer, cacheChars, aioSession, request);
+                    return protocolDecoder.decode(byteBuffer, cacheChars, aioSession, request);
                 case '?':
-                    return uriQueryDecoder.deocde(byteBuffer, cacheChars, aioSession, request);
+                    return uriQueryDecoder.decode(byteBuffer, cacheChars, aioSession, request);
                 default:
                     throw new HttpException(HttpStatus.BAD_REQUEST);
             }

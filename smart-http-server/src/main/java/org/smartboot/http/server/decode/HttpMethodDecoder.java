@@ -24,12 +24,12 @@ public class HttpMethodDecoder implements Decoder {
     private final HttpUriDecoder decoder = new HttpUriDecoder();
 
     @Override
-    public Decoder deocde(ByteBuffer byteBuffer, char[] cacheChars, AioSession aioSession, Request request) {
+    public Decoder decode(ByteBuffer byteBuffer, char[] cacheChars, AioSession aioSession, Request request) {
         int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.SP, cacheChars, true);
         if (length > 0) {
             String method = StringUtils.convertToString(cacheChars, 0, length, StringUtils.String_CACHE_URL);
             request.setMethod(method);
-            return decoder.deocde(byteBuffer, cacheChars, aioSession, request);
+            return decoder.decode(byteBuffer, cacheChars, aioSession, request);
         } else {
             return this;
         }

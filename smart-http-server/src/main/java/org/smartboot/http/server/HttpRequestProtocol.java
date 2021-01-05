@@ -65,7 +65,7 @@ public class HttpRequestProtocol implements Protocol<Request> {
             decodeChain = httpMethodDecoder;
         }
 
-        decodeChain = decodeChain.deocde(buffer, cacheChars, session, request);
+        decodeChain = decodeChain.decode(buffer, cacheChars, session, request);
 
         if (decodeChain == HTTP_FINISH_DECODER || decodeChain == WS_HANDSHARK_DECODER || decodeChain == WS_FRAME_DECODER) {
             if (decodeChain == HTTP_FINISH_DECODER) {
