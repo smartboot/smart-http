@@ -62,7 +62,7 @@ abstract class AbstractOutputStream extends BufferOutputStream implements Reset 
     }
 
     protected static void flushDate() {
-        if ((System.currentTimeMillis() - currentDate.getTime() > 900) && flushDateSemaphore.tryAcquire()) {
+        if ((System.currentTimeMillis() - currentDate.getTime() > 950) && flushDateSemaphore.tryAcquire()) {
             try {
                 currentDate.setTime(System.currentTimeMillis());
                 AbstractOutputStream.date = ("\r\n" + HttpHeaderConstant.Names.DATE + ":" + sdf.format(currentDate) + "\r\n"
