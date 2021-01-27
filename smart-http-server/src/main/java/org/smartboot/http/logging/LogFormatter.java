@@ -23,14 +23,11 @@ import java.util.logging.LogRecord;
  */
 class LogFormatter extends Formatter {
     private final static String format = "{0,date,yyyy-MM-dd} {0,time,HH:mm:ss.SS}";
+    private final String lineSeparator = System.getProperty("line.separator");
     Date dat = new Date();
     String logClassName = RunLogger.class.getName();
     private MessageFormat formatter;
     private Object args[] = new Object[1];
-    @SuppressWarnings("restriction")
-    private String lineSeparator = (String) java.security.AccessController
-            .doPrivileged(new sun.security.action.GetPropertyAction(
-                    "line.separator"));
 
     @Override
     public synchronized String format(LogRecord record) {

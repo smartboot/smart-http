@@ -9,19 +9,20 @@
 package org.smartboot.http.server;
 
 import org.smartboot.http.WebSocketResponse;
-import org.smartboot.http.logging.RunLogger;
+import org.smartboot.http.logging.Logger;
+import org.smartboot.http.logging.LoggerFactory;
 import org.smartboot.http.utils.Constant;
 import org.smartboot.socket.transport.WriteBuffer;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.logging.Level;
 
 /**
  * @author 三刀
  * @version V1.0 , 2018/2/3
  */
 public class WebSocketResponseImpl extends AbstractResponse implements WebSocketResponse {
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketResponseImpl.class);
 
     public WebSocketResponseImpl(WebSocketRequestImpl request, WriteBuffer outputStream) {
         init(request, new WebSocketOutputStream(request, this, outputStream));
@@ -29,7 +30,7 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
 
     @Override
     public void sendTextMessage(String text) {
-        RunLogger.getLogger().log(Level.FINEST, "发送字符串消息:" + text);
+        LOGGER.info("发送字符串消息:{}", text);
         byte[] bytes = text.getBytes(StandardCharsets.UTF_8);
         try {
             send(WebSocketRequestImpl.OPCODE_TEXT, bytes);
@@ -40,7 +41,7 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
 
     @Override
     public void sendBinaryMessage(byte[] bytes) {
-        RunLogger.getLogger().log(Level.FINEST, "发送二进制消息:" + bytes);
+        LOGGER.info("发送二进制消息:{}", bytes);
         try {
             send(WebSocketRequestImpl.OPCODE_BINARY, bytes);
         } catch (IOException e) {

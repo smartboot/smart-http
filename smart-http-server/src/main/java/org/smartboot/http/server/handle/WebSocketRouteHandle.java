@@ -10,19 +10,20 @@ package org.smartboot.http.server.handle;
 
 import org.smartboot.http.WebSocketRequest;
 import org.smartboot.http.WebSocketResponse;
-import org.smartboot.http.logging.RunLogger;
+import org.smartboot.http.logging.Logger;
+import org.smartboot.http.logging.LoggerFactory;
 import org.smartboot.http.utils.AntPathMatcher;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
 
 /**
  * @author 三刀
  * @version V1.0 , 2018/3/24
  */
 public final class WebSocketRouteHandle extends WebSocketHandle {
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketRouteHandle.class);
     private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
     private Map<String, WebSocketHandle> handleMap = new ConcurrentHashMap<>();
 
@@ -32,7 +33,7 @@ public final class WebSocketRouteHandle extends WebSocketHandle {
     private WebSocketHandle defaultHandle = new WebSocketHandle() {
         @Override
         public void doHandle(WebSocketRequest request, WebSocketResponse response) throws IOException {
-            RunLogger.getLogger().log(Level.WARNING, "not found");
+            LOGGER.warn("not found");
         }
     };
 

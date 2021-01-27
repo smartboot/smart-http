@@ -12,12 +12,12 @@ import org.smartboot.http.WebSocketRequest;
 import org.smartboot.http.WebSocketResponse;
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.exception.HttpException;
-import org.smartboot.http.logging.RunLogger;
+import org.smartboot.http.logging.Logger;
+import org.smartboot.http.logging.LoggerFactory;
 import org.smartboot.http.server.WebSocketRequestImpl;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.logging.Level;
 
 
 /**
@@ -25,6 +25,7 @@ import java.util.logging.Level;
  * @version V1.0 , 2020/3/31
  */
 public class WebSocketDefaultHandle extends WebSocketHandle {
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketDefaultHandle.class);
 
     @Override
     public final void doHandle(WebSocketRequest request, WebSocketResponse response) throws IOException {
@@ -49,10 +50,10 @@ public class WebSocketDefaultHandle extends WebSocketHandle {
                             }
                             break;
                         case WebSocketRequestImpl.OPCODE_PING:
-                            RunLogger.getLogger().log(Level.FINE, "unSupport ping now");
+                            LOGGER.warn("unSupport ping now");
                             break;
                         case WebSocketRequestImpl.OPCODE_PONG:
-                            RunLogger.getLogger().log(Level.FINE, "unSupport pong now");
+                            LOGGER.warn("unSupport pong now");
                             break;
                         default:
                             throw new UnsupportedOperationException();
@@ -75,7 +76,7 @@ public class WebSocketDefaultHandle extends WebSocketHandle {
      * @param response
      */
     public void onHandShark(WebSocketRequest request, WebSocketResponse response) {
-        RunLogger.getLogger().log(Level.FINE, "handShark success");
+        LOGGER.warn("handShark success");
     }
 
     /**
@@ -85,7 +86,7 @@ public class WebSocketDefaultHandle extends WebSocketHandle {
      * @param response
      */
     public void onClose(WebSocketRequest request, WebSocketResponse response) {
-        RunLogger.getLogger().log(Level.FINE, "close connection");
+        LOGGER.warn("close connection");
     }
 
     /**

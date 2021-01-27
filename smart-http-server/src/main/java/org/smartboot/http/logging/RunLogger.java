@@ -8,7 +8,7 @@
 
 package org.smartboot.http.logging;
 
-import java.io.File;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -18,129 +18,208 @@ import java.util.logging.Logger;
  * @author 三刀
  * @version V1.0 , 2020/1/1
  */
-public class RunLogger {
+class RunLogger implements org.smartboot.http.logging.Logger {
 
-    private static RunLogger runlogger;
-
+    private final String loggerName;
     private Logger logger = null;
 
-    private volatile LoggerStatus status = LoggerStatus.UNINITIALIZE;
+    RunLogger(String name) {
+        this.loggerName = name;
+        logger = Logger.getLogger(name);
+        init();
+    }
 
-    private LoggerConfig config;
-
-    private RunLogger() {
-        logger = Logger.getLogger(RunLogger.class.getName());
+    private void init() {
         logger.setUseParentHandlers(false);
-        logger.getParent().setLevel(Level.ALL);
-    }
-
-    public static RunLogger getLogger() {
-        if (runlogger == null) {
-            synchronized (RunLogger.class) {
-                if (runlogger == null) {
-                    runlogger = new RunLogger();
-                }
-            }
-        }
-        return runlogger;
-    }
-
-    public synchronized void init(LoggerConfig config) {
-
-        if (LoggerStatus.UNINITIALIZE != status
-                && LoggerStatus.TEMP_ENABLED != status) {
-            throw new LoggerSystemException(
-                    "could not execute Logger init method,RunLogger's current status is "
-                            + status);
-        }
         try {
             // 移除已注册的Handler
-            Handler[] handls = logger.getHandlers();
-            if (handls != null) {
-                for (Handler h : handls) {
+            Handler[] handlers = logger.getHandlers();
+            if (handlers != null) {
+                for (Handler h : handlers) {
                     logger.removeHandler(h);
                 }
             }
 
-            logger.setLevel(config.getLevel());
+            logger.setLevel(Level.ALL);
 
-            // 是否当前日志需要输出至文件,则先检查日志文件存放目录是否存在
-            if (config.isLog2File() || config.isErr2File()
-                    || config.isOut2File()) {
-                File file = new File(config.getLogDir());
-                if (!file.isDirectory()) {
-                    file.mkdirs();
-                }
-            }
-            // 设置日志文件Handler
-            if (config.isLog2File()) {
-                logger.addHandler(config.getLogFileHandler());
-            }
 
             // 设置控制台日志Handler
-            if (config.isLog2console()) {
-                logger.addHandler(config.getConsoleHandler());
+            ConsoleHandler ch = new ConsoleHandler();
+            ch.setFormatter(new LogFormatter());
+            ch.setLevel(Level.ALL);
+            try {
+                ch.setEncoding("utf8");
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            // 设置运行时异常的Handler
-            if (config.isErr2File()) {
-                logger.addHandler(config.getErrorFileHandler());
-            }
-
-            // 设置System.out的Handler
-            if (config.isOut2File()) {
-                logger.addHandler(config.getOutFileHandler());
-            }
+            logger.addHandler(ch);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        this.config = config;
-        status = LoggerStatus.ENABLED;
     }
 
-    public void log(Throwable thrown) {
-
-        log(Level.WARNING, thrown.getMessage(), thrown);
-    }
-
-    public void log(Level level, String msg) {
-
-        log(level, msg, (Throwable) null);
-    }
-
-    public void log(Level level, String msg, Throwable thrown) {
-        // 使用未初始化的日至系统时,自动提供一个临时配置
-        if (status == LoggerStatus.UNINITIALIZE) {
-            setInnerLoggerCfg();
-            status = LoggerStatus.TEMP_ENABLED;
-        }
-        if (status != LoggerStatus.ENABLED
-                && status != LoggerStatus.TEMP_ENABLED) {
-            throw new LoggerSystemException("RunLogg's status is " + status);
-        }
+    private void log(Level level, String msg, Object... arguments) {
         LogRecord record = new LogRecord(level, null);
         record.setMessage(msg);
-        record.setThrown(thrown);
+
+        if (arguments != null && arguments.length > 0 && arguments[arguments.length - 1] instanceof Throwable) {
+            record.setThrown((Throwable) arguments[arguments.length - 1]);
+        }
         logger.log(record);
-
     }
 
-    /**
-     * 内置一个日至系统配置
-     */
-    private void setInnerLoggerCfg() {
-        LoggerConfig cfg = new LoggerConfig();
-        cfg.setLog2console(true);
-        cfg.setLevel(Level.ALL);
-        init(cfg);
+    @Override
+    public String getName() {
+        return loggerName;
     }
 
-    /**
-     * 获取当前日志系统的日志级别
-     *
-     * @return
-     */
-    public Level getLoggerLevel() {
-        return config.getLevel();
+    @Override
+    public boolean isTraceEnabled() {
+        return false;
     }
 
+    @Override
+    public void trace(String msg) {
+        log(Level.FINE, msg);
+    }
+
+    @Override
+    public void trace(String format, Object arg) {
+        log(Level.FINE, format, arg);
+    }
+
+    @Override
+    public void trace(String format, Object arg1, Object arg2) {
+        log(Level.FINE, format, arg1, arg2);
+    }
+
+    @Override
+    public void trace(String format, Object... arguments) {
+        log(Level.FINE, format, arguments);
+    }
+
+    @Override
+    public void trace(String msg, Throwable t) {
+        log(Level.FINE, msg, t);
+    }
+
+    @Override
+    public boolean isDebugEnabled() {
+        return false;
+    }
+
+    @Override
+    public void debug(String msg) {
+        log(Level.CONFIG, msg);
+    }
+
+    @Override
+    public void debug(String format, Object arg) {
+        log(Level.CONFIG, format, arg);
+    }
+
+    @Override
+    public void debug(String format, Object arg1, Object arg2) {
+        log(Level.CONFIG, format, arg1, arg2);
+    }
+
+    @Override
+    public void debug(String format, Object... arguments) {
+        log(Level.CONFIG, format, arguments);
+    }
+
+    @Override
+    public void debug(String msg, Throwable t) {
+        log(Level.CONFIG, msg, t);
+    }
+
+    @Override
+    public boolean isInfoEnabled() {
+        return false;
+    }
+
+    @Override
+    public void info(String msg) {
+        log(Level.INFO, msg);
+    }
+
+    @Override
+    public void info(String format, Object arg) {
+        log(Level.INFO, format, arg);
+    }
+
+    @Override
+    public void info(String format, Object arg1, Object arg2) {
+        log(Level.INFO, format, arg1, arg2);
+    }
+
+    @Override
+    public void info(String format, Object... arguments) {
+        log(Level.INFO, format, arguments);
+    }
+
+    @Override
+    public void info(String msg, Throwable t) {
+        log(Level.INFO, msg, t);
+    }
+
+    @Override
+    public boolean isWarnEnabled() {
+        return false;
+    }
+
+    @Override
+    public void warn(String msg) {
+        log(Level.WARNING, msg);
+    }
+
+    @Override
+    public void warn(String format, Object arg) {
+        log(Level.WARNING, format, arg);
+    }
+
+    @Override
+    public void warn(String format, Object... arguments) {
+        log(Level.WARNING, format, arguments);
+    }
+
+    @Override
+    public void warn(String format, Object arg1, Object arg2) {
+        log(Level.WARNING, format, arg1, arg2);
+    }
+
+    @Override
+    public void warn(String msg, Throwable t) {
+        log(Level.WARNING, msg, t);
+    }
+
+    @Override
+    public boolean isErrorEnabled() {
+        return false;
+    }
+
+    @Override
+    public void error(String msg) {
+        log(Level.SEVERE, msg);
+    }
+
+    @Override
+    public void error(String format, Object arg) {
+        log(Level.SEVERE, format, arg);
+    }
+
+    @Override
+    public void error(String format, Object arg1, Object arg2) {
+        log(Level.SEVERE, format, arg1, arg2);
+    }
+
+    @Override
+    public void error(String format, Object... arguments) {
+        log(Level.SEVERE, format, arguments);
+    }
+
+    @Override
+    public void error(String msg, Throwable t) {
+        log(Level.SEVERE, msg, t);
+    }
 }

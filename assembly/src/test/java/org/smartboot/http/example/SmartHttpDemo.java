@@ -13,6 +13,8 @@ import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
 import org.smartboot.http.WebSocketRequest;
 import org.smartboot.http.WebSocketResponse;
+import org.smartboot.http.logging.Logger;
+import org.smartboot.http.logging.LoggerFactory;
 import org.smartboot.http.server.handle.HttpHandle;
 import org.smartboot.http.server.handle.HttpRouteHandle;
 import org.smartboot.http.server.handle.WebSocketDefaultHandle;
@@ -29,6 +31,8 @@ import java.util.Collection;
  * @version V1.0 , 2019/11/3
  */
 public class SmartHttpDemo {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SmartHttpDemo.class);
+
     public static void main(String[] args) {
         System.setProperty("smartHttp.server.alias", "SANDAO base on ");
 
@@ -90,6 +94,7 @@ public class SmartHttpDemo {
                 response.setContentLength(body.length);
                 response.setContentType("text/plain; charset=UTF-8");
                 response.write(body);
+                LOGGER.info("hello world");
             }
         }).route("/head", new HttpHandle() {
             @Override
