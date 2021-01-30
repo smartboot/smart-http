@@ -31,7 +31,7 @@ public class WebSocketFrameDecoder implements Decoder {
     private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketFrameDecoder.class);
 
     @Override
-    public Decoder decode(ByteBuffer byteBuffer, char[] cacheChars, AioSession aioSession, Request request) {
+    public Decoder decode(ByteBuffer byteBuffer,  AioSession aioSession, Request request) {
         if (byteBuffer.remaining() < 2) {
             return this;
         }

@@ -24,12 +24,12 @@ class HttpUriQueryDecoder implements Decoder {
     private final HttpProtocolDecoder decoder = new HttpProtocolDecoder();
 
     @Override
-    public Decoder decode(ByteBuffer byteBuffer, char[] cacheChars, AioSession aioSession, Request request) {
-        int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.SP, cacheChars, false);
+    public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
+        int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.SP);
         if (length > 0) {
-            String query = StringUtils.convertToString(cacheChars, 0, length, StringUtils.String_CACHE_URL);
+            String query = StringUtils.convertToString(byteBuffer, byteBuffer.position() - 1 - length, length, StringUtils.String_CACHE_URL);
             request.setQueryString(query);
-            return decoder.decode(byteBuffer, cacheChars, aioSession, request);
+            return decoder.decode(byteBuffer, aioSession, request);
         } else {
             return this;
         }

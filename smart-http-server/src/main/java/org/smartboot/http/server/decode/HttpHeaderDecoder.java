@@ -27,7 +27,7 @@ class HttpHeaderDecoder implements Decoder {
     private final HeaderValueDecoder headerValueDecoder = new HeaderValueDecoder();
 
     @Override
-    public Decoder decode(ByteBuffer byteBuffer, char[] cacheChars, AioSession aioSession, Request request) {
+    public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
         if (byteBuffer.remaining() < 2) {
             return this;
         }
@@ -37,16 +37,16 @@ class HttpHeaderDecoder implements Decoder {
                 throw new HttpException(HttpStatus.BAD_REQUEST);
             }
             byteBuffer.position(byteBuffer.position() + 2);
-            return decoder.decode(byteBuffer, cacheChars, aioSession, request);
+            return decoder.decode(byteBuffer, aioSession, request);
         }
         //Header name解码
-        int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.COLON, cacheChars, true);
+        int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.COLON);
         if (length < 0) {
             return this;
         }
-        String name = StringUtils.convertToString(cacheChars, 0, length, StringUtils.String_CACHE_HEADER_NAME);
+        String name = StringUtils.convertToString(byteBuffer, byteBuffer.position() - length - 1, length, StringUtils.String_CACHE_HEADER_NAME);
         request.setHeaderTemp(name);
-        return headerValueDecoder.decode(byteBuffer, cacheChars, aioSession, request);
+        return headerValueDecoder.decode(byteBuffer, aioSession, request);
     }
 
     /**
@@ -54,13 +54,13 @@ class HttpHeaderDecoder implements Decoder {
      */
     class HeaderValueDecoder implements Decoder {
         @Override
-        public Decoder decode(ByteBuffer byteBuffer, char[] cacheChars, AioSession aioSession, Request request) {
-            int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.LF, cacheChars, true);
+        public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
+            int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.LF);
             if (length == -1) {
                 return this;
             }
-            request.setHeadValue(StringUtils.convertToString(cacheChars, 0, length - 1, StringUtils.String_CACHE_HEADER_VALUE));
-            return HttpHeaderDecoder.this.decode(byteBuffer, cacheChars, aioSession, request);
+            request.setHeadValue(StringUtils.convertToString(byteBuffer, byteBuffer.position() - 1 - length, length - 1, StringUtils.String_CACHE_HEADER_VALUE));
+            return HttpHeaderDecoder.this.decode(byteBuffer, aioSession, request);
         }
     }
 }

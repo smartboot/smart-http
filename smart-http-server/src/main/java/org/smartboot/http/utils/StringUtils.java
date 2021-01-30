@@ -33,11 +33,15 @@ public class StringUtils {
      * @since 2.1
      */
     public static final int INDEX_NOT_FOUND = -1;
-    public static final List<StringCache>[] String_CACHE_URL = new List[512];
-    public static final List<StringCache>[] String_CACHE_HEADER_NAME = new List[32];
-    public static final List<StringCache>[] String_CACHE_HEADER_VALUE = new List[512];
+    public static final List<StringCache>[] String_CACHE_HEAD_LINE = new List[0];
+    public static final List<StringCache>[] String_CACHE_URL = new List[0];
+    public static final List<StringCache>[] String_CACHE_HEADER_NAME = new List[0];
+    public static final List<StringCache>[] String_CACHE_HEADER_VALUE = new List[0];
 
     static {
+        for (int i = 0; i < String_CACHE_HEAD_LINE.length; i++) {
+            String_CACHE_HEAD_LINE[i] = new ArrayList<>(8);
+        }
         for (int i = 0; i < String_CACHE_URL.length; i++) {
             String_CACHE_URL[i] = new ArrayList<>(8);
         }
@@ -53,18 +57,19 @@ public class StringUtils {
         super();
     }
 
-    public static String convertToString(char[] bytes, int length, List<StringCache>[] cacheList) {
-        return convertToString(bytes, 0, length, cacheList);
-    }
+//    public static String convertToString(byte[] bytes, int length, List<StringCache>[] cacheList) {
+//        return convertToString(bytes, 0, length, cacheList);
+//    }
 
     public static String trim(final String str) {
         return str == null ? null : str.trim();
     }
 
-    public static String convertToString(char[] bytes, int offset, int length, List<StringCache>[] cacheList) {
+    public static String convertToString(ByteBuffer buffer, int offset, int length, List<StringCache>[] cacheList) {
         if (length == 0) {
             return "";
         }
+        byte[] bytes = buffer.array();
         if (length >= cacheList.length) {
             return new String(bytes, offset, length);
         }
@@ -82,12 +87,12 @@ public class StringUtils {
                 }
             }
             String str = new String(bytes, offset, length);
-            list.add(new StringCache(str.toCharArray(), str));
+            list.add(new StringCache(str.getBytes(), str));
             return str;
         }
     }
 
-    private static boolean equals(char[] b0, char[] b1, int offset) {
+    private static boolean equals(byte[] b0, byte[] b1, int offset) {
         for (int i = b0.length - 1; i > 0; i--) {
             if (b0[i] != b1[i + offset]) {
                 return false;
@@ -404,20 +409,12 @@ public class StringUtils {
         return regionMatches(str, ignoreCase, strOffset, suffix, 0, suffix.length());
     }
 
-    public static int scanUntilAndTrim(ByteBuffer buffer, byte split, char[] cacheChars, int charsIndex, boolean trim) {
+    public static int scanUntilAndTrim(ByteBuffer buffer, byte split) {
+        while (buffer.get() == Constant.SP) ;
+        int i = 1;
         buffer.mark();
-        int i = 0;
-        if (trim) {
-            while ((cacheChars[charsIndex] = (char) (buffer.get() & 0xFF)) == Constant.SP) ;
-            i = 1;
-        }
         while (buffer.hasRemaining()) {
-            cacheChars[charsIndex + i] = (char) (buffer.get() & 0xFF);
-            if (cacheChars[charsIndex + i] == split) {
-                //反向去空格
-                while (trim && cacheChars[charsIndex + i - 1] == Constant.SP) {
-                    i--;
-                }
+            if (buffer.get() == split) {
                 return i;
             }
             i++;
@@ -426,15 +423,11 @@ public class StringUtils {
         return -1;
     }
 
-    public static int scanUntilAndTrim(ByteBuffer buffer, byte split, char[] cacheChars, boolean trim) {
-        return scanUntilAndTrim(buffer, split, cacheChars, 0, trim);
-    }
-
     static class StringCache {
-        final char[] bytes;
+        final byte[] bytes;
         final String value;
 
-        public StringCache(char[] bytes, String value) {
+        public StringCache(byte[] bytes, String value) {
             this.bytes = bytes;
             this.value = value;
         }

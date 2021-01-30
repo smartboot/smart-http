@@ -8,8 +8,6 @@
 
 package org.smartboot.http.server.decode;
 
-import org.smartboot.http.enums.HttpStatus;
-import org.smartboot.http.exception.HttpException;
 import org.smartboot.http.server.Request;
 import org.smartboot.http.utils.Constant;
 import org.smartboot.http.utils.StringUtils;
@@ -26,15 +24,15 @@ class HttpProtocolDecoder implements Decoder {
     private final HttpHeaderDecoder decoder = new HttpHeaderDecoder();
 
     @Override
-    public Decoder decode(ByteBuffer byteBuffer, char[] cacheChars, AioSession aioSession, Request request) {
-        int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.LF, cacheChars, true);
+    public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
+        int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.LF);
         if (length > 0) {
-            if (cacheChars[length - 1] != Constant.CR) {
-                throw new HttpException(HttpStatus.BAD_REQUEST);
-            }
-            String protocol = StringUtils.convertToString(cacheChars, 0, length - 1, StringUtils.String_CACHE_URL);
+//            if (byteBuffer.get(byteBuffer.position() - 2) != Constant.CR) {
+//                throw new HttpException(HttpStatus.BAD_REQUEST);
+//            }
+            String protocol = StringUtils.convertToString(byteBuffer, byteBuffer.position() - length - 1, length - 1, StringUtils.String_CACHE_HEAD_LINE);
             request.setProtocol(protocol);
-            return decoder.decode(byteBuffer, cacheChars, aioSession, request);
+            return decoder.decode(byteBuffer, aioSession, request);
         } else {
             return this;
         }

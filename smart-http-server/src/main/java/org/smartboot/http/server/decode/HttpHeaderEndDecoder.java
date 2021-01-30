@@ -34,7 +34,7 @@ class HttpHeaderEndDecoder implements Decoder {
     private final HttpBodyDecoder decoder = new HttpBodyDecoder();
 
     @Override
-    public Decoder decode(ByteBuffer byteBuffer, char[] cacheChars, AioSession aioSession, Request request) {
+    public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
         //识别是否websocket通信
         if (request.isWebsocket() == null) {
             request.setWebsocket(HttpHeaderConstant.Values.WEBSOCKET.equals(request.getHeader(HttpHeaderConstant.Names.UPGRADE))
@@ -59,7 +59,7 @@ class HttpHeaderEndDecoder implements Decoder {
             } else if (postLength <= 0) {
                 throw new HttpException(HttpStatus.LENGTH_REQUIRED);
             }
-            return decoder.decode(byteBuffer, cacheChars, aioSession, request);
+            return decoder.decode(byteBuffer, aioSession, request);
         } else {
             return HttpRequestProtocol.HTTP_FINISH_DECODER;
         }

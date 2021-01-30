@@ -28,21 +28,21 @@ public class HttpRequestProtocol implements Protocol<Request> {
     /**
      * 普通Http消息解码完成
      */
-    public static final Decoder HTTP_FINISH_DECODER = (byteBuffer, cacheChars, aioSession, request) -> null;
+    public static final Decoder HTTP_FINISH_DECODER = (byteBuffer, aioSession, request) -> null;
     /**
      * websocket握手消息
      */
-    public static final Decoder WS_HANDSHARK_DECODER = (byteBuffer, cacheChars, aioSession, request) -> null;
+    public static final Decoder WS_HANDSHARK_DECODER = (byteBuffer, aioSession, request) -> null;
     /**
      * websocket负载数据读取成功
      */
-    public static final Decoder WS_FRAME_DECODER = (byteBuffer, cacheChars, aioSession, request) -> null;
+    public static final Decoder WS_FRAME_DECODER = (byteBuffer, aioSession, request) -> null;
     static final AttachKey<Request> ATTACH_KEY_REQUEST = AttachKey.valueOf("request");
 
-    private static final ThreadLocal<char[]> CHAR_CACHE_LOCAL = new ThreadLocal<char[]>() {
+    private static final ThreadLocal<ByteBuffer> CHAR_CACHE_LOCAL = new ThreadLocal<ByteBuffer>() {
         @Override
-        protected char[] initialValue() {
-            return new char[1024];
+        protected ByteBuffer initialValue() {
+            return ByteBuffer.allocate(1024);
         }
     };
     private static final AttachKey<Decoder> ATTACH_KEY_DECHDE_CHAIN = AttachKey.valueOf("decodeChain");
@@ -55,17 +55,21 @@ public class HttpRequestProtocol implements Protocol<Request> {
     public Request decode(ByteBuffer buffer, AioSession session) {
         Attachment attachment = session.getAttachment();
         Request request = attachment.get(ATTACH_KEY_REQUEST);
-        char[] cacheChars = CHAR_CACHE_LOCAL.get();
-        if (cacheChars.length < buffer.remaining()) {
-            cacheChars = new char[buffer.remaining()];
+        ByteBuffer cacheChars = CHAR_CACHE_LOCAL.get();
+        if (cacheChars.capacity() < buffer.remaining()) {
+            cacheChars = ByteBuffer.allocate(buffer.remaining());
             CHAR_CACHE_LOCAL.set(cacheChars);
         }
+        cacheChars.clear();
+        cacheChars.put(buffer);
+        cacheChars.flip();
         Decoder decodeChain = attachment.get(ATTACH_KEY_DECHDE_CHAIN);
         if (decodeChain == null) {
             decodeChain = httpMethodDecoder;
         }
 
-        decodeChain = decodeChain.decode(buffer, cacheChars, session, request);
+        decodeChain = decodeChain.decode(cacheChars, session, request);
+        buffer.position(buffer.position() - cacheChars.remaining());
 
         if (decodeChain == HTTP_FINISH_DECODER || decodeChain == WS_HANDSHARK_DECODER || decodeChain == WS_FRAME_DECODER) {
             if (decodeChain == HTTP_FINISH_DECODER) {

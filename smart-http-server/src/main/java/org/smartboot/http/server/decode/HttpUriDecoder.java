@@ -26,16 +26,16 @@ class HttpUriDecoder implements Decoder {
     private final HttpProtocolDecoder protocolDecoder = new HttpProtocolDecoder();
 
     @Override
-    public Decoder decode(ByteBuffer byteBuffer, char[] cacheChars, AioSession aioSession, Request request) {
-        int length = scanURI(byteBuffer, cacheChars);
+    public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
+        int length = scanURI(byteBuffer);
         if (length > 0) {
-            String uri = StringUtils.convertToString(cacheChars, 0, length, StringUtils.String_CACHE_URL);
+            String uri = StringUtils.convertToString(byteBuffer, byteBuffer.position() - length - 1, length, StringUtils.String_CACHE_URL);
             request.setUri(uri);
-            switch (cacheChars[length]) {
+            switch (byteBuffer.get(byteBuffer.position() - 1)) {
                 case Constant.SP:
-                    return protocolDecoder.decode(byteBuffer, cacheChars, aioSession, request);
+                    return protocolDecoder.decode(byteBuffer, aioSession, request);
                 case '?':
-                    return uriQueryDecoder.decode(byteBuffer, cacheChars, aioSession, request);
+                    return uriQueryDecoder.decode(byteBuffer, aioSession, request);
                 default:
                     throw new HttpException(HttpStatus.BAD_REQUEST);
             }
@@ -44,13 +44,13 @@ class HttpUriDecoder implements Decoder {
         }
     }
 
-    private int scanURI(ByteBuffer buffer, char[] cacheChars) {
-        while ((cacheChars[0] = (char) (buffer.get() & 0xFF)) == Constant.SP) ;
+    private int scanURI(ByteBuffer buffer) {
+        while (buffer.get() == Constant.SP) ;
         int i = 1;
+        buffer.mark();
         while (buffer.hasRemaining()) {
-            cacheChars[i] = (char) (buffer.get() & 0xFF);
-            if (cacheChars[i] == ' ' || cacheChars[i] == '?') {
-                buffer.mark();
+            byte b = buffer.get();
+            if (b == ' ' || b == '?') {
                 return i;
             }
             i++;
