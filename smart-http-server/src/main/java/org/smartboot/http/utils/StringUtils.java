@@ -69,6 +69,7 @@ public class StringUtils {
         if (length == 0) {
             return "";
         }
+        offset = buffer.arrayOffset() + offset;
         byte[] bytes = buffer.array();
         if (length >= cacheList.length) {
             return new String(bytes, offset, length);
