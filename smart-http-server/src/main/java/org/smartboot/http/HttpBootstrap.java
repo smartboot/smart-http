@@ -12,11 +12,15 @@ import org.smartboot.http.server.HttpMessageProcessor;
 import org.smartboot.http.server.HttpRequestProtocol;
 import org.smartboot.http.server.Request;
 import org.smartboot.http.server.handle.Pipeline;
+import org.smartboot.socket.VirtualBufferFactory;
 import org.smartboot.socket.buffer.BufferFactory;
+import org.smartboot.socket.buffer.BufferPage;
 import org.smartboot.socket.buffer.BufferPagePool;
+import org.smartboot.socket.buffer.VirtualBuffer;
 import org.smartboot.socket.transport.AioQuickServer;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 public class HttpBootstrap {
 
@@ -126,6 +130,12 @@ public class HttpBootstrap {
                     @Override
                     public BufferPagePool create() {
                         return new BufferPagePool(pageSize, pageNum, true);
+                    }
+                })
+                .setReadVirtualBufferFactory(new VirtualBufferFactory() {
+                    @Override
+                    public VirtualBuffer newVirtualBuffer(BufferPage bufferPage) {
+                        return VirtualBuffer.wrap(ByteBuffer.allocate(readBufferSize));
                     }
                 })
                 .setWriteBuffer(writeBufferSize, 16);

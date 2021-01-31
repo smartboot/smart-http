@@ -55,21 +55,12 @@ public class HttpRequestProtocol implements Protocol<Request> {
     public Request decode(ByteBuffer buffer, AioSession session) {
         Attachment attachment = session.getAttachment();
         Request request = attachment.get(ATTACH_KEY_REQUEST);
-        ByteBuffer cacheChars = CHAR_CACHE_LOCAL.get();
-        if (cacheChars.capacity() < buffer.remaining()) {
-            cacheChars = ByteBuffer.allocate(buffer.remaining());
-            CHAR_CACHE_LOCAL.set(cacheChars);
-        }
-        cacheChars.clear();
-        cacheChars.put(buffer);
-        cacheChars.flip();
         Decoder decodeChain = attachment.get(ATTACH_KEY_DECHDE_CHAIN);
         if (decodeChain == null) {
             decodeChain = httpMethodDecoder;
         }
 
-        decodeChain = decodeChain.decode(cacheChars, session, request);
-        buffer.position(buffer.position() - cacheChars.remaining());
+        decodeChain = decodeChain.decode(buffer, session, request);
 
         if (decodeChain == HTTP_FINISH_DECODER || decodeChain == WS_HANDSHARK_DECODER || decodeChain == WS_FRAME_DECODER) {
             if (decodeChain == HTTP_FINISH_DECODER) {
