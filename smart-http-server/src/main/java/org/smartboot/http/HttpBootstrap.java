@@ -20,7 +20,6 @@ import org.smartboot.socket.buffer.VirtualBuffer;
 import org.smartboot.socket.transport.AioQuickServer;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 public class HttpBootstrap {
 
@@ -122,6 +121,7 @@ public class HttpBootstrap {
      * 启动HTTP服务
      */
     public void start() {
+        BufferPagePool readBufferPool = new BufferPagePool(pageSize, 1, false);
         server = new AioQuickServer<>(host, port, protocol, processor);
         server.setReadBufferSize(readBufferSize)
                 .setThreadNum(threadNum)
@@ -132,10 +132,10 @@ public class HttpBootstrap {
                         return new BufferPagePool(pageSize, pageNum, true);
                     }
                 })
-                .setReadVirtualBufferFactory(new VirtualBufferFactory() {
+                .setReadBufferFactory(new VirtualBufferFactory() {
                     @Override
-                    public VirtualBuffer newVirtualBuffer(BufferPage bufferPage) {
-                        return VirtualBuffer.wrap(ByteBuffer.allocate(readBufferSize));
+                    public VirtualBuffer newBuffer(BufferPage bufferPage) {
+                        return readBufferPool.allocateBufferPage().allocate(readBufferSize);
                     }
                 })
                 .setWriteBuffer(writeBufferSize, 16);
