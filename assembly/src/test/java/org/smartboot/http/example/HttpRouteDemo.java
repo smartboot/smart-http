@@ -11,7 +11,7 @@ package org.smartboot.http.example;
 import org.smartboot.http.HttpBootstrap;
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
-import org.smartboot.http.server.handle.HttpHandle;
+import org.smartboot.http.common.HttpServerHandle;
 import org.smartboot.http.server.handle.HttpRouteHandle;
 
 import java.io.IOException;
@@ -28,17 +28,17 @@ public class HttpRouteDemo {
         HttpRouteHandle routeHandle = new HttpRouteHandle();
 
         //2. 指定路由规则以及请求的处理实现
-        routeHandle.route("/", new HttpHandle() {
+        routeHandle.route("/", new HttpServerHandle() {
             @Override
             public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
                 response.write("smart-http".getBytes());
             }
-        }).route("/test1", new HttpHandle() {
+        }).route("/test1", new HttpServerHandle() {
             @Override
             public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
                 response.write(("test1").getBytes());
             }
-        }).route("/test2", new HttpHandle() {
+        }).route("/test2", new HttpServerHandle() {
             @Override
             public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
                 response.write(("test2").getBytes());

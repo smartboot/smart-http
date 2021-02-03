@@ -10,9 +10,9 @@ package org.smartboot.http.server;
 
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
+import org.smartboot.http.common.HttpServerHandle;
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.exception.HttpException;
-import org.smartboot.http.server.handle.HttpHandle;
 
 import java.io.IOException;
 
@@ -22,7 +22,7 @@ import java.io.IOException;
  * @author 三刀
  * @version V1.0 , 2020/6/23
  */
-public class HttpExceptionHandle extends HttpHandle {
+public class HttpExceptionHandle extends HttpServerHandle {
     @Override
     public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
         try {

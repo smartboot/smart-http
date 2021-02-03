@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2017-2020, org.smartboot. All rights reserved.
+ * Copyright (c) 2017-2021, org.smartboot. All rights reserved.
  * project name: smart-http
  * file name: HeaderValue.java
- * Date: 2020-01-01
+ * Date: 2021-02-03
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
-package org.smartboot.http.server;
+package org.smartboot.http.common;
 
 /**
  * 支持多Value的Header
@@ -14,7 +14,7 @@ package org.smartboot.http.server;
  * @author 三刀
  * @version V1.0 , 2019/11/30
  */
-class HeaderValue {
+public class HeaderValue {
     /**
      * name
      */

@@ -8,6 +8,8 @@
 
 package org.smartboot.http.server;
 
+import org.smartboot.http.common.Cookie;
+import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.socket.transport.WriteBuffer;

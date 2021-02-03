@@ -10,6 +10,7 @@ package org.smartboot.http.server.handle;
 
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
+import org.smartboot.http.common.HttpServerHandle;
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.utils.AntPathMatcher;
 
@@ -21,14 +22,14 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author 三刀
  * @version V1.0 , 2018/3/24
  */
-public final class HttpRouteHandle extends HttpHandle {
+public final class HttpRouteHandle extends HttpServerHandle {
     private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
-    private Map<String, HttpHandle> handleMap = new ConcurrentHashMap<>();
+    private Map<String, HttpServerHandle> handleMap = new ConcurrentHashMap<>();
 
     /**
      * 默认404
      */
-    private final HttpHandle defaultHandle = new HttpHandle() {
+    private final HttpServerHandle defaultHandle = new HttpServerHandle() {
         @Override
         public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
             response.setHttpStatus(HttpStatus.NOT_FOUND);
@@ -38,9 +39,9 @@ public final class HttpRouteHandle extends HttpHandle {
     @Override
     public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
         String uri = request.getRequestURI();
-        HttpHandle httpHandle = handleMap.get(uri);
+        HttpServerHandle httpHandle = handleMap.get(uri);
         if (httpHandle == null) {
-            for (Map.Entry<String, HttpHandle> entity : handleMap.entrySet()) {
+            for (Map.Entry<String, HttpServerHandle> entity : handleMap.entrySet()) {
                 if (PATH_MATCHER.match(entity.getKey(), uri)) {
                     httpHandle = entity.getValue();
                     break;
@@ -62,7 +63,7 @@ public final class HttpRouteHandle extends HttpHandle {
      * @param httpHandle 处理handle
      * @return
      */
-    public HttpRouteHandle route(String urlPattern, HttpHandle httpHandle) {
+    public HttpRouteHandle route(String urlPattern, HttpServerHandle httpHandle) {
         handleMap.put(urlPattern, httpHandle);
         return this;
     }

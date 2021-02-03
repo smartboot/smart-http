@@ -8,10 +8,10 @@
 
 package org.smartboot.http;
 
+import org.smartboot.http.common.HttpServerHandle;
 import org.smartboot.http.server.HttpMessageProcessor;
 import org.smartboot.http.server.HttpRequestProtocol;
 import org.smartboot.http.server.Request;
-import org.smartboot.http.server.handle.HttpHandle;
 import org.smartboot.http.server.handle.Pipeline;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.buffer.BufferPagePool;
@@ -87,7 +87,7 @@ public class HttpBootstrap {
         return processor.pipeline();
     }
 
-    public HttpBootstrap pipeline(HttpHandle httpHandle) {
+    public HttpBootstrap pipeline(HttpServerHandle httpHandle) {
         pipeline().next(httpHandle);
         return this;
     }

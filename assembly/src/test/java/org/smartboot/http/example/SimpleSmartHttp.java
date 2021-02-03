@@ -13,8 +13,8 @@ import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
 import org.smartboot.http.WebSocketRequest;
 import org.smartboot.http.WebSocketResponse;
-import org.smartboot.http.server.Cookie;
-import org.smartboot.http.server.handle.HttpHandle;
+import org.smartboot.http.common.Cookie;
+import org.smartboot.http.common.HttpServerHandle;
 import org.smartboot.http.server.handle.WebSocketDefaultHandle;
 
 import java.io.IOException;
@@ -29,7 +29,7 @@ public class SimpleSmartHttp {
     public static void main(String[] args) {
         HttpBootstrap bootstrap = new HttpBootstrap();
         // 普通http请求
-        bootstrap.pipeline().next(new HttpHandle() {
+        bootstrap.pipeline().next(new HttpServerHandle() {
             @Override
             public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
                 response.write("hello world<br/>".getBytes());

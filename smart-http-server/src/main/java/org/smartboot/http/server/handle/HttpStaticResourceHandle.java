@@ -10,6 +10,7 @@ package org.smartboot.http.server.handle;
 
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
+import org.smartboot.http.common.HttpServerHandle;
 import org.smartboot.http.enums.HttpMethodEnum;
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.logging.Logger;
@@ -33,7 +34,7 @@ import java.util.Date;
  * @author 三刀
  * @version V1.0 , 2018/2/7
  */
-public class HttpStaticResourceHandle extends HttpHandle {
+public class HttpStaticResourceHandle extends HttpServerHandle {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpStaticResourceHandle.class);
     private static final int READ_BUFFER = 1024 * 1024;
     private static final String URL_404 =

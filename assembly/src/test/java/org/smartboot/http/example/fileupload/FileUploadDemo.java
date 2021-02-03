@@ -14,7 +14,7 @@ import org.apache.commons.fileupload.util.Streams;
 import org.smartboot.http.HttpBootstrap;
 import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
-import org.smartboot.http.server.handle.HttpHandle;
+import org.smartboot.http.common.HttpServerHandle;
 import org.smartboot.http.server.handle.HttpRouteHandle;
 
 import java.io.IOException;
@@ -28,7 +28,7 @@ public class FileUploadDemo {
     public static void main(String[] args) {
 
         HttpRouteHandle routeHandle = new HttpRouteHandle();
-        routeHandle.route("/", new HttpHandle() {
+        routeHandle.route("/", new HttpServerHandle() {
             byte[] body = ("<html>" +
                     "<head><title>smart-http demo</title></head>" +
                     "<body>" +
@@ -44,7 +44,7 @@ public class FileUploadDemo {
                 response.getOutputStream().write(body);
             }
         })
-                .route("/upload", new HttpHandle() {
+                .route("/upload", new HttpServerHandle() {
                     @Override
                     public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
                         try {

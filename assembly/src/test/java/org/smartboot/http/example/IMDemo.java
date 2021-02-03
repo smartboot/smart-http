@@ -15,7 +15,7 @@ import org.smartboot.http.HttpRequest;
 import org.smartboot.http.HttpResponse;
 import org.smartboot.http.WebSocketRequest;
 import org.smartboot.http.WebSocketResponse;
-import org.smartboot.http.server.handle.HttpHandle;
+import org.smartboot.http.common.HttpServerHandle;
 import org.smartboot.http.server.handle.HttpRouteHandle;
 import org.smartboot.http.server.handle.WebSocketDefaultHandle;
 import org.smartboot.http.server.handle.WebSocketRouteHandle;
@@ -34,7 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class IMDemo {
     public static void main(String[] args) {
         HttpRouteHandle routeHandle = new HttpRouteHandle();
-        routeHandle.route("/", new HttpHandle() {
+        routeHandle.route("/", new HttpServerHandle() {
             @Override
             public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
                 OutputStream writeBuffer = response.getOutputStream();

@@ -6,14 +6,11 @@
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
-package org.smartboot.http.server;
+package org.smartboot.http.client;
 
-import org.smartboot.http.HttpRequest;
-import org.smartboot.http.HttpResponse;
 import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.Reset;
-import org.smartboot.http.enums.HttpStatus;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,7 +25,13 @@ import java.util.Vector;
  * @author 三刀
  * @version V1.0 , 2018/2/3
  */
-class AbstractResponse implements HttpResponse, Reset {
+class AbstractRequest implements HttpRequest, Reset {
+    private String uri;
+    private String protocol;
+    /**
+     * 请求类型
+     */
+    private String method;
     /**
      * 输入流
      */
@@ -38,10 +41,7 @@ class AbstractResponse implements HttpResponse, Reset {
      * 响应消息头
      */
     private Map<String, HeaderValue> headers = null;
-    /**
-     * http响应码
-     */
-    private HttpStatus httpStatus;
+
     /**
      * 响应正文长度
      */
@@ -52,8 +52,6 @@ class AbstractResponse implements HttpResponse, Reset {
      */
     private String contentType;
 
-    private HttpRequest request;
-
     private String characterEncoding;
     /**
      * 是否关闭Socket连接通道
@@ -62,8 +60,7 @@ class AbstractResponse implements HttpResponse, Reset {
 
     private List<Cookie> cookies;
 
-    protected void init(HttpRequest request, AbstractOutputStream outputStream) {
-        this.request = request;
+    protected void init(AbstractOutputStream outputStream) {
         this.outputStream = outputStream;
     }
 
@@ -73,7 +70,6 @@ class AbstractResponse implements HttpResponse, Reset {
         if (headers != null) {
             headers.clear();
         }
-        httpStatus = null;
         contentType = null;
         contentLength = -1;
         characterEncoding = null;
@@ -84,14 +80,6 @@ class AbstractResponse implements HttpResponse, Reset {
 
     public final AbstractOutputStream getOutputStream() {
         return outputStream;
-    }
-
-    public final HttpStatus getHttpStatus() {
-        return httpStatus;
-    }
-
-    public final void setHttpStatus(HttpStatus httpStatus) {
-        this.httpStatus = httpStatus;
     }
 
     @Override
@@ -196,7 +184,7 @@ class AbstractResponse implements HttpResponse, Reset {
 
     @Override
     public final String getCharacterEncoding() {
-        return characterEncoding == null ? request.getCharacterEncoding() : characterEncoding;
+        return characterEncoding;
     }
 
     @Override
@@ -254,5 +242,31 @@ class AbstractResponse implements HttpResponse, Reset {
      */
     public final boolean isClosed() {
         return closed;
+    }
+
+    public String getMethod() {
+        return method;
+    }
+
+    public void setMethod(String method) {
+        this.method = method;
+    }
+
+    @Override
+    public String getUri() {
+        return uri;
+    }
+
+    public void setUri(String uri) {
+        this.uri = uri;
+    }
+
+    @Override
+    public String getProtocol() {
+        return protocol;
+    }
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
     }
 }

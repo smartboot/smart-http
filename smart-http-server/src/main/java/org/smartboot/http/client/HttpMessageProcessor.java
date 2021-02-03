@@ -6,14 +6,12 @@
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
-package org.smartboot.http.server;
+package org.smartboot.http.client;
 
-import org.smartboot.http.HttpRequest;
-import org.smartboot.http.HttpResponse;
 import org.smartboot.http.WebSocketRequest;
 import org.smartboot.http.WebSocketResponse;
 import org.smartboot.http.common.HandlePipeline;
-import org.smartboot.http.common.HttpServerHandle;
+import org.smartboot.http.common.HttpClientHandle;
 import org.smartboot.http.common.WebSocketHandle;
 import org.smartboot.http.enums.YesNoEnum;
 import org.smartboot.http.logging.Logger;
@@ -25,18 +23,16 @@ import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.transport.AioSession;
 
-import java.io.IOException;
-
 /**
  * @author 三刀
  * @version V1.0 , 2018/6/10
  */
-public class HttpMessageProcessor implements MessageProcessor<Request> {
+public class HttpMessageProcessor implements MessageProcessor<Response> {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpMessageProcessor.class);
     /**
      * HttpRequest附件Key
      */
-    private final AttachKey<HttpRequestImpl> ATTACH_KEY_HTTP_REQUEST = AttachKey.valueOf("httpRequest");
+    private final AttachKey<HttpResponseImpl> ATTACH_KEY_HTTP_RESPONSE = AttachKey.valueOf("httpRequest");
     /**
      * Http消息处理管道
      */
@@ -47,51 +43,47 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
     private final HandlePipeline<WebSocketRequest, WebSocketResponse> wsPipeline = new HandlePipeline<>();
 
     public HttpMessageProcessor() {
-        httpPipeline.next(new HttpExceptionHandle()).next(new RFC2612RequestHandle());
-        wsPipeline.next(new WebSocketHandSharkHandle());
+//        httpPipeline.next(new HttpExceptionHandle()).next(new RFC2612RequestHandle());
+//        wsPipeline.next(new WebSocketHandSharkHandle());
     }
 
     @Override
-    public void process(AioSession session, Request baseHttpRequest) {
-        try {
-            Attachment attachment = session.getAttachment();
-            AbstractRequest request;
-            AbstractResponse response;
-            HandlePipeline pipeline;
-            if (baseHttpRequest.isWebsocket() == YesNoEnum.Yes) {
-                WebSocketRequestImpl webSocketRequest = attachment.get(HttpRequestProtocol.ATTACH_KEY_WS_REQ);
-                request = webSocketRequest;
-                response = webSocketRequest.getResponse();
-                pipeline = wsPipeline;
-            } else {
-                HttpRequestImpl http11Request = attachment.get(ATTACH_KEY_HTTP_REQUEST);
-                if (http11Request == null) {
-                    http11Request = new HttpRequestImpl(baseHttpRequest);
-                    attachment.put(ATTACH_KEY_HTTP_REQUEST, http11Request);
-                }
-                request = http11Request;
-                response = http11Request.getResponse();
-                pipeline = httpPipeline;
+    public void process(AioSession session, Response baseHttpResponse) {
+        Attachment attachment = session.getAttachment();
+        AbstractResponse response;
+        AbstractRequest request;
+        HandlePipeline pipeline;
+        if (baseHttpResponse.isWebsocket() == YesNoEnum.Yes) {
+            WebSocketResponseImpl webSocketRequest = attachment.get(HttpResponseProtocol.ATTACH_KEY_WS_REQ);
+            response = webSocketRequest;
+//                request = webSocketRequest.getResponse();
+            pipeline = wsPipeline;
+        } else {
+            HttpResponseImpl httpResponse = attachment.get(ATTACH_KEY_HTTP_RESPONSE);
+            if (httpResponse == null) {
+                httpResponse = new HttpResponseImpl(baseHttpResponse);
+                attachment.put(ATTACH_KEY_HTTP_RESPONSE, httpResponse);
             }
-
-            //消息处理
-            pipeline.doHandle(request, response);
-
-            //关闭本次请求的输出流
-            if (!response.getOutputStream().isClosed()) {
-                response.getOutputStream().close();
-            }
-
-            //response被closed,则断开TCP连接
-            if (response.isClosed()) {
-                session.close(false);
-            } else {
-                //复用长连接
-                request.reset();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+//                response = http11Request;
+//                request = http11Request.getResponse();
+            pipeline = httpPipeline;
         }
+
+        //消息处理
+//            pipeline.doHandle(response, request);
+
+        //关闭本次请求的输出流
+//            if (!request.getOutputStream().isClosed()) {
+//                request.getOutputStream().close();
+//            }
+
+        //response被closed,则断开TCP连接
+//            if (request.isClosed()) {
+//                session.close(false);
+//            } else {
+//                //复用长连接
+//                response.reset();
+//            }
     }
 
     @Override
@@ -99,7 +91,7 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
         switch (stateMachineEnum) {
             case NEW_SESSION:
                 Attachment attachment = new Attachment();
-                attachment.put(HttpRequestProtocol.ATTACH_KEY_REQUEST, new Request(session));
+                attachment.put(HttpResponseProtocol.ATTACH_KEY_RESPONSE, new Response(session));
                 session.setAttachment(attachment);
                 break;
             case PROCESS_EXCEPTION:
@@ -127,7 +119,7 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
         }
     }
 
-    public Pipeline<HttpRequest, HttpResponse> pipeline(HttpServerHandle httpHandle) {
+    public Pipeline<HttpRequest, HttpResponse> pipeline(HttpClientHandle httpHandle) {
         return httpPipeline.next(httpHandle);
     }
 

@@ -1,17 +1,15 @@
 /*******************************************************************************
- * Copyright (c) 2017-2020, org.smartboot. All rights reserved.
+ * Copyright (c) 2017-2021, org.smartboot. All rights reserved.
  * project name: smart-http
- * file name: Http11Request.java
- * Date: 2020-01-01
+ * file name: HttpResponse.java
+ * Date: 2021-02-02
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
-package org.smartboot.http.server;
+package org.smartboot.http.client;
 
-import org.smartboot.http.HttpRequest;
 import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
-import org.smartboot.http.common.Reset;
 import org.smartboot.http.enums.YesNoEnum;
 import org.smartboot.http.utils.Constant;
 import org.smartboot.http.utils.HttpHeaderConstant;
@@ -36,10 +34,10 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * @author 三刀
- * @version V1.0 , 2018/8/31
+ * @author 三刀（zhengjunweimail@163.com）
+ * @version V1.0 , 2021/2/2
  */
-public final class Request implements HttpRequest, Reset {
+public class Response implements HttpResponse {
     private static final Locale defaultLocale = Locale.getDefault();
     private static final int INIT_CONTENT_LENGTH = -2;
     private static final int NONE_CONTENT_LENGTH = -1;
@@ -59,10 +57,7 @@ public final class Request implements HttpRequest, Reset {
      */
     private String uri;
     private int headerSize = 0;
-    /**
-     * 请求方法
-     */
-    private String method;
+
     /**
      * Http协议版本
      */
@@ -100,7 +95,11 @@ public final class Request implements HttpRequest, Reset {
      */
     private Object attachment;
 
-    Request(AioSession aioSession) {
+    private int statusCode;
+
+    private String statusDesc;
+
+    Response(AioSession aioSession) {
         this.aioSession = aioSession;
     }
 
@@ -186,13 +185,6 @@ public final class Request implements HttpRequest, Reset {
         this.protocol = protocol;
     }
 
-    public final String getMethod() {
-        return method;
-    }
-
-    public final void setMethod(String method) {
-        this.method = method;
-    }
 
     public String getUri() {
         return uri;
@@ -484,7 +476,6 @@ public final class Request implements HttpRequest, Reset {
 
     public void reset() {
         headerSize = 0;
-        method = null;
         uri = null;
         requestUrl = null;
         parameters = null;
@@ -493,5 +484,21 @@ public final class Request implements HttpRequest, Reset {
         formUrlencoded = null;
         queryString = null;
         cookies = null;
+    }
+
+    public int getStatusCode() {
+        return statusCode;
+    }
+
+    public void setStatusCode(int statusCode) {
+        this.statusCode = statusCode;
+    }
+
+    public String getStatusDesc() {
+        return statusDesc;
+    }
+
+    public void setStatusDesc(String statusDesc) {
+        this.statusDesc = statusDesc;
     }
 }

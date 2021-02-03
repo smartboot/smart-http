@@ -10,6 +10,7 @@ package org.smartboot.http.server.handle;
 
 import org.smartboot.http.WebSocketRequest;
 import org.smartboot.http.WebSocketResponse;
+import org.smartboot.http.common.WebSocketHandle;
 import org.smartboot.http.logging.Logger;
 import org.smartboot.http.logging.LoggerFactory;
 import org.smartboot.http.utils.AntPathMatcher;

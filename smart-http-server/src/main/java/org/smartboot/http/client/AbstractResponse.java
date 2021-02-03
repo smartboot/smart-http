@@ -1,14 +1,13 @@
 /*******************************************************************************
- * Copyright (c) 2017-2020, org.smartboot. All rights reserved.
+ * Copyright (c) 2017-2021, org.smartboot. All rights reserved.
  * project name: smart-http
- * file name: Http11Request.java
- * Date: 2020-01-01
+ * file name: AbstractRequest.java
+ * Date: 2021-02-03
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
-package org.smartboot.http.server;
+package org.smartboot.http.client;
 
-import org.smartboot.http.HttpRequest;
 import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.Reset;
 
@@ -18,142 +17,134 @@ import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Map;
 
-/**
- * @author 三刀
- * @version V1.0 , 2018/8/31
- */
-abstract class AbstractRequest implements HttpRequest, Reset, RequestHook {
+abstract class AbstractResponse implements HttpResponse, Reset, ResponseHook {
 
-    protected Request request;
+    protected Response response;
 
-    protected void init(Request request) {
-        this.request = request;
+    protected void init(Response response) {
+        this.response = response;
     }
 
 
     @Override
     public final String getHeader(String headName) {
-        return request.getHeader(headName);
+        return response.getHeader(headName);
     }
 
     @Override
     public final Collection<String> getHeaders(String name) {
-        return request.getHeaders(name);
+        return response.getHeaders(name);
     }
 
     @Override
     public final Collection<String> getHeaderNames() {
-        return request.getHeaderNames();
+        return response.getHeaderNames();
     }
 
 
     @Override
     public final String getRequestURI() {
-        return request.getRequestURI();
+        return response.getRequestURI();
     }
 
     @Override
     public final String getProtocol() {
-        return request.getProtocol();
+        return response.getProtocol();
     }
 
-    @Override
-    public final String getMethod() {
-        return request.getMethod();
-    }
 
     @Override
     public final String getScheme() {
-        return request.getScheme();
+        return response.getScheme();
     }
 
     @Override
     public final String getRequestURL() {
-        return request.getRequestURL();
+        return response.getRequestURL();
     }
 
     @Override
     public final String getQueryString() {
-        return request.getQueryString();
+        return response.getQueryString();
     }
 
     @Override
     public final String getContentType() {
-        return request.getContentType();
+        return response.getContentType();
     }
 
     @Override
     public final int getContentLength() {
-        return request.getContentLength();
+        return response.getContentLength();
     }
 
     @Override
     public final String getParameter(String name) {
-        return request.getParameter(name);
+        return response.getParameter(name);
     }
 
     @Override
     public final Map<String, String[]> getParameters() {
-        return request.getParameters();
+        return response.getParameters();
     }
 
     @Override
     public final String[] getParameterValues(String name) {
-        return request.getParameters().get(name);
+        return response.getParameters().get(name);
     }
 
     @Override
     public final String getRemoteAddr() {
-        return request.getRemoteAddr();
+        return response.getRemoteAddr();
     }
 
     @Override
     public final InetSocketAddress getRemoteAddress() {
-        return request.getRemoteAddress();
+        return response.getRemoteAddress();
     }
 
     @Override
     public final InetSocketAddress getLocalAddress() {
-        return request.getLocalAddress();
+        return response.getLocalAddress();
     }
 
     @Override
     public final String getRemoteHost() {
-        return request.getRemoteHost();
+        return response.getRemoteHost();
     }
 
     @Override
     public final Locale getLocale() {
-        return request.getLocale();
+        return response.getLocale();
     }
 
     @Override
     public final Enumeration<Locale> getLocales() {
-        return request.getLocales();
+        return response.getLocales();
     }
 
     @Override
     public final String getCharacterEncoding() {
-        return request.getCharacterEncoding();
+        return response.getCharacterEncoding();
     }
 
     @Override
-    public final Request getRequest() {
-        return request;
+    public final Response getResponse() {
+        return response;
     }
 
     @Override
     public Cookie[] getCookies() {
-        return request.getCookies();
+        return response.getCookies();
     }
 
     @Override
     public <A> A getAttachment() {
-        return request.getAttachment();
+        return response.getAttachment();
     }
 
     @Override
     public <A> void setAttachment(A attachment) {
-        request.setAttachment(attachment);
+        response.setAttachment(attachment);
     }
 }

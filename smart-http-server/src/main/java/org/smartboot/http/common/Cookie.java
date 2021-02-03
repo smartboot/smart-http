@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2017-2020, org.smartboot. All rights reserved.
+ * Copyright (c) 2017-2021, org.smartboot. All rights reserved.
  * project name: smart-http
- * file name: CookieImpl.java
- * Date: 2020-01-01
+ * file name: Cookie.java
+ * Date: 2021-02-03
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
-package org.smartboot.http.server;
+package org.smartboot.http.common;
 
 import org.smartboot.http.utils.DateUtils;
 import org.smartboot.http.utils.StringUtils;

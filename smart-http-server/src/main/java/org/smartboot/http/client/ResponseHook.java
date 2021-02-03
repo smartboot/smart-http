@@ -1,17 +1,13 @@
 /*******************************************************************************
- * Copyright (c) 2017-2020, org.smartboot. All rights reserved.
+ * Copyright (c) 2017-2021, org.smartboot. All rights reserved.
  * project name: smart-http
- * file name: Reset.java
- * Date: 2020-03-31
+ * file name: RequestHook.java
+ * Date: 2021-02-03
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
-package org.smartboot.http.server;
+package org.smartboot.http.client;
 
-/**
- * @author 三刀
- * @version V1.0 , 2020/3/31
- */
-interface Reset {
-    void reset();
+interface ResponseHook {
+    Response getResponse();
 }

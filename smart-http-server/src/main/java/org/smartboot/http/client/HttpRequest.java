@@ -6,10 +6,10 @@
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
-package org.smartboot.http;
+package org.smartboot.http.client;
 
+import org.smartboot.http.BufferOutputStream;
 import org.smartboot.http.common.Cookie;
-import org.smartboot.http.enums.HttpStatus;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -20,7 +20,12 @@ import java.util.Collection;
  * @author 三刀
  * @version V1.0 , 2018/2/3
  */
-public interface HttpResponse {
+public interface HttpRequest {
+    String getProtocol();
+
+    String getMethod();
+
+    String getUri();
 
     /**
      * 响应消息输出流
@@ -29,19 +34,6 @@ public interface HttpResponse {
      */
     BufferOutputStream getOutputStream();
 
-    /**
-     * 获取Http响应状态
-     *
-     * @return
-     */
-    HttpStatus getHttpStatus();
-
-    /**
-     * 设置Http响应状态,若不设置默认{@link HttpStatus#OK}
-     *
-     * @param httpStatus
-     */
-    void setHttpStatus(HttpStatus httpStatus);
 
     /**
      * Sets a response header with the given name and value. If the header had

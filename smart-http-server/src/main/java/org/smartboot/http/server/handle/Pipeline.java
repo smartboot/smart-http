@@ -8,6 +8,8 @@
 
 package org.smartboot.http.server.handle;
 
+import org.smartboot.http.common.Handle;
+
 /**
  * 消息处理管道
  *

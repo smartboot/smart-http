@@ -10,9 +10,9 @@ package org.smartboot.http.server;
 
 import org.smartboot.http.WebSocketRequest;
 import org.smartboot.http.WebSocketResponse;
+import org.smartboot.http.common.WebSocketHandle;
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.enums.WebsocketStatus;
-import org.smartboot.http.server.handle.WebSocketHandle;
 import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.http.utils.SHA1;
 
