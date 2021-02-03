@@ -13,7 +13,6 @@ import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.enums.YesNoEnum;
 import org.smartboot.http.utils.Constant;
 import org.smartboot.http.utils.HttpHeaderConstant;
-import org.smartboot.http.utils.HttpUtils;
 import org.smartboot.http.utils.NumberUtils;
 import org.smartboot.http.utils.StringUtils;
 import org.smartboot.socket.transport.AioSession;
@@ -26,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -84,9 +82,9 @@ public class Response implements HttpResponse {
     private YesNoEnum websocket = null;
 
     /**
-     * Post表单
+     * body内容
      */
-    private String formUrlencoded;
+    private String body;
 
     private Cookie[] cookies;
 
@@ -165,17 +163,7 @@ public class Response implements HttpResponse {
         }
         headerSize++;
     }
-
-
-    @Override
-    public final String getRequestURI() {
-        return requestUri;
-    }
-
-    public final void setRequestURI(String uri) {
-        this.requestUri = uri;
-    }
-
+    
     @Override
     public final String getProtocol() {
         return protocol;
@@ -199,35 +187,6 @@ public class Response implements HttpResponse {
     }
 
     @Override
-    public final String getRequestURL() {
-        if (requestUrl != null) {
-            return requestUrl;
-        }
-        if (requestUri.startsWith("/")) {
-            requestUrl = getScheme() + "://" + getHeader(HttpHeaderConstant.Names.HOST) + getRequestURI();
-        } else {
-            requestUrl = requestUri;
-        }
-        return requestUrl;
-    }
-
-    public final String getScheme() {
-        return scheme;
-    }
-
-    final void setScheme(String scheme) {
-        this.scheme = scheme;
-    }
-
-    public final String getQueryString() {
-        return queryString;
-    }
-
-    public final void setQueryString(String queryString) {
-        this.queryString = queryString;
-    }
-
-    @Override
     public final String getContentType() {
         if (contentType != null) {
             return contentType;
@@ -246,39 +205,6 @@ public class Response implements HttpResponse {
         return contentLength;
     }
 
-    @Override
-    public final String getParameter(String name) {
-        String[] arr = (name != null ? getParameterValues(name) : null);
-        return (arr != null && arr.length > 0 ? arr[0] : null);
-    }
-
-    @Override
-    public String[] getParameterValues(String name) {
-        if (parameters != null) {
-            return parameters.get(name);
-        }
-        parameters = new HashMap<>();
-        //识别url中的参数
-        String urlParamStr = queryString;
-        if (StringUtils.isNotBlank(urlParamStr)) {
-            urlParamStr = StringUtils.substringBefore(urlParamStr, "#");
-            HttpUtils.decodeParamString(urlParamStr, parameters);
-        }
-
-        if (formUrlencoded != null) {
-            HttpUtils.decodeParamString(formUrlencoded, parameters);
-        }
-        return getParameterValues(name);
-    }
-
-
-    @Override
-    public final Map<String, String[]> getParameters() {
-        if (parameters == null) {
-            getParameter("");
-        }
-        return parameters;
-    }
 
     /**
      * Returns the Internet Protocol (IP) address of the client
@@ -445,14 +371,13 @@ public class Response implements HttpResponse {
         this.websocket = websocket;
     }
 
-    public String getFormUrlencoded() {
-        return formUrlencoded;
+    public String getBody() {
+        return body;
     }
 
-    public void setFormUrlencoded(String formUrlencoded) {
-        this.formUrlencoded = formUrlencoded;
+    public void setBody(String body) {
+        this.body = body;
     }
-
 
     /**
      * 获取附件对象
@@ -481,7 +406,6 @@ public class Response implements HttpResponse {
         parameters = null;
         contentType = null;
         contentLength = INIT_CONTENT_LENGTH;
-        formUrlencoded = null;
         queryString = null;
         cookies = null;
     }

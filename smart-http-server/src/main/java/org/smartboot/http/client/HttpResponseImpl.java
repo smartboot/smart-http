@@ -8,10 +8,9 @@
 
 package org.smartboot.http.client;
 
-import org.smartboot.http.utils.PostInputStream;
-
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 
 /**
  * @author 三刀
@@ -35,16 +34,7 @@ final class HttpResponseImpl extends AbstractResponse {
 
     @Override
     public InputStream getInputStream() throws IOException {
-        if (inputStream != null) {
-            return inputStream;
-        }
-        int contentLength = getContentLength();
-        if (contentLength <= 0 || response.getFormUrlencoded() != null) {
-            inputStream = EMPTY_INPUT_STREAM;
-        } else {
-            inputStream = new PostInputStream(response.getAioSession().getInputStream(contentLength), contentLength);
-        }
-        return inputStream;
+        throw new UnsupportedEncodingException();
     }
 
 

@@ -25,8 +25,6 @@ public interface WebSocketResponse {
 
     public byte[] getPayload();
 
-    String getRequestURI();
-
     InetSocketAddress getRemoteAddress();
 
     /**

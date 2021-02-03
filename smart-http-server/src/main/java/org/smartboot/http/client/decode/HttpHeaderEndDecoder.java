@@ -15,6 +15,7 @@ import org.smartboot.http.enums.YesNoEnum;
 import org.smartboot.http.exception.HttpException;
 import org.smartboot.http.utils.Constant;
 import org.smartboot.http.utils.HttpHeaderConstant;
+import org.smartboot.http.utils.StringUtils;
 import org.smartboot.socket.transport.AioSession;
 
 import java.nio.ByteBuffer;
@@ -26,6 +27,7 @@ import java.nio.ByteBuffer;
 class HttpHeaderEndDecoder implements Decoder {
 
     private final HttpBodyDecoder decoder = new HttpBodyDecoder();
+    private final HttpChunkedBodyDecoder chunkedBodyDecoder = new HttpChunkedBodyDecoder();
 
     @Override
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Response response) {
@@ -44,17 +46,16 @@ class HttpHeaderEndDecoder implements Decoder {
 //                return HttpResponseProtocol.HTTP_FINISH_DECODER;
 //            }
 //        }
-        //Post请求
-        String length = response.getHeader(HttpHeaderConstant.Names.CONTENT_LENGTH);
-        if (length == null) {
-            return HttpResponseProtocol.HTTP_FINISH_DECODER;
+        //
+        String transferEncoding = response.getHeader(HttpHeaderConstant.Names.TRANSFER_ENCODING);
+        if (StringUtils.equals(transferEncoding, HttpHeaderConstant.Values.CHUNKED)) {
+            return chunkedBodyDecoder.decode(byteBuffer, aioSession, response);
         }
+        //Post请求
         int postLength = response.getContentLength();
         if (postLength > Constant.maxPostSize) {
             throw new HttpException(HttpStatus.PAYLOAD_TOO_LARGE);
-        } else if (postLength <= 0) {
-            throw new HttpException(HttpStatus.LENGTH_REQUIRED);
         }
-        return decoder.decode(byteBuffer, aioSession, response);
+        return postLength > 0 ? decoder.decode(byteBuffer, aioSession, response) : HttpResponseProtocol.HTTP_FINISH_DECODER;
     }
 }

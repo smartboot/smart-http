@@ -15,7 +15,6 @@ import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Locale;
-import java.util.Map;
 
 abstract class AbstractResponse implements HttpResponse, Reset, ResponseHook {
 
@@ -40,32 +39,10 @@ abstract class AbstractResponse implements HttpResponse, Reset, ResponseHook {
     public final Collection<String> getHeaderNames() {
         return response.getHeaderNames();
     }
-
-
-    @Override
-    public final String getRequestURI() {
-        return response.getRequestURI();
-    }
-
+    
     @Override
     public final String getProtocol() {
         return response.getProtocol();
-    }
-
-
-    @Override
-    public final String getScheme() {
-        return response.getScheme();
-    }
-
-    @Override
-    public final String getRequestURL() {
-        return response.getRequestURL();
-    }
-
-    @Override
-    public final String getQueryString() {
-        return response.getQueryString();
     }
 
     @Override
@@ -76,21 +53,6 @@ abstract class AbstractResponse implements HttpResponse, Reset, ResponseHook {
     @Override
     public final int getContentLength() {
         return response.getContentLength();
-    }
-
-    @Override
-    public final String getParameter(String name) {
-        return response.getParameter(name);
-    }
-
-    @Override
-    public final Map<String, String[]> getParameters() {
-        return response.getParameters();
-    }
-
-    @Override
-    public final String[] getParameterValues(String name) {
-        return response.getParameters().get(name);
     }
 
     @Override

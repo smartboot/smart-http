@@ -35,7 +35,7 @@ class HttpBodyDecoder implements Decoder {
         }
 
         if (smartDecoder.decode(byteBuffer)) {
-            request.setFormUrlencoded(new String(smartDecoder.getBuffer().array()));
+            request.setBody(new String(smartDecoder.getBuffer().array()));
             attachment.remove(ATTACH_KEY_FIX_LENGTH_DECODER);
             return HttpResponseProtocol.HTTP_FINISH_DECODER;
         } else {

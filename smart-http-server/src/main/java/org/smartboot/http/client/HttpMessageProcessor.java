@@ -64,6 +64,7 @@ public class HttpMessageProcessor implements MessageProcessor<Response> {
                 httpResponse = new HttpResponseImpl(baseHttpResponse);
                 attachment.put(ATTACH_KEY_HTTP_RESPONSE, httpResponse);
             }
+            System.out.println(baseHttpResponse.getBody());
 //                response = http11Request;
 //                request = http11Request.getResponse();
             pipeline = httpPipeline;

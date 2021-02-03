@@ -16,7 +16,6 @@ import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Locale;
-import java.util.Map;
 
 /**
  * Http消息请求接口
@@ -43,25 +42,11 @@ public interface HttpResponse {
 
     InputStream getInputStream() throws IOException;
 
-    String getRequestURI();
-
     String getProtocol();
-
-    String getScheme();
-
-    String getRequestURL();
-
-    String getQueryString();
 
     String getContentType();
 
     int getContentLength();
-
-    String getParameter(String name);
-
-    String[] getParameterValues(String name);
-
-    Map<String, String[]> getParameters();
 
     /**
      * Returns the Internet Protocol (IP) address of the client
