@@ -42,7 +42,7 @@ public class HttpClient implements Closeable {
     private final HttpMessageProcessor processor = new HttpMessageProcessor();
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         HttpClient client = new HttpClient();
         for (int i = 0; i < 10; i++) {
             HttpGet httpGet = client.get("www.baidu.com", 80, "/")
@@ -51,6 +51,8 @@ public class HttpClient implements Closeable {
             httpGet.send();
             System.out.println("---华丽的分隔符---");
         }
+        Thread.sleep(1000);
+        client.close();
 
     }
 
@@ -90,7 +92,8 @@ public class HttpClient implements Closeable {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
+        connectCacheMap.values().forEach(connectCache -> connectCache.client.shutdownNow());
     }
 
     static class ConnectCache {
