@@ -25,8 +25,6 @@ import java.util.Map;
  * @version V1.0 , 2018/8/7
  */
 public interface HttpRequest {
-    String HTTP_1_0_STRING = "HTTP/1.0";
-    String HTTP_1_1_STRING = "HTTP/1.1";
 
     /**
      * 获取指定名称的Http Header值
@@ -37,7 +35,7 @@ public interface HttpRequest {
     String getHeader(String headName);
 
 
-    public Collection<String> getHeaders(String name);
+    Collection<String> getHeaders(String name);
 
     Collection<String> getHeaderNames();
 

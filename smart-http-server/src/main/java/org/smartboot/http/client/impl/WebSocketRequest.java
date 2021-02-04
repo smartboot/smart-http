@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2017-2020, org.smartboot. All rights reserved.
+ * Copyright (c) 2017-2021, org.smartboot. All rights reserved.
  * project name: smart-http
- * file name: WebSocketResponse.java
- * Date: 2020-03-31
+ * file name: WebSocketRequest.java
+ * Date: 2021-02-04
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
-package org.smartboot.http.client;
+package org.smartboot.http.client.impl;
 
 /**
  * WebSocket消息响应接口
@@ -28,11 +28,6 @@ public interface WebSocketRequest {
      * @param bytes
      */
     void sendBinaryMessage(byte[] bytes);
-
-    /**
-     * 关闭ws通道
-     */
-    void close();
 
     /**
      * 输出数据

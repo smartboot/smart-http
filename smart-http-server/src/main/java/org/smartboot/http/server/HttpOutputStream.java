@@ -10,6 +10,7 @@ package org.smartboot.http.server;
 
 import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
+import org.smartboot.http.enums.HttpProtocolEnum;
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.utils.HttpHeaderConstant;
 import org.smartboot.socket.transport.WriteBuffer;
@@ -94,7 +95,7 @@ final class HttpOutputStream extends AbstractOutputStream {
         byte[] data = null;
         //成功消息优先从缓存中加载
         boolean cache = httpStatus == HttpStatus.OK;
-        boolean http10 = Request.HTTP_1_0_STRING.equals(request.getProtocol());
+        boolean http10 = HttpProtocolEnum.HTTP_10.getProtocol().equals(request.getProtocol());
         if (cache && !http10) {
             if (chunked) {
                 data = CACHE_CHUNKED_AND_LENGTH.get(contentType);

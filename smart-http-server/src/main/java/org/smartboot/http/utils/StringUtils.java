@@ -411,6 +411,9 @@ public class StringUtils {
     }
 
     public static int scanUntilAndTrim(ByteBuffer buffer, byte split) {
+        if (!buffer.hasRemaining()) {
+            return -1;
+        }
         while (buffer.get() == Constant.SP) ;
         int i = 1;
         buffer.mark();

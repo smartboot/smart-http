@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2017-2021, org.smartboot. All rights reserved.
  * project name: smart-http
- * file name: HttpResponseProtocal.java
- * Date: 2021-02-02
+ * file name: HttpResponseProtocol.java
+ * Date: 2021-02-04
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
-package org.smartboot.http.client;
+package org.smartboot.http.client.impl;
 
 import org.smartboot.http.client.decode.Decoder;
 import org.smartboot.http.client.decode.HttpProtocolDecoder;
@@ -32,14 +32,14 @@ public class HttpResponseProtocol implements Protocol<Response> {
     /**
      * websocket握手消息
      */
-    public static final Decoder WS_HANDSHARK_DECODER = (byteBuffer, aioSession, response) -> null;
+    public static final Decoder WS_HAND_SHARK_DECODER = (byteBuffer, aioSession, response) -> null;
     /**
      * websocket负载数据读取成功
      */
     public static final Decoder WS_FRAME_DECODER = (byteBuffer, aioSession, response) -> null;
-    static final AttachKey<Response> ATTACH_KEY_RESPONSE = AttachKey.valueOf("response");
+    public static final AttachKey<Response> ATTACH_KEY_RESPONSE = AttachKey.valueOf("response");
 
-    private static final AttachKey<Decoder> ATTACH_KEY_DECHDE_CHAIN = AttachKey.valueOf("decodeChain");
+    private static final AttachKey<Decoder> ATTACH_KEY_DECODE_CHAIN = AttachKey.valueOf("decodeChain");
 
     private final HttpProtocolDecoder httpMethodDecoder = new HttpProtocolDecoder();
 
@@ -49,22 +49,22 @@ public class HttpResponseProtocol implements Protocol<Response> {
     public Response decode(ByteBuffer buffer, AioSession session) {
         Attachment attachment = session.getAttachment();
         Response request = attachment.get(ATTACH_KEY_RESPONSE);
-        Decoder decodeChain = attachment.get(ATTACH_KEY_DECHDE_CHAIN);
+        Decoder decodeChain = attachment.get(ATTACH_KEY_DECODE_CHAIN);
         if (decodeChain == null) {
             decodeChain = httpMethodDecoder;
         }
 
         decodeChain = decodeChain.decode(buffer, session, request);
 
-        if (decodeChain == HTTP_FINISH_DECODER || decodeChain == WS_HANDSHARK_DECODER || decodeChain == WS_FRAME_DECODER) {
+        if (decodeChain == HTTP_FINISH_DECODER || decodeChain == WS_HAND_SHARK_DECODER || decodeChain == WS_FRAME_DECODER) {
             if (decodeChain == HTTP_FINISH_DECODER) {
-                attachment.remove(ATTACH_KEY_DECHDE_CHAIN);
+                attachment.remove(ATTACH_KEY_DECODE_CHAIN);
             } else {
-                attachment.put(ATTACH_KEY_DECHDE_CHAIN, wsFrameDecoder);
+                attachment.put(ATTACH_KEY_DECODE_CHAIN, wsFrameDecoder);
             }
             return request;
         }
-        attachment.put(ATTACH_KEY_DECHDE_CHAIN, decodeChain);
+        attachment.put(ATTACH_KEY_DECODE_CHAIN, decodeChain);
         if (buffer.remaining() == buffer.capacity()) {
             throw new RuntimeException("buffer is too small when decode " + decodeChain.getClass().getName() + " ," + request);
         }

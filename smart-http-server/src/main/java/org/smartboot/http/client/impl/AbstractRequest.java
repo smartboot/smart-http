@@ -1,16 +1,17 @@
 /*******************************************************************************
- * Copyright (c) 2017-2020, org.smartboot. All rights reserved.
+ * Copyright (c) 2017-2021, org.smartboot. All rights reserved.
  * project name: smart-http
- * file name: Http11Response.java
- * Date: 2020-01-01
+ * file name: AbstractRequest.java
+ * Date: 2021-02-04
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
-package org.smartboot.http.client;
+package org.smartboot.http.client.impl;
 
+import org.smartboot.http.BufferOutputStream;
+import org.smartboot.http.client.HttpRequest;
 import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
-import org.smartboot.http.common.Reset;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ import java.util.Vector;
  * @author 三刀
  * @version V1.0 , 2018/2/3
  */
-class AbstractRequest implements HttpRequest, Reset {
+class AbstractRequest implements HttpRequest {
     private String uri;
     private String protocol;
     /**
@@ -52,12 +53,6 @@ class AbstractRequest implements HttpRequest, Reset {
      */
     private String contentType;
 
-    private String characterEncoding;
-    /**
-     * 是否关闭Socket连接通道
-     */
-    private boolean closed = false;
-
     private List<Cookie> cookies;
 
     protected void init(AbstractOutputStream outputStream) {
@@ -65,20 +60,7 @@ class AbstractRequest implements HttpRequest, Reset {
     }
 
 
-    public final void reset() {
-        outputStream.reset();
-        if (headers != null) {
-            headers.clear();
-        }
-        contentType = null;
-        contentLength = -1;
-        characterEncoding = null;
-        cookies = null;
-        this.closed = false;
-    }
-
-
-    public final AbstractOutputStream getOutputStream() {
+    public final BufferOutputStream getOutputStream() {
         return outputStream;
     }
 
@@ -100,8 +82,7 @@ class AbstractRequest implements HttpRequest, Reset {
     private void setHeader(String name, String value, boolean replace) {
         char cc = name.charAt(0);
         if (cc == 'C' || cc == 'c') {
-            if (checkSpecialHeader(name, value))
-                return;
+            checkSpecialHeader(name, value);
         }
 
         if (headers == null) {
@@ -134,12 +115,10 @@ class AbstractRequest implements HttpRequest, Reset {
     /**
      * 部分header需要特殊处理
      */
-    private boolean checkSpecialHeader(String name, String value) {
+    private void checkSpecialHeader(String name, String value) {
         if (name.equalsIgnoreCase("Content-Type")) {
             setContentType(value);
-            return true;
         }
-        return false;
     }
 
     @Override
@@ -182,31 +161,6 @@ class AbstractRequest implements HttpRequest, Reset {
         outputStream.write(buffer);
     }
 
-    @Override
-    public final String getCharacterEncoding() {
-        return characterEncoding;
-    }
-
-    @Override
-    public final void setCharacterEncoding(String charset) {
-        this.characterEncoding = charset;
-    }
-
-    @Override
-    public final void close() {
-        if (closed) {
-            return;
-        }
-        try {
-            if (outputStream != null && !outputStream.isClosed()) {
-                outputStream.close();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        closed = true;
-    }
-
     public List<Cookie> getCookies() {
         return cookies;
     }
@@ -233,15 +187,6 @@ class AbstractRequest implements HttpRequest, Reset {
 
     public final void setContentType(String contentType) {
         this.contentType = contentType;
-    }
-
-    /**
-     * 是否要断开TCP连接
-     *
-     * @return true/false
-     */
-    public final boolean isClosed() {
-        return closed;
     }
 
     public String getMethod() {

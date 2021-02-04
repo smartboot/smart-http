@@ -1,16 +1,14 @@
 /*******************************************************************************
- * Copyright (c) 2017-2020, org.smartboot. All rights reserved.
+ * Copyright (c) 2017-2021, org.smartboot. All rights reserved.
  * project name: smart-http
- * file name: WebSocketRequest.java
- * Date: 2020-04-01
+ * file name: WebSocketResponse.java
+ * Date: 2021-02-04
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
-package org.smartboot.http.client;
+package org.smartboot.http.client.impl;
 
 import org.smartboot.http.enums.WebsocketStatus;
-
-import java.net.InetSocketAddress;
 
 /**
  * WebSocket消息请求接口
@@ -25,12 +23,4 @@ public interface WebSocketResponse {
 
     public byte[] getPayload();
 
-    InetSocketAddress getRemoteAddress();
-
-    /**
-     * 获取套接字绑定的本地地址。
-     *
-     * @return
-     */
-    InetSocketAddress getLocalAddress();
 }

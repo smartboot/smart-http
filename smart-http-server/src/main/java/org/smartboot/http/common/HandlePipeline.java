@@ -8,8 +8,6 @@
 
 package org.smartboot.http.common;
 
-import org.smartboot.http.server.handle.Pipeline;
-
 import java.io.IOException;
 
 /**

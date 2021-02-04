@@ -8,7 +8,7 @@
 
 package org.smartboot.http.client.decode;
 
-import org.smartboot.http.client.Response;
+import org.smartboot.http.client.impl.Response;
 import org.smartboot.http.utils.Constant;
 import org.smartboot.http.utils.StringUtils;
 import org.smartboot.socket.transport.AioSession;

@@ -8,10 +8,9 @@
 
 package org.smartboot.http.client.decode;
 
-import org.smartboot.http.client.HttpResponseProtocol;
-import org.smartboot.http.client.Response;
+import org.smartboot.http.client.impl.HttpResponseProtocol;
+import org.smartboot.http.client.impl.Response;
 import org.smartboot.http.enums.HttpStatus;
-import org.smartboot.http.enums.YesNoEnum;
 import org.smartboot.http.exception.HttpException;
 import org.smartboot.http.utils.Constant;
 import org.smartboot.http.utils.HttpHeaderConstant;
@@ -32,10 +31,10 @@ class HttpHeaderEndDecoder implements Decoder {
     @Override
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Response response) {
         //识别是否websocket通信
-        if (response.isWebsocket() == null) {
-            response.setWebsocket(HttpHeaderConstant.Values.WEBSOCKET.equals(response.getHeader(HttpHeaderConstant.Names.UPGRADE))
-                    && HttpHeaderConstant.Values.UPGRADE.equals(response.getHeader(HttpHeaderConstant.Names.CONNECTION)) ? YesNoEnum.Yes : YesNoEnum.NO);
-        }
+//        if (response.isWebsocket() == null) {
+//            response.setWebsocket(HttpHeaderConstant.Values.WEBSOCKET.equals(response.getHeader(HttpHeaderConstant.Names.UPGRADE))
+//                    && HttpHeaderConstant.Values.UPGRADE.equals(response.getHeader(HttpHeaderConstant.Names.CONNECTION)) ? YesNoEnum.Yes : YesNoEnum.NO);
+//        }
 //        if (HttpMethodEnum.GET.getMethod().equals(response.getMethod())) {
 //            if (response.isWebsocket() == YesNoEnum.Yes) {
 //                WebSocketResponseImpl webSocketRequest = new WebSocketResponseImpl(response);
@@ -51,11 +50,10 @@ class HttpHeaderEndDecoder implements Decoder {
         if (StringUtils.equals(transferEncoding, HttpHeaderConstant.Values.CHUNKED)) {
             return chunkedBodyDecoder.decode(byteBuffer, aioSession, response);
         }
-        //Post请求
-        int postLength = response.getContentLength();
-        if (postLength > Constant.maxPostSize) {
+        int bodyLength = response.getContentLength();
+        if (bodyLength > Constant.maxPostSize) {
             throw new HttpException(HttpStatus.PAYLOAD_TOO_LARGE);
         }
-        return postLength > 0 ? decoder.decode(byteBuffer, aioSession, response) : HttpResponseProtocol.HTTP_FINISH_DECODER;
+        return bodyLength > 0 ? decoder.decode(byteBuffer, aioSession, response) : HttpResponseProtocol.HTTP_FINISH_DECODER;
     }
 }

@@ -1,14 +1,13 @@
 /*******************************************************************************
- * Copyright (c) 2017-2020, org.smartboot. All rights reserved.
+ * Copyright (c) 2017-2021, org.smartboot. All rights reserved.
  * project name: smart-http
- * file name: HttpResponse.java
- * Date: 2020-01-01
+ * file name: HttpRequest.java
+ * Date: 2021-02-04
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
 package org.smartboot.http.client;
 
-import org.smartboot.http.BufferOutputStream;
 import org.smartboot.http.common.Cookie;
 
 import java.io.IOException;
@@ -26,14 +25,6 @@ public interface HttpRequest {
     String getMethod();
 
     String getUri();
-
-    /**
-     * 响应消息输出流
-     *
-     * @return
-     */
-    BufferOutputStream getOutputStream();
-
 
     /**
      * Sets a response header with the given name and value. If the header had
@@ -88,13 +79,7 @@ public interface HttpRequest {
     void setContentType(String contentType);
 
     void write(byte[] data) throws IOException;
-
-
-    public String getCharacterEncoding();
-
-    public void setCharacterEncoding(String charset);
-
-    public void close();
+    
 
     /**
      * 添加Cookie信息

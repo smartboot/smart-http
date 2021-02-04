@@ -1,14 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2017-2020, org.smartboot. All rights reserved.
+ * Copyright (c) 2017-2021, org.smartboot. All rights reserved.
  * project name: smart-http
  * file name: Pipeline.java
- * Date: 2020-04-01
+ * Date: 2021-02-04
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
-package org.smartboot.http.server.handle;
-
-import org.smartboot.http.common.Handle;
+package org.smartboot.http.common;
 
 /**
  * 消息处理管道

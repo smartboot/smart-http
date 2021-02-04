@@ -1,15 +1,14 @@
 /*******************************************************************************
- * Copyright (c) 2017-2020, org.smartboot. All rights reserved.
+ * Copyright (c) 2017-2021, org.smartboot. All rights reserved.
  * project name: smart-http
- * file name: HttpOutputStream.java
- * Date: 2020-01-01
+ * file name: AbstractOutputStream.java
+ * Date: 2021-02-04
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
-package org.smartboot.http.client;
+package org.smartboot.http.client.impl;
 
 import org.smartboot.http.BufferOutputStream;
-import org.smartboot.http.common.Reset;
 import org.smartboot.http.enums.HeaderNameEnum;
 import org.smartboot.http.utils.Constant;
 import org.smartboot.http.utils.HttpHeaderConstant;
@@ -24,7 +23,7 @@ import java.nio.charset.StandardCharsets;
  * @author 三刀
  * @version V1.0 , 2018/2/3
  */
-abstract class AbstractOutputStream extends BufferOutputStream implements Reset {
+abstract class AbstractOutputStream extends BufferOutputStream {
     private static final byte[] CHUNKED_END_BYTES = "0\r\n\r\n".getBytes(StandardCharsets.US_ASCII);
     protected static byte[] date;
 
@@ -130,10 +129,6 @@ abstract class AbstractOutputStream extends BufferOutputStream implements Reset 
 
     protected final byte[] getBytes(String str) {
         return str.getBytes(StandardCharsets.US_ASCII);
-    }
-
-    public final void reset() {
-        committed = closed = chunked = false;
     }
 
     public final boolean isClosed() {

@@ -8,7 +8,7 @@
 
 package org.smartboot.http.client.decode;
 
-import org.smartboot.http.client.Response;
+import org.smartboot.http.client.impl.Response;
 import org.smartboot.socket.transport.AioSession;
 
 import java.nio.ByteBuffer;

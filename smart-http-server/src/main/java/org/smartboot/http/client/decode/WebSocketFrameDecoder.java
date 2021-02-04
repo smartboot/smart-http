@@ -8,8 +8,8 @@
 
 package org.smartboot.http.client.decode;
 
-import org.smartboot.http.client.HttpResponseProtocol;
-import org.smartboot.http.client.Response;
+import org.smartboot.http.client.impl.HttpResponseProtocol;
+import org.smartboot.http.client.impl.Response;
 import org.smartboot.http.enums.HttpStatus;
 import org.smartboot.http.exception.HttpException;
 import org.smartboot.http.logging.Logger;

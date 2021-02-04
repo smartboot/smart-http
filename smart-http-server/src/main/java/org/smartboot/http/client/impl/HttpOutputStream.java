@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2017-2020, org.smartboot. All rights reserved.
+ * Copyright (c) 2017-2021, org.smartboot. All rights reserved.
  * project name: smart-http
  * file name: HttpOutputStream.java
- * Date: 2020-01-01
+ * Date: 2021-02-04
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
-package org.smartboot.http.client;
+package org.smartboot.http.client.impl;
 
 import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
@@ -40,8 +40,6 @@ final class HttpOutputStream extends AbstractOutputStream {
         //输出http状态行、contentType,contentLength、Transfer-Encoding、server等信息
         String headLine = request.getMethod() + " " + request.getUri() + " " + request.getProtocol();
         writeBuffer.write(getBytes(headLine));
-        writeBuffer.write(Constant.CRLF);
-        writeBuffer.write("1:1".getBytes());
         //转换Cookie
         convertCookieToHeader(request);
 
@@ -52,11 +50,11 @@ final class HttpOutputStream extends AbstractOutputStream {
                 while (headerValue != null) {
                     writeBuffer.write(getHeaderNameBytes(entry.getKey()));
                     writeBuffer.write(getBytes(headerValue.getValue()));
-                    writeBuffer.write(Constant.CRLF);
                     headerValue = headerValue.getNextValue();
                 }
             }
         }
+        writeBuffer.write(Constant.CRLF);
         writeBuffer.write(Constant.CRLF);
 
         committed = true;

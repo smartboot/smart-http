@@ -9,10 +9,10 @@
 package org.smartboot.http;
 
 import org.smartboot.http.common.HttpServerHandle;
+import org.smartboot.http.common.Pipeline;
 import org.smartboot.http.server.HttpMessageProcessor;
 import org.smartboot.http.server.HttpRequestProtocol;
 import org.smartboot.http.server.Request;
-import org.smartboot.http.server.handle.Pipeline;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.buffer.BufferPagePool;
 import org.smartboot.socket.transport.AioQuickServer;
