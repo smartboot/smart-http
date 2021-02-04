@@ -28,7 +28,7 @@ public class HttpRest {
     private final Consumer<CompletableFuture<HttpResponse>> bindListener;
 
 
-    public HttpRest(String host, String uri, WriteBuffer writeBuffer, Consumer<CompletableFuture<HttpResponse>> bindListener) {
+    public HttpRest(String uri, String host, WriteBuffer writeBuffer, Consumer<CompletableFuture<HttpResponse>> bindListener) {
         this.request = new HttpRequestImpl(writeBuffer);
         this.request.setUri(uri);
         this.request.setHeader(HttpHeaderConstant.Names.HOST, host);

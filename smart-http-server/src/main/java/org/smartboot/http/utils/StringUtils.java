@@ -34,7 +34,7 @@ public class StringUtils {
      */
     public static final int INDEX_NOT_FOUND = -1;
     public static final List<StringCache>[] String_CACHE_HEAD_LINE = new List[8];
-    public static final List<StringCache>[] String_CACHE_URL = new List[0];
+    public static final List<StringCache>[] String_CACHE_URL = new List[32];
     public static final List<StringCache>[] String_CACHE_HEADER_NAME = new List[32];
     public static final List<StringCache>[] String_CACHE_HEADER_VALUE = new List[0];
 
