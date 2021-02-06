@@ -17,95 +17,144 @@ import org.smartboot.http.common.HandlePipeline;
 import org.smartboot.http.common.HttpClientHandle;
 import org.smartboot.http.common.Pipeline;
 import org.smartboot.http.common.WebSocketHandle;
-import org.smartboot.http.utils.AttachKey;
 import org.smartboot.http.utils.Attachment;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.StateMachineEnum;
+import org.smartboot.socket.VirtualBufferFactory;
+import org.smartboot.socket.buffer.BufferPage;
+import org.smartboot.socket.buffer.BufferPagePool;
+import org.smartboot.socket.buffer.VirtualBuffer;
 import org.smartboot.socket.transport.AioQuickClient;
 import org.smartboot.socket.transport.AioSession;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.nio.ByteBuffer;
+import java.nio.channels.AsynchronousChannelGroup;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author 三刀（zhengjunweimail@163.com）
  * @version V1.0 , 2021/2/2
  */
 public class HttpClient implements Closeable {
-    private final Map<String, ConnectCache> connectCacheMap = new HashMap<>();
-    private final HttpResponseProtocol protocol = new HttpResponseProtocol();
-    private final Map<AioSession, ArrayBlockingQueue<CompletableFuture<HttpResponse>>> map = new HashMap<>();
-    private final HttpMessageProcessor processor = new HttpMessageProcessor();
+    private static AsynchronousChannelGroup asynchronousChannelGroup;
+    private static BufferPagePool bufferPagePool = new BufferPagePool(1024 * 1024 * 10, 8, true);
 
+    static {
+        try {
+            System.setProperty("java.nio.channels.spi.AsynchronousChannelProvider", "org.smartboot.aio.EnhanceAsynchronousChannelProvider");
+            asynchronousChannelGroup = AsynchronousChannelGroup.withFixedThreadPool(8, new ThreadFactory() {
+                @Override
+                public Thread newThread(Runnable r) {
+                    return new Thread(r);
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private final HttpResponseProtocol protocol = new HttpResponseProtocol();
+    private final ArrayBlockingQueue<CompletableFuture<HttpResponse>> queue = new ArrayBlockingQueue<>(1024);
+    private final HttpMessageProcessor processor = new HttpMessageProcessor();
+    private String host;
+    private int port;
+    private AioQuickClient<Response> client;
+    private AioSession aioSession;
+
+    public HttpClient(String host, int port) {
+        this.host = host;
+        this.port = port;
+        connect();
+    }
 
     public static void main(String[] args) throws InterruptedException {
-        HttpClient client = new HttpClient();
-        for (int i = 0; i < 10; i++) {
-            HttpGet httpGet = client.get("www.baidu.com", 80, "/")
-                    .onSuccess(response -> System.out.println(response.body()))
-                    .onFailure(Throwable::printStackTrace);
-            httpGet.send();
-            System.out.println("---华丽的分隔符---");
-        }
-        Thread.sleep(1000);
-        client.close();
+        long start = System.currentTimeMillis();
 
+        int time = 15 * 1000;
+        int threadNum = 4;
+        int connectCount = 1024;
+        int pipeline = 16;
+        AtomicLong success = new AtomicLong(0);
+        AtomicLong fail = new AtomicLong(0);
+        AtomicBoolean running = new AtomicBoolean(true);
+        ArrayBlockingQueue<HttpClient> queue = new ArrayBlockingQueue<>(connectCount);
+        for (int i = 0; i < connectCount; i++) {
+            HttpClient client = new HttpClient("127.0.0.1", 8080);
+            queue.put(client);
+        }
+        for (int i = 0; i < threadNum; i++) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    System.out.println("start...");
+                    while (running.get()) {
+                        try {
+                            HttpClient httpClient = queue.take();
+                            httpClient.get("/plaintext")
+                                    .onSuccess(response -> {
+                                        success.incrementAndGet();
+//                                        System.out.println(response.body());
+//                                        if (running.get()) {
+//                                            queue.offer(httpClient);
+//                                        } else {
+//                                            httpClient.close();
+//                                        }
+                                    })
+                                    .onFailure(throwable -> fail.incrementAndGet())
+                                    .send();
+                            queue.offer(httpClient);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }).start();
+        }
+
+        Thread.sleep(time);
+        running.set(false);
+        HttpClient httpClient;
+        while ((httpClient = queue.poll()) != null) {
+            httpClient.close();
+        }
+        System.out.println("cost:" + (System.currentTimeMillis() - start));
+
+        System.out.println("success:" + success.get());
+        System.out.println("fail:" + fail.get());
     }
 
-    public HttpGet get(String host, int port, String uri) {
-        ConnectCache connectCache = connect(host, port);
-        return new HttpGet(uri, connectCache.host, connectCache.session.writeBuffer(), httpResponseCompletableFuture -> {
-            map.get(connectCache.session).offer(httpResponseCompletableFuture);
-        });
+    public HttpGet get(String uri) {
+        return new HttpGet(uri, host, aioSession.writeBuffer(), queue::offer);
     }
 
-    public HttpRest rest(String host, int port, String uri) {
-        ConnectCache connectCache = connect(host, port);
-        return new HttpRest(uri, connectCache.host, connectCache.session.writeBuffer(), httpResponseCompletableFuture -> map.get(connectCache.session).offer(httpResponseCompletableFuture));
+    public HttpRest rest(String uri) {
+        return new HttpRest(uri, host, aioSession.writeBuffer(), queue::offer);
     }
 
-    private ConnectCache connect(String host, int port) {
-        String key = host + ":" + port;
-        ConnectCache connectCache = connectCacheMap.get(key);
-        if (connectCache != null && connectCache.session.isInvalid()) {
-            connectCache.client.shutdownNow();
-            connectCacheMap.remove(key);
-            connectCache = null;
+    private void connect() {
+        client = new AioQuickClient<>(host, port, protocol, processor);
+        try {
+            client.setBufferPagePool(bufferPagePool).setReadBufferFactory(new VirtualBufferFactory() {
+                @Override
+                public VirtualBuffer newBuffer(BufferPage bufferPage) {
+                    return VirtualBuffer.wrap(ByteBuffer.allocate(1024));
+                }
+            });
+            aioSession = client.start(asynchronousChannelGroup);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        if (connectCache == null) {
-            AioQuickClient<Response> client = new AioQuickClient<>(host, port, protocol, processor);
-            try {
-                client.setReadBufferSize(1024 * 4);
-                AioSession session = client.start();
-                connectCache = new ConnectCache(client, session, "http://" + key);
-                connectCacheMap.put(key, connectCache);
-                map.put(session, new ArrayBlockingQueue<>(1024));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return connectCache;
     }
 
     @Override
     public void close() {
-        connectCacheMap.values().forEach(connectCache -> connectCache.client.shutdownNow());
-    }
-
-    static class ConnectCache {
-        private AioQuickClient<Response> client;
-        private AioSession session;
-        private String host;
-
-        public ConnectCache(AioQuickClient<Response> client, AioSession session, String host) {
-            this.client = client;
-            this.session = session;
-            this.host = host;
-        }
+        client.shutdownNow();
     }
 
     /**
@@ -113,10 +162,6 @@ public class HttpClient implements Closeable {
      * @version V1.0 , 2018/6/10
      */
     class HttpMessageProcessor implements MessageProcessor<Response> {
-        /**
-         * HttpRequest附件Key
-         */
-        private final AttachKey<HttpResponseImpl> ATTACH_KEY_HTTP_RESPONSE = AttachKey.valueOf("httpRequest");
         /**
          * Http消息处理管道
          */
@@ -128,14 +173,14 @@ public class HttpClient implements Closeable {
 
         @Override
         public void process(AioSession session, Response baseHttpResponse) {
-            HttpClient.this.map.get(session).poll().complete(new HttpResponseImpl(baseHttpResponse));
+            queue.poll().complete(new HttpResponseImpl(baseHttpResponse));
         }
 
         @Override
         public void stateEvent(AioSession session, StateMachineEnum stateMachineEnum, Throwable throwable) {
-            if (throwable != null) {
-                throwable.printStackTrace();
-            }
+//            if (throwable != null) {
+//                throwable.printStackTrace();
+//            }
 
             switch (stateMachineEnum) {
                 case NEW_SESSION:
@@ -150,7 +195,6 @@ public class HttpClient implements Closeable {
                     throwable.printStackTrace();
                     break;
                 case SESSION_CLOSED:
-                    map.remove(session);
                     break;
             }
         }

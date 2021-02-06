@@ -22,5 +22,10 @@
             <groupId>org.smartboot.socket</groupId>
             <artifactId>aio-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.smartboot.aio</groupId>
+            <artifactId>aio-enhance</artifactId>
+            <version>1.0.3-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 </project>
