@@ -94,7 +94,7 @@ public class SmartHttpDemo {
                 response.setContentLength(body.length);
                 response.setContentType("text/plain; charset=UTF-8");
                 response.write(body);
-                LOGGER.info("hello world");
+//                LOGGER.info("hello world");
             }
         }).route("/head", new HttpServerHandle() {
             @Override

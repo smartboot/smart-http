@@ -20,8 +20,8 @@ import java.util.function.Consumer;
  */
 public class HttpGet extends HttpRest {
 
-    public HttpGet(String uri, String host, WriteBuffer writeBuffer, Consumer<CompletableFuture<HttpResponse>> bindListener) {
-        super(uri, host, writeBuffer, bindListener);
+    public HttpGet(String uri, String host, WriteBuffer writeBuffer, Consumer<CompletableFuture<HttpResponse>> consumer) {
+        super(uri, host, writeBuffer, consumer);
         request.setMethod(HttpMethodEnum.GET.getMethod());
     }
 
