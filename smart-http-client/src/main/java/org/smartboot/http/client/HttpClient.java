@@ -8,14 +8,11 @@
 
 package org.smartboot.http.client;
 
-import org.smartboot.http.WebSocketRequest;
-import org.smartboot.http.WebSocketResponse;
 import org.smartboot.http.client.impl.HttpResponseImpl;
 import org.smartboot.http.client.impl.HttpResponseProtocol;
 import org.smartboot.http.client.impl.Response;
 import org.smartboot.http.common.HandlePipeline;
 import org.smartboot.http.common.Pipeline;
-import org.smartboot.http.common.WebSocketHandle;
 import org.smartboot.http.common.utils.Attachment;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.StateMachineEnum;
@@ -165,10 +162,6 @@ public class HttpClient implements Closeable {
          * Http消息处理管道
          */
         private final HandlePipeline<HttpRequest, HttpResponse> httpPipeline = new HandlePipeline<>();
-        /**
-         * Websocket处理管道
-         */
-        private final HandlePipeline<org.smartboot.http.WebSocketRequest, org.smartboot.http.WebSocketResponse> wsPipeline = new HandlePipeline<>();
 
         @Override
         public void process(AioSession session, Response baseHttpResponse) {
@@ -204,14 +197,6 @@ public class HttpClient implements Closeable {
 
         public Pipeline<HttpRequest, HttpResponse> pipeline() {
             return httpPipeline;
-        }
-
-        public Pipeline<org.smartboot.http.WebSocketRequest, org.smartboot.http.WebSocketResponse> wsPipeline(WebSocketHandle httpHandle) {
-            return wsPipeline.next(httpHandle);
-        }
-
-        public Pipeline<WebSocketRequest, WebSocketResponse> wsPipeline() {
-            return wsPipeline;
         }
 
     }

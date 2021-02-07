@@ -8,16 +8,9 @@
 
 package org.smartboot.http.client.decode;
 
-import org.smartboot.http.client.impl.HttpResponseProtocol;
 import org.smartboot.http.client.impl.Response;
-import org.smartboot.http.common.enums.HttpStatus;
-import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
-import org.smartboot.http.common.utils.Attachment;
-import org.smartboot.http.common.utils.Constant;
-import org.smartboot.http.server.HttpRequestProtocol;
-import org.smartboot.http.server.WebSocketRequestImpl;
 import org.smartboot.socket.transport.AioSession;
 
 import java.nio.ByteBuffer;
@@ -33,54 +26,7 @@ public class WebSocketFrameDecoder implements Decoder {
 
     @Override
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Response request) {
-        if (byteBuffer.remaining() < 2) {
-            return this;
-        }
-        byteBuffer.mark();
-        int first = byteBuffer.get();
-        int second = byteBuffer.get();
-        boolean mask = (second & 0x80) != 0;
-        int length = second & 0x7F;
-        if (length == Constant.WS_PLAY_LOAD_127) {
-            throw new HttpException(HttpStatus.PAYLOAD_TOO_LARGE);
-        }
-        if (length == Constant.WS_PLAY_LOAD_126) {
-            if (byteBuffer.remaining() < Short.BYTES) {
-                byteBuffer.reset();
-                return this;
-            }
-            length = Short.toUnsignedInt(byteBuffer.getShort());
-        }
-        if (length > Constant.WS_DEFAULT_MAX_FRAME_SIZE) {
-            throw new HttpException(HttpStatus.PAYLOAD_TOO_LARGE);
-        }
-        if (byteBuffer.remaining() < (mask ? length + 4 : length)) {
-            byteBuffer.reset();
-            return this;
-        }
-
-        boolean fin = (first & 0x80) != 0;
-        int rsv = (first & 0x70) >> 4;
-        int opcode = first & 0x0f;
-
-        Attachment attachment = aioSession.getAttachment();
-        WebSocketRequestImpl webSocketRequest = attachment.get(HttpRequestProtocol.ATTACH_KEY_WS_REQ);
-        webSocketRequest.setFrameFinalFlag(fin);
-        webSocketRequest.setFrameRsv(rsv);
-        webSocketRequest.setFrameOpcode(opcode);
-        webSocketRequest.setFrameMasked(mask);
-
-        if (mask) {
-            byte[] maskingKey = new byte[4];
-            byteBuffer.get(maskingKey);
-            unmask(byteBuffer, maskingKey, length);
-        }
-        byte[] payload = new byte[length];
-        byteBuffer.get(payload);
-        LOGGER.info("read ws data...");
-        webSocketRequest.setPayload(payload);
-
-        return fin ? HttpResponseProtocol.WS_FRAME_DECODER : this;
+        throw new UnsupportedOperationException();
     }
 
     private void unmask(ByteBuffer frame, byte[] maskingKey, int length) {
