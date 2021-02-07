@@ -10,12 +10,12 @@ package org.smartboot.http.example;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import org.smartboot.http.HttpBootstrap;
-import org.smartboot.http.HttpRequest;
-import org.smartboot.http.HttpResponse;
-import org.smartboot.http.WebSocketRequest;
-import org.smartboot.http.WebSocketResponse;
-import org.smartboot.http.common.HttpServerHandle;
+import org.smartboot.http.server.HttpBootstrap;
+import org.smartboot.http.server.HttpRequest;
+import org.smartboot.http.server.HttpResponse;
+import org.smartboot.http.server.HttpServerHandle;
+import org.smartboot.http.server.WebSocketRequest;
+import org.smartboot.http.server.WebSocketResponse;
 import org.smartboot.http.server.handle.HttpRouteHandle;
 import org.smartboot.http.server.handle.WebSocketDefaultHandle;
 import org.smartboot.http.server.handle.WebSocketRouteHandle;

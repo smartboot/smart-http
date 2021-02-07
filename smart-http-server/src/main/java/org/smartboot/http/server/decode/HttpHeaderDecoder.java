@@ -8,11 +8,11 @@
 
 package org.smartboot.http.server.decode;
 
-import org.smartboot.http.enums.HttpStatus;
-import org.smartboot.http.exception.HttpException;
-import org.smartboot.http.server.Request;
-import org.smartboot.http.utils.Constant;
-import org.smartboot.http.utils.StringUtils;
+import org.smartboot.http.common.enums.HttpStatus;
+import org.smartboot.http.common.exception.HttpException;
+import org.smartboot.http.common.utils.Constant;
+import org.smartboot.http.common.utils.StringUtils;
+import org.smartboot.http.server.impl.Request;
 import org.smartboot.socket.transport.AioSession;
 
 import java.nio.ByteBuffer;

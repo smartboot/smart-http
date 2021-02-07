@@ -10,7 +10,7 @@ package org.smartboot.http.example.fileupload;
 
 import org.apache.commons.fileupload.FileUploadBase;
 import org.apache.commons.fileupload.UploadContext;
-import org.smartboot.http.HttpRequest;
+import org.smartboot.http.server.HttpRequest;
 
 import java.io.IOException;
 import java.io.InputStream;

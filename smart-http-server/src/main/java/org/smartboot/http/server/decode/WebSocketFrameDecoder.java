@@ -8,15 +8,15 @@
 
 package org.smartboot.http.server.decode;
 
-import org.smartboot.http.enums.HttpStatus;
-import org.smartboot.http.exception.HttpException;
-import org.smartboot.http.logging.Logger;
-import org.smartboot.http.logging.LoggerFactory;
-import org.smartboot.http.server.HttpRequestProtocol;
-import org.smartboot.http.server.Request;
-import org.smartboot.http.server.WebSocketRequestImpl;
-import org.smartboot.http.utils.Attachment;
-import org.smartboot.http.utils.Constant;
+import org.smartboot.http.common.enums.HttpStatus;
+import org.smartboot.http.common.exception.HttpException;
+import org.smartboot.http.common.logging.Logger;
+import org.smartboot.http.common.logging.LoggerFactory;
+import org.smartboot.http.common.utils.Attachment;
+import org.smartboot.http.common.utils.Constant;
+import org.smartboot.http.server.impl.HttpRequestProtocol;
+import org.smartboot.http.server.impl.Request;
+import org.smartboot.http.server.impl.WebSocketRequestImpl;
 import org.smartboot.socket.transport.AioSession;
 
 import java.nio.ByteBuffer;

@@ -11,7 +11,7 @@ package org.smartboot.http.example.fileupload;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileUpload;
 import org.apache.commons.fileupload.FileUploadException;
-import org.smartboot.http.HttpRequest;
+import org.smartboot.http.server.HttpRequest;
 
 import java.io.IOException;
 

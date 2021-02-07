@@ -11,10 +11,10 @@ package org.smartboot.http.example.fileupload;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.util.Streams;
-import org.smartboot.http.HttpBootstrap;
-import org.smartboot.http.HttpRequest;
-import org.smartboot.http.HttpResponse;
-import org.smartboot.http.common.HttpServerHandle;
+import org.smartboot.http.server.HttpBootstrap;
+import org.smartboot.http.server.HttpRequest;
+import org.smartboot.http.server.HttpResponse;
+import org.smartboot.http.server.HttpServerHandle;
 import org.smartboot.http.server.handle.HttpRouteHandle;
 
 import java.io.IOException;

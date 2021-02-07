@@ -8,14 +8,14 @@
 
 package org.smartboot.http.server.handle;
 
-import org.smartboot.http.WebSocketRequest;
-import org.smartboot.http.WebSocketResponse;
-import org.smartboot.http.common.WebSocketHandle;
-import org.smartboot.http.enums.HttpStatus;
-import org.smartboot.http.exception.HttpException;
-import org.smartboot.http.logging.Logger;
-import org.smartboot.http.logging.LoggerFactory;
-import org.smartboot.http.server.WebSocketRequestImpl;
+import org.smartboot.http.common.enums.HttpStatus;
+import org.smartboot.http.common.exception.HttpException;
+import org.smartboot.http.common.logging.Logger;
+import org.smartboot.http.common.logging.LoggerFactory;
+import org.smartboot.http.server.WebSocketHandle;
+import org.smartboot.http.server.WebSocketRequest;
+import org.smartboot.http.server.WebSocketResponse;
+import org.smartboot.http.server.impl.WebSocketRequestImpl;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

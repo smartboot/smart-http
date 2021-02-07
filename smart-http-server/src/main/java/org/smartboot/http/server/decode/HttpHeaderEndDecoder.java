@@ -8,22 +8,22 @@
 
 package org.smartboot.http.server.decode;
 
-import org.smartboot.http.enums.HttpMethodEnum;
-import org.smartboot.http.enums.HttpStatus;
-import org.smartboot.http.enums.YesNoEnum;
-import org.smartboot.http.exception.HttpException;
-import org.smartboot.http.server.HttpRequestProtocol;
-import org.smartboot.http.server.Request;
-import org.smartboot.http.server.WebSocketRequestImpl;
-import org.smartboot.http.utils.Attachment;
-import org.smartboot.http.utils.Constant;
-import org.smartboot.http.utils.HttpHeaderConstant;
-import org.smartboot.http.utils.StringUtils;
+import org.smartboot.http.common.enums.HttpMethodEnum;
+import org.smartboot.http.common.enums.HttpStatus;
+import org.smartboot.http.common.enums.YesNoEnum;
+import org.smartboot.http.common.exception.HttpException;
+import org.smartboot.http.common.utils.Attachment;
+import org.smartboot.http.common.utils.Constant;
+import org.smartboot.http.common.utils.HttpHeaderConstant;
+import org.smartboot.http.common.utils.StringUtils;
+import org.smartboot.http.server.impl.HttpRequestProtocol;
+import org.smartboot.http.server.impl.Request;
+import org.smartboot.http.server.impl.WebSocketRequestImpl;
 import org.smartboot.socket.transport.AioSession;
 
 import java.nio.ByteBuffer;
 
-import static org.smartboot.http.server.HttpRequestProtocol.ATTACH_KEY_WS_REQ;
+import static org.smartboot.http.server.impl.HttpRequestProtocol.ATTACH_KEY_WS_REQ;
 
 /**
  * @author 三刀

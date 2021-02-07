@@ -8,9 +8,9 @@
 
 package org.smartboot.http.example;
 
-import org.smartboot.http.HttpBootstrap;
-import org.smartboot.http.WebSocketRequest;
-import org.smartboot.http.WebSocketResponse;
+import org.smartboot.http.server.HttpBootstrap;
+import org.smartboot.http.server.WebSocketRequest;
+import org.smartboot.http.server.WebSocketResponse;
 import org.smartboot.http.server.handle.WebSocketDefaultHandle;
 import org.smartboot.http.server.handle.WebSocketRouteHandle;
 

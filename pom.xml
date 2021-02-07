@@ -5,12 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.smartboot.http</groupId>
     <artifactId>smart-http-parent</artifactId>
-    <version>1.0.22</version>
+    <version>1.0.23-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
         <smartsocket.version>1.5.5</smartsocket.version>
-        <smarthttp.version>1.0.22</smarthttp.version>
+        <smarthttp.version>1.0.23-SNAPSHOT</smarthttp.version>
     </properties>
 
     <dependencyManagement>
@@ -23,6 +23,16 @@
             <dependency>
                 <groupId>org.smartboot.http</groupId>
                 <artifactId>smart-http-server</artifactId>
+                <version>${smarthttp.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.smartboot.http</groupId>
+                <artifactId>smart-http-common</artifactId>
+                <version>${smarthttp.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.smartboot.http</groupId>
+                <artifactId>smart-http-client</artifactId>
                 <version>${smarthttp.version}</version>
             </dependency>
         </dependencies>
@@ -229,5 +239,7 @@
     </pluginRepositories>
     <modules>
         <module>smart-http-server</module>
+        <module>smart-http-common</module>
+        <module>smart-http-client</module>
     </modules>
 </project>

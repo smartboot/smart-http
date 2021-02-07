@@ -8,12 +8,12 @@
 
 package org.smartboot.http.server.decode;
 
-import org.smartboot.http.server.HttpRequestProtocol;
-import org.smartboot.http.server.Request;
-import org.smartboot.http.utils.AttachKey;
-import org.smartboot.http.utils.Attachment;
-import org.smartboot.http.utils.FixedLengthFrameDecoder;
-import org.smartboot.http.utils.SmartDecoder;
+import org.smartboot.http.common.utils.AttachKey;
+import org.smartboot.http.common.utils.Attachment;
+import org.smartboot.http.common.utils.FixedLengthFrameDecoder;
+import org.smartboot.http.common.utils.SmartDecoder;
+import org.smartboot.http.server.impl.HttpRequestProtocol;
+import org.smartboot.http.server.impl.Request;
 import org.smartboot.socket.transport.AioSession;
 
 import java.nio.ByteBuffer;

@@ -8,7 +8,7 @@
 
 package org.smartboot.http;
 
-import org.smartboot.http.utils.Param;
+import org.smartboot.http.common.utils.Param;
 
 /**
  * @author 三刀

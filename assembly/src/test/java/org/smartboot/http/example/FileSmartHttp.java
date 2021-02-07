@@ -8,7 +8,7 @@
 
 package org.smartboot.http.example;
 
-import org.smartboot.http.HttpBootstrap;
+import org.smartboot.http.server.HttpBootstrap;
 import org.smartboot.http.server.handle.HttpStaticResourceHandle;
 
 /**
