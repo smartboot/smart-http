@@ -16,6 +16,7 @@ smart-socket 的每次性能测试都是基于该服务器进行的，相信 sma
 6. 支持 websocket、Cookie
 
 ## 快速体验
+### 服务端开发
 1. 在您的Maven工程中引入smart-http依赖。
     ```xml
     <dependency>
@@ -48,4 +49,30 @@ smart-socket 的每次性能测试都是基于该服务器进行的，相信 sma
     }
     ```
 3. 浏览器访问:`http://localhost:8080/`，亦或采用websocket请求`ws://127.0.0.1:8080/`
+
+### 客户端开发
+1. 在您的Maven工程中引入smart-http依赖。
+    ```xml
+    <dependency>
+        <groupId>org.smartboot.http</groupId>
+        <artifactId>smart-http-client</artifactId>
+        <version>1.0.23-SNAPSHOT</version>
+    </dependency>
+    ```
+2. 拷贝以下代码并启动。
+    ```java
+    public class HttpGetDemo {
+        public static void main(String[] args) {
+            HttpClient httpClient = new HttpClient("www.baidu.com", 80);
+            httpClient.connect();
+            httpClient.get("/")
+                    .onSuccess(response -> {
+                        System.out.println(response.body());
+                    })
+                    .onFailure(throwable -> throwable.printStackTrace())
+                    .send();
+        }
+    }
+    ```
+
 
