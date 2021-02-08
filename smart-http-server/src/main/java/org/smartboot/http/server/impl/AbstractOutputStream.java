@@ -31,7 +31,6 @@ import java.util.concurrent.Semaphore;
  * @version V1.0 , 2018/2/3
  */
 abstract class AbstractOutputStream extends BufferOutputStream implements Reset {
-    private static final byte[] CHUNKED_END_BYTES = "0\r\n\r\n".getBytes(StandardCharsets.US_ASCII);
     private static final SimpleDateFormat sdf = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
     private static final Semaphore flushDateSemaphore = new Semaphore(1);
     private static final Date currentDate = new Date(0);
@@ -146,7 +145,7 @@ abstract class AbstractOutputStream extends BufferOutputStream implements Reset 
         writeHead();
 
         if (chunked) {
-            writeBuffer.write(CHUNKED_END_BYTES);
+            writeBuffer.write(Constant.CHUNKED_END_BYTES);
         }
         closed = true;
     }

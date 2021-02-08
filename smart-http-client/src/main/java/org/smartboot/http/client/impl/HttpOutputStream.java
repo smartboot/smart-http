@@ -54,8 +54,7 @@ final class HttpOutputStream extends AbstractOutputStream {
                 }
             }
         }
-        writeBuffer.write(Constant.CRLF);
-        writeBuffer.write(Constant.CRLF);
+        writeBuffer.write(Constant.HEADER_END);
 
         committed = true;
     }

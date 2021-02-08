@@ -24,7 +24,6 @@ import java.nio.charset.StandardCharsets;
  * @version V1.0 , 2018/2/3
  */
 abstract class AbstractOutputStream extends BufferOutputStream {
-    private static final byte[] CHUNKED_END_BYTES = "0\r\n\r\n".getBytes(StandardCharsets.US_ASCII);
     protected static byte[] date;
 
     protected final WriteBuffer writeBuffer;
@@ -107,7 +106,7 @@ abstract class AbstractOutputStream extends BufferOutputStream {
         writeHead();
 
         if (chunked) {
-            writeBuffer.write(CHUNKED_END_BYTES);
+            writeBuffer.write(Constant.CHUNKED_END_BYTES);
         }
         closed = true;
     }
