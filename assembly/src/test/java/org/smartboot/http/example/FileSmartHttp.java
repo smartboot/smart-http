@@ -19,7 +19,7 @@ import org.smartboot.http.server.handle.HttpStaticResourceHandle;
  */
 public class FileSmartHttp {
     public static void main(String[] args) {
-        String webdir = System.getProperty("user.dir") + "/org/smartboot/http/example/webapps";
+        String webdir = System.getProperty("user.dir") + "/assembly/webapps";
         HttpBootstrap bootstrap = new HttpBootstrap();
         //配置HTTP消息处理管道
         bootstrap.pipeline().next(new HttpStaticResourceHandle(webdir));

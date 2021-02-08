@@ -63,7 +63,7 @@ public class HttpStaticResourceHandle extends HttpServerHandle {
         if (StringUtils.endsWith(fileName, "/")) {
             fileName += "index.html";
         }
-        LOGGER.info("请求URL:{}", fileName);
+        LOGGER.info("请求URL: " + fileName);
         File file = new File(baseDir, URLDecoder.decode(fileName, "utf8"));
         //404
         if (!file.isFile()) {
@@ -96,6 +96,11 @@ public class HttpStaticResourceHandle extends HttpServerHandle {
         if (HttpMethodEnum.HEAD.getMethod().equals(method)) {
             return;
         }
+
+        if (!file.getName().endsWith("html") && !file.getName().endsWith("htm")) {
+            response.setContentLength((int) file.length());
+        }
+
 
         FileInputStream fis = new FileInputStream(file);
         FileChannel fileChannel = fis.getChannel();
