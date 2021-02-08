@@ -8,10 +8,13 @@
 
 package org.smartboot.http.client;
 
+import org.smartboot.aio.EnhanceAsynchronousChannelProvider;
 import org.smartboot.socket.buffer.BufferPagePool;
 
 import java.io.IOException;
 import java.nio.channels.AsynchronousChannelGroup;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -25,7 +28,7 @@ import java.util.function.Consumer;
  */
 public class Benchmark {
     public static void main(String[] args) throws InterruptedException, IOException {
-        long start = System.currentTimeMillis();
+        System.setProperty("java.nio.channels.spi.AsynchronousChannelProvider", EnhanceAsynchronousChannelProvider.class.getName());
 
         int time = 15 * 1000;
 //        int time = Integer.MAX_VALUE;
@@ -44,11 +47,19 @@ public class Benchmark {
         });
         BufferPagePool bufferPagePool = new BufferPagePool(10 * 1023 * 1024, threadNum, true);
         ExecutorService executorService = Executors.newFixedThreadPool(threadNum);
+        List<HttpClient> httpClients = new ArrayList<>();
         for (int i = 0; i < connectCount; i++) {
             HttpClient httpClient = new HttpClient("127.0.0.1", 8080);
             httpClient.setAsynchronousChannelGroup(asynchronousChannelGroup);
             httpClient.setWriteBufferPool(bufferPagePool);
             httpClient.setExecutorService(executorService);
+            httpClient.connect();
+            httpClients.add(httpClient);
+        }
+        System.out.println(httpClients.size() + " clients connect success");
+        Thread.sleep(5000);
+        long startTime = System.currentTimeMillis();
+        for (HttpClient httpClient : httpClients) {
             Consumer<Throwable> failure = new Consumer<Throwable>() {
                 @Override
                 public void accept(Throwable throwable) {
@@ -78,7 +89,7 @@ public class Benchmark {
         Thread.sleep(time);
         running.set(false);
 
-        System.out.println("cost:" + (System.currentTimeMillis() - start));
+        System.out.println("cost:" + (System.currentTimeMillis() - startTime));
 
         System.out.println("success:" + success.get());
         System.out.println("fail:" + fail.get());

@@ -8,7 +8,6 @@
 
 package org.smartboot.http.client;
 
-import org.smartboot.http.client.impl.HttpResponseImpl;
 import org.smartboot.http.client.impl.HttpResponseProtocol;
 import org.smartboot.http.client.impl.Response;
 import org.smartboot.http.common.utils.Attachment;
@@ -47,7 +46,6 @@ public class HttpClient implements Closeable {
     public HttpClient(String host, int port) {
         this.host = host;
         this.port = port;
-        connect();
     }
 
     public HttpGet get(String uri) {
@@ -58,7 +56,7 @@ public class HttpClient implements Closeable {
         return new HttpRest(uri, host, aioSession.writeBuffer(), queue::offer);
     }
 
-    private void connect() {
+    public void connect() {
         client = new AioQuickClient<>(host, port, protocol, processor);
         try {
             client.setBufferPagePool(writeBufferPool).setReadBufferFactory(bufferPage -> VirtualBuffer.wrap(ByteBuffer.allocate(1024)));
@@ -93,7 +91,16 @@ public class HttpClient implements Closeable {
 
         @Override
         public void process(AioSession session, Response baseHttpResponse) {
-            queue.poll().complete(new HttpResponseImpl(baseHttpResponse));
+            CompletableFuture<HttpResponse> httpRest = queue.poll();
+            if (executorService == null) {
+                httpRest.complete(baseHttpResponse);
+            } else {
+                session.awaitRead();
+                executorService.execute(() -> {
+                    httpRest.complete(baseHttpResponse);
+                    session.signalRead();
+                });
+            }
         }
 
         @Override
