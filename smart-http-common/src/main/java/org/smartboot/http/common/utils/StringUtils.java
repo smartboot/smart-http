@@ -33,12 +33,21 @@ public class StringUtils {
      * @since 2.1
      */
     public static final int INDEX_NOT_FOUND = -1;
+    public static final List<StringCache>[] String_CACHE_EMPTY = new List[0];
     public static final List<StringCache>[] String_CACHE_HEAD_LINE = new List[8];
+    public static final List<StringCache>[] String_CACHE_HTTP_METHOD = new List[8];
     public static final List<StringCache>[] String_CACHE_URL = new List[32];
     public static final List<StringCache>[] String_CACHE_HEADER_NAME = new List[32];
     public static final List<StringCache>[] String_CACHE_HEADER_VALUE = new List[0];
+    public static final List<IntegerCache>[] INTEGER_CACHE_HTTP_STATUS_CODE = new List[8];
 
     static {
+        for (int i = 0; i < INTEGER_CACHE_HTTP_STATUS_CODE.length; i++) {
+            INTEGER_CACHE_HTTP_STATUS_CODE[i] = new ArrayList<>(8);
+        }
+        for (int i = 0; i < String_CACHE_HTTP_METHOD.length; i++) {
+            String_CACHE_HTTP_METHOD[i] = new ArrayList<>(8);
+        }
         for (int i = 0; i < String_CACHE_HEAD_LINE.length; i++) {
             String_CACHE_HEAD_LINE[i] = new ArrayList<>(8);
         }
@@ -63,6 +72,31 @@ public class StringUtils {
 
     public static String trim(final String str) {
         return str == null ? null : str.trim();
+    }
+
+    public static int convertToInteger(ByteBuffer buffer, int offset, int length, List<IntegerCache>[] cacheList) {
+        offset = buffer.arrayOffset() + offset;
+        byte[] bytes = buffer.array();
+        if (length >= cacheList.length) {
+            return Integer.parseInt(new String(bytes, offset, length));
+        }
+        List<IntegerCache> list = cacheList[length];
+        for (int i = list.size() - 1; i > -1; i--) {
+            IntegerCache cache = list.get(i);
+            if (equals(cache.bytes, bytes, offset)) {
+                return cache.value;
+            }
+        }
+        synchronized (list) {
+            for (IntegerCache cache : list) {
+                if (equals(cache.bytes, bytes, offset)) {
+                    return cache.value;
+                }
+            }
+            String str = new String(bytes, offset, length);
+            list.add(new IntegerCache(str.getBytes(), Integer.parseInt(str)));
+            return Integer.parseInt(str);
+        }
     }
 
     public static String convertToString(ByteBuffer buffer, int offset, int length, List<StringCache>[] cacheList) {
@@ -432,6 +466,16 @@ public class StringUtils {
         final String value;
 
         public StringCache(byte[] bytes, String value) {
+            this.bytes = bytes;
+            this.value = value;
+        }
+    }
+
+    static class IntegerCache {
+        final byte[] bytes;
+        final int value;
+
+        public IntegerCache(byte[] bytes, int value) {
             this.bytes = bytes;
             this.value = value;
         }

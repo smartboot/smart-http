@@ -27,7 +27,7 @@ class HttpStatusDescDecoder implements Decoder {
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Response request) {
         int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.LF);
         if (length > 0) {
-            String protocol = StringUtils.convertToString(byteBuffer, byteBuffer.position() - length - 1, length - 1, StringUtils.String_CACHE_URL);
+            String protocol = StringUtils.convertToString(byteBuffer, byteBuffer.position() - length - 1, length - 1, StringUtils.String_CACHE_EMPTY);
             request.setStatusDesc(protocol);
             return decoder.decode(byteBuffer, aioSession, request);
         } else {

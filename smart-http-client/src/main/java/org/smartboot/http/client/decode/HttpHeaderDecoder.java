@@ -45,7 +45,6 @@ class HttpHeaderDecoder implements Decoder {
             return this;
         }
         String name = StringUtils.convertToString(byteBuffer, byteBuffer.position() - length - 1, length, StringUtils.String_CACHE_HEADER_NAME);
-//        System.out.println(name);
         request.setHeaderTemp(name);
         return headerValueDecoder.decode(byteBuffer, aioSession, request);
     }
@@ -60,7 +59,6 @@ class HttpHeaderDecoder implements Decoder {
             if (length == -1) {
                 return this;
             }
-//            System.out.println(StringUtils.convertToString(byteBuffer, byteBuffer.position() - 1 - length, length - 1, StringUtils.String_CACHE_HEADER_VALUE));
             request.setHeadValue(StringUtils.convertToString(byteBuffer, byteBuffer.position() - 1 - length, length - 1, StringUtils.String_CACHE_HEADER_VALUE));
             return HttpHeaderDecoder.this.decode(byteBuffer, aioSession, request);
         }
