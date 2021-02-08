@@ -47,10 +47,10 @@ public class Benchmark {
                 return new Thread(r);
             }
         });
-        BufferPagePool bufferPagePool = new BufferPagePool(10 * 1023 * 1024, threadNum, true);
+        BufferPagePool bufferPagePool = new BufferPagePool(10 * 1024 * 1024, threadNum, true);
         ExecutorService executorService = Executors.newFixedThreadPool(threadNum);
         final HttpResponseProtocol protocol = new HttpResponseProtocol();
-        final HttpMessageProcessor processor = new HttpMessageProcessor(executorService);
+        final HttpMessageProcessor processor = new HttpMessageProcessor();
         List<HttpClient> httpClients = new ArrayList<>();
         for (int i = 0; i < connectCount; i++) {
             HttpClient httpClient = new HttpClient("127.0.0.1", 8080, protocol, processor);
@@ -60,7 +60,6 @@ public class Benchmark {
             httpClients.add(httpClient);
         }
         System.out.println(httpClients.size() + " clients connect success");
-        Thread.sleep(5000);
         long startTime = System.currentTimeMillis();
         for (HttpClient httpClient : httpClients) {
             Consumer<Throwable> failure = new Consumer<Throwable>() {
@@ -89,6 +88,7 @@ public class Benchmark {
                         .send();
             }
         }
+        System.out.println("all client started,cost:" + (System.currentTimeMillis() - startTime));
 
         Thread.sleep(time);
         running.set(false);
@@ -97,6 +97,7 @@ public class Benchmark {
 
         System.out.println("success:" + success.get());
         System.out.println("fail:" + fail.get());
+        asynchronousChannelGroup.shutdown();
     }
 
 }
