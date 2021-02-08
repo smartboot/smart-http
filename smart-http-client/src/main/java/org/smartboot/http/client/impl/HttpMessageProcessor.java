@@ -27,7 +27,11 @@ import java.util.concurrent.ExecutorService;
  */
 public class HttpMessageProcessor implements MessageProcessor<Response> {
     private final ExecutorService executorService;
-    private Map<AioSession, AbstractQueue<CompletableFuture<HttpResponse>>> map = new ConcurrentHashMap<>();
+    private final Map<AioSession, AbstractQueue<CompletableFuture<HttpResponse>>> map = new ConcurrentHashMap<>();
+
+    public HttpMessageProcessor() {
+        this(null);
+    }
 
     public HttpMessageProcessor(ExecutorService executorService) {
         this.executorService = executorService;
@@ -49,7 +53,9 @@ public class HttpMessageProcessor implements MessageProcessor<Response> {
 
     @Override
     public void stateEvent(AioSession session, StateMachineEnum stateMachineEnum, Throwable throwable) {
-
+        if (throwable != null) {
+            throwable.printStackTrace();
+        }
         switch (stateMachineEnum) {
             case NEW_SESSION:
                 map.put(session, new ConcurrentLinkedQueue<>());

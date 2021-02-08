@@ -45,7 +45,9 @@ public class HttpChunkedBodyDecoder implements Decoder {
         Attachment attachment = aioSession.getAttachment();
         if (len == 0) {
             StringBuilder stringBuilder = attachment.get(ATTACH_KEY_CHUNKED_CONTENT);
-            response.setBody(stringBuilder.toString());
+            if (stringBuilder != null) {
+                response.setBody(stringBuilder.toString());
+            }
             attachment.remove(ATTACH_KEY_CHUNKED_CONTENT);
             return decode(byteBuffer, aioSession, response);
         }

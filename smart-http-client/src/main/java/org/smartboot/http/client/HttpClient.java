@@ -9,6 +9,7 @@
 package org.smartboot.http.client;
 
 import org.smartboot.http.client.impl.HttpMessageProcessor;
+import org.smartboot.http.client.impl.HttpResponseProtocol;
 import org.smartboot.http.client.impl.Response;
 import org.smartboot.socket.Protocol;
 import org.smartboot.socket.buffer.BufferPagePool;
@@ -36,6 +37,10 @@ public class HttpClient implements Closeable {
     private BufferPagePool writeBufferPool;
     private AsynchronousChannelGroup asynchronousChannelGroup;
 
+    public HttpClient(String host, int port) {
+        this(host, port, new HttpResponseProtocol(), new HttpMessageProcessor());
+    }
+
     public HttpClient(String host, int port, Protocol<Response> protocol, HttpMessageProcessor processor) {
         this.host = host;
         this.port = port;
@@ -55,7 +60,7 @@ public class HttpClient implements Closeable {
         client = new AioQuickClient<>(host, port, protocol, processor);
         try {
             client.setBufferPagePool(writeBufferPool).setReadBufferFactory(bufferPage -> VirtualBuffer.wrap(ByteBuffer.allocate(1024)));
-            aioSession = client.start(asynchronousChannelGroup);
+            aioSession = asynchronousChannelGroup == null ? client.start() : client.start(asynchronousChannelGroup);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
