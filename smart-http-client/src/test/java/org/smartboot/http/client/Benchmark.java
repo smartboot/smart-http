@@ -9,6 +9,8 @@
 package org.smartboot.http.client;
 
 import org.smartboot.aio.EnhanceAsynchronousChannelProvider;
+import org.smartboot.http.client.impl.HttpMessageProcessor;
+import org.smartboot.http.client.impl.HttpResponseProtocol;
 import org.smartboot.socket.buffer.BufferPagePool;
 
 import java.io.IOException;
@@ -34,7 +36,7 @@ public class Benchmark {
 //        int time = Integer.MAX_VALUE;
         int threadNum = 4;
         int connectCount = 1024;
-        int pipeline = 16;
+        int pipeline = 1;
         AtomicLong success = new AtomicLong(0);
         AtomicLong fail = new AtomicLong(0);
         AtomicBoolean running = new AtomicBoolean(true);
@@ -47,12 +49,13 @@ public class Benchmark {
         });
         BufferPagePool bufferPagePool = new BufferPagePool(10 * 1023 * 1024, threadNum, true);
         ExecutorService executorService = Executors.newFixedThreadPool(threadNum);
+        final HttpResponseProtocol protocol = new HttpResponseProtocol();
+        final HttpMessageProcessor processor = new HttpMessageProcessor(executorService);
         List<HttpClient> httpClients = new ArrayList<>();
         for (int i = 0; i < connectCount; i++) {
-            HttpClient httpClient = new HttpClient("127.0.0.1", 8080);
+            HttpClient httpClient = new HttpClient("127.0.0.1", 8080, protocol, processor);
             httpClient.setAsynchronousChannelGroup(asynchronousChannelGroup);
             httpClient.setWriteBufferPool(bufferPagePool);
-            httpClient.setExecutorService(executorService);
             httpClient.connect();
             httpClients.add(httpClient);
         }
@@ -79,11 +82,12 @@ public class Benchmark {
                     }
                 }
             };
-
-            httpClient.get("/plaintext")
-                    .onSuccess(consumer)
-                    .onFailure(failure)
-                    .send();
+            for (int j = 0; j < pipeline; j++) {
+                httpClient.get("/plaintext")
+                        .onSuccess(consumer)
+                        .onFailure(failure)
+                        .send();
+            }
         }
 
         Thread.sleep(time);

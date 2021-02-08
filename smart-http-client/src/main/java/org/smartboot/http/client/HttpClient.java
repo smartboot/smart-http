@@ -8,11 +8,9 @@
 
 package org.smartboot.http.client;
 
-import org.smartboot.http.client.impl.HttpResponseProtocol;
+import org.smartboot.http.client.impl.HttpMessageProcessor;
 import org.smartboot.http.client.impl.Response;
-import org.smartboot.http.common.utils.Attachment;
-import org.smartboot.socket.MessageProcessor;
-import org.smartboot.socket.StateMachineEnum;
+import org.smartboot.socket.Protocol;
 import org.smartboot.socket.buffer.BufferPagePool;
 import org.smartboot.socket.buffer.VirtualBuffer;
 import org.smartboot.socket.transport.AioQuickClient;
@@ -22,9 +20,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousChannelGroup;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
 
 /**
  * @author 三刀（zhengjunweimail@163.com）
@@ -32,28 +27,28 @@ import java.util.concurrent.ExecutorService;
  */
 public class HttpClient implements Closeable {
 
-    private final HttpResponseProtocol protocol = new HttpResponseProtocol();
-    private final ArrayBlockingQueue<CompletableFuture<HttpResponse>> queue = new ArrayBlockingQueue<>(1024);
-    private final HttpMessageProcessor processor = new HttpMessageProcessor();
+    private final Protocol<Response> protocol;
+    private final HttpMessageProcessor processor;
     private final String host;
     private final int port;
     private AioQuickClient<Response> client;
     private AioSession aioSession;
     private BufferPagePool writeBufferPool;
     private AsynchronousChannelGroup asynchronousChannelGroup;
-    private ExecutorService executorService;
 
-    public HttpClient(String host, int port) {
+    public HttpClient(String host, int port, Protocol<Response> protocol, HttpMessageProcessor processor) {
         this.host = host;
         this.port = port;
+        this.protocol = protocol;
+        this.processor = processor;
     }
 
     public HttpGet get(String uri) {
-        return new HttpGet(uri, host, aioSession.writeBuffer(), queue::offer);
+        return new HttpGet(uri, host, aioSession.writeBuffer(), processor.getQueue(aioSession)::offer);
     }
 
     public HttpRest rest(String uri) {
-        return new HttpRest(uri, host, aioSession.writeBuffer(), queue::offer);
+        return new HttpRest(uri, host, aioSession.writeBuffer(), processor.getQueue(aioSession)::offer);
     }
 
     public void connect() {
@@ -74,53 +69,9 @@ public class HttpClient implements Closeable {
         this.asynchronousChannelGroup = asynchronousChannelGroup;
     }
 
-    public void setExecutorService(ExecutorService executorService) {
-        this.executorService = executorService;
-    }
-
     @Override
     public void close() {
         client.shutdownNow();
     }
 
-    /**
-     * @author 三刀
-     * @version V1.0 , 2018/6/10
-     */
-    class HttpMessageProcessor implements MessageProcessor<Response> {
-
-        @Override
-        public void process(AioSession session, Response baseHttpResponse) {
-            CompletableFuture<HttpResponse> httpRest = queue.poll();
-            if (executorService == null) {
-                httpRest.complete(baseHttpResponse);
-            } else {
-                session.awaitRead();
-                executorService.execute(() -> {
-                    httpRest.complete(baseHttpResponse);
-                    session.signalRead();
-                });
-            }
-        }
-
-        @Override
-        public void stateEvent(AioSession session, StateMachineEnum stateMachineEnum, Throwable throwable) {
-
-            switch (stateMachineEnum) {
-                case NEW_SESSION:
-                    Attachment attachment = new Attachment();
-                    attachment.put(HttpResponseProtocol.ATTACH_KEY_RESPONSE, new Response());
-                    session.setAttachment(attachment);
-                    break;
-                case PROCESS_EXCEPTION:
-                    session.close();
-                    break;
-                case DECODE_EXCEPTION:
-                    throwable.printStackTrace();
-                    break;
-                case SESSION_CLOSED:
-                    break;
-            }
-        }
-    }
 }
