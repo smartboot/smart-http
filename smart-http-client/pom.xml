@@ -28,6 +28,7 @@
             <groupId>org.smartboot.aio</groupId>
             <artifactId>aio-enhance</artifactId>
             <version>1.0.3</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
