@@ -1,7 +1,7 @@
 # smart-http
 smart-http 是一款可编程的 Http 应用微内核，方便用户根据自身需求进行 Server 或 Client 的应用开发。
 
-感兴趣的朋友请记得 Star一下该项目。[下载体验包](https://gitee.com/smartboot/smart-http/attach_files)
+感兴趣的朋友请记得 Star一下该项目，并且非常欢迎有能力的朋友贡献你的想法和代码。
 ## 功能列表
 1. 支持GET、POST的 HTTP 请求。
 2. 提供了 URL 路由组件，可以快速搭建一套静态服务器。
