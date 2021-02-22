@@ -30,7 +30,7 @@ class RFC2612RequestHandle extends HttpServerHandle {
     public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
         Request http11Request = ((RequestHook) request).getRequest();
         methodCheck(http11Request);
-        hostCheck(http11Request);
+//        hostCheck(http11Request);
         uriCheck(http11Request);
 
         boolean keepAlive = true;
