@@ -12,12 +12,10 @@ import org.smartboot.http.common.Pipeline;
 import org.smartboot.http.server.impl.HttpMessageProcessor;
 import org.smartboot.http.server.impl.HttpRequestProtocol;
 import org.smartboot.http.server.impl.Request;
-import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.buffer.BufferPagePool;
 import org.smartboot.socket.transport.AioQuickServer;
 
 import java.io.IOException;
-import java.util.function.Function;
 
 public class HttpBootstrap {
 
@@ -36,49 +34,21 @@ public class HttpBootstrap {
      */
     private final HttpRequestProtocol protocol = new HttpRequestProtocol();
     private final HttpMessageProcessor processor = new HttpMessageProcessor();
-    private Function<HttpMessageProcessor, MessageProcessor<Request>> processorFunction = new Function<HttpMessageProcessor, MessageProcessor<Request>>() {
-        @Override
-        public MessageProcessor<Request> apply(HttpMessageProcessor httpMessageProcessor) {
-            return httpMessageProcessor;
-        }
-    };
+    private final HttpServerConfiguration configuration = new HttpServerConfiguration();
+
     private AioQuickServer<Request> server;
+
+
     /**
      * Http服务端口号
      */
     private int port = 8080;
-    /**
-     * read缓冲区大小
-     */
-    private int readBufferSize = 1024;
-    /**
-     * 服务线程数
-     */
-    private int threadNum = Runtime.getRuntime().availableProcessors() + 2;
-    private int pageSize = 1024 * 1024;
-    private int pageNum = threadNum;
-    private int writeBufferSize = 1024;
-    private String host;
-    /**
-     * 是否启用控制台banner
-     */
-    private boolean bannerEnabled = true;
-
-    private int readPageSize = 1024 * 1024;
 
     /**
-     * 设置HTTP服务端端口号
-     *
-     * @param port
-     * @return
+     * Http服务端口号
      */
     public HttpBootstrap setPort(int port) {
         this.port = port;
-        return this;
-    }
-
-    public HttpBootstrap host(String host) {
-        this.host = host;
         return this;
     }
 
@@ -95,69 +65,29 @@ public class HttpBootstrap {
         return processor.wsPipeline();
     }
 
-    /**
-     * 设置read缓冲区大小
-     *
-     * @param readBufferSize
-     * @return
-     */
-    public HttpBootstrap setReadBufferSize(int readBufferSize) {
-        this.readBufferSize = readBufferSize;
-        return this;
-    }
-
-    /**
-     * 设置服务线程数
-     *
-     * @param threadNum
-     * @return
-     */
-    public HttpBootstrap setThreadNum(int threadNum) {
-        this.threadNum = threadNum;
-        return this;
-    }
-
-    public HttpBootstrap setBufferPool(int pageSize, int pageNum, int chunkSize) {
-        this.pageSize = pageSize;
-        this.pageNum = pageNum;
-        this.writeBufferSize = chunkSize;
-        return this;
+    public HttpServerConfiguration configuration() {
+        return configuration;
     }
 
     /**
      * 启动HTTP服务
      */
     public void start() {
-        BufferPagePool readBufferPool = new BufferPagePool(readPageSize, 1, false);
-        server = new AioQuickServer<>(host, port, protocol, processorFunction.apply(processor));
-        server.setThreadNum(threadNum)
+        BufferPagePool readBufferPool = new BufferPagePool(configuration.getReadPageSize(), 1, false);
+        server = new AioQuickServer<>(configuration.getHost(), port, protocol, configuration.getProcessor().apply(processor));
+        server.setThreadNum(configuration.getThreadNum())
                 .setBannerEnabled(false)
-                .setBufferFactory(() -> new BufferPagePool(pageSize, pageNum, true))
-                .setReadBufferFactory(bufferPage -> readBufferPool.allocateBufferPage().allocate(readBufferSize))
-                .setWriteBuffer(writeBufferSize, 16);
+                .setBufferFactory(() -> new BufferPagePool(configuration.getWritePageSize(), configuration.getWritePageNum(), true))
+                .setReadBufferFactory(bufferPage -> readBufferPool.allocateBufferPage().allocate(configuration.getReadBufferSize()))
+                .setWriteBuffer(configuration.getWriteBufferSize(), 16);
         try {
-            if (bannerEnabled) {
+            if (configuration.isBannerEnabled()) {
                 System.out.println(BANNER + "\r\n :: smart-http :: (" + VERSION + ")");
             }
             server.start();
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public HttpBootstrap setBannerEnabled(boolean bannerEnabled) {
-        this.bannerEnabled = bannerEnabled;
-        return this;
-    }
-
-    public HttpBootstrap wrapProcessor(Function<HttpMessageProcessor, MessageProcessor<Request>> processorFunction) {
-        this.processorFunction = processorFunction;
-        return this;
-    }
-
-    public HttpBootstrap setReadPageSize(int readPageSize) {
-        this.readPageSize = readPageSize;
-        return this;
     }
 
     /**

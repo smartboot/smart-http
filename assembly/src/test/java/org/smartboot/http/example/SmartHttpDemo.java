@@ -139,9 +139,6 @@ public class SmartHttpDemo {
         bootstrap.wsPipeline().next(wsRouteHandle);
 
         //设定服务器配置并启动
-        bootstrap.setPort(8080)
-                .setReadBufferSize(4096)
-                .setBufferPool(8 * 1024 * 1024, Runtime.getRuntime().availableProcessors() + 2, 4096)
-                .start();
+        bootstrap.start();
     }
 }

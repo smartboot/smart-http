@@ -29,11 +29,12 @@ public class BootStrap {
         Config config = new Config();
         ParamReflect.reflect(System.getProperty(PROPERTY_CONFIG), config);
         HttpBootstrap bootstrap = new HttpBootstrap();
+        bootstrap.configuration().host(config.getHost());
         //配置HTTP消息处理管道
         bootstrap.pipeline().next(new HttpStaticResourceHandle(config.getWebapps()));
 
         //设定服务器配置并启动
-        bootstrap.host(config.getHost()).setPort(config.getPort()).start();
+        bootstrap.setPort(config.getPort()).start();
         LOGGER.info("start smart-http http://{}:{}", config.getHost(), config.getPort());
     }
 

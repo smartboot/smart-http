@@ -57,7 +57,7 @@ public class IMDemo {
                 jsonObject.put("sendTime", System.currentTimeMillis());
                 jsonObject.put("id", UUID.randomUUID().toString());
                 jsonObject.put("from", request.hashCode());
-                jsonObject.put("avatar","https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png");
+                jsonObject.put("avatar", "https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png");
                 sessionMap.values().forEach(rsp -> {
                     System.out.println("收到消息");
                     rsp.sendTextMessage(jsonObject.toJSONString());
@@ -83,6 +83,6 @@ public class IMDemo {
         bootstrap.wsPipeline().next(webSocketRouteHandle);
 
         //设定服务器配置并启动
-        bootstrap.setPort(8081).start();
+        bootstrap.start();
     }
 }

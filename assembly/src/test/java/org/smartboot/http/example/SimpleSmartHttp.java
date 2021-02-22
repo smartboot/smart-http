@@ -45,6 +45,6 @@ public class SimpleSmartHttp {
                 response.sendTextMessage("Hello World");
             }
         });
-        bootstrap.setPort(8080).start();
+        bootstrap.start();
     }
 }

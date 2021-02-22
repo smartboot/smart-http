@@ -25,6 +25,6 @@ public class FileSmartHttp {
         bootstrap.pipeline().next(new HttpStaticResourceHandle(webdir));
 
         //设定服务器配置并启动
-        bootstrap.setPort(8080).start();
+        bootstrap.start();
     }
 }
