@@ -30,7 +30,7 @@ class HttpProtocolDecoder implements Decoder {
 //            if (byteBuffer.get(byteBuffer.position() - 2) != Constant.CR) {
 //                throw new HttpException(HttpStatus.BAD_REQUEST);
 //            }
-            String protocol = StringUtils.convertToString(byteBuffer, byteBuffer.position() - length - 1, length - 1, StringUtils.String_CACHE_HEAD_LINE);
+            String protocol = StringUtils.convertToString(byteBuffer, byteBuffer.position() - length - 1, length - 1, StringUtils.String_CACHE_HTTP_PROTOCOL);
             request.setProtocol(protocol);
             return decoder.decode(byteBuffer, aioSession, request);
         } else {

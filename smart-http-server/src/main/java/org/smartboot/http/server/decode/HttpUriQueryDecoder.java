@@ -27,7 +27,7 @@ class HttpUriQueryDecoder implements Decoder {
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
         int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.SP);
         if (length > 0) {
-            String query = StringUtils.convertToString(byteBuffer, byteBuffer.position() - 1 - length, length, StringUtils.String_CACHE_URL);
+            String query = StringUtils.convertToString(byteBuffer, byteBuffer.position() - 1 - length, length);
             request.setQueryString(query);
             return decoder.decode(byteBuffer, aioSession, request);
         } else {

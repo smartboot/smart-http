@@ -40,7 +40,7 @@ public class HttpChunkedBodyDecoder implements Decoder {
         if (length == 1) {
             return HttpResponseProtocol.HTTP_FINISH_DECODER;
         }
-        String contentLength = StringUtils.convertToString(byteBuffer, byteBuffer.position() - length - 1, length - 1, StringUtils.String_CACHE_URL);
+        String contentLength = StringUtils.convertToString(byteBuffer, byteBuffer.position() - length - 1, length - 1);
         int len = Integer.parseInt(contentLength, 16);
         Attachment attachment = aioSession.getAttachment();
         if (len == 0) {

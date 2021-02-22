@@ -34,11 +34,9 @@ public class StringUtils {
      */
     public static final int INDEX_NOT_FOUND = -1;
     public static final List<StringCache>[] String_CACHE_EMPTY = new List[0];
-    public static final List<StringCache>[] String_CACHE_HEAD_LINE = new List[8];
+    public static final List<StringCache>[] String_CACHE_HTTP_PROTOCOL = new List[8];
     public static final List<StringCache>[] String_CACHE_HTTP_METHOD = new List[8];
-    public static final List<StringCache>[] String_CACHE_URL = new List[32];
     public static final List<StringCache>[] String_CACHE_HEADER_NAME = new List[32];
-    public static final List<StringCache>[] String_CACHE_HEADER_VALUE = new List[0];
     public static final List<IntegerCache>[] INTEGER_CACHE_HTTP_STATUS_CODE = new List[8];
 
     static {
@@ -48,17 +46,11 @@ public class StringUtils {
         for (int i = 0; i < String_CACHE_HTTP_METHOD.length; i++) {
             String_CACHE_HTTP_METHOD[i] = new ArrayList<>(8);
         }
-        for (int i = 0; i < String_CACHE_HEAD_LINE.length; i++) {
-            String_CACHE_HEAD_LINE[i] = new ArrayList<>(8);
-        }
-        for (int i = 0; i < String_CACHE_URL.length; i++) {
-            String_CACHE_URL[i] = new ArrayList<>(8);
+        for (int i = 0; i < String_CACHE_HTTP_PROTOCOL.length; i++) {
+            String_CACHE_HTTP_PROTOCOL[i] = new ArrayList<>(8);
         }
         for (int i = 0; i < String_CACHE_HEADER_NAME.length; i++) {
             String_CACHE_HEADER_NAME[i] = new ArrayList<>(8);
-        }
-        for (int i = 0; i < String_CACHE_HEADER_VALUE.length; i++) {
-            String_CACHE_HEADER_VALUE[i] = new ArrayList<>(8);
         }
     }
 
@@ -97,6 +89,10 @@ public class StringUtils {
             list.add(new IntegerCache(str.getBytes(), Integer.parseInt(str)));
             return Integer.parseInt(str);
         }
+    }
+
+    public static String convertToString(ByteBuffer buffer, int offset, int length) {
+        return convertToString(buffer, offset, length, String_CACHE_EMPTY);
     }
 
     public static String convertToString(ByteBuffer buffer, int offset, int length, List<StringCache>[] cacheList) {
