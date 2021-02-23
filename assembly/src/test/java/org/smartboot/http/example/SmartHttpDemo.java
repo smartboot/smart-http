@@ -16,6 +16,7 @@ import org.smartboot.http.server.HttpResponse;
 import org.smartboot.http.server.HttpServerHandle;
 import org.smartboot.http.server.WebSocketRequest;
 import org.smartboot.http.server.WebSocketResponse;
+import org.smartboot.http.server.handle.BasicAuthServerHandle;
 import org.smartboot.http.server.handle.HttpRouteHandle;
 import org.smartboot.http.server.handle.WebSocketDefaultHandle;
 import org.smartboot.http.server.handle.WebSocketRouteHandle;
@@ -37,6 +38,12 @@ public class SmartHttpDemo {
         System.setProperty("smartHttp.server.alias", "SANDAO base on ");
 
         HttpRouteHandle routeHandle = new HttpRouteHandle();
+        routeHandle.route("/basic", new BasicAuthServerHandle("admin", "admin1", new HttpServerHandle() {
+            @Override
+            public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
+                response.write("success".getBytes());
+            }
+        }));
         routeHandle.route("/", new HttpServerHandle() {
             byte[] body = ("<html>" +
                     "<head><title>smart-http demo</title></head>" +
