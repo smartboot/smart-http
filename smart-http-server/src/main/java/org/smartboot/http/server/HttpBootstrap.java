@@ -52,19 +52,40 @@ public class HttpBootstrap {
         return this;
     }
 
+    /**
+     * 获取 Http 请求的处理器管道
+     *
+     * @return
+     */
     public Pipeline<HttpRequest, HttpResponse> pipeline() {
         return processor.pipeline();
     }
 
+    /**
+     * 往 http 处理器管道中注册 Handle
+     *
+     * @param httpHandle
+     * @return
+     */
     public HttpBootstrap pipeline(HttpServerHandle httpHandle) {
         pipeline().next(httpHandle);
         return this;
     }
 
+    /**
+     * 获取websocket的处理器管道
+     *
+     * @return
+     */
     public Pipeline<WebSocketRequest, WebSocketResponse> wsPipeline() {
         return processor.wsPipeline();
     }
 
+    /**
+     * 服务配置
+     *
+     * @return
+     */
     public HttpServerConfiguration configuration() {
         return configuration;
     }
