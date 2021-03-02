@@ -56,7 +56,7 @@ class HttpHeaderEndDecoder implements Decoder {
             int postLength = request.getContentLength();
             if (postLength > Constant.maxPostSize) {
                 throw new HttpException(HttpStatus.PAYLOAD_TOO_LARGE);
-            } else if (postLength <= 0) {
+            } else if (postLength < 0) {
                 throw new HttpException(HttpStatus.LENGTH_REQUIRED);
             }
             return decoder.decode(byteBuffer, aioSession, request);
