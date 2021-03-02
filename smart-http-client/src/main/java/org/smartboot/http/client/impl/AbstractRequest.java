@@ -44,6 +44,11 @@ class AbstractRequest implements HttpRequest {
     private Map<String, HeaderValue> headers = null;
 
     /**
+     * 请求正文
+     */
+    private Map<String, String> params;
+
+    /**
      * 响应正文长度
      */
     private int contentLength = -1;
@@ -213,5 +218,13 @@ class AbstractRequest implements HttpRequest {
 
     public void setProtocol(String protocol) {
         this.protocol = protocol;
+    }
+
+    public Map<String, String> getParams() {
+        return params;
+    }
+
+    public void setParams(Map<String, String> params) {
+        this.params = params;
     }
 }

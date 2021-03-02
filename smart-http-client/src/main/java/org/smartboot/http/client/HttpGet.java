@@ -30,6 +30,7 @@ public class HttpGet extends HttpRest {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public HttpGet onSuccess(Consumer<HttpResponse> consumer) {
         super.onSuccess(consumer);
         return this;

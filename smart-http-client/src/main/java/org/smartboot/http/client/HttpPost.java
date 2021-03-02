@@ -11,7 +11,7 @@ package org.smartboot.http.client;
 import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.socket.transport.WriteBuffer;
 
-import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -26,19 +26,36 @@ public class HttpPost extends HttpRest {
         request.setMethod(HttpMethodEnum.POST.getMethod());
     }
 
-    public HttpPost sendBuffer(String body) {
-        try {
-            request.getOutputStream().write(body.getBytes());
-            super.send();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    @Override
+    public HttpRest setMethod(String method) {
+        throw new UnsupportedOperationException();
+    }
+
+    public HttpPost send(Map<String, String> params) {
+        request.setParams(params);
+        super.send();
+        return this;
+    }
+
+    @Override
+    public HttpPost onSuccess(Consumer<HttpResponse> consumer) {
+        super.onSuccess(consumer);
+        return this;
+    }
+
+    @Override
+    public HttpPost onFailure(Consumer<Throwable> consumer) {
+        super.onFailure(consumer);
+        return this;
+    }
+
+    public HttpPost setContentType(String contentType){
+        request.setContentType(contentType);
         return this;
     }
 
     @Override
     public HttpPost send() {
-
         super.send();
         return this;
     }

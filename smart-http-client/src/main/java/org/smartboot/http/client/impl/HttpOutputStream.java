@@ -37,6 +37,17 @@ final class HttpOutputStream extends AbstractOutputStream {
             return;
         }
 
+        // 添加content-type
+        String contentType = request.getContentType();
+        if (contentType == null) {
+            contentType = HttpHeaderConstant.Values.DEFAULT_CONTENT_TYPE;
+        }
+        request.addHeader(HttpHeaderConstant.Names.CONTENT_TYPE, contentType);
+
+        // 添加content-length
+        byte[] body = getBody();
+        request.addHeader(HttpHeaderConstant.Names.CONTENT_LENGTH, body == null?"0":String.valueOf(body.length));
+
         //输出http状态行、contentType,contentLength、Transfer-Encoding、server等信息
         String headLine = request.getMethod() + " " + request.getUri() + " " + request.getProtocol();
         writeBuffer.write(getBytes(headLine));
@@ -56,8 +67,29 @@ final class HttpOutputStream extends AbstractOutputStream {
         }
         writeBuffer.write(Constant.HEADER_END);
 
+        if (body != null) {
+            writeBuffer.write(body);
+        }
         committed = true;
     }
+
+    private byte[] getBody() {
+        if (request.getParams() != null) {
+            StringBuilder sb = new StringBuilder();
+            Map<String, String> params = request.getParams();
+            int idx = 0;
+            for (Map.Entry<String, String> entry : params.entrySet()) {
+                if (idx != 0) {
+                    sb.append("&");
+                }
+                sb.append(entry.getKey()).append("=").append(entry.getValue());
+                idx++;
+            }
+            return getBytes(sb.toString());
+        }
+        return null;
+    }
+
 
     private void convertCookieToHeader(AbstractRequest request) {
         List<Cookie> cookies = request.getCookies();

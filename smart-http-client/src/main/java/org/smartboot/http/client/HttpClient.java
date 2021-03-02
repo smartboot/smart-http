@@ -56,6 +56,10 @@ public class HttpClient implements Closeable {
         return new HttpRest(uri, host, aioSession.writeBuffer(), processor.getQueue(aioSession)::offer);
     }
 
+    public HttpPost post(String uri) {
+        return new HttpPost(uri, host, aioSession.writeBuffer(), processor.getQueue(aioSession)::offer);
+    }
+
     public void connect() {
         client = new AioQuickClient<>(host, port, protocol, processor);
         try {
