@@ -10,9 +10,9 @@ package org.smartboot.http;
 
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
-import org.smartboot.http.common.utils.ParamReflect;
 import org.smartboot.http.server.HttpBootstrap;
-import org.smartboot.http.server.handle.HttpStaticResourceHandle;
+
+import java.util.Arrays;
 
 /**
  * 打开浏览器请求：http://127.0.0.0:8080/
@@ -26,16 +26,14 @@ public class BootStrap {
 
 
     public static void main(String[] args) {
-        Config config = new Config();
-        ParamReflect.reflect(System.getProperty(PROPERTY_CONFIG), config);
+        System.out.println(Arrays.toString(args));
         HttpBootstrap bootstrap = new HttpBootstrap();
-        bootstrap.configuration().host(config.getHost());
         //配置HTTP消息处理管道
-        bootstrap.pipeline().next(new HttpStaticResourceHandle(config.getWebapps()));
+//        bootstrap.pipeline().next(new HttpStaticResourceHandle(config.getWebapps()));
 
         //设定服务器配置并启动
-        bootstrap.setPort(config.getPort()).start();
-        LOGGER.info("start smart-http http://{}:{}", config.getHost(), config.getPort());
+        bootstrap.start();
+//        LOGGER.info("start smart-http http://{}:{}", config.getHost(), config.getPort());
     }
 
 

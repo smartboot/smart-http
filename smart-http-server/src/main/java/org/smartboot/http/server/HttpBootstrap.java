@@ -11,7 +11,6 @@ package org.smartboot.http.server;
 import org.smartboot.http.common.Pipeline;
 import org.smartboot.http.server.impl.HttpMessageProcessor;
 import org.smartboot.http.server.impl.HttpRequestProtocol;
-import org.smartboot.http.server.impl.Request;
 import org.smartboot.socket.buffer.BufferPagePool;
 import org.smartboot.socket.transport.AioQuickServer;
 
@@ -36,7 +35,7 @@ public class HttpBootstrap {
     private final HttpMessageProcessor processor = new HttpMessageProcessor();
     private final HttpServerConfiguration configuration = new HttpServerConfiguration();
 
-    private AioQuickServer<Request> server;
+    private AioQuickServer server;
 
 
     /**
@@ -95,7 +94,7 @@ public class HttpBootstrap {
      */
     public void start() {
         BufferPagePool readBufferPool = new BufferPagePool(configuration.getReadPageSize(), 1, false);
-        server = new AioQuickServer<>(configuration.getHost(), port, protocol, configuration.getProcessor().apply(processor));
+        server = new AioQuickServer(configuration.getHost(), port, protocol, configuration.getProcessor().apply(processor));
         server.setThreadNum(configuration.getThreadNum())
                 .setBannerEnabled(false)
                 .setBufferFactory(() -> new BufferPagePool(configuration.getWritePageSize(), configuration.getWritePageNum(), true))

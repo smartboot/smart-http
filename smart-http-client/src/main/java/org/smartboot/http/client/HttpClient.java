@@ -32,7 +32,7 @@ public class HttpClient implements Closeable {
     private final HttpMessageProcessor processor;
     private final String host;
     private final int port;
-    private AioQuickClient<Response> client;
+    private AioQuickClient client;
     private AioSession aioSession;
     private BufferPagePool writeBufferPool;
     private AsynchronousChannelGroup asynchronousChannelGroup;
@@ -61,7 +61,7 @@ public class HttpClient implements Closeable {
     }
 
     public void connect() {
-        client = new AioQuickClient<>(host, port, protocol, processor);
+        client = new AioQuickClient(host, port, protocol, processor);
         try {
             client.setBufferPagePool(writeBufferPool).setReadBufferFactory(bufferPage -> VirtualBuffer.wrap(ByteBuffer.allocate(1024)));
             aioSession = asynchronousChannelGroup == null ? client.start() : client.start(asynchronousChannelGroup);
