@@ -8,11 +8,14 @@
 
 package org.smartboot.http.test;
 
+import com.alibaba.fastjson.JSONObject;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.smartboot.http.client.HttpClient;
 import org.smartboot.http.common.utils.HttpHeaderConstant;
+import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpBootstrap;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
@@ -22,6 +25,8 @@ import org.smartboot.http.server.handle.HttpRouteHandle;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author huqiang
@@ -38,16 +43,19 @@ public class HttpPostDemo {
         routeHandle.route("/post_param", new HttpServerHandle() {
             @Override
             public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
+                JSONObject jsonObject = new JSONObject();
                 for (String key : request.getParameters().keySet()) {
-                    System.out.println(key + ": " + request.getParameter(key));
+                    jsonObject.put(key, request.getParameter(key));
                 }
+                response.write(jsonObject.toString().getBytes());
             }
         });
         httpBootstrap.pipeline(routeHandle).setPort(8080).start();
     }
 
     @Test
-    public void testPost() {
+    public void testPost() throws ExecutionException, InterruptedException {
+        CompletableFuture<Boolean> future = new CompletableFuture<>();
         HttpClient httpClient = new HttpClient("localhost", 8080);
         httpClient.connect();
         Map<String, String> param = new HashMap<>();
@@ -57,22 +65,29 @@ public class HttpPostDemo {
                 .setContentType(HttpHeaderConstant.Values.X_WWW_FORM_URLENCODED)
                 .onSuccess(response -> {
                     System.out.println(response.body());
+                    JSONObject jsonObject = JSONObject.parseObject(response.body());
+                    boolean suc = false;
+                    for (String key : param.keySet()) {
+                        suc = StringUtils.equals(param.get(key), jsonObject.getString(key));
+                        if (!suc) {
+                            break;
+                        }
+                    }
                     httpClient.close();
+                    future.complete(suc);
                 })
                 .sendForm(param)
                 .onFailure(throwable -> {
                     System.out.println("异常A: " + throwable.getMessage());
                     throwable.printStackTrace();
+                    Assert.fail();
+                    future.complete(false);
                 });
+        Assert.assertTrue(future.get());
     }
 
     @After
     public void destroy() {
-        try {
-            Thread.sleep(Integer.MAX_VALUE);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         httpBootstrap.shutdown();
     }
 }
