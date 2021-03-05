@@ -47,7 +47,7 @@ class HttpUriDecoder implements Decoder {
     private int scanURI(ByteBuffer buffer) {
         while (buffer.get() == Constant.SP) ;
         int i = 1;
-        buffer.mark();
+        int mark = buffer.position();
         while (buffer.hasRemaining()) {
             byte b = buffer.get();
             if (b == ' ' || b == '?') {
@@ -55,7 +55,7 @@ class HttpUriDecoder implements Decoder {
             }
             i++;
         }
-        buffer.reset();
+        buffer.position(mark - 1);
         return -1;
     }
 }
