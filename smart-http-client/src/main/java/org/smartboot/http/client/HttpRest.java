@@ -25,16 +25,16 @@ public class HttpRest {
     private final static String DEFAULT_USER_AGENT = "smart-http";
     protected final HttpRequestImpl request;
     protected final CompletableFuture<HttpResponse> completableFuture = new CompletableFuture<>();
-    protected final Consumer<CompletableFuture<HttpResponse>> responseListener;
+    private final Consumer<CompletableFuture<HttpResponse>> responseListener;
 
     public HttpRest(String uri, String host, WriteBuffer writeBuffer, Consumer<CompletableFuture<HttpResponse>> responseListener) {
         this.request = new HttpRequestImpl(writeBuffer);
         this.responseListener = responseListener;
         this.request.setUri(uri);
-        this.request.setHeader(HttpHeaderConstant.Names.HOST, host);
         this.request.setProtocol(HttpProtocolEnum.HTTP_11.getProtocol());
-        this.request.setHeader(HttpHeaderConstant.Names.USER_AGENT, DEFAULT_USER_AGENT);
-        keepalive(true);
+        this.keepalive(true)
+                .addHeader(HttpHeaderConstant.Names.HOST, host)
+                .addHeader(HttpHeaderConstant.Names.USER_AGENT, DEFAULT_USER_AGENT);
     }
 
     protected final void bindResponseListener() {
