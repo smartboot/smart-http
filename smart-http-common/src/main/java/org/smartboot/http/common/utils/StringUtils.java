@@ -446,14 +446,14 @@ public class StringUtils {
         }
         while (buffer.get() == Constant.SP) ;
         int i = 1;
-        buffer.mark();
+        int mark = buffer.position();
         while (buffer.hasRemaining()) {
             if (buffer.get() == split) {
                 return i;
             }
             i++;
         }
-        buffer.reset();
+        buffer.position(mark - 1);
         return -1;
     }
 
