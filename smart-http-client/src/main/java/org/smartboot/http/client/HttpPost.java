@@ -22,7 +22,7 @@ import java.util.function.Consumer;
  * @author 三刀（zhengjunweimail@163.com）
  * @version V1.0 , 2021/2/4
  */
-public class HttpPost extends HttpRest {
+public final class HttpPost extends HttpRest {
 
     public HttpPost(String uri, String host, WriteBuffer writeBuffer, Consumer<CompletableFuture<HttpResponse>> bindListener) {
         super(uri, host, writeBuffer, bindListener);
@@ -34,10 +34,10 @@ public class HttpPost extends HttpRest {
         throw new UnsupportedOperationException();
     }
 
-    public HttpPost sendForm(Map<String, String> params) {
+    public void sendForm(Map<String, String> params) {
         if (params == null || params.isEmpty()) {
             super.send();
-            return this;
+            return;
         }
         try {
             bindResponseListener();
@@ -61,7 +61,6 @@ public class HttpPost extends HttpRest {
             e.printStackTrace();
             completableFuture.completeExceptionally(e);
         }
-        return this;
     }
 
     @Override
@@ -84,12 +83,6 @@ public class HttpPost extends HttpRest {
 
     public HttpPost setContentType(String contentType) {
         request.setContentType(contentType);
-        return this;
-    }
-
-    @Override
-    public HttpPost send() {
-        super.send();
         return this;
     }
 }

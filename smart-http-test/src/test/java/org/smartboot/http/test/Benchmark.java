@@ -77,7 +77,7 @@ public class Benchmark {
                     success.incrementAndGet();
 //                    System.out.println(response.body());
                     if (running.get()) {
-                        httpClient.get("/plaintext").send().onSuccess(this).onFailure(failure);
+                        httpClient.get("/plaintext").onSuccess(this).onFailure(failure).send();
                     } else {
                         httpClient.close();
                     }

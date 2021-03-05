@@ -76,13 +76,12 @@ public class HttpPostDemo {
                     httpClient.close();
                     future.complete(suc);
                 })
-                .sendForm(param)
                 .onFailure(throwable -> {
                     System.out.println("异常A: " + throwable.getMessage());
                     throwable.printStackTrace();
                     Assert.fail();
                     future.complete(false);
-                });
+                }).sendForm(param);
         Assert.assertTrue(future.get());
     }
 

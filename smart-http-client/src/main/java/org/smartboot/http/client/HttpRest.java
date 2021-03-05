@@ -41,7 +41,7 @@ public class HttpRest {
         responseListener.accept(completableFuture);
     }
 
-    public HttpRest send() {
+    public final void send() {
         try {
             bindResponseListener();
             request.getOutputStream().flush();
@@ -49,7 +49,6 @@ public class HttpRest {
             e.printStackTrace();
             completableFuture.completeExceptionally(e);
         }
-        return this;
     }
 
     public HttpRest onSuccess(Consumer<HttpResponse> consumer) {
