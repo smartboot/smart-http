@@ -6,7 +6,7 @@
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
-package org.smartboot.http.test;
+package org.smartboot.http.demo;
 
 import org.smartboot.aio.EnhanceAsynchronousChannelProvider;
 import org.smartboot.http.client.HttpClient;

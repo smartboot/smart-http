@@ -1,7 +1,7 @@
 /*******************************************************************************
  * Copyright (c) 2017-2021, org.smartboot. All rights reserved.
  * project name: smart-http
- * file name: HttpPostDemo.java
+ * file name: HttpRestDemo.java
  * Date: 2021-03-05
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
@@ -14,8 +14,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.smartboot.http.client.HttpClient;
-import org.smartboot.http.common.utils.HttpHeaderConstant;
-import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpBootstrap;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
@@ -23,24 +21,23 @@ import org.smartboot.http.server.HttpServerHandle;
 import org.smartboot.http.server.handle.HttpRouteHandle;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 /**
- * @author huqiang
- * @since 2021/3/2 10:57
+ * @author 三刀（zhengjunweimail@163.com）
+ * @version V1.0 , 2021/2/7
  */
-public class HttpPostDemo {
+public class HttpRestTest {
 
     private HttpBootstrap httpBootstrap;
+
 
     @Before
     public void init() {
         httpBootstrap = new HttpBootstrap();
         HttpRouteHandle routeHandle = new HttpRouteHandle();
-        routeHandle.route("/post_param", new HttpServerHandle() {
+        routeHandle.route("/post", new HttpServerHandle() {
             @Override
             public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
                 JSONObject jsonObject = new JSONObject();
@@ -58,30 +55,19 @@ public class HttpPostDemo {
         CompletableFuture<Boolean> future = new CompletableFuture<>();
         HttpClient httpClient = new HttpClient("localhost", 8080);
         httpClient.connect();
-        Map<String, String> param = new HashMap<>();
-        param.put("name", "zhouyu");
-        param.put("age", "18");
-        httpClient.post("/post_param")
-                .setContentType(HttpHeaderConstant.Values.X_WWW_FORM_URLENCODED)
+        httpClient.rest("/post")
+                .setMethod("post")
                 .onSuccess(response -> {
                     System.out.println(response.body());
-                    JSONObject jsonObject = JSONObject.parseObject(response.body());
-                    boolean suc = false;
-                    for (String key : param.keySet()) {
-                        suc = StringUtils.equals(param.get(key), jsonObject.getString(key));
-                        if (!suc) {
-                            break;
-                        }
-                    }
                     httpClient.close();
-                    future.complete(suc);
+                    future.complete(true);
                 })
                 .onFailure(throwable -> {
-                    System.out.println("异常A: " + throwable.getMessage());
                     throwable.printStackTrace();
-                    Assert.fail();
-                    future.complete(false);
-                }).sendForm(param);
+                    httpClient.close();
+                    future.complete(true);
+                })
+                .send();
         Assert.assertTrue(future.get());
     }
 
@@ -89,4 +75,5 @@ public class HttpPostDemo {
     public void destroy() {
         httpBootstrap.shutdown();
     }
+
 }
