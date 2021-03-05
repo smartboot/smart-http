@@ -24,12 +24,12 @@ import java.util.function.Consumer;
 public class HttpRest {
     private final static String DEFAULT_USER_AGENT = "smart-http";
     protected final HttpRequestImpl request;
-    private final CompletableFuture<HttpResponse> completableFuture = new CompletableFuture<>();
-    private final Consumer<CompletableFuture<HttpResponse>> consumer;
+    protected final CompletableFuture<HttpResponse> completableFuture = new CompletableFuture<>();
+    protected final Consumer<CompletableFuture<HttpResponse>> responseListener;
 
-    public HttpRest(String uri, String host, WriteBuffer writeBuffer, Consumer<CompletableFuture<HttpResponse>> consumer) {
+    public HttpRest(String uri, String host, WriteBuffer writeBuffer, Consumer<CompletableFuture<HttpResponse>> responseListener) {
         this.request = new HttpRequestImpl(writeBuffer);
-        this.consumer = consumer;
+        this.responseListener = responseListener;
         this.request.setUri(uri);
         this.request.setHeader(HttpHeaderConstant.Names.HOST, host);
         this.request.setProtocol(HttpProtocolEnum.HTTP_11.getProtocol());
@@ -37,12 +37,17 @@ public class HttpRest {
         keepalive(true);
     }
 
+    protected final void bindResponseListener() {
+        responseListener.accept(completableFuture);
+    }
+
     public HttpRest send() {
         try {
-            consumer.accept(completableFuture);
+            bindResponseListener();
             request.getOutputStream().flush();
         } catch (IOException e) {
             e.printStackTrace();
+            completableFuture.completeExceptionally(e);
         }
         return this;
     }
@@ -57,6 +62,11 @@ public class HttpRest {
             consumer.accept(throwable);
             return null;
         });
+        return this;
+    }
+
+    public HttpRest addHeader(String headerName, String headerValue) {
+        this.request.addHeader(headerName, headerValue);
         return this;
     }
 

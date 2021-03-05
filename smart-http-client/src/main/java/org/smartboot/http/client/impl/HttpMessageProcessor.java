@@ -14,6 +14,7 @@ import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.transport.AioSession;
 
+import java.io.IOException;
 import java.util.AbstractQueue;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -54,7 +55,11 @@ public class HttpMessageProcessor implements MessageProcessor<Response> {
     @Override
     public void stateEvent(AioSession session, StateMachineEnum stateMachineEnum, Throwable throwable) {
         if (throwable != null) {
-            throwable.printStackTrace();
+            AbstractQueue<CompletableFuture<HttpResponse>> queue = map.get(session);
+            CompletableFuture<HttpResponse> future;
+            while ((future = queue.poll()) != null) {
+                future.completeExceptionally(throwable);
+            }
         }
         switch (stateMachineEnum) {
             case NEW_SESSION:
@@ -70,7 +75,11 @@ public class HttpMessageProcessor implements MessageProcessor<Response> {
                 throwable.printStackTrace();
                 break;
             case SESSION_CLOSED:
-                map.remove(session).clear();
+                AbstractQueue<CompletableFuture<HttpResponse>> queue = map.remove(session);
+                CompletableFuture<HttpResponse> future;
+                while ((future = queue.poll()) != null) {
+                    future.completeExceptionally(new IOException("client is closed"));
+                }
                 break;
         }
     }

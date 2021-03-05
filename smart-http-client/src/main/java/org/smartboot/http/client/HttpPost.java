@@ -9,8 +9,11 @@
 package org.smartboot.http.client;
 
 import org.smartboot.http.common.enums.HttpMethodEnum;
+import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.socket.transport.WriteBuffer;
 
+import java.net.URLEncoder;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -31,9 +34,39 @@ public class HttpPost extends HttpRest {
         throw new UnsupportedOperationException();
     }
 
-    public HttpPost send(Map<String, String> params) {
-        request.setParams(params);
-        super.send();
+    public HttpPost sendForm(Map<String, String> params) {
+        if (params == null || params.isEmpty()) {
+            super.send();
+            return this;
+        }
+        try {
+            bindResponseListener();
+            //编码Post表单
+            Iterator<Map.Entry<String, String>> iterator = params.entrySet().iterator();
+            Map.Entry<String, String> entry = iterator.next();
+            StringBuilder sb = new StringBuilder();
+            sb.append(URLEncoder.encode(entry.getKey(), "utf8")).append("=").append(URLEncoder.encode(entry.getValue(), "utf8"));
+            while (iterator.hasNext()) {
+                entry = iterator.next();
+                sb.append("&").append(URLEncoder.encode(entry.getKey(), "utf8")).append("=").append(URLEncoder.encode(entry.getValue(), "utf8"));
+            }
+            byte[] bytes = sb.toString().getBytes();
+            // 设置 Header
+            addHeader(HttpHeaderConstant.Names.CONTENT_LENGTH, String.valueOf(bytes.length));
+            addHeader(HttpHeaderConstant.Names.CONTENT_TYPE, HttpHeaderConstant.Values.X_WWW_FORM_URLENCODED);
+            //输出数据
+            request.write(bytes);
+            request.getOutputStream().flush();
+        } catch (Exception e) {
+            e.printStackTrace();
+            completableFuture.completeExceptionally(e);
+        }
+        return this;
+    }
+
+    @Override
+    public HttpPost addHeader(String headerName, String headerValue) {
+        super.addHeader(headerName, headerValue);
         return this;
     }
 
@@ -49,7 +82,7 @@ public class HttpPost extends HttpRest {
         return this;
     }
 
-    public HttpPost setContentType(String contentType){
+    public HttpPost setContentType(String contentType) {
         request.setContentType(contentType);
         return this;
     }

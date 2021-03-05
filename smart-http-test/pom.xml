@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ~ Copyright (c) 2017-2021, org.smartboot. All rights reserved.
+  ~ project name: smart-http
+  ~ file name: pom.xml
+  ~ Date: 2021-03-05
+  ~ Author: sandao (zhengjunweimail@163.com)
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <groupId>org.smartboot.http</groupId>
+    <artifactId>smart-http-test</artifactId>
+    <version>1.0.0</version>
+    <modelVersion>4.0.0</modelVersion>
+
+    <properties>
+        <smarthttp.version>1.1.1-SNAPSHOT</smarthttp.version>
+        <junit.version>4.13.1</junit.version>
+        <enhance.version>1.0.3</enhance.version>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.smartboot.aio</groupId>
+            <artifactId>aio-enhance</artifactId>
+            <version>${enhance.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.smartboot.http</groupId>
+            <artifactId>smart-http-server</artifactId>
+            <version>${smarthttp.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.smartboot.http</groupId>
+            <artifactId>smart-http-client</artifactId>
+            <version>${smarthttp.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
