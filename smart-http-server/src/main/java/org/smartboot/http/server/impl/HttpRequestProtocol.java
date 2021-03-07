@@ -39,12 +39,6 @@ public class HttpRequestProtocol implements Protocol<Request> {
     public static final Decoder WS_FRAME_DECODER = (byteBuffer, aioSession, request) -> null;
     static final AttachKey<Request> ATTACH_KEY_REQUEST = AttachKey.valueOf("request");
 
-    private static final ThreadLocal<ByteBuffer> CHAR_CACHE_LOCAL = new ThreadLocal<ByteBuffer>() {
-        @Override
-        protected ByteBuffer initialValue() {
-            return ByteBuffer.allocate(1024);
-        }
-    };
     private static final AttachKey<Decoder> ATTACH_KEY_DECHDE_CHAIN = AttachKey.valueOf("decodeChain");
 
     private final HttpMethodDecoder httpMethodDecoder = new HttpMethodDecoder();
