@@ -8,13 +8,11 @@
 
 package org.smartboot.http.server.impl;
 
-import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.socket.transport.WriteBuffer;
 
 import java.io.IOException;
-import java.util.Map;
 
 /**
  * @author 三刀
@@ -49,16 +47,7 @@ final class WebSocketOutputStream extends AbstractOutputStream {
                 + HttpHeaderConstant.Names.CONTENT_TYPE + ":" + contentType));
 
         //输出Header部分
-        if (response.getHeaders() != null) {
-            for (Map.Entry<String, HeaderValue> entry : response.getHeaders().entrySet()) {
-                HeaderValue headerValue = entry.getValue();
-                while (headerValue != null) {
-                    writeBuffer.write(getHeaderNameBytes(entry.getKey()));
-                    writeBuffer.write(getBytes(headerValue.getValue()));
-                    headerValue = headerValue.getNextValue();
-                }
-            }
-        }
+        writeHeader();
 
         /**
          * RFC2616 3.3.1

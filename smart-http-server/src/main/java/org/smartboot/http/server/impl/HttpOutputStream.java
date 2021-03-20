@@ -9,7 +9,6 @@
 package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.Cookie;
-import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.utils.HttpHeaderConstant;
@@ -68,16 +67,7 @@ final class HttpOutputStream extends AbstractOutputStream {
         convertCookieToHeader(response);
 
         //输出Header部分
-        if (response.getHeaders() != null) {
-            for (Map.Entry<String, HeaderValue> entry : response.getHeaders().entrySet()) {
-                HeaderValue headerValue = entry.getValue();
-                while (headerValue != null) {
-                    writeBuffer.write(getHeaderNameBytes(entry.getKey()));
-                    writeBuffer.write(getBytes(headerValue.getValue()));
-                    headerValue = headerValue.getNextValue();
-                }
-            }
-        }
+        writeHeader();
 
         /**
          * RFC2616 3.3.1

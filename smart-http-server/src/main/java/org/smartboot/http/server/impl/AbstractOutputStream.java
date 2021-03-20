@@ -9,6 +9,7 @@
 package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.BufferOutputStream;
+import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.Reset;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
@@ -24,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -130,6 +132,18 @@ abstract class AbstractOutputStream extends BufferOutputStream implements Reset 
      */
     abstract void writeHead() throws IOException;
 
+    protected final void writeHeader() throws IOException {
+        if (response.getHeaders() != null) {
+            for (Map.Entry<String, HeaderValue> entry : response.getHeaders().entrySet()) {
+                HeaderValue headerValue = entry.getValue();
+                while (headerValue != null) {
+                    writeBuffer.write(getHeaderNameBytes(entry.getKey()));
+                    writeBuffer.write(getBytes(headerValue.getValue()));
+                    headerValue = headerValue.getNextValue();
+                }
+            }
+        }
+    }
 
     @Override
     public final void flush() throws IOException {
