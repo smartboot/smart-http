@@ -29,7 +29,7 @@ public class WebSocketRequestImpl extends AbstractRequest implements WebSocketRe
 
     @Override
     public void sendTextMessage(String text) {
-        LOGGER.info("发送字符串消息:{}", text);
+        LOGGER.info("发送字符串消息:" + text);
         byte[] bytes = text.getBytes(StandardCharsets.UTF_8);
         try {
             send(WebSocketResponseImpl.OPCODE_TEXT, bytes);
@@ -40,7 +40,7 @@ public class WebSocketRequestImpl extends AbstractRequest implements WebSocketRe
 
     @Override
     public void sendBinaryMessage(byte[] bytes) {
-        LOGGER.info("发送二进制消息:{}", bytes);
+        LOGGER.info("发送二进制消息:" + bytes);
         try {
             send(WebSocketResponseImpl.OPCODE_BINARY, bytes);
         } catch (IOException e) {
