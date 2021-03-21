@@ -16,6 +16,7 @@ import org.smartboot.socket.transport.WriteBuffer;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 /**
  * @author 三刀
@@ -30,7 +31,7 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
 
     @Override
     public void sendTextMessage(String text) {
-        LOGGER.info("发送字符串消息:{}", text);
+        LOGGER.info("发送字符串消息: " + text);
         byte[] bytes = text.getBytes(StandardCharsets.UTF_8);
         try {
             send(WebSocketRequestImpl.OPCODE_TEXT, bytes);
@@ -41,7 +42,7 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
 
     @Override
     public void sendBinaryMessage(byte[] bytes) {
-        LOGGER.info("发送二进制消息:{}", bytes);
+        LOGGER.info("发送二进制消息: " + Arrays.toString(bytes));
         try {
             send(WebSocketRequestImpl.OPCODE_BINARY, bytes);
         } catch (IOException e) {
