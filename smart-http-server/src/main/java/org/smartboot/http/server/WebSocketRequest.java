@@ -11,6 +11,7 @@ package org.smartboot.http.server;
 import org.smartboot.http.common.enums.WebsocketStatus;
 
 import java.net.InetSocketAddress;
+import java.util.Map;
 
 /**
  * WebSocket消息请求接口
@@ -26,6 +27,10 @@ public interface WebSocketRequest {
     public byte[] getPayload();
 
     String getRequestURI();
+
+    String getQueryString();
+
+    Map<String, String[]> getParameters();
 
     InetSocketAddress getRemoteAddress();
 
