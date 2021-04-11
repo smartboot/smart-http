@@ -52,16 +52,9 @@ final class HttpOutputStream extends AbstractOutputStream {
         if (committed) {
             return;
         }
-        if (response.getHttpStatus() == null) {
-            response.setHttpStatus(HttpStatus.OK);
-        }
-        String contentType = response.getContentType();
-        if (contentType == null) {
-            contentType = HttpHeaderConstant.Values.DEFAULT_CONTENT_TYPE;
-        }
 
         //输出http状态行、contentType,contentLength、Transfer-Encoding、server等信息
-        writeBuffer.write(getHeadPart(contentType));
+        writeBuffer.write(getHeadPart(response.getContentType()));
 
         //转换Cookie
         convertCookieToHeader(response);

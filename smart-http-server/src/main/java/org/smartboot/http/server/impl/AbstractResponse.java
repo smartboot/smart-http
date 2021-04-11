@@ -12,6 +12,7 @@ import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.Reset;
 import org.smartboot.http.common.enums.HttpStatus;
+import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
 
@@ -22,6 +23,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Vector;
 
 /**
@@ -41,7 +43,7 @@ class AbstractResponse implements HttpResponse, Reset {
     /**
      * http响应码
      */
-    private HttpStatus httpStatus;
+    private HttpStatus httpStatus = HttpStatus.OK;
     /**
      * 响应正文长度
      */
@@ -50,7 +52,7 @@ class AbstractResponse implements HttpResponse, Reset {
     /**
      * 正文编码方式
      */
-    private String contentType;
+    private String contentType = HttpHeaderConstant.Values.DEFAULT_CONTENT_TYPE;
 
     private HttpRequest request;
 
@@ -73,8 +75,8 @@ class AbstractResponse implements HttpResponse, Reset {
         if (headers != null) {
             headers.clear();
         }
-        httpStatus = null;
-        contentType = null;
+        httpStatus = HttpStatus.OK;
+        contentType = HttpHeaderConstant.Values.DEFAULT_CONTENT_TYPE;
         contentLength = -1;
         characterEncoding = null;
         cookies = null;
@@ -91,7 +93,7 @@ class AbstractResponse implements HttpResponse, Reset {
     }
 
     public final void setHttpStatus(HttpStatus httpStatus) {
-        this.httpStatus = httpStatus;
+        this.httpStatus = Objects.requireNonNull(httpStatus);
     }
 
     @Override
@@ -244,7 +246,7 @@ class AbstractResponse implements HttpResponse, Reset {
     }
 
     public final void setContentType(String contentType) {
-        this.contentType = contentType;
+        this.contentType = Objects.requireNonNull(contentType);
     }
 
     /**

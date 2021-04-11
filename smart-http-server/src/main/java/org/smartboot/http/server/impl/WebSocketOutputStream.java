@@ -8,7 +8,6 @@
 
 package org.smartboot.http.server.impl;
 
-import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.socket.transport.WriteBuffer;
 
@@ -34,17 +33,10 @@ final class WebSocketOutputStream extends AbstractOutputStream {
         if (committed) {
             return;
         }
-        if (response.getHttpStatus() == null) {
-            response.setHttpStatus(HttpStatus.SWITCHING_PROTOCOLS);
-        }
-        String contentType = response.getContentType();
-        if (contentType == null) {
-            contentType = HttpHeaderConstant.Values.DEFAULT_CONTENT_TYPE;
-        }
 
         //输出http状态行、contentType,contentLength、Transfer-Encoding、server等信息
         writeBuffer.write(getBytes(request.getProtocol() + response.getHttpStatus().getHttpStatusLine() + "\r\n"
-                + HttpHeaderConstant.Names.CONTENT_TYPE + ":" + contentType));
+                + HttpHeaderConstant.Names.CONTENT_TYPE + ":" + response.getContentType()));
 
         //输出Header部分
         writeHeader();
