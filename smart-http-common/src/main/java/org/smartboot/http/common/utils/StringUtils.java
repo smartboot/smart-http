@@ -441,10 +441,16 @@ public class StringUtils {
     }
 
     public static int scanUntilAndTrim(ByteBuffer buffer, byte split) {
+        return scanUntil(buffer, split, true);
+    }
+
+    public static int scanUntil(ByteBuffer buffer, byte split, boolean trim) {
         if (!buffer.hasRemaining()) {
             return -1;
         }
-        while (buffer.get() == Constant.SP) ;
+        if (trim) {
+            while (buffer.get() == Constant.SP) ;
+        }
         int i = 1;
         int mark = buffer.position();
         while (buffer.hasRemaining()) {
