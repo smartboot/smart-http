@@ -33,7 +33,7 @@ public class WebSocketDefaultHandle extends WebSocketHandle {
         try {
             switch (request.getWebsocketStatus()) {
                 case HandShake:
-                    onHandShark(request, response);
+                    onHandShake(request, response);
                     break;
                 case DataFrame: {
                     switch (request.getFrameOpcode()) {
@@ -76,12 +76,12 @@ public class WebSocketDefaultHandle extends WebSocketHandle {
      * @param request
      * @param response
      */
-    public void onHandShark(WebSocketRequest request, WebSocketResponse response) {
-        LOGGER.warn("handShark success");
+    public void onHandShake(WebSocketRequest request, WebSocketResponse response) {
+        LOGGER.warn("handShake success");
     }
 
     /**
-     * 握手成功
+     * 连接关闭
      *
      * @param request
      * @param response
@@ -111,7 +111,12 @@ public class WebSocketDefaultHandle extends WebSocketHandle {
     public void handleBinaryMessage(WebSocketRequest request, WebSocketResponse response, byte[] data) {
         System.out.println(data);
     }
-
+    
+    /**
+     * 连接异常
+     *
+     * @param throwable
+     */
     public void onError(Throwable throwable) {
         throwable.printStackTrace();
     }
