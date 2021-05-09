@@ -51,10 +51,10 @@ public class WebSocketDefaultHandle extends WebSocketHandle {
                             }
                             break;
                         case WebSocketRequestImpl.OPCODE_PING:
-                            LOGGER.warn("unSupport ping now");
+//                            LOGGER.warn("unSupport ping now");
                             break;
                         case WebSocketRequestImpl.OPCODE_PONG:
-                            LOGGER.warn("unSupport pong now");
+//                            LOGGER.warn("unSupport pong now");
                             break;
                         default:
                             throw new UnsupportedOperationException();
