@@ -457,22 +457,6 @@ public class StringUtils {
         return -1;
     }
 
-    public static int scanUntil(ByteBuffer buffer, byte split, boolean trim) {
-        if (!buffer.hasRemaining()) {
-            return -1;
-        }
-        int i = 0;
-        buffer.mark();
-        while (buffer.hasRemaining()) {
-            if (buffer.get() == split) {
-                return i;
-            }
-            i++;
-        }
-        buffer.reset();
-        return -1;
-    }
-
     static class StringCache {
         final byte[] bytes;
         final String value;

@@ -25,7 +25,7 @@ class HttpUriQueryDecoder implements Decoder {
 
     @Override
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
-        int length = StringUtils.scanUntil(byteBuffer, Constant.SP, false);
+        int length = scanUriQuery(byteBuffer);
         if (length >= 0) {
             String query = StringUtils.convertToString(byteBuffer, byteBuffer.position() - 1 - length, length);
             request.setQueryString(query);
@@ -34,5 +34,21 @@ class HttpUriQueryDecoder implements Decoder {
             return this;
         }
 
+    }
+
+    private int scanUriQuery(ByteBuffer buffer) {
+        if (!buffer.hasRemaining()) {
+            return -1;
+        }
+        int i = 0;
+        buffer.mark();
+        while (buffer.hasRemaining()) {
+            if (buffer.get() == Constant.SP) {
+                return i;
+            }
+            i++;
+        }
+        buffer.reset();
+        return -1;
     }
 }
