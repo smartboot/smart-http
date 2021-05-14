@@ -56,9 +56,11 @@ public class HttpMessageProcessor implements MessageProcessor<Response> {
     public void stateEvent(AioSession session, StateMachineEnum stateMachineEnum, Throwable throwable) {
         if (throwable != null) {
             AbstractQueue<CompletableFuture<HttpResponse>> queue = map.get(session);
-            CompletableFuture<HttpResponse> future;
-            while ((future = queue.poll()) != null) {
-                future.completeExceptionally(throwable);
+            if (queue != null) {
+                CompletableFuture<HttpResponse> future;
+                while ((future = queue.poll()) != null) {
+                    future.completeExceptionally(throwable);
+                }
             }
         }
         switch (stateMachineEnum) {
