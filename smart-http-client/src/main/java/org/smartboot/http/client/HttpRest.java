@@ -15,6 +15,7 @@ import org.smartboot.socket.transport.WriteBuffer;
 
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
 /**
@@ -41,7 +42,7 @@ public class HttpRest {
         responseListener.accept(completableFuture);
     }
 
-    public final void send() {
+    public final Future<HttpResponse> send() {
         try {
             bindResponseListener();
             request.getOutputStream().flush();
@@ -49,6 +50,7 @@ public class HttpRest {
             e.printStackTrace();
             completableFuture.completeExceptionally(e);
         }
+        return completableFuture;
     }
 
     public HttpRest onSuccess(Consumer<HttpResponse> consumer) {

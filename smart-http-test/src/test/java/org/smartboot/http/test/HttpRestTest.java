@@ -10,7 +10,6 @@ package org.smartboot.http.test;
 
 import com.alibaba.fastjson.JSONObject;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.smartboot.http.client.HttpClient;
@@ -21,8 +20,8 @@ import org.smartboot.http.server.HttpServerHandle;
 import org.smartboot.http.server.handle.HttpRouteHandle;
 
 import java.io.IOException;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * @author 三刀（zhengjunweimail@163.com）
@@ -52,23 +51,20 @@ public class HttpRestTest {
 
     @Test
     public void testPost() throws ExecutionException, InterruptedException {
-        CompletableFuture<Boolean> future = new CompletableFuture<>();
         HttpClient httpClient = new HttpClient("localhost", 8080);
         httpClient.connect();
-        httpClient.rest("/post")
+        Future<org.smartboot.http.client.HttpResponse> future = httpClient.rest("/post")
                 .setMethod("post")
                 .onSuccess(response -> {
                     System.out.println(response.body());
                     httpClient.close();
-                    future.complete(true);
                 })
                 .onFailure(throwable -> {
                     throwable.printStackTrace();
                     httpClient.close();
-                    future.complete(true);
                 })
                 .send();
-        Assert.assertTrue(future.get());
+        System.out.println(future.get().body());
     }
 
     @After
