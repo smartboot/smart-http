@@ -56,7 +56,7 @@ class HttpHeaderDecoder implements Decoder {
     class HeaderValueDecoder implements Decoder {
         @Override
         public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
-            int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.LF);
+            int length = StringUtils.scanCRLFAndTrim(byteBuffer);
             if (length == -1) {
                 return this;
             }

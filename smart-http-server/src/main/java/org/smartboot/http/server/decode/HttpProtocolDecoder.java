@@ -8,7 +8,6 @@
 
 package org.smartboot.http.server.decode;
 
-import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.impl.Request;
 import org.smartboot.socket.transport.AioSession;
@@ -26,7 +25,7 @@ class HttpProtocolDecoder implements Decoder {
 
     @Override
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
-        int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.LF);
+        int length = StringUtils.scanCRLFAndTrim(byteBuffer);
         if (length > 0) {
             String protocol = StringUtils.convertToString(byteBuffer, byteBuffer.position() - length - 1, length - 1, StringUtils.String_CACHE_HTTP_PROTOCOL);
             request.setProtocol(protocol);

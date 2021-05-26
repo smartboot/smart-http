@@ -457,6 +457,29 @@ public class StringUtils {
         return -1;
     }
 
+    public static int scanCRLFAndTrim(ByteBuffer buffer) {
+        int mark = buffer.position();
+        while (buffer.remaining() >= 2) {
+            byte b = buffer.get(buffer.position() + 1);
+            if (b == Constant.LF) {
+                if (buffer.get(buffer.position()) == Constant.CR) {
+                    while (buffer.get(mark) == Constant.SP) {
+                        mark++;
+                    }
+                    int length = buffer.position() + 1 - mark;
+                    buffer.position(buffer.position() + 2);
+                    return length;
+                }
+            } else if (b == Constant.CR) {
+                buffer.position(buffer.position() + 1);
+            } else {
+                buffer.position(buffer.position() + 2);
+            }
+        }
+        buffer.position(mark);
+        return -1;
+    }
+
     static class StringCache {
         final byte[] bytes;
         final String value;
