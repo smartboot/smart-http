@@ -12,10 +12,10 @@ import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
-import org.smartboot.http.common.utils.Attachment;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.server.impl.HttpRequestProtocol;
 import org.smartboot.http.server.impl.Request;
+import org.smartboot.http.server.impl.RequestAttachment;
 import org.smartboot.http.server.impl.WebSocketRequestImpl;
 import org.smartboot.socket.transport.AioSession;
 
@@ -31,7 +31,7 @@ public class WebSocketFrameDecoder implements Decoder {
     private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketFrameDecoder.class);
 
     @Override
-    public Decoder decode(ByteBuffer byteBuffer,  AioSession aioSession, Request request) {
+    public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
         if (byteBuffer.remaining() < 2) {
             return this;
         }
@@ -62,8 +62,8 @@ public class WebSocketFrameDecoder implements Decoder {
         int rsv = (first & 0x70) >> 4;
         int opcode = first & 0x0f;
 
-        Attachment attachment = aioSession.getAttachment();
-        WebSocketRequestImpl webSocketRequest = attachment.get(HttpRequestProtocol.ATTACH_KEY_WS_REQ);
+        RequestAttachment attachment = aioSession.getAttachment();
+        WebSocketRequestImpl webSocketRequest = attachment.getWebSocketRequest();
         webSocketRequest.setFrameFinalFlag(fin);
         webSocketRequest.setFrameRsv(rsv);
         webSocketRequest.setFrameOpcode(opcode);

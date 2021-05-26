@@ -8,12 +8,11 @@
 
 package org.smartboot.http.server.decode;
 
-import org.smartboot.http.common.utils.AttachKey;
-import org.smartboot.http.common.utils.Attachment;
 import org.smartboot.http.common.utils.FixedLengthFrameDecoder;
 import org.smartboot.http.common.utils.SmartDecoder;
 import org.smartboot.http.server.impl.HttpRequestProtocol;
 import org.smartboot.http.server.impl.Request;
+import org.smartboot.http.server.impl.RequestAttachment;
 import org.smartboot.socket.transport.AioSession;
 
 import java.nio.ByteBuffer;
@@ -23,20 +22,19 @@ import java.nio.ByteBuffer;
  * @version V1.0 , 2020/3/30
  */
 class HttpBodyDecoder implements Decoder {
-    private final AttachKey<SmartDecoder> ATTACH_KEY_FIX_LENGTH_DECODER = AttachKey.valueOf("fixLengthDecoder");
 
     @Override
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
-        Attachment attachment = aioSession.getAttachment();
-        SmartDecoder smartDecoder = attachment.get(ATTACH_KEY_FIX_LENGTH_DECODER);
+        RequestAttachment attachment = aioSession.getAttachment();
+        SmartDecoder smartDecoder = attachment.getBodyDecoder();
         if (smartDecoder == null) {
             smartDecoder = new FixedLengthFrameDecoder(request.getContentLength());
-            attachment.put(ATTACH_KEY_FIX_LENGTH_DECODER, smartDecoder);
+            attachment.setBodyDecoder(smartDecoder);
         }
 
         if (smartDecoder.decode(byteBuffer)) {
             request.setFormUrlencoded(new String(smartDecoder.getBuffer().array()));
-            attachment.remove(ATTACH_KEY_FIX_LENGTH_DECODER);
+            attachment.setBodyDecoder(null);
             return HttpRequestProtocol.HTTP_FINISH_DECODER;
         } else {
             return this;

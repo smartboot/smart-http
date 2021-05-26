@@ -12,18 +12,16 @@ import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.enums.YesNoEnum;
 import org.smartboot.http.common.exception.HttpException;
-import org.smartboot.http.common.utils.Attachment;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.impl.HttpRequestProtocol;
 import org.smartboot.http.server.impl.Request;
+import org.smartboot.http.server.impl.RequestAttachment;
 import org.smartboot.http.server.impl.WebSocketRequestImpl;
 import org.smartboot.socket.transport.AioSession;
 
 import java.nio.ByteBuffer;
-
-import static org.smartboot.http.server.impl.HttpRequestProtocol.ATTACH_KEY_WS_REQ;
 
 /**
  * @author 三刀
@@ -43,9 +41,9 @@ class HttpHeaderEndDecoder implements Decoder {
         if (HttpMethodEnum.GET.getMethod().equals(request.getMethod())) {
             if (request.isWebsocket() == YesNoEnum.Yes) {
                 WebSocketRequestImpl webSocketRequest = new WebSocketRequestImpl(request);
-                Attachment attachment = aioSession.getAttachment();
-                attachment.put(ATTACH_KEY_WS_REQ, webSocketRequest);
-                return HttpRequestProtocol.WS_HANDSHARK_DECODER;
+                RequestAttachment attachment = aioSession.getAttachment();
+                attachment.setWebSocketRequest(webSocketRequest);
+                return HttpRequestProtocol.WS_HANDSHAKE_DECODER;
             } else {
                 return HttpRequestProtocol.HTTP_FINISH_DECODER;
             }

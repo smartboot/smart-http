@@ -13,8 +13,6 @@ import org.smartboot.http.common.Pipeline;
 import org.smartboot.http.common.enums.YesNoEnum;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
-import org.smartboot.http.common.utils.AttachKey;
-import org.smartboot.http.common.utils.Attachment;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
 import org.smartboot.http.server.HttpServerHandle;
@@ -34,10 +32,6 @@ import java.io.IOException;
 public class HttpMessageProcessor implements MessageProcessor<Request> {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpMessageProcessor.class);
     /**
-     * HttpRequest附件Key
-     */
-    private final AttachKey<HttpRequestImpl> ATTACH_KEY_HTTP_REQUEST = AttachKey.valueOf("httpRequest");
-    /**
      * Http消息处理管道
      */
     private final HandlePipeline<HttpRequest, HttpResponse> httpPipeline = new HandlePipeline<>();
@@ -54,20 +48,19 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
     @Override
     public void process(AioSession session, Request baseHttpRequest) {
         try {
-            Attachment attachment = session.getAttachment();
+            RequestAttachment attachment = session.getAttachment();
             AbstractRequest request;
             AbstractResponse response;
             HandlePipeline pipeline;
             if (baseHttpRequest.isWebsocket() == YesNoEnum.Yes) {
-                WebSocketRequestImpl webSocketRequest = attachment.get(HttpRequestProtocol.ATTACH_KEY_WS_REQ);
-                request = webSocketRequest;
-                response = webSocketRequest.getResponse();
+                request = attachment.getWebSocketRequest();
+                response = attachment.getWebSocketRequest().getResponse();
                 pipeline = wsPipeline;
             } else {
-                HttpRequestImpl http11Request = attachment.get(ATTACH_KEY_HTTP_REQUEST);
+                HttpRequestImpl http11Request = attachment.getHttpRequest();
                 if (http11Request == null) {
                     http11Request = new HttpRequestImpl(baseHttpRequest);
-                    attachment.put(ATTACH_KEY_HTTP_REQUEST, http11Request);
+                    attachment.setHttpRequest(http11Request);
                 }
                 request = http11Request;
                 response = http11Request.getResponse();
@@ -98,8 +91,7 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
     public void stateEvent(AioSession session, StateMachineEnum stateMachineEnum, Throwable throwable) {
         switch (stateMachineEnum) {
             case NEW_SESSION:
-                Attachment attachment = new Attachment();
-                attachment.put(HttpRequestProtocol.ATTACH_KEY_REQUEST, new Request(session));
+                RequestAttachment attachment = new RequestAttachment(new Request(session));
                 session.setAttachment(attachment);
                 break;
             case PROCESS_EXCEPTION:
