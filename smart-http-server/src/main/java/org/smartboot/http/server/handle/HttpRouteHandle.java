@@ -41,8 +41,9 @@ public final class HttpRouteHandle extends HttpServerHandle {
     public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
         String uri = request.getRequestURI();
         int len = uri.length();
+        int index = len - 1;
         if (len < handleCaches.length) {
-            HandleCache handleCache = handleCaches[len - 1];
+            HandleCache handleCache = handleCaches[index];
             if (handleCache != null && handleCache != CACHE_DISABLED && handleCache.getUri().equals(uri)) {
                 handleCache.handle.doHandle(request, response);
                 return;
@@ -62,11 +63,11 @@ public final class HttpRouteHandle extends HttpServerHandle {
             handleMap.put(uri, httpHandle);
         }
         if (len < handleCaches.length && httpHandle != defaultHandle) {
-            HandleCache handleCache = handleCaches[len - 1];
+            HandleCache handleCache = handleCaches[index];
             if (handleCache == null) {
-                handleCaches[len - 1] = new HandleCache(uri, httpHandle);
+                handleCaches[index] = new HandleCache(uri, httpHandle);
             } else if (!handleCache.getUri().equals(uri)) {
-                handleCaches[len - 1] = CACHE_DISABLED;
+                handleCaches[index] = CACHE_DISABLED;
             }
         }
         httpHandle.doHandle(request, response);
