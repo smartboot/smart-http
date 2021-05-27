@@ -24,8 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class HttpRouteHandle extends HttpServerHandle {
     private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
-    private Map<String, HttpServerHandle> handleMap = new ConcurrentHashMap<>();
-
+    private final HandleCache CACHE_DISABLED = new HandleCache(null, null);
     /**
      * 默认404
      */
@@ -35,10 +34,20 @@ public final class HttpRouteHandle extends HttpServerHandle {
             response.setHttpStatus(HttpStatus.NOT_FOUND);
         }
     };
+    private final HandleCache[] handleCaches = new HandleCache[32];
+    private final Map<String, HttpServerHandle> handleMap = new ConcurrentHashMap<>();
 
     @Override
     public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
         String uri = request.getRequestURI();
+        int len = uri.length();
+        if (len < handleCaches.length) {
+            HandleCache handleCache = handleCaches[len - 1];
+            if (handleCache != null && handleCache != CACHE_DISABLED && handleCache.getUri().equals(uri)) {
+                handleCache.handle.doHandle(request, response);
+                return;
+            }
+        }
         HttpServerHandle httpHandle = handleMap.get(uri);
         if (httpHandle == null) {
             for (Map.Entry<String, HttpServerHandle> entity : handleMap.entrySet()) {
@@ -52,7 +61,14 @@ public final class HttpRouteHandle extends HttpServerHandle {
             }
             handleMap.put(uri, httpHandle);
         }
-
+        if (len < handleCaches.length && httpHandle != defaultHandle) {
+            HandleCache handleCache = handleCaches[len - 1];
+            if (handleCache == null) {
+                handleCaches[len - 1] = new HandleCache(uri, httpHandle);
+            } else if (!handleCache.getUri().equals(uri)) {
+                handleCaches[len - 1] = CACHE_DISABLED;
+            }
+        }
         httpHandle.doHandle(request, response);
     }
 
@@ -68,4 +84,21 @@ public final class HttpRouteHandle extends HttpServerHandle {
         return this;
     }
 
+    private static class HandleCache {
+        private final String uri;
+        private final HttpServerHandle handle;
+
+        public HandleCache(String uri, HttpServerHandle handle) {
+            this.uri = uri;
+            this.handle = handle;
+        }
+
+        public String getUri() {
+            return uri;
+        }
+
+        public HttpServerHandle getHandle() {
+            return handle;
+        }
+    }
 }
