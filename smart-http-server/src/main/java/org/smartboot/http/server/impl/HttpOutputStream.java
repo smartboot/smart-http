@@ -82,9 +82,9 @@ final class HttpOutputStream extends AbstractOutputStream {
         boolean cache = httpStatus == HttpStatus.OK;
         boolean http10 = HttpProtocolEnum.HTTP_10.getProtocol().equals(request.getProtocol());
         if (cache && !http10) {
-            if ("text/plain; charset=UTF-8".equals(contentType)) {
+            if ("text/plain; charset=UTF-8" == contentType) {
                 data = CACHE_TEXT_PLAIN_AND_LENGTH[contentLength];
-            } else if ("application/json".equals(contentType)) {
+            } else if ("application/json" == contentType) {
                 data = CACHE_JSON_AND_LENGTH[contentLength];
             } else if (chunked) {
                 data = CACHE_CHUNKED_AND_LENGTH.get(contentType);
@@ -106,9 +106,9 @@ final class HttpOutputStream extends AbstractOutputStream {
         data = str.getBytes();
         //缓存响应头
         if (cache && !http10) {
-            if ("text/plain; charset=UTF-8".equals(contentType)) {
+            if ("text/plain; charset=UTF-8" == contentType) {
                 CACHE_TEXT_PLAIN_AND_LENGTH[contentLength] = data;
-            } else if ("application/json".equals(contentType)) {
+            } else if ("application/json" == contentType) {
                 CACHE_JSON_AND_LENGTH[contentLength] = data;
             } else if (chunked) {
                 CACHE_CHUNKED_AND_LENGTH.put(contentType, data);
