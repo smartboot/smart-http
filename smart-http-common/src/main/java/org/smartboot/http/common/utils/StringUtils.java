@@ -493,10 +493,10 @@ public class StringUtils {
 
     public static boolean addCache(List<StringCache>[] cache, String str) {
         byte[] bytes = str.getBytes();
-        if (bytes.length > cache.length) {
+        if (bytes.length >= cache.length) {
             return false;
         }
-        cache[bytes.length - 1].add(new StringCache(bytes, str));
+        cache[bytes.length].add(new StringCache(bytes, str));
         return true;
     }
 
