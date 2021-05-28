@@ -37,6 +37,7 @@ public class StringUtils {
     public static final List<StringCache>[] String_CACHE_HTTP_PROTOCOL = new List[8];
     public static final List<StringCache>[] String_CACHE_HTTP_METHOD = new List[8];
     public static final List<StringCache>[] String_CACHE_HEADER_NAME = new List[32];
+    public static final List<StringCache>[] String_CACHE_URI = new List[64];
     public static final List<IntegerCache>[] INTEGER_CACHE_HTTP_STATUS_CODE = new List[8];
 
     static {
@@ -51,6 +52,9 @@ public class StringUtils {
         }
         for (int i = 0; i < String_CACHE_HEADER_NAME.length; i++) {
             String_CACHE_HEADER_NAME[i] = new ArrayList<>(8);
+        }
+        for (int i = 0; i < String_CACHE_URI.length; i++) {
+            String_CACHE_URI[i] = new ArrayList<>(8);
         }
     }
 
@@ -96,6 +100,10 @@ public class StringUtils {
     }
 
     public static String convertToString(ByteBuffer buffer, int offset, int length, List<StringCache>[] cacheList) {
+        return convertToString(buffer, offset, length, cacheList, false);
+    }
+
+    public static String convertToString(ByteBuffer buffer, int offset, int length, List<StringCache>[] cacheList, boolean readonly) {
         if (length == 0) {
             return "";
         }
@@ -110,6 +118,9 @@ public class StringUtils {
             if (equals(cache.bytes, bytes, offset)) {
                 return cache.value;
             }
+        }
+        if (readonly) {
+            return new String(bytes, offset, length);
         }
         synchronized (list) {
             for (StringCache cache : list) {
@@ -478,6 +489,15 @@ public class StringUtils {
         }
         buffer.position(mark);
         return -1;
+    }
+
+    public static boolean addCache(List<StringCache>[] cache, String str) {
+        byte[] bytes = str.getBytes();
+        if (bytes.length > cache.length) {
+            return false;
+        }
+        cache[bytes.length - 1].add(new StringCache(bytes, str));
+        return true;
     }
 
     static class StringCache {

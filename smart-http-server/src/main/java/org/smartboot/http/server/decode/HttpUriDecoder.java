@@ -29,7 +29,7 @@ class HttpUriDecoder implements Decoder {
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
         int length = scanURI(byteBuffer);
         if (length > 0) {
-            String uri = StringUtils.convertToString(byteBuffer, byteBuffer.position() - length - 1, length);
+            String uri = StringUtils.convertToString(byteBuffer, byteBuffer.position() - length - 1, length, StringUtils.String_CACHE_URI, true);
             request.setUri(uri);
             switch (byteBuffer.get(byteBuffer.position() - 1)) {
                 case Constant.SP:

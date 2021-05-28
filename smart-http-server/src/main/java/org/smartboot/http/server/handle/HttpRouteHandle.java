@@ -10,6 +10,7 @@ package org.smartboot.http.server.handle;
 
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.utils.AntPathMatcher;
+import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
 import org.smartboot.http.server.HttpServerHandle;
@@ -34,7 +35,7 @@ public final class HttpRouteHandle extends HttpServerHandle {
             response.setHttpStatus(HttpStatus.NOT_FOUND);
         }
     };
-    private final HandleCache[] handleCaches = new HandleCache[32];
+    private final HandleCache[] handleCaches = new HandleCache[StringUtils.String_CACHE_URI.length];
     private final Map<String, HttpServerHandle> handleMap = new ConcurrentHashMap<>();
 
     @Override
@@ -42,9 +43,9 @@ public final class HttpRouteHandle extends HttpServerHandle {
         String uri = request.getRequestURI();
         int len = uri.length();
         int index = len - 1;
-        if (len < handleCaches.length) {
+        if (index < handleCaches.length) {
             HandleCache handleCache = handleCaches[index];
-            if (handleCache != null && handleCache != CACHE_DISABLED && handleCache.getUri().equals(uri)) {
+            if (handleCache != null && handleCache.getUri() == uri) {
                 handleCache.handle.doHandle(request, response);
                 return;
             }
@@ -62,14 +63,6 @@ public final class HttpRouteHandle extends HttpServerHandle {
             }
             handleMap.put(uri, httpHandle);
         }
-        if (len < handleCaches.length && httpHandle != defaultHandle) {
-            HandleCache handleCache = handleCaches[index];
-            if (handleCache == null) {
-                handleCaches[index] = new HandleCache(uri, httpHandle);
-            } else if (!handleCache.getUri().equals(uri)) {
-                handleCaches[index] = CACHE_DISABLED;
-            }
-        }
         httpHandle.doHandle(request, response);
     }
 
@@ -81,6 +74,10 @@ public final class HttpRouteHandle extends HttpServerHandle {
      * @return
      */
     public HttpRouteHandle route(String urlPattern, HttpServerHandle httpHandle) {
+        //缓存精准路径
+        if (!urlPattern.contains("*") && StringUtils.addCache(StringUtils.String_CACHE_URI, urlPattern) && urlPattern.length() < handleCaches.length) {
+            handleCaches[urlPattern.length() - 1] = new HandleCache(urlPattern, httpHandle);
+        }
         handleMap.put(urlPattern, httpHandle);
         return this;
     }
