@@ -106,9 +106,9 @@ final class HttpOutputStream extends AbstractOutputStream {
         data = str.getBytes();
         //缓存响应头
         if (cache && !http10) {
-            if ("text/plain; charset=UTF-8" == contentType) {
+            if ("text/plain; charset=UTF-8" == contentType && contentLength < CACHE_TEXT_PLAIN_AND_LENGTH.length) {
                 CACHE_TEXT_PLAIN_AND_LENGTH[contentLength] = data;
-            } else if ("application/json" == contentType) {
+            } else if ("application/json" == contentType && contentLength < CACHE_JSON_AND_LENGTH.length) {
                 CACHE_JSON_AND_LENGTH[contentLength] = data;
             } else if (chunked) {
                 CACHE_CHUNKED_AND_LENGTH.put(contentType, data);
