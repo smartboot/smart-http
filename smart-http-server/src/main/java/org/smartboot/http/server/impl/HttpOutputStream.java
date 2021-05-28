@@ -29,7 +29,7 @@ final class HttpOutputStream extends AbstractOutputStream {
      */
     private static final Map<String, byte[]>[] CACHE_CONTENT_TYPE_AND_LENGTH = new Map[512];
     private static final byte[][] CACHE_TEXT_PLAIN_AND_LENGTH = new byte[512][];
-    private static final byte[][] CACHE_JSON_AND_LENGTH = new byte[512][];
+    private static final byte[][] CACHE_JSON_AND_LENGTH = new byte[1024][];
     /**
      * Key：status+contentType
      */
