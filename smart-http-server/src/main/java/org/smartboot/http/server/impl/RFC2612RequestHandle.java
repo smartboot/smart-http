@@ -48,7 +48,7 @@ class RFC2612RequestHandle extends HttpServerHandle {
             response.close();
         }
         //body部分未读取完毕,释放连接资源
-        if (!HttpMethodEnum.GET.getMethod().equals(request.getMethod())
+        if (HttpMethodEnum.GET.getMethod() != request.getMethod()
                 && request.getContentLength() > 0
                 && request.getInputStream().available() > 0) {
             response.close();
