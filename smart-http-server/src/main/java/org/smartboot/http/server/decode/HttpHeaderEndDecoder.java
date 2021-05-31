@@ -38,7 +38,7 @@ class HttpHeaderEndDecoder implements Decoder {
             request.setWebsocket(HttpHeaderConstant.Values.WEBSOCKET.equals(request.getHeader(HttpHeaderConstant.Names.UPGRADE))
                     && HttpHeaderConstant.Values.UPGRADE.equals(request.getHeader(HttpHeaderConstant.Names.CONNECTION)) ? YesNoEnum.Yes : YesNoEnum.NO);
         }
-        if (HttpMethodEnum.GET.getMethod() == request.getMethod()) {
+        if (HttpMethodEnum.GET.getMethod().equals(request.getMethod())) {
             if (request.isWebsocket() == YesNoEnum.Yes) {
                 WebSocketRequestImpl webSocketRequest = new WebSocketRequestImpl(request);
                 RequestAttachment attachment = aioSession.getAttachment();
@@ -49,7 +49,7 @@ class HttpHeaderEndDecoder implements Decoder {
             }
         }
         //Post请求
-        if (HttpMethodEnum.POST.getMethod() == request.getMethod()
+        if (HttpMethodEnum.POST.getMethod().equals(request.getMethod())
                 && StringUtils.startsWith(request.getContentType(), HttpHeaderConstant.Values.X_WWW_FORM_URLENCODED)) {
             int postLength = request.getContentLength();
             if (postLength > Constant.maxPostSize) {

@@ -91,7 +91,7 @@ abstract class AbstractOutputStream extends BufferOutputStream implements Reset 
      */
     public final void write(byte b[], int off, int len) throws IOException {
         writeHead();
-        if (HttpMethodEnum.HEAD.getMethod() == request.getMethod()) {
+        if (HttpMethodEnum.HEAD.getMethod().equals(request.getMethod())) {
             throw new UnsupportedOperationException(request.getMethod() + " can not write http body");
         }
         if (chunked) {
@@ -112,7 +112,7 @@ abstract class AbstractOutputStream extends BufferOutputStream implements Reset 
     @Override
     public final void write(VirtualBuffer virtualBuffer) throws IOException {
         writeHead();
-        if (HttpMethodEnum.HEAD.getMethod() == request.getMethod()) {
+        if (HttpMethodEnum.HEAD.getMethod().equals(request.getMethod())) {
             throw new UnsupportedOperationException(request.getMethod() + " can not write http body");
         }
         if (chunked) {

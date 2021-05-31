@@ -36,7 +36,7 @@ class RFC2612RequestHandle extends HttpServerHandle {
 
         boolean keepAlive = true;
         // http/1.0兼容长连接
-        if (request.getProtocol() == HttpProtocolEnum.HTTP_10.getProtocol()) {
+        if (HttpProtocolEnum.HTTP_10.getProtocol().equals(request.getProtocol())) {
             keepAlive = HttpHeaderConstant.Values.KEEPALIVE.equalsIgnoreCase(request.getHeader(HttpHeaderConstant.Names.CONNECTION));
             if (keepAlive) {
                 response.setHeader(HttpHeaderConstant.Names.CONNECTION, HttpHeaderConstant.Values.KEEPALIVE);
@@ -49,7 +49,7 @@ class RFC2612RequestHandle extends HttpServerHandle {
             response.close();
         }
         //body部分未读取完毕,释放连接资源
-        if (HttpMethodEnum.GET.getMethod() != request.getMethod()
+        if (!HttpMethodEnum.GET.getMethod().equals(request.getMethod())
                 && request.getContentLength() > 0
                 && request.getInputStream().available() > 0) {
             response.close();
