@@ -11,8 +11,8 @@ package org.smartboot.http.server.impl;
 import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.Reset;
+import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpStatus;
-import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
 
@@ -52,7 +52,7 @@ class AbstractResponse implements HttpResponse, Reset {
     /**
      * 正文编码方式
      */
-    private String contentType = HttpHeaderConstant.Values.DEFAULT_CONTENT_TYPE;
+    private String contentType = HeaderValueEnum.DEFAULT_CONTENT_TYPE.getName();
 
     private HttpRequest request;
 
@@ -76,7 +76,7 @@ class AbstractResponse implements HttpResponse, Reset {
             headers.clear();
         }
         httpStatus = HttpStatus.OK;
-        contentType = HttpHeaderConstant.Values.DEFAULT_CONTENT_TYPE;
+        contentType = HeaderValueEnum.DEFAULT_CONTENT_TYPE.getName();
         contentLength = -1;
         characterEncoding = null;
         cookies = null;

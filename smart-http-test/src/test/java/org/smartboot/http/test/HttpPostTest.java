@@ -14,7 +14,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.smartboot.http.client.HttpClient;
-import org.smartboot.http.common.utils.HttpHeaderConstant;
+import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpBootstrap;
 import org.smartboot.http.server.HttpRequest;
@@ -62,7 +62,7 @@ public class HttpPostTest {
         param.put("name", "zhouyu");
         param.put("age", "18");
         httpClient.post("/post_param")
-                .setContentType(HttpHeaderConstant.Values.X_WWW_FORM_URLENCODED)
+                .setContentType(HeaderValueEnum.X_WWW_FORM_URLENCODED.getName())
                 .onSuccess(response -> {
                     System.out.println(response.body());
                     JSONObject jsonObject = JSONObject.parseObject(response.body());

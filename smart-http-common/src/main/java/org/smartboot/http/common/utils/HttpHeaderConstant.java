@@ -28,21 +28,6 @@ public class HttpHeaderConstant {
         }
     }
 
-    public interface Values {
-        String CHUNKED = "chunked";
-
-        String MULTIPART_FORM_DATA = "multipart/form-data";
-
-        String X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
-
-        String UPGRADE = "Upgrade";
-
-        String WEBSOCKET = "websocket";
-
-        String KEEPALIVE = "Keep-Alive";
-
-        String DEFAULT_CONTENT_TYPE = "text/html; charset=utf-8";
-    }
 
 
 }

@@ -10,9 +10,9 @@ package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.enums.HeaderNameEnum;
+import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpStatus;
-import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.socket.transport.WriteBuffer;
 
 import java.io.IOException;
@@ -102,7 +102,7 @@ final class HttpOutputStream extends AbstractOutputStream {
         if (contentLength >= 0) {
             str += "\r\n" + HeaderNameEnum.CONTENT_LENGTH.getName() + ":" + contentLength;
         } else if (chunked) {
-            str += "\r\n" + HeaderNameEnum.TRANSFER_ENCODING.getName() + ":" + HttpHeaderConstant.Values.CHUNKED;
+            str += "\r\n" + HeaderNameEnum.TRANSFER_ENCODING.getName() + ":" + HeaderValueEnum.CHUNKED.getName();
         }
         data = str.getBytes();
         //缓存响应头

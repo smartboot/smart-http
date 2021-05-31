@@ -9,9 +9,9 @@
 package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.enums.HeaderNameEnum;
+import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.enums.WebsocketStatus;
-import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.http.common.utils.SHA1;
 import org.smartboot.http.server.WebSocketHandle;
 import org.smartboot.http.server.WebSocketRequest;
@@ -43,8 +43,8 @@ class WebSocketHandSharkHandle extends WebSocketHandle {
             byte[] sha1 = SHA1.encode(acceptSeed);
             String accept = Base64.getEncoder().encodeToString(sha1);
             response.setHttpStatus(HttpStatus.SWITCHING_PROTOCOLS);
-            response.setHeader(HeaderNameEnum.UPGRADE.getName(), HttpHeaderConstant.Values.WEBSOCKET);
-            response.setHeader(HeaderNameEnum.CONNECTION.getName(), HttpHeaderConstant.Values.UPGRADE);
+            response.setHeader(HeaderNameEnum.UPGRADE.getName(), HeaderValueEnum.WEBSOCKET.getName());
+            response.setHeader(HeaderNameEnum.CONNECTION.getName(), HeaderValueEnum.UPGRADE.getName());
             response.setHeader(HeaderNameEnum.Sec_WebSocket_Accept.getName(), accept);
             response.getOutputStream().flush();
 

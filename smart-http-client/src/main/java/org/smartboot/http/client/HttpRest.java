@@ -10,8 +10,8 @@ package org.smartboot.http.client;
 
 import org.smartboot.http.client.impl.HttpRequestImpl;
 import org.smartboot.http.common.enums.HeaderNameEnum;
+import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
-import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.socket.transport.WriteBuffer;
 
 import java.io.IOException;
@@ -78,7 +78,7 @@ public class HttpRest {
     }
 
     public HttpRest keepalive(boolean flag) {
-        request.setHeader(HeaderNameEnum.CONNECTION.getName(), flag ? HttpHeaderConstant.Values.KEEPALIVE : null);
+        request.setHeader(HeaderNameEnum.CONNECTION.getName(), flag ? HeaderValueEnum.KEEPALIVE.getName() : null);
         return this;
     }
 }

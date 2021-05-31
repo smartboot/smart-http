@@ -9,8 +9,8 @@
 package org.smartboot.http.client;
 
 import org.smartboot.http.common.enums.HeaderNameEnum;
+import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
-import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.socket.transport.WriteBuffer;
 
 import java.net.URLEncoder;
@@ -54,7 +54,7 @@ public final class HttpPost extends HttpRest {
             byte[] bytes = sb.toString().getBytes();
             // 设置 Header
             addHeader(HeaderNameEnum.CONTENT_LENGTH.getName(), String.valueOf(bytes.length));
-            addHeader(HeaderNameEnum.CONTENT_TYPE.getName(), HttpHeaderConstant.Values.X_WWW_FORM_URLENCODED);
+            addHeader(HeaderNameEnum.CONTENT_TYPE.getName(), HeaderValueEnum.X_WWW_FORM_URLENCODED.getName());
             //输出数据
             request.write(bytes);
             request.getOutputStream().flush();

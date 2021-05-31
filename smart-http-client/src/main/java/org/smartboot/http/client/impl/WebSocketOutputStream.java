@@ -9,8 +9,8 @@
 package org.smartboot.http.client.impl;
 
 import org.smartboot.http.common.HeaderValue;
+import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.utils.Constant;
-import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.socket.transport.WriteBuffer;
 
 import java.io.IOException;
@@ -38,7 +38,7 @@ final class WebSocketOutputStream extends AbstractOutputStream {
         }
         String contentType = request.getContentType();
         if (contentType == null) {
-            contentType = HttpHeaderConstant.Values.DEFAULT_CONTENT_TYPE;
+            contentType = HeaderValueEnum.DEFAULT_CONTENT_TYPE.getName();
         }
 
         //输出http状态行、contentType,contentLength、Transfer-Encoding、server等信息

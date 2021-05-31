@@ -9,12 +9,12 @@
 package org.smartboot.http.server.decode;
 
 import org.smartboot.http.common.enums.HeaderNameEnum;
+import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.enums.YesNoEnum;
 import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.utils.Constant;
-import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.impl.HttpRequestProtocol;
 import org.smartboot.http.server.impl.Request;
@@ -36,8 +36,8 @@ class HttpHeaderEndDecoder implements Decoder {
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
         //识别是否websocket通信
         if (request.isWebsocket() == null) {
-            request.setWebsocket(HttpHeaderConstant.Values.WEBSOCKET.equals(request.getHeader(HeaderNameEnum.UPGRADE.getName()))
-                    && HttpHeaderConstant.Values.UPGRADE.equals(request.getHeader(HeaderNameEnum.CONNECTION.getName())) ? YesNoEnum.Yes : YesNoEnum.NO);
+            request.setWebsocket(HeaderValueEnum.WEBSOCKET.getName().equals(request.getHeader(HeaderNameEnum.UPGRADE.getName()))
+                    && HeaderValueEnum.UPGRADE.getName().equals(request.getHeader(HeaderNameEnum.CONNECTION.getName())) ? YesNoEnum.Yes : YesNoEnum.NO);
         }
         if (HttpMethodEnum.GET.getMethod().equals(request.getMethod())) {
             if (request.isWebsocket() == YesNoEnum.Yes) {
@@ -51,7 +51,7 @@ class HttpHeaderEndDecoder implements Decoder {
         }
         //Post请求
         if (HttpMethodEnum.POST.getMethod().equals(request.getMethod())
-                && StringUtils.startsWith(request.getContentType(), HttpHeaderConstant.Values.X_WWW_FORM_URLENCODED)) {
+                && StringUtils.startsWith(request.getContentType(), HeaderValueEnum.X_WWW_FORM_URLENCODED.getName())) {
             int postLength = request.getContentLength();
             if (postLength > Constant.maxPostSize) {
                 throw new HttpException(HttpStatus.PAYLOAD_TOO_LARGE);
