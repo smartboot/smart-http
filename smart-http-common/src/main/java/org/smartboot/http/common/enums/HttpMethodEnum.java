@@ -24,7 +24,7 @@ public enum HttpMethodEnum {
     TRACE("TRACE"),
     CONNECT("CONNECT");
 
-    private String method;
+    private final String method;
 
     HttpMethodEnum(String method) {
         this.method = method;

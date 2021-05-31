@@ -7,6 +7,8 @@
  ******************************************************************************/
 package org.smartboot.http.common.utils;
 
+import org.smartboot.http.common.enums.HttpMethodEnum;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,6 +57,9 @@ public class StringUtils {
         }
         for (int i = 0; i < String_CACHE_URI.length; i++) {
             String_CACHE_URI[i] = new ArrayList<>(8);
+        }
+        for (HttpMethodEnum httpMethodEnum : HttpMethodEnum.values()) {
+            addCache(String_CACHE_HTTP_METHOD, httpMethodEnum.getMethod());
         }
     }
 
