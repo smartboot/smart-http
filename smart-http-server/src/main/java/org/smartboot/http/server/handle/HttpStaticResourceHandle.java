@@ -8,12 +8,12 @@
 
 package org.smartboot.http.server.handle;
 
+import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
 import org.smartboot.http.common.utils.DateUtils;
-import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.http.common.utils.Mimetypes;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpRequest;
@@ -69,7 +69,7 @@ public class HttpStaticResourceHandle extends HttpServerHandle {
         if (!file.isFile()) {
             LOGGER.warn("file: {} not found!", request.getRequestURI());
             response.setHttpStatus(HttpStatus.NOT_FOUND);
-            response.setHeader(HttpHeaderConstant.Names.CONTENT_TYPE, "text/html; charset=utf-8");
+            response.setHeader(HeaderNameEnum.CONTENT_TYPE.getName(), "text/html; charset=utf-8");
 
             if (!HttpMethodEnum.HEAD.getMethod().equals(method)) {
                 response.write(URL_404.getBytes());
@@ -79,7 +79,7 @@ public class HttpStaticResourceHandle extends HttpServerHandle {
         //304
         Date lastModifyDate = new Date(file.lastModified());
         try {
-            String requestModified = request.getHeader(HttpHeaderConstant.Names.IF_MODIFIED_SINCE);
+            String requestModified = request.getHeader(HeaderNameEnum.IF_MODIFIED_SINCE.getName());
             if (StringUtils.isNotBlank(requestModified) && lastModifyDate.getTime() <= DateUtils.parseLastModified(requestModified).getTime()) {
                 response.setHttpStatus(HttpStatus.NOT_MODIFIED);
                 return;
@@ -87,11 +87,11 @@ public class HttpStaticResourceHandle extends HttpServerHandle {
         } catch (Exception e) {
             LOGGER.error("exception", e);
         }
-        response.setHeader(HttpHeaderConstant.Names.LAST_MODIFIED, DateUtils.formatLastModified(lastModifyDate));
+        response.setHeader(HeaderNameEnum.LAST_MODIFIED.getName(), DateUtils.formatLastModified(lastModifyDate));
 
 
         String contentType = Mimetypes.getInstance().getMimetype(file);
-        response.setHeader(HttpHeaderConstant.Names.CONTENT_TYPE, contentType + "; charset=utf-8");
+        response.setHeader(HeaderNameEnum.CONTENT_TYPE.getName(), contentType + "; charset=utf-8");
         //HEAD不输出内容
         if (HttpMethodEnum.HEAD.getMethod().equals(method)) {
             return;

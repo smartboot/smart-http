@@ -10,8 +10,8 @@ package org.smartboot.http.client.impl;
 
 import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
+import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.utils.Constant;
-import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.socket.transport.WriteBuffer;
 
 import java.io.IOException;
@@ -64,7 +64,7 @@ final class HttpOutputStream extends AbstractOutputStream {
             return;
         }
         cookies.forEach(cookie -> {
-            request.addHeader(HttpHeaderConstant.Names.SET_COOKIE, cookie.toString());
+            request.addHeader(HeaderNameEnum.SET_COOKIE.getName(), cookie.toString());
         });
 
     }

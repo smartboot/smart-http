@@ -7,6 +7,7 @@
  ******************************************************************************/
 package org.smartboot.http.common.utils;
 
+import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
 
@@ -64,6 +65,9 @@ public class StringUtils {
         }
         for (HttpProtocolEnum httpProtocolEnum : HttpProtocolEnum.values()) {
             addCache(String_CACHE_HTTP_PROTOCOL, httpProtocolEnum.getProtocol());
+        }
+        for (HeaderNameEnum headerNameEnum : HeaderNameEnum.values()) {
+            addCache(String_CACHE_HEADER_NAME, headerNameEnum.getName());
         }
     }
 

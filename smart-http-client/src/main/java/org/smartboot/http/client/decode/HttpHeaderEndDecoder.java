@@ -10,6 +10,7 @@ package org.smartboot.http.client.decode;
 
 import org.smartboot.http.client.impl.HttpResponseProtocol;
 import org.smartboot.http.client.impl.Response;
+import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.utils.Constant;
@@ -46,7 +47,7 @@ class HttpHeaderEndDecoder implements Decoder {
 //            }
 //        }
         //
-        String transferEncoding = response.getHeader(HttpHeaderConstant.Names.TRANSFER_ENCODING);
+        String transferEncoding = response.getHeader(HeaderNameEnum.TRANSFER_ENCODING.getName());
         if (StringUtils.equals(transferEncoding, HttpHeaderConstant.Values.CHUNKED)) {
             return chunkedBodyDecoder.decode(byteBuffer, aioSession, response);
         }

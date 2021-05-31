@@ -9,6 +9,7 @@
 package org.smartboot.http.client;
 
 import org.smartboot.http.client.impl.HttpRequestImpl;
+import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.socket.transport.WriteBuffer;
@@ -34,8 +35,8 @@ public class HttpRest {
         this.request.setUri(uri);
         this.request.setProtocol(HttpProtocolEnum.HTTP_11.getProtocol());
         this.keepalive(true)
-                .addHeader(HttpHeaderConstant.Names.HOST, host)
-                .addHeader(HttpHeaderConstant.Names.USER_AGENT, DEFAULT_USER_AGENT);
+                .addHeader(HeaderNameEnum.HOST.getName(), host)
+                .addHeader(HeaderNameEnum.USER_AGENT.getName(), DEFAULT_USER_AGENT);
     }
 
     protected final void bindResponseListener() {
@@ -77,7 +78,7 @@ public class HttpRest {
     }
 
     public HttpRest keepalive(boolean flag) {
-        request.setHeader(HttpHeaderConstant.Names.CONNECTION, flag ? HttpHeaderConstant.Values.KEEPALIVE : null);
+        request.setHeader(HeaderNameEnum.CONNECTION.getName(), flag ? HttpHeaderConstant.Values.KEEPALIVE : null);
         return this;
     }
 }

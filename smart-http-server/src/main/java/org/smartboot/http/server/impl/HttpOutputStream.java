@@ -9,6 +9,7 @@
 package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.Cookie;
+import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.utils.HttpHeaderConstant;
@@ -97,11 +98,11 @@ final class HttpOutputStream extends AbstractOutputStream {
         }
 
         String str = request.getProtocol() + httpStatus.getHttpStatusLine() + "\r\n"
-                + HttpHeaderConstant.Names.CONTENT_TYPE + ":" + contentType;
+                + HeaderNameEnum.CONTENT_TYPE.getName() + ":" + contentType;
         if (contentLength >= 0) {
-            str += "\r\n" + HttpHeaderConstant.Names.CONTENT_LENGTH + ":" + contentLength;
+            str += "\r\n" + HeaderNameEnum.CONTENT_LENGTH.getName() + ":" + contentLength;
         } else if (chunked) {
-            str += "\r\n" + HttpHeaderConstant.Names.TRANSFER_ENCODING + ":" + HttpHeaderConstant.Values.CHUNKED;
+            str += "\r\n" + HeaderNameEnum.TRANSFER_ENCODING.getName() + ":" + HttpHeaderConstant.Values.CHUNKED;
         }
         data = str.getBytes();
         //缓存响应头
@@ -129,7 +130,7 @@ final class HttpOutputStream extends AbstractOutputStream {
             return;
         }
         cookies.forEach(cookie -> {
-            response.addHeader(HttpHeaderConstant.Names.SET_COOKIE, cookie.toString());
+            response.addHeader(HeaderNameEnum.SET_COOKIE.getName(), cookie.toString());
         });
 
     }

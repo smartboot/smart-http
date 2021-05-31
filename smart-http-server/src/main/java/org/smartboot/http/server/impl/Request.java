@@ -11,9 +11,9 @@ package org.smartboot.http.server.impl;
 import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.Reset;
+import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.YesNoEnum;
 import org.smartboot.http.common.utils.Constant;
-import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.http.common.utils.HttpUtils;
 import org.smartboot.http.common.utils.NumberUtils;
 import org.smartboot.http.common.utils.StringUtils;
@@ -110,7 +110,7 @@ public final class Request implements HttpRequest, Reset {
 
     public final String getHost() {
         if (hostHeader == null) {
-            hostHeader = getHeader(HttpHeaderConstant.Names.HOST);
+            hostHeader = getHeader(HeaderNameEnum.HOST.getName());
         }
         return hostHeader;
     }
@@ -212,7 +212,7 @@ public final class Request implements HttpRequest, Reset {
             return requestUrl;
         }
         if (requestUri.startsWith("/")) {
-            requestUrl = getScheme() + "://" + getHeader(HttpHeaderConstant.Names.HOST) + getRequestURI();
+            requestUrl = getScheme() + "://" + getHeader(HeaderNameEnum.HOST.getName()) + getRequestURI();
         } else {
             requestUrl = requestUri;
         }
@@ -240,7 +240,7 @@ public final class Request implements HttpRequest, Reset {
         if (contentType != null) {
             return contentType;
         }
-        contentType = getHeader(HttpHeaderConstant.Names.CONTENT_TYPE);
+        contentType = getHeader(HeaderNameEnum.CONTENT_TYPE.getName());
         return contentType;
     }
 
@@ -250,7 +250,7 @@ public final class Request implements HttpRequest, Reset {
             return contentLength;
         }
         //不包含content-length,则为：-1
-        contentLength = NumberUtils.toInt(getHeader(HttpHeaderConstant.Names.CONTENT_LENGTH), NONE_CONTENT_LENGTH);
+        contentLength = NumberUtils.toInt(getHeader(HeaderNameEnum.CONTENT_LENGTH.getName()), NONE_CONTENT_LENGTH);
         return contentLength;
     }
 
@@ -380,7 +380,7 @@ public final class Request implements HttpRequest, Reset {
         if (cookies != null) {
             return cookies;
         }
-        String cookieValue = getHeader(HttpHeaderConstant.Names.COOKIE);
+        String cookieValue = getHeader(HeaderNameEnum.COOKIE.getName());
         if (StringUtils.isBlank(cookieValue)) {
             return new Cookie[0];
         }

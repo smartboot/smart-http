@@ -59,7 +59,11 @@ public enum HeaderNameEnum {
     VARY("Vary"),
     VIA("Via"),
     WARNING("Warning"),
-    WWW_AUTHENTICATE("WWW-Authenticate");
+    WWW_AUTHENTICATE("WWW-Authenticate"),
+    Sec_WebSocket_Accept("Sec-WebSocket-Accept"),
+    COOKIE("Cookie"),
+    SET_COOKIE("Set-Cookie"),
+    Sec_WebSocket_Key("Sec-WebSocket-Key");
 
     private String name;
 

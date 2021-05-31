@@ -8,7 +8,7 @@
 
 package org.smartboot.http.server.impl;
 
-import org.smartboot.http.common.utils.HttpHeaderConstant;
+import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.socket.transport.WriteBuffer;
 
 import java.io.IOException;
@@ -36,7 +36,7 @@ final class WebSocketOutputStream extends AbstractOutputStream {
 
         //输出http状态行、contentType,contentLength、Transfer-Encoding、server等信息
         writeBuffer.write(getBytes(request.getProtocol() + response.getHttpStatus().getHttpStatusLine() + "\r\n"
-                + HttpHeaderConstant.Names.CONTENT_TYPE + ":" + response.getContentType()));
+                + HeaderNameEnum.CONTENT_TYPE.getName() + ":" + response.getContentType()));
 
         //输出Header部分
         writeHeader();

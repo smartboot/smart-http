@@ -8,8 +8,8 @@
 
 package org.smartboot.http.server.handle;
 
+import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HttpStatus;
-import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
@@ -33,11 +33,11 @@ public final class BasicAuthServerHandle extends HttpServerHandle {
 
     @Override
     public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
-        String clientBasic = request.getHeader(HttpHeaderConstant.Names.AUTHORIZATION);
+        String clientBasic = request.getHeader(HeaderNameEnum.AUTHORIZATION.getName());
         if (StringUtils.equals(clientBasic, this.basic)) {
             httpServerHandle.doHandle(request, response);
         } else {
-            response.setHeader(HttpHeaderConstant.Names.WWW_AUTHENTICATE, "Basic realm=\"smart-http\"");
+            response.setHeader(HeaderNameEnum.WWW_AUTHENTICATE.getName(), "Basic realm=\"smart-http\"");
             response.setHttpStatus(HttpStatus.UNAUTHORIZED);
         }
     }

@@ -8,6 +8,7 @@
 
 package org.smartboot.http.server.decode;
 
+import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.enums.YesNoEnum;
@@ -35,8 +36,8 @@ class HttpHeaderEndDecoder implements Decoder {
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
         //识别是否websocket通信
         if (request.isWebsocket() == null) {
-            request.setWebsocket(HttpHeaderConstant.Values.WEBSOCKET.equals(request.getHeader(HttpHeaderConstant.Names.UPGRADE))
-                    && HttpHeaderConstant.Values.UPGRADE.equals(request.getHeader(HttpHeaderConstant.Names.CONNECTION)) ? YesNoEnum.Yes : YesNoEnum.NO);
+            request.setWebsocket(HttpHeaderConstant.Values.WEBSOCKET.equals(request.getHeader(HeaderNameEnum.UPGRADE.getName()))
+                    && HttpHeaderConstant.Values.UPGRADE.equals(request.getHeader(HeaderNameEnum.CONNECTION.getName())) ? YesNoEnum.Yes : YesNoEnum.NO);
         }
         if (HttpMethodEnum.GET.getMethod().equals(request.getMethod())) {
             if (request.isWebsocket() == YesNoEnum.Yes) {

@@ -10,8 +10,8 @@ package org.smartboot.http.client.impl;
 
 import org.smartboot.http.client.HttpResponse;
 import org.smartboot.http.common.HeaderValue;
+import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.YesNoEnum;
-import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.http.common.utils.NumberUtils;
 import org.smartboot.http.common.utils.StringUtils;
 
@@ -123,7 +123,7 @@ public class Response implements HttpResponse {
         if (contentType != null) {
             return contentType;
         }
-        contentType = getHeader(HttpHeaderConstant.Names.CONTENT_TYPE);
+        contentType = getHeader(HeaderNameEnum.CONTENT_TYPE.getName());
         return contentType;
     }
 
@@ -133,7 +133,7 @@ public class Response implements HttpResponse {
             return contentLength;
         }
         //不包含content-length,则为：-1
-        contentLength = NumberUtils.toInt(getHeader(HttpHeaderConstant.Names.CONTENT_LENGTH), NONE_CONTENT_LENGTH);
+        contentLength = NumberUtils.toInt(getHeader(HeaderNameEnum.CONTENT_LENGTH.getName()), NONE_CONTENT_LENGTH);
         return contentLength;
     }
 
