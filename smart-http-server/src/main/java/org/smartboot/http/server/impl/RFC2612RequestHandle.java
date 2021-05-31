@@ -9,6 +9,7 @@
 package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.enums.HttpMethodEnum;
+import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.utils.HttpHeaderConstant;
@@ -35,7 +36,7 @@ class RFC2612RequestHandle extends HttpServerHandle {
 
         boolean keepAlive = true;
         // http/1.0兼容长连接
-        if (request.getProtocol().endsWith("1.0")) {
+        if (request.getProtocol() == HttpProtocolEnum.HTTP_10.getProtocol()) {
             keepAlive = HttpHeaderConstant.Values.KEEPALIVE.equalsIgnoreCase(request.getHeader(HttpHeaderConstant.Names.CONNECTION));
             if (keepAlive) {
                 response.setHeader(HttpHeaderConstant.Names.CONNECTION, HttpHeaderConstant.Values.KEEPALIVE);
