@@ -8,6 +8,7 @@
 package org.smartboot.http.common.utils;
 
 import org.smartboot.http.common.enums.HttpMethodEnum;
+import org.smartboot.http.common.enums.HttpProtocolEnum;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -60,6 +61,9 @@ public class StringUtils {
         }
         for (HttpMethodEnum httpMethodEnum : HttpMethodEnum.values()) {
             addCache(String_CACHE_HTTP_METHOD, httpMethodEnum.getMethod());
+        }
+        for (HttpProtocolEnum httpProtocolEnum : HttpProtocolEnum.values()) {
+            addCache(String_CACHE_HTTP_PROTOCOL, httpProtocolEnum.getProtocol());
         }
     }
 

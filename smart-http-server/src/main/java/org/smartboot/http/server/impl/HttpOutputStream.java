@@ -80,7 +80,7 @@ final class HttpOutputStream extends AbstractOutputStream {
         byte[] data = null;
         //成功消息优先从缓存中加载
         boolean cache = httpStatus == HttpStatus.OK;
-        boolean http10 = HttpProtocolEnum.HTTP_10.getProtocol().equals(request.getProtocol());
+        boolean http10 = HttpProtocolEnum.HTTP_10.getProtocol() == request.getProtocol();
         if (cache && !http10) {
             if ("text/plain; charset=UTF-8" == contentType && contentLength < CACHE_TEXT_PLAIN_AND_LENGTH.length) {
                 data = CACHE_TEXT_PLAIN_AND_LENGTH[contentLength];
