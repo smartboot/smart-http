@@ -8,6 +8,7 @@
 package org.smartboot.http.common.utils;
 
 import org.smartboot.http.common.enums.HeaderNameEnum;
+import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
 
@@ -41,6 +42,7 @@ public class StringUtils {
     public static final List<StringCache>[] String_CACHE_HTTP_PROTOCOL = new List[8];
     public static final List<StringCache>[] String_CACHE_HTTP_METHOD = new List[8];
     public static final List<StringCache>[] String_CACHE_HEADER_NAME = new List[32];
+    public static final List<StringCache>[] String_CACHE_HEADER_VALUE = new List[32];
     public static final List<StringCache>[] String_CACHE_URI = new List[64];
     public static final List<IntegerCache>[] INTEGER_CACHE_HTTP_STATUS_CODE = new List[8];
 
@@ -57,6 +59,9 @@ public class StringUtils {
         for (int i = 0; i < String_CACHE_HEADER_NAME.length; i++) {
             String_CACHE_HEADER_NAME[i] = new ArrayList<>(8);
         }
+        for (int i = 0; i < String_CACHE_HEADER_VALUE.length; i++) {
+            String_CACHE_HEADER_VALUE[i] = new ArrayList<>(8);
+        }
         for (int i = 0; i < String_CACHE_URI.length; i++) {
             String_CACHE_URI[i] = new ArrayList<>(8);
         }
@@ -68,6 +73,9 @@ public class StringUtils {
         }
         for (HeaderNameEnum headerNameEnum : HeaderNameEnum.values()) {
             addCache(String_CACHE_HEADER_NAME, headerNameEnum.getName());
+        }
+        for (HeaderValueEnum headerNameEnum : HeaderValueEnum.values()) {
+            addCache(String_CACHE_HEADER_VALUE, headerNameEnum.getName());
         }
     }
 
