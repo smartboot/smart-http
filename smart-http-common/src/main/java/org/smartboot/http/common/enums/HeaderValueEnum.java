@@ -21,37 +21,14 @@ public enum HeaderValueEnum {
     KEEPALIVE("Keep-Alive"),
     DEFAULT_CONTENT_TYPE("text/html; charset=utf-8");
 
-    private String name;
-
-    private byte[] bytes;
-
-    private byte[] bytesWithColon;
-
+    private final String name;
 
     HeaderValueEnum(String name) {
         this.name = name;
-        this.bytes = name.getBytes();
-        this.bytesWithColon = ("\r\n" + name + ":").getBytes();
     }
 
 
     public String getName() {
         return name;
-    }
-
-    public boolean equals(byte[] bytes, int length) {
-        if (this.bytes.length != length) {
-            return false;
-        }
-        for (int i = 0; i < length; i++) {
-            if (this.bytes[i] != bytes[i]) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public byte[] getBytesWithColon() {
-        return bytesWithColon;
     }
 }

@@ -65,11 +65,11 @@ public enum HeaderNameEnum {
     SET_COOKIE("Set-Cookie"),
     Sec_WebSocket_Key("Sec-WebSocket-Key");
 
-    private String name;
+    private final String name;
 
-    private byte[] bytes;
+    private final byte[] bytes;
 
-    private byte[] bytesWithColon;
+    private final byte[] bytesWithColon;
 
 
     HeaderNameEnum(String name) {

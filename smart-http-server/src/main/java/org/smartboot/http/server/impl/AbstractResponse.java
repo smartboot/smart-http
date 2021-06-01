@@ -11,6 +11,7 @@ package org.smartboot.http.server.impl;
 import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.Reset;
+import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.server.HttpRequest;
@@ -149,7 +150,7 @@ class AbstractResponse implements HttpResponse, Reset {
      * 部分header需要特殊处理
      */
     private boolean checkSpecialHeader(String name, String value) {
-        if (name.equalsIgnoreCase("Content-Type")) {
+        if (name.equalsIgnoreCase(HeaderNameEnum.CONTENT_TYPE.getName())) {
             setContentType(value);
             return true;
         }
