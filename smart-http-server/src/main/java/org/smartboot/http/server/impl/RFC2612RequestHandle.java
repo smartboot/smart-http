@@ -36,8 +36,8 @@ class RFC2612RequestHandle extends HttpServerHandle {
         uriCheck(http11Request);
 
         boolean keepAlive = true;
-        // http/1.0兼容长连接
-        if (HttpProtocolEnum.HTTP_10.getProtocol().equals(request.getProtocol())) {
+        // http/1.0兼容长连接。此处用 == 性能更高
+        if (HttpProtocolEnum.HTTP_10.getProtocol() == request.getProtocol()) {
             keepAlive = HeaderValueEnum.KEEPALIVE.getName().equalsIgnoreCase(request.getHeader(HeaderNameEnum.CONNECTION.getName()));
             if (keepAlive) {
                 response.setHeader(HeaderNameEnum.CONNECTION.getName(), HeaderValueEnum.KEEPALIVE.getName());
