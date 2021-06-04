@@ -53,7 +53,17 @@ public class HttpRest {
         if (queryParams == null) {
             return;
         }
-        StringBuilder stringBuilder = new StringBuilder();
+        StringBuilder stringBuilder = new StringBuilder(request.getUri());
+        int index = request.getUri().indexOf("#");
+        if (index > 0) {
+            stringBuilder.setLength(index);
+        }
+        index = request.getUri().indexOf("?");
+        if (index == -1) {
+            stringBuilder.append('?');
+        } else if (index < stringBuilder.length() - 1) {
+            stringBuilder.append('&');
+        }
         queryParams.forEach((key, value) -> {
             try {
                 stringBuilder.append(key).append('=').append(URLEncoder.encode(value, "utf8")).append('&');
@@ -64,23 +74,7 @@ public class HttpRest {
         if (stringBuilder.length() > 0) {
             stringBuilder.setLength(stringBuilder.length() - 1);
         }
-        int index1 = request.getUri().indexOf("#");
-        int index2 = request.getUri().indexOf("?");
-        if (index1 == -1 && index2 == -1) {
-            request.setUri(request.getUri() + "?" + stringBuilder);
-        } else if (index1 == -1) {
-            if (index2 == request.getUri().length() - 1) {
-                request.setUri(request.getUri() + stringBuilder);
-            } else {
-                request.setUri(request.getUri() + "&" + stringBuilder);
-            }
-        } else {
-            if (index2 == -1) {
-                request.setUri(request.getUri().substring(0, index1) + '?' + stringBuilder + request.getUri().substring(index1));
-            } else {
-                request.setUri(request.getUri().substring(0, index1) + '&' + stringBuilder + request.getUri().substring(index1));
-            }
-        }
+        request.setUri(stringBuilder.toString());
     }
 
     public final Future<HttpResponse> send() {

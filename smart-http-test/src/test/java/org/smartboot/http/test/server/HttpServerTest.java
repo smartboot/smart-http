@@ -192,6 +192,18 @@ public class HttpServerTest extends BastTest {
     }
 
     @Test
+    public void testGet7() throws ExecutionException, InterruptedException {
+        HttpClient httpClient = getHttpClient();
+        org.smartboot.http.client.HttpResponse response = httpClient.get("/hello?#abca=sdf").addQueryParam("author", "三刀").addQueryParam("abc", "123").send().get();
+
+        JSONObject jsonObject = JSON.parseObject(response.body());
+        JSONObject parameters = jsonObject.getJSONObject(KEY_PARAMETERS);
+        Assert.assertEquals("123", parameters.get("abc"));
+        Assert.assertEquals("三刀", parameters.get("author"));
+        Assert.assertEquals(HttpMethodEnum.GET.getMethod(), jsonObject.get(KEY_METHOD));
+    }
+
+    @Test
     public void testPost() throws ExecutionException, InterruptedException {
         HttpClient httpClient = getHttpClient();
         HttpPost httpPost = httpClient.post(requestUnit.getUri());
