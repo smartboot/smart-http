@@ -60,7 +60,7 @@ class HttpHeaderDecoder implements Decoder {
             if (length == -1) {
                 return this;
             }
-            request.setHeadValue(StringUtils.convertToString(byteBuffer, byteBuffer.position() - 1 - length, length - 1, StringUtils.String_CACHE_HEADER_VALUE, true));
+            request.setHeadValue(StringUtils.convertToString(byteBuffer, byteBuffer.position() - 1 - length, length - 1, StringUtils.String_CACHE_COMMON, true));
             return HttpHeaderDecoder.this.decode(byteBuffer, aioSession, request);
         }
     }

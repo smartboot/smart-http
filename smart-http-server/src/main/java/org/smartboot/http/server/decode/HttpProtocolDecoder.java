@@ -27,7 +27,7 @@ class HttpProtocolDecoder implements Decoder {
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
         int length = StringUtils.scanCRLFAndTrim(byteBuffer);
         if (length > 0) {
-            String protocol = StringUtils.convertToString(byteBuffer, byteBuffer.position() - length - 1, length - 1, StringUtils.String_CACHE_HTTP_PROTOCOL);
+            String protocol = StringUtils.convertToString(byteBuffer, byteBuffer.position() - length - 1, length - 1, StringUtils.String_CACHE_COMMON);
             request.setProtocol(protocol);
             return decoder.decode(byteBuffer, aioSession, request);
 //            return ignoreHeaderDecoder.decode(byteBuffer, aioSession, request);

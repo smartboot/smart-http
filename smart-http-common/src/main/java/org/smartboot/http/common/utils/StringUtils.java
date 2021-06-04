@@ -39,10 +39,9 @@ public class StringUtils {
      */
     public static final int INDEX_NOT_FOUND = -1;
     public static final List<StringCache>[] String_CACHE_EMPTY = new List[0];
-    public static final List<StringCache>[] String_CACHE_HTTP_PROTOCOL = new List[8];
+    public static final List<StringCache>[] String_CACHE_COMMON = new List[128];
     public static final List<StringCache>[] String_CACHE_HTTP_METHOD = new List[8];
     public static final List<StringCache>[] String_CACHE_HEADER_NAME = new List[32];
-    public static final List<StringCache>[] String_CACHE_HEADER_VALUE = new List[32];
     public static final List<StringCache>[] String_CACHE_URI = new List[64];
     public static final List<IntegerCache>[] INTEGER_CACHE_HTTP_STATUS_CODE = new List[8];
 
@@ -53,14 +52,11 @@ public class StringUtils {
         for (int i = 0; i < String_CACHE_HTTP_METHOD.length; i++) {
             String_CACHE_HTTP_METHOD[i] = new ArrayList<>(8);
         }
-        for (int i = 0; i < String_CACHE_HTTP_PROTOCOL.length; i++) {
-            String_CACHE_HTTP_PROTOCOL[i] = new ArrayList<>(8);
+        for (int i = 0; i < String_CACHE_COMMON.length; i++) {
+            String_CACHE_COMMON[i] = new ArrayList<>(8);
         }
         for (int i = 0; i < String_CACHE_HEADER_NAME.length; i++) {
             String_CACHE_HEADER_NAME[i] = new ArrayList<>(8);
-        }
-        for (int i = 0; i < String_CACHE_HEADER_VALUE.length; i++) {
-            String_CACHE_HEADER_VALUE[i] = new ArrayList<>(8);
         }
         for (int i = 0; i < String_CACHE_URI.length; i++) {
             String_CACHE_URI[i] = new ArrayList<>(8);
@@ -68,15 +64,17 @@ public class StringUtils {
         for (HttpMethodEnum httpMethodEnum : HttpMethodEnum.values()) {
             addCache(String_CACHE_HTTP_METHOD, httpMethodEnum.getMethod());
         }
-        for (HttpProtocolEnum httpProtocolEnum : HttpProtocolEnum.values()) {
-            addCache(String_CACHE_HTTP_PROTOCOL, httpProtocolEnum.getProtocol());
-        }
         for (HeaderNameEnum headerNameEnum : HeaderNameEnum.values()) {
             addCache(String_CACHE_HEADER_NAME, headerNameEnum.getName());
         }
         for (HeaderValueEnum headerNameEnum : HeaderValueEnum.values()) {
-            addCache(String_CACHE_HEADER_VALUE, headerNameEnum.getName());
+            addCache(String_CACHE_COMMON, headerNameEnum.getName());
         }
+        addCache(String_CACHE_COMMON, HttpProtocolEnum.HTTP_11.getProtocol());
+        addCache(String_CACHE_COMMON, "10.0.0.1");
+        addCache(String_CACHE_COMMON, "application/json,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7");
+        addCache(String_CACHE_COMMON, "text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7");
+        addCache(String_CACHE_COMMON, "keep-alive");
     }
 
     public StringUtils() {
@@ -131,6 +129,7 @@ public class StringUtils {
         offset = buffer.arrayOffset() + offset;
         byte[] bytes = buffer.array();
         if (length >= cacheList.length) {
+            System.out.println(new String(bytes, offset, length));
             return new String(bytes, offset, length);
         }
         List<StringCache> list = cacheList[length];
@@ -141,6 +140,7 @@ public class StringUtils {
             }
         }
         if (readonly) {
+            System.out.println(new String(bytes, offset, length));
             return new String(bytes, offset, length);
         }
         synchronized (list) {
