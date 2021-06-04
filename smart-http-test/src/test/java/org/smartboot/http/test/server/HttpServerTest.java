@@ -229,7 +229,7 @@ public class HttpServerTest extends BastTest {
 
     private JSONObject basicCheck(org.smartboot.http.client.HttpResponse response, RequestUnit requestUnit) {
         JSONObject jsonObject = JSON.parseObject(response.body());
-        System.out.println(JSON.toJSONString(jsonObject, SerializerFeature.PrettyFormat, SerializerFeature.WriteMapNullValue,
+        LOGGER.info(JSON.toJSONString(jsonObject, SerializerFeature.PrettyFormat, SerializerFeature.WriteMapNullValue,
                 SerializerFeature.WriteDateUseDateFormat));
         Assert.assertEquals(requestUnit.getUri(), jsonObject.get(KEY_URI));
 
