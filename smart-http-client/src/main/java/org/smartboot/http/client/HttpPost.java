@@ -41,7 +41,7 @@ public final class HttpPost extends HttpRest {
             return;
         }
         try {
-            bindResponseListener();
+            willSendRequest();
             //编码Post表单
             Iterator<Map.Entry<String, String>> iterator = params.entrySet().iterator();
             Map.Entry<String, String> entry = iterator.next();

@@ -20,8 +20,14 @@
         <junit.version>4.13.1</junit.version>
         <enhance.version>1.0.3</enhance.version>
         <json.version>1.2.62</json.version>
+        <slf4j.version>1.7.30</slf4j.version>
     </properties>
     <dependencies>
+        <dependency>
+            <groupId>org.smartboot.socket</groupId>
+            <artifactId>aio-pro</artifactId>
+            <version>1.5.10-SNAPSHOT</version>
+        </dependency>
         <dependency>
             <groupId>org.smartboot.aio</groupId>
             <artifactId>aio-enhance</artifactId>
@@ -47,6 +53,16 @@
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
             <version>${json.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>${slf4j.version}</version>
         </dependency>
     </dependencies>
     <build>

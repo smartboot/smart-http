@@ -15,6 +15,10 @@ import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.socket.transport.WriteBuffer;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
@@ -28,6 +32,7 @@ public class HttpRest {
     protected final HttpRequestImpl request;
     protected final CompletableFuture<HttpResponse> completableFuture = new CompletableFuture<>();
     private final Consumer<CompletableFuture<HttpResponse>> responseListener;
+    private Map<String, String> queryParams = null;
 
     public HttpRest(String uri, String host, WriteBuffer writeBuffer, Consumer<CompletableFuture<HttpResponse>> responseListener) {
         this.request = new HttpRequestImpl(writeBuffer);
@@ -39,13 +44,48 @@ public class HttpRest {
                 .addHeader(HeaderNameEnum.USER_AGENT.getName(), DEFAULT_USER_AGENT);
     }
 
-    protected final void bindResponseListener() {
+    protected final void willSendRequest() {
+        resetUri();
         responseListener.accept(completableFuture);
+    }
+
+    private void resetUri() {
+        if (queryParams == null) {
+            return;
+        }
+        StringBuilder stringBuilder = new StringBuilder();
+        queryParams.forEach((key, value) -> {
+            try {
+                stringBuilder.append(key).append('=').append(URLEncoder.encode(value, "utf8")).append('&');
+            } catch (UnsupportedEncodingException e) {
+                stringBuilder.append(key).append('=').append(value).append('&');
+            }
+        });
+        if (stringBuilder.length() > 0) {
+            stringBuilder.setLength(stringBuilder.length() - 1);
+        }
+        int index1 = request.getUri().indexOf("#");
+        int index2 = request.getUri().indexOf("?");
+        if (index1 == -1 && index2 == -1) {
+            request.setUri(request.getUri() + "?" + stringBuilder);
+        } else if (index1 == -1) {
+            if (index2 == request.getUri().length() - 1) {
+                request.setUri(request.getUri() + stringBuilder);
+            } else {
+                request.setUri(request.getUri() + "&" + stringBuilder);
+            }
+        } else {
+            if (index2 == -1) {
+                request.setUri(request.getUri().substring(0, index1) + '?' + stringBuilder + request.getUri().substring(index1));
+            } else {
+                request.setUri(request.getUri().substring(0, index1) + '&' + stringBuilder + request.getUri().substring(index1));
+            }
+        }
     }
 
     public final Future<HttpResponse> send() {
         try {
-            bindResponseListener();
+            willSendRequest();
             request.getOutputStream().flush();
         } catch (IOException e) {
             e.printStackTrace();
@@ -79,6 +119,20 @@ public class HttpRest {
 
     public HttpRest keepalive(boolean flag) {
         request.setHeader(HeaderNameEnum.CONNECTION.getName(), flag ? HeaderValueEnum.KEEPALIVE.getName() : null);
+        return this;
+    }
+
+    /**
+     * 在 uri 后面添加请求参数
+     *
+     * @param name  参数名
+     * @param value 参数值
+     */
+    public final HttpRest addQueryParam(String name, String value) {
+        if (queryParams == null) {
+            queryParams = new HashMap<>();
+        }
+        queryParams.put(name, value);
         return this;
     }
 }

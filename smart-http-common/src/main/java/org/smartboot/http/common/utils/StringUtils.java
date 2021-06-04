@@ -129,7 +129,7 @@ public class StringUtils {
         offset = buffer.arrayOffset() + offset;
         byte[] bytes = buffer.array();
         if (length >= cacheList.length) {
-            System.out.println(new String(bytes, offset, length));
+//            System.out.println(new String(bytes, offset, length));
             return new String(bytes, offset, length);
         }
         List<StringCache> list = cacheList[length];
@@ -140,7 +140,7 @@ public class StringUtils {
             }
         }
         if (readonly) {
-            System.out.println(new String(bytes, offset, length));
+//            System.out.println(new String(bytes, offset, length));
             return new String(bytes, offset, length);
         }
         synchronized (list) {
