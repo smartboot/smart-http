@@ -34,7 +34,7 @@ public class HttpRest {
     private final Consumer<CompletableFuture<HttpResponse>> responseListener;
     private Map<String, String> queryParams = null;
 
-    public HttpRest(String uri, String host, WriteBuffer writeBuffer, Consumer<CompletableFuture<HttpResponse>> responseListener) {
+    HttpRest(String uri, String host, WriteBuffer writeBuffer, Consumer<CompletableFuture<HttpResponse>> responseListener) {
         this.request = new HttpRequestImpl(writeBuffer);
         this.responseListener = responseListener;
         this.request.setUri(uri);

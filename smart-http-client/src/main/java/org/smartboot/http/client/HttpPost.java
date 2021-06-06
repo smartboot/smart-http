@@ -25,7 +25,7 @@ import java.util.function.Consumer;
  */
 public final class HttpPost extends HttpRest {
 
-    public HttpPost(String uri, String host, WriteBuffer writeBuffer, Consumer<CompletableFuture<HttpResponse>> bindListener) {
+    HttpPost(String uri, String host, WriteBuffer writeBuffer, Consumer<CompletableFuture<HttpResponse>> bindListener) {
         super(uri, host, writeBuffer, bindListener);
         request.setMethod(HttpMethodEnum.POST.getMethod());
     }
