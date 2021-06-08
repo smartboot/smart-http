@@ -12,7 +12,7 @@ import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.Reset;
 import org.smartboot.http.common.enums.HeaderNameEnum;
-import org.smartboot.http.common.enums.YesNoEnum;
+import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.HttpUtils;
 import org.smartboot.http.common.utils.NumberUtils;
@@ -86,7 +86,7 @@ public final class Request implements HttpRequest, Reset {
     private String hostHeader;
 
 
-    private YesNoEnum websocket = null;
+    private boolean websocket = false;
 
     /**
      * Post表单
@@ -157,6 +157,9 @@ public final class Request implements HttpRequest, Reset {
     }
 
     public final void setHeader(String headerName, String value) {
+        if (headerName == HeaderNameEnum.UPGRADE.getName() && value == HeaderValueEnum.WEBSOCKET.getName()) {
+            websocket = true;
+        }
         if (headerSize < headers.size()) {
             HeaderValue headerValue = headers.get(headerSize);
             headerValue.setName(headerName);
@@ -445,12 +448,8 @@ public final class Request implements HttpRequest, Reset {
         return cookies;
     }
 
-    public final YesNoEnum isWebsocket() {
+    public final boolean isWebsocket() {
         return websocket;
-    }
-
-    public final void setWebsocket(YesNoEnum websocket) {
-        this.websocket = websocket;
     }
 
     public String getFormUrlencoded() {
@@ -493,5 +492,6 @@ public final class Request implements HttpRequest, Reset {
         formUrlencoded = null;
         queryString = null;
         cookies = null;
+        websocket = false;
     }
 }

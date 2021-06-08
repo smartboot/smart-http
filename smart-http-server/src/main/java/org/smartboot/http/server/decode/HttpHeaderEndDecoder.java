@@ -8,11 +8,9 @@
 
 package org.smartboot.http.server.decode;
 
-import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.enums.HttpStatus;
-import org.smartboot.http.common.enums.YesNoEnum;
 import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.StringUtils;
@@ -34,13 +32,8 @@ class HttpHeaderEndDecoder implements Decoder {
 
     @Override
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
-        //识别是否websocket通信
-        if (request.isWebsocket() == null) {
-            request.setWebsocket(HeaderValueEnum.WEBSOCKET.getName().equals(request.getHeader(HeaderNameEnum.UPGRADE.getName()))
-                    && HeaderValueEnum.UPGRADE.getName().equals(request.getHeader(HeaderNameEnum.CONNECTION.getName())) ? YesNoEnum.Yes : YesNoEnum.NO);
-        }
         if (HttpMethodEnum.GET.getMethod().equals(request.getMethod())) {
-            if (request.isWebsocket() == YesNoEnum.Yes) {
+            if (request.isWebsocket()) {
                 WebSocketRequestImpl webSocketRequest = new WebSocketRequestImpl(request);
                 RequestAttachment attachment = aioSession.getAttachment();
                 attachment.setWebSocketRequest(webSocketRequest);

@@ -10,7 +10,6 @@ package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.HandlePipeline;
 import org.smartboot.http.common.Pipeline;
-import org.smartboot.http.common.enums.YesNoEnum;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
 import org.smartboot.http.server.HttpRequest;
@@ -52,7 +51,7 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
             AbstractRequest request;
             AbstractResponse response;
             HandlePipeline pipeline;
-            if (baseHttpRequest.isWebsocket() == YesNoEnum.Yes) {
+            if (baseHttpRequest.isWebsocket()) {
                 request = attachment.getWebSocketRequest();
                 response = attachment.getWebSocketRequest().getResponse();
                 pipeline = wsPipeline;
