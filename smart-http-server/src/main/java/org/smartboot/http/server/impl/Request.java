@@ -492,6 +492,5 @@ public final class Request implements HttpRequest, Reset {
         formUrlencoded = null;
         queryString = null;
         cookies = null;
-        websocket = false;
     }
 }
