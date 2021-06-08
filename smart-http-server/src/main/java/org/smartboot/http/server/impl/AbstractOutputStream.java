@@ -14,7 +14,6 @@ import org.smartboot.http.common.Reset;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.utils.Constant;
-import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.socket.buffer.VirtualBuffer;
 import org.smartboot.socket.transport.WriteBuffer;
@@ -26,6 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -33,6 +33,7 @@ import java.util.concurrent.Semaphore;
  * @version V1.0 , 2018/2/3
  */
 abstract class AbstractOutputStream extends BufferOutputStream implements Reset {
+    private static final Map<String, byte[]> HEADER_NAME_EXT_MAP = new ConcurrentHashMap<>();
     private static final SimpleDateFormat sdf = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
     private static final Semaphore flushDateSemaphore = new Semaphore(1);
     private static final Date currentDate = new Date(0);
@@ -165,15 +166,15 @@ abstract class AbstractOutputStream extends BufferOutputStream implements Reset 
     }
 
     final protected byte[] getHeaderNameBytes(String name) {
-        HeaderNameEnum headerNameEnum = HttpHeaderConstant.HEADER_NAME_ENUM_MAP.get(name);
+        HeaderNameEnum headerNameEnum = HeaderNameEnum.HEADER_NAME_ENUM_MAP.get(name);
         if (headerNameEnum != null) {
             return headerNameEnum.getBytesWithColon();
         }
-        byte[] extBytes = HttpHeaderConstant.HEADER_NAME_EXT_MAP.get(name);
+        byte[] extBytes = HEADER_NAME_EXT_MAP.get(name);
         if (extBytes == null) {
             synchronized (name) {
                 extBytes = getBytes("\r\n" + name + ":");
-                HttpHeaderConstant.HEADER_NAME_EXT_MAP.put(name, extBytes);
+                HEADER_NAME_EXT_MAP.put(name, extBytes);
             }
         }
         return extBytes;

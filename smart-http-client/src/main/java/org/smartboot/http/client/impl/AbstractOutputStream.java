@@ -11,19 +11,21 @@ package org.smartboot.http.client.impl;
 import org.smartboot.http.common.BufferOutputStream;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.utils.Constant;
-import org.smartboot.http.common.utils.HttpHeaderConstant;
 import org.smartboot.socket.buffer.VirtualBuffer;
 import org.smartboot.socket.transport.WriteBuffer;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author 三刀
  * @version V1.0 , 2018/2/3
  */
 abstract class AbstractOutputStream extends BufferOutputStream {
+    private static final Map<String, byte[]> HEADER_NAME_EXT_MAP = new ConcurrentHashMap<>();
     protected static byte[] date;
 
     protected final WriteBuffer writeBuffer;
@@ -112,15 +114,15 @@ abstract class AbstractOutputStream extends BufferOutputStream {
     }
 
     final protected byte[] getHeaderNameBytes(String name) {
-        HeaderNameEnum headerNameEnum = HttpHeaderConstant.HEADER_NAME_ENUM_MAP.get(name);
+        HeaderNameEnum headerNameEnum = HeaderNameEnum.HEADER_NAME_ENUM_MAP.get(name);
         if (headerNameEnum != null) {
             return headerNameEnum.getBytesWithColon();
         }
-        byte[] extBytes = HttpHeaderConstant.HEADER_NAME_EXT_MAP.get(name);
+        byte[] extBytes = HEADER_NAME_EXT_MAP.get(name);
         if (extBytes == null) {
             synchronized (name) {
                 extBytes = getBytes("\r\n" + name + ":");
-                HttpHeaderConstant.HEADER_NAME_EXT_MAP.put(name, extBytes);
+                HEADER_NAME_EXT_MAP.put(name, extBytes);
             }
         }
         return extBytes;

@@ -8,6 +8,9 @@
 
 package org.smartboot.http.common.enums;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author 三刀
  * @version V1.0 , 2018/12/6
@@ -64,6 +67,13 @@ public enum HeaderNameEnum {
     COOKIE("Cookie"),
     SET_COOKIE("Set-Cookie"),
     Sec_WebSocket_Key("Sec-WebSocket-Key");
+    public static final Map<String, HeaderNameEnum> HEADER_NAME_ENUM_MAP = new HashMap<>();
+
+    static {
+        for (HeaderNameEnum headerNameEnum : HeaderNameEnum.values()) {
+            HEADER_NAME_ENUM_MAP.put(headerNameEnum.getName(), headerNameEnum);
+        }
+    }
 
     private final String name;
 
