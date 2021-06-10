@@ -14,8 +14,8 @@ import org.apache.commons.fileupload.util.Streams;
 import org.smartboot.http.server.HttpBootstrap;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
-import org.smartboot.http.server.HttpServerHandle;
-import org.smartboot.http.server.handle.HttpRouteHandle;
+import org.smartboot.http.server.HttpServerHandler;
+import org.smartboot.http.server.handler.HttpRouteHandler;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,8 +27,8 @@ import java.io.InputStream;
 public class FileUploadDemo {
     public static void main(String[] args) {
 
-        HttpRouteHandle routeHandle = new HttpRouteHandle();
-        routeHandle.route("/", new HttpServerHandle() {
+        HttpRouteHandler routeHandler = new HttpRouteHandler();
+        routeHandler.route("/", new HttpServerHandler() {
             byte[] body = ("<html>" +
                     "<head><title>smart-http demo</title></head>" +
                     "<body>" +
@@ -38,15 +38,15 @@ public class FileUploadDemo {
                     "</body></html>").getBytes();
 
             @Override
-            public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
+            public void handle(HttpRequest request, HttpResponse response) throws IOException {
 
                 response.setContentLength(body.length);
                 response.getOutputStream().write(body);
             }
         })
-                .route("/upload", new HttpServerHandle() {
+                .route("/upload", new HttpServerHandler() {
                     @Override
-                    public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
+                    public void handle(HttpRequest request, HttpResponse response) throws IOException {
                         try {
                             SmartHttpFileUpload upload = new SmartHttpFileUpload();
                             FileItemIterator iterator = upload.getItemIterator(request);
@@ -72,7 +72,7 @@ public class FileUploadDemo {
 
         HttpBootstrap bootstrap = new HttpBootstrap();
         //配置HTTP消息处理管道
-        bootstrap.pipeline().next(routeHandle);
+        bootstrap.pipeline().next(routeHandler);
 
         //设定服务器配置并启动
         bootstrap.start();

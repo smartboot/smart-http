@@ -16,11 +16,11 @@ import java.io.IOException;
  * @author 三刀
  * @version V1.0 , 2018/2/6
  */
-public abstract class Handle<REQ, RSP> {
+public abstract class Handler<REQ, RSP> {
     /**
      * 持有下一个处理器的句柄
      */
-    protected Handle<REQ, RSP> nextHandle;
+    protected Handler<REQ, RSP> nextHandler;
 
     /**
      * 执行当前处理器逻辑。
@@ -32,11 +32,11 @@ public abstract class Handle<REQ, RSP> {
      * @param response
      * @throws IOException
      */
-    public abstract void doHandle(REQ request, RSP response) throws IOException;
+    public abstract void handle(REQ request, RSP response) throws IOException;
 
     protected final void doNext(REQ request, RSP response) throws IOException {
-        if (nextHandle != null) {
-            nextHandle.doHandle(request, response);
+        if (nextHandler != null) {
+            nextHandler.handle(request, response);
         }
     }
 }

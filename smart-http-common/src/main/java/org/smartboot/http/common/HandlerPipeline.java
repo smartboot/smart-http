@@ -14,33 +14,33 @@ import java.io.IOException;
  * @author 三刀
  * @version V1.0 , 2019/11/3
  */
-public final class HandlePipeline<REQ, RSP> extends Handle<REQ, RSP> implements Pipeline<REQ, RSP> {
+public final class HandlerPipeline<REQ, RSP> extends Handler<REQ, RSP> implements Pipeline<REQ, RSP> {
     /**
      * 管道尾
      */
-    private Handle tailHandle;
+    private Handler<REQ, RSP> tailHandler;
 
     /**
      * 添加HttpHandle至末尾
      *
-     * @param handle 尾部handle
+     * @param handler 尾部handler
      * @return 当前管道对象
      */
-    public Pipeline<REQ, RSP> next(Handle<REQ, RSP> handle) {
-        if (nextHandle == null) {
-            nextHandle = tailHandle = handle;
+    public Pipeline<REQ, RSP> next(Handler<REQ, RSP> handler) {
+        if (nextHandler == null) {
+            nextHandler = tailHandler = handler;
             return this;
         }
-        Handle httpHandle = tailHandle;
-        while (httpHandle.nextHandle != null) {
-            httpHandle = httpHandle.nextHandle;
+        Handler<REQ, RSP> httpHandler = tailHandler;
+        while (httpHandler.nextHandler != null) {
+            httpHandler = httpHandler.nextHandler;
         }
-        httpHandle.nextHandle = handle;
+        httpHandler.nextHandler = handler;
         return this;
     }
 
     @Override
-    public void doHandle(REQ request, RSP response) throws IOException {
-        nextHandle.doHandle(request, response);
+    public void handle(REQ request, RSP response) throws IOException {
+        nextHandler.handle(request, response);
     }
 }

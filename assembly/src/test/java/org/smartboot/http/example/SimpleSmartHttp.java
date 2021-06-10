@@ -12,10 +12,10 @@ import org.smartboot.http.common.Cookie;
 import org.smartboot.http.server.HttpBootstrap;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
-import org.smartboot.http.server.HttpServerHandle;
+import org.smartboot.http.server.HttpServerHandler;
 import org.smartboot.http.server.WebSocketRequest;
 import org.smartboot.http.server.WebSocketResponse;
-import org.smartboot.http.server.handle.WebSocketDefaultHandle;
+import org.smartboot.http.server.handler.WebSocketDefaultHandler;
 
 import java.io.IOException;
 
@@ -29,9 +29,9 @@ public class SimpleSmartHttp {
     public static void main(String[] args) {
         HttpBootstrap bootstrap = new HttpBootstrap();
         // 普通http请求
-        bootstrap.pipeline().next(new HttpServerHandle() {
+        bootstrap.pipeline().next(new HttpServerHandler() {
             @Override
-            public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
+            public void handle(HttpRequest request, HttpResponse response) throws IOException {
                 response.write("hello world<br/>".getBytes());
                 for (Cookie cookie : request.getCookies()) {
                     response.write(("<br/>cookie : " + cookie).getBytes());
@@ -39,7 +39,7 @@ public class SimpleSmartHttp {
             }
         });
         // websocket请求
-        bootstrap.wsPipeline().next(new WebSocketDefaultHandle() {
+        bootstrap.wsPipeline().next(new WebSocketDefaultHandler() {
             @Override
             public void handleTextMessage(WebSocketRequest request, WebSocketResponse response, String data) {
                 response.sendTextMessage("Hello World");

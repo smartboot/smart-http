@@ -19,8 +19,8 @@ import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpBootstrap;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
-import org.smartboot.http.server.HttpServerHandle;
-import org.smartboot.http.server.handle.HttpRouteHandle;
+import org.smartboot.http.server.HttpServerHandler;
+import org.smartboot.http.server.handler.HttpRouteHandler;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -39,10 +39,10 @@ public class HttpPostTest {
     @Before
     public void init() {
         httpBootstrap = new HttpBootstrap();
-        HttpRouteHandle routeHandle = new HttpRouteHandle();
-        routeHandle.route("/post_param", new HttpServerHandle() {
+        HttpRouteHandler routeHandle = new HttpRouteHandler();
+        routeHandle.route("/post_param", new HttpServerHandler() {
             @Override
-            public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
+            public void handle(HttpRequest request, HttpResponse response) throws IOException {
                 JSONObject jsonObject = new JSONObject();
                 for (String key : request.getParameters().keySet()) {
                     jsonObject.put(key, request.getParameter(key));

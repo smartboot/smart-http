@@ -8,14 +8,14 @@
 
 package org.smartboot.http.server.impl;
 
-import org.smartboot.http.common.HandlePipeline;
+import org.smartboot.http.common.HandlerPipeline;
 import org.smartboot.http.common.Pipeline;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
-import org.smartboot.http.server.HttpServerHandle;
-import org.smartboot.http.server.WebSocketHandle;
+import org.smartboot.http.server.HttpServerHandler;
+import org.smartboot.http.server.WebSocketHandler;
 import org.smartboot.http.server.WebSocketRequest;
 import org.smartboot.http.server.WebSocketResponse;
 import org.smartboot.socket.MessageProcessor;
@@ -33,15 +33,15 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
     /**
      * Http消息处理管道
      */
-    private final HandlePipeline<HttpRequest, HttpResponse> httpPipeline = new HandlePipeline<>();
+    private final HandlerPipeline<HttpRequest, HttpResponse> httpPipeline = new HandlerPipeline<>();
     /**
      * Websocket处理管道
      */
-    private final HandlePipeline<WebSocketRequest, WebSocketResponse> wsPipeline = new HandlePipeline<>();
+    private final HandlerPipeline<WebSocketRequest, WebSocketResponse> wsPipeline = new HandlerPipeline<>();
 
     public HttpMessageProcessor() {
-        httpPipeline.next(new HttpExceptionHandle()).next(new RFC2612RequestHandle());
-        wsPipeline.next(new WebSocketHandSharkHandle());
+        httpPipeline.next(new HttpExceptionHandler()).next(new RFC2612RequestHandler());
+        wsPipeline.next(new WebSocketHandSharkHandler());
     }
 
     @Override
@@ -50,7 +50,7 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
             RequestAttachment attachment = session.getAttachment();
             AbstractRequest request;
             AbstractResponse response;
-            HandlePipeline pipeline;
+            HandlerPipeline pipeline;
             if (baseHttpRequest.isWebsocket()) {
                 request = attachment.getWebSocketRequest();
                 response = attachment.getWebSocketRequest().getResponse();
@@ -67,7 +67,7 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
             }
 
             //消息处理
-            pipeline.doHandle(request, response);
+            pipeline.handle(request, response);
 
             //关闭本次请求的输出流
             if (!response.getOutputStream().isClosed()) {
@@ -118,7 +118,7 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
         }
     }
 
-    public Pipeline<HttpRequest, HttpResponse> pipeline(HttpServerHandle httpHandle) {
+    public Pipeline<HttpRequest, HttpResponse> pipeline(HttpServerHandler httpHandle) {
         return httpPipeline.next(httpHandle);
     }
 
@@ -126,7 +126,7 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
         return httpPipeline;
     }
 
-    public Pipeline<WebSocketRequest, WebSocketResponse> wsPipeline(WebSocketHandle httpHandle) {
+    public Pipeline<WebSocketRequest, WebSocketResponse> wsPipeline(WebSocketHandler httpHandle) {
         return wsPipeline.next(httpHandle);
     }
 

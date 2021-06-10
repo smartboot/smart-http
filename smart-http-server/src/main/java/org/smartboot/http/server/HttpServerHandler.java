@@ -8,7 +8,7 @@
 
 package org.smartboot.http.server;
 
-import org.smartboot.http.common.Handle;
+import org.smartboot.http.common.Handler;
 
 /**
  * Http消息处理器
@@ -16,5 +16,5 @@ import org.smartboot.http.common.Handle;
  * @author 三刀
  * @version V1.0 , 2018/2/6
  */
-public abstract class HttpServerHandle extends Handle<HttpRequest, HttpResponse> {
+public abstract class HttpServerHandler extends Handler<HttpRequest, HttpResponse> {
 }

@@ -9,7 +9,7 @@
 package org.smartboot.http.example;
 
 import org.smartboot.http.server.HttpBootstrap;
-import org.smartboot.http.server.handle.HttpStaticResourceHandle;
+import org.smartboot.http.server.handler.HttpStaticResourceHandler;
 
 /**
  * 打开浏览器请求：http://127.0.0.0:8080/
@@ -22,7 +22,7 @@ public class FileSmartHttp {
         String webdir = System.getProperty("user.dir") + "/assembly/webapps";
         HttpBootstrap bootstrap = new HttpBootstrap();
         //配置HTTP消息处理管道
-        bootstrap.pipeline().next(new HttpStaticResourceHandle(webdir));
+        bootstrap.pipeline().next(new HttpStaticResourceHandler(webdir));
 
         //设定服务器配置并启动
         bootstrap.start();

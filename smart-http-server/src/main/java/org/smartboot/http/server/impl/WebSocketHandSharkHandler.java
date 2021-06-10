@@ -13,7 +13,7 @@ import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.enums.WebsocketStatus;
 import org.smartboot.http.common.utils.SHA1;
-import org.smartboot.http.server.WebSocketHandle;
+import org.smartboot.http.server.WebSocketHandler;
 import org.smartboot.http.server.WebSocketRequest;
 import org.smartboot.http.server.WebSocketResponse;
 
@@ -26,17 +26,17 @@ import java.util.Base64;
  * @author 三刀
  * @version V1.0 , 2020/3/29
  */
-class WebSocketHandSharkHandle extends WebSocketHandle {
+class WebSocketHandSharkHandler extends WebSocketHandler {
     public static final String WEBSOCKET_13_ACCEPT_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
-    private final RFC2612RequestHandle rfc2612RequestHandle = new RFC2612RequestHandle();
+    private final RFC2612RequestHandler rfc2612RequestHandler = new RFC2612RequestHandler();
 
     @Override
-    public void doHandle(WebSocketRequest req, WebSocketResponse resp) throws IOException {
+    public void handle(WebSocketRequest req, WebSocketResponse resp) throws IOException {
         WebSocketResponseImpl response = (WebSocketResponseImpl) resp;
         WebSocketRequestImpl request = (WebSocketRequestImpl) req;
         if (request.getWebsocketStatus() == WebsocketStatus.HandShake) {
             //Http规范校验
-            rfc2612RequestHandle.doHandle(request, response);
+            rfc2612RequestHandler.handle(request, response);
 
             String key = request.getHeader(HeaderNameEnum.Sec_WebSocket_Key.getName());
             String acceptSeed = key + WEBSOCKET_13_ACCEPT_GUID;

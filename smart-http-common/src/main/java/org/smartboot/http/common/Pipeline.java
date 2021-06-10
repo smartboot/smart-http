@@ -15,5 +15,5 @@ package org.smartboot.http.common;
  * @version V1.0 , 2019/11/3
  */
 public interface Pipeline<REQ, RSP> {
-    Pipeline<REQ, RSP> next(Handle<REQ, RSP> nextHandle);
+    Pipeline<REQ, RSP> next(Handler<REQ, RSP> nextHandle);
 }

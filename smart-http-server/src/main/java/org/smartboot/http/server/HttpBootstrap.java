@@ -63,11 +63,11 @@ public class HttpBootstrap {
     /**
      * 往 http 处理器管道中注册 Handle
      *
-     * @param httpHandle
+     * @param httpHandler
      * @return
      */
-    public HttpBootstrap pipeline(HttpServerHandle httpHandle) {
-        pipeline().next(httpHandle);
+    public HttpBootstrap pipeline(HttpServerHandler httpHandler) {
+        pipeline().next(httpHandler);
         return this;
     }
 

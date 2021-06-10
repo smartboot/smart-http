@@ -6,13 +6,13 @@
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
-package org.smartboot.http.server.handle;
+package org.smartboot.http.server.handler;
 
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
-import org.smartboot.http.server.WebSocketHandle;
+import org.smartboot.http.server.WebSocketHandler;
 import org.smartboot.http.server.WebSocketRequest;
 import org.smartboot.http.server.WebSocketResponse;
 import org.smartboot.http.server.impl.WebSocketRequestImpl;
@@ -25,11 +25,11 @@ import java.nio.charset.StandardCharsets;
  * @author 三刀
  * @version V1.0 , 2020/3/31
  */
-public class WebSocketDefaultHandle extends WebSocketHandle {
-    private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketDefaultHandle.class);
+public class WebSocketDefaultHandler extends WebSocketHandler {
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketDefaultHandler.class);
 
     @Override
-    public final void doHandle(WebSocketRequest request, WebSocketResponse response) throws IOException {
+    public final void handle(WebSocketRequest request, WebSocketResponse response) throws IOException {
         try {
             switch (request.getWebsocketStatus()) {
                 case HandShake:

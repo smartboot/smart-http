@@ -29,7 +29,7 @@ class HttpHeaderDecoder implements Decoder {
 
     @Override
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
-        if (request.getHeaderSize() > 10) {
+        if (request.getHeaderSize() > 100) {
             return ignoreHeaderDecoder.decode(byteBuffer, aioSession, request);
         }
         if (byteBuffer.remaining() < 2) {

@@ -24,7 +24,7 @@ import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.server.HttpBootstrap;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
-import org.smartboot.http.server.HttpServerHandle;
+import org.smartboot.http.server.HttpServerHandler;
 import org.smartboot.http.server.impl.Request;
 import org.smartboot.http.test.BastTest;
 import org.smartboot.socket.StateMachineEnum;
@@ -56,9 +56,9 @@ public class HttpServerTest extends BastTest {
     @Before
     public void init() {
         bootstrap = new HttpBootstrap();
-        bootstrap.pipeline(new HttpServerHandle() {
+        bootstrap.pipeline(new HttpServerHandler() {
             @Override
-            public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
+            public void handle(HttpRequest request, HttpResponse response) throws IOException {
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put(KEY_METHOD, request.getMethod());
                 jsonObject.put(KEY_URI, request.getRequestURI());

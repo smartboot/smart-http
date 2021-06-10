@@ -6,7 +6,7 @@
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
-package org.smartboot.http.server.handle;
+package org.smartboot.http.server.handler;
 
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
@@ -18,7 +18,7 @@ import org.smartboot.http.common.utils.Mimetypes;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
-import org.smartboot.http.server.HttpServerHandle;
+import org.smartboot.http.server.HttpServerHandler;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,8 +34,8 @@ import java.util.Date;
  * @author 三刀
  * @version V1.0 , 2018/2/7
  */
-public class HttpStaticResourceHandle extends HttpServerHandle {
-    private static final Logger LOGGER = LoggerFactory.getLogger(HttpStaticResourceHandle.class);
+public class HttpStaticResourceHandler extends HttpServerHandler {
+    private static final Logger LOGGER = LoggerFactory.getLogger(HttpStaticResourceHandler.class);
     private static final int READ_BUFFER = 1024 * 1024;
     private static final String URL_404 =
             "<html>" +
@@ -47,7 +47,7 @@ public class HttpStaticResourceHandle extends HttpServerHandle {
 
     private final File baseDir;
 
-    public HttpStaticResourceHandle(String baseDir) {
+    public HttpStaticResourceHandler(String baseDir) {
         this.baseDir = new File(new File(baseDir).getAbsolutePath());
         if (!this.baseDir.isDirectory()) {
 
@@ -57,7 +57,7 @@ public class HttpStaticResourceHandle extends HttpServerHandle {
     }
 
     @Override
-    public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
+    public void handle(HttpRequest request, HttpResponse response) throws IOException {
         String fileName = request.getRequestURI();
         String method = request.getMethod();
         if (StringUtils.endsWith(fileName, "/")) {

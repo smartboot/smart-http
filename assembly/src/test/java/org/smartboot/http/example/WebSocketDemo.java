@@ -11,8 +11,8 @@ package org.smartboot.http.example;
 import org.smartboot.http.server.HttpBootstrap;
 import org.smartboot.http.server.WebSocketRequest;
 import org.smartboot.http.server.WebSocketResponse;
-import org.smartboot.http.server.handle.WebSocketDefaultHandle;
-import org.smartboot.http.server.handle.WebSocketRouteHandle;
+import org.smartboot.http.server.handler.WebSocketDefaultHandler;
+import org.smartboot.http.server.handler.WebSocketRouteHandler;
 
 /**
  * @author 三刀
@@ -21,10 +21,10 @@ import org.smartboot.http.server.handle.WebSocketRouteHandle;
 public class WebSocketDemo {
     public static void main(String[] args) {
         //1. 实例化路由Handle
-        WebSocketRouteHandle routeHandle = new WebSocketRouteHandle();
+        WebSocketRouteHandler routeHandle = new WebSocketRouteHandler();
 
         //2. 指定路由规则以及请求的处理实现
-        routeHandle.route("/", new WebSocketDefaultHandle() {
+        routeHandle.route("/", new WebSocketDefaultHandler() {
             @Override
             public void handleTextMessage(WebSocketRequest request, WebSocketResponse response, String data) {
                 response.sendTextMessage("接受到客户端消息：" + data);

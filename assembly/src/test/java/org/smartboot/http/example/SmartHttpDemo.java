@@ -13,13 +13,13 @@ import org.smartboot.http.common.logging.LoggerFactory;
 import org.smartboot.http.server.HttpBootstrap;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
-import org.smartboot.http.server.HttpServerHandle;
+import org.smartboot.http.server.HttpServerHandler;
 import org.smartboot.http.server.WebSocketRequest;
 import org.smartboot.http.server.WebSocketResponse;
-import org.smartboot.http.server.handle.BasicAuthServerHandle;
-import org.smartboot.http.server.handle.HttpRouteHandle;
-import org.smartboot.http.server.handle.WebSocketDefaultHandle;
-import org.smartboot.http.server.handle.WebSocketRouteHandle;
+import org.smartboot.http.server.handler.BasicAuthServerHandler;
+import org.smartboot.http.server.handler.HttpRouteHandler;
+import org.smartboot.http.server.handler.WebSocketDefaultHandler;
+import org.smartboot.http.server.handler.WebSocketRouteHandler;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,14 +37,14 @@ public class SmartHttpDemo {
     public static void main(String[] args) {
         System.setProperty("smartHttp.server.alias", "SANDAO base on ");
 
-        HttpRouteHandle routeHandle = new HttpRouteHandle();
-        routeHandle.route("/basic", new BasicAuthServerHandle("admin", "admin1", new HttpServerHandle() {
+        HttpRouteHandler routeHandle = new HttpRouteHandler();
+        routeHandle.route("/basic", new BasicAuthServerHandler("admin", "admin1", new HttpServerHandler() {
             @Override
-            public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
+            public void handle(HttpRequest request, HttpResponse response) throws IOException {
                 response.write("success".getBytes());
             }
         }));
-        routeHandle.route("/", new HttpServerHandle() {
+        routeHandle.route("/", new HttpServerHandler() {
             byte[] body = ("<html>" +
                     "<head><title>smart-http demo</title></head>" +
                     "<body>" +
@@ -54,25 +54,25 @@ public class SmartHttpDemo {
                     "</body></html>").getBytes();
 
             @Override
-            public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
+            public void handle(HttpRequest request, HttpResponse response) throws IOException {
 
                 response.setContentLength(body.length);
                 response.getOutputStream().write(body);
             }
         })
-                .route("/get", new HttpServerHandle() {
+                .route("/get", new HttpServerHandler() {
                     @Override
-                    public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
+                    public void handle(HttpRequest request, HttpResponse response) throws IOException {
                         response.write(("收到Get参数text=" + request.getParameter("text")).getBytes());
                     }
-                }).route("/post", new HttpServerHandle() {
+                }).route("/post", new HttpServerHandler() {
             @Override
-            public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
+            public void handle(HttpRequest request, HttpResponse response) throws IOException {
                 response.write(("收到Post参数text=" + request.getParameter("text")).getBytes());
             }
-        }).route("/upload", new HttpServerHandle() {
+        }).route("/upload", new HttpServerHandler() {
             @Override
-            public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
+            public void handle(HttpRequest request, HttpResponse response) throws IOException {
                 InputStream in = request.getInputStream();
                 byte[] buffer = new byte[1024];
                 int len = 0;
@@ -81,9 +81,9 @@ public class SmartHttpDemo {
                 }
                 in.close();
             }
-        }).route("/post_json", new HttpServerHandle() {
+        }).route("/post_json", new HttpServerHandler() {
             @Override
-            public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
+            public void handle(HttpRequest request, HttpResponse response) throws IOException {
                 InputStream in = request.getInputStream();
                 byte[] buffer = new byte[1024];
                 int len = 0;
@@ -93,19 +93,19 @@ public class SmartHttpDemo {
                 }
                 in.close();
             }
-        }).route("/plaintext", new HttpServerHandle() {
+        }).route("/plaintext", new HttpServerHandler() {
             byte[] body = "Hello World!".getBytes();
 
             @Override
-            public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
+            public void handle(HttpRequest request, HttpResponse response) throws IOException {
                 response.setContentLength(body.length);
                 response.setContentType("text/plain; charset=UTF-8");
                 response.write(body);
 //                LOGGER.info("hello world");
             }
-        }).route("/head", new HttpServerHandle() {
+        }).route("/head", new HttpServerHandler() {
             @Override
-            public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
+            public void handle(HttpRequest request, HttpResponse response) throws IOException {
                 response.addHeader("a", "b");
                 response.addHeader("a", "c");
                 Collection<String> headNames = request.getHeaderNames();
@@ -120,8 +120,8 @@ public class SmartHttpDemo {
         //配置HTTP消息处理管道
         bootstrap.pipeline().next(routeHandle);
 
-        WebSocketRouteHandle wsRouteHandle = new WebSocketRouteHandle();
-        wsRouteHandle.route("/ws", new WebSocketDefaultHandle() {
+        WebSocketRouteHandler wsRouteHandle = new WebSocketRouteHandler();
+        wsRouteHandle.route("/ws", new WebSocketDefaultHandler() {
             @Override
             public void onHandShake(WebSocketRequest request, WebSocketResponse webSocketResponse) {
                 System.out.println("收到握手消息");

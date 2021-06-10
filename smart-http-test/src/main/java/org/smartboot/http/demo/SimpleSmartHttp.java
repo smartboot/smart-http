@@ -11,7 +11,7 @@ package org.smartboot.http.demo;
 import org.smartboot.http.server.HttpBootstrap;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
-import org.smartboot.http.server.HttpServerHandle;
+import org.smartboot.http.server.HttpServerHandler;
 
 import java.io.IOException;
 
@@ -19,9 +19,9 @@ import java.io.IOException;
 public class SimpleSmartHttp {
     public static void main(String[] args) {
         HttpBootstrap bootstrap = new HttpBootstrap();
-        bootstrap.pipeline(new HttpServerHandle() {
+        bootstrap.pipeline(new HttpServerHandler() {
             @Override
-            public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
+            public void handle(HttpRequest request, HttpResponse response) throws IOException {
                 response.write("hello world<br/>".getBytes());
             }
         });

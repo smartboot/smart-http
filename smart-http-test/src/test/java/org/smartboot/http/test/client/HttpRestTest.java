@@ -16,8 +16,8 @@ import org.smartboot.http.client.HttpClient;
 import org.smartboot.http.server.HttpBootstrap;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
-import org.smartboot.http.server.HttpServerHandle;
-import org.smartboot.http.server.handle.HttpRouteHandle;
+import org.smartboot.http.server.HttpServerHandler;
+import org.smartboot.http.server.handler.HttpRouteHandler;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
@@ -35,10 +35,10 @@ public class HttpRestTest {
     @Before
     public void init() {
         httpBootstrap = new HttpBootstrap();
-        HttpRouteHandle routeHandle = new HttpRouteHandle();
-        routeHandle.route("/post", new HttpServerHandle() {
+        HttpRouteHandler routeHandler = new HttpRouteHandler();
+        routeHandler.route("/post", new HttpServerHandler() {
             @Override
-            public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
+            public void handle(HttpRequest request, HttpResponse response) throws IOException {
                 JSONObject jsonObject = new JSONObject();
                 for (String key : request.getParameters().keySet()) {
                     jsonObject.put(key, request.getParameter(key));
@@ -46,7 +46,7 @@ public class HttpRestTest {
                 response.write(jsonObject.toString().getBytes());
             }
         });
-        httpBootstrap.pipeline(routeHandle).setPort(8080).start();
+        httpBootstrap.pipeline(routeHandler).setPort(8080).start();
     }
 
     @Test

@@ -17,7 +17,7 @@ import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
-import org.smartboot.http.server.HttpServerHandle;
+import org.smartboot.http.server.HttpServerHandler;
 
 import java.io.IOException;
 
@@ -25,11 +25,11 @@ import java.io.IOException;
  * @author 三刀
  * @version V1.0 , 2018/6/3
  */
-class RFC2612RequestHandle extends HttpServerHandle {
+class RFC2612RequestHandler extends HttpServerHandler {
     public static final int MAX_LENGTH = 255 * 1024;
 
     @Override
-    public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
+    public void handle(HttpRequest request, HttpResponse response) throws IOException {
         Request http11Request = ((RequestHook) request).getRequest();
         methodCheck(http11Request);
 //        hostCheck(http11Request);
