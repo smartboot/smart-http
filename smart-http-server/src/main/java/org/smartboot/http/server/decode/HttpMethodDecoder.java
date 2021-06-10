@@ -10,6 +10,7 @@ package org.smartboot.http.server.decode;
 
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.StringUtils;
+import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.impl.Request;
 import org.smartboot.socket.transport.AioSession;
 
@@ -19,9 +20,13 @@ import java.nio.ByteBuffer;
  * @author 三刀
  * @version V1.0 , 2020/3/30
  */
-public class HttpMethodDecoder implements Decoder {
+public class HttpMethodDecoder extends AbstractDecoder {
 
-    private final HttpUriDecoder decoder = new HttpUriDecoder();
+    private final HttpUriDecoder decoder = new HttpUriDecoder(getConfiguration());
+
+    public HttpMethodDecoder(HttpServerConfiguration configuration) {
+        super(configuration);
+    }
 
     @Override
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {

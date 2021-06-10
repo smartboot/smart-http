@@ -31,7 +31,6 @@ public class HttpBootstrap {
     /**
      * http消息解码器
      */
-    private final HttpRequestProtocol protocol = new HttpRequestProtocol();
     private final HttpMessageProcessor processor = new HttpMessageProcessor();
     private final HttpServerConfiguration configuration = new HttpServerConfiguration();
 
@@ -94,7 +93,7 @@ public class HttpBootstrap {
      */
     public void start() {
         BufferPagePool readBufferPool = new BufferPagePool(configuration.getReadPageSize(), 1, false);
-        server = new AioQuickServer(configuration.getHost(), port, protocol, configuration.getProcessor().apply(processor));
+        server = new AioQuickServer(configuration.getHost(), port, new HttpRequestProtocol(configuration), configuration.getProcessor().apply(processor));
         server.setThreadNum(configuration.getThreadNum())
                 .setBannerEnabled(false)
                 .setBufferFactory(() -> new BufferPagePool(configuration.getWritePageSize(), configuration.getWritePageNum(), true))

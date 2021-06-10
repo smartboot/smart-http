@@ -12,6 +12,7 @@ import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.StringUtils;
+import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.impl.Request;
 import org.smartboot.socket.transport.AioSession;
 
@@ -21,9 +22,13 @@ import java.nio.ByteBuffer;
  * @author 三刀
  * @version V1.0 , 2020/3/30
  */
-class HttpUriDecoder implements Decoder {
-    private final HttpUriQueryDecoder uriQueryDecoder = new HttpUriQueryDecoder();
-    private final HttpProtocolDecoder protocolDecoder = new HttpProtocolDecoder();
+class HttpUriDecoder extends AbstractDecoder {
+    private final HttpUriQueryDecoder uriQueryDecoder = new HttpUriQueryDecoder(getConfiguration());
+    private final HttpProtocolDecoder protocolDecoder = new HttpProtocolDecoder(getConfiguration());
+
+    public HttpUriDecoder(HttpServerConfiguration configuration) {
+        super(configuration);
+    }
 
     @Override
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {

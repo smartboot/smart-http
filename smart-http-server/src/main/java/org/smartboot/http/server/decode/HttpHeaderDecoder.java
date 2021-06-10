@@ -12,6 +12,7 @@ import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.StringUtils;
+import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.impl.Request;
 import org.smartboot.socket.transport.AioSession;
 
@@ -21,15 +22,19 @@ import java.nio.ByteBuffer;
  * @author 三刀
  * @version V1.0 , 2020/3/30
  */
-class HttpHeaderDecoder implements Decoder {
+class HttpHeaderDecoder extends AbstractDecoder {
 
     private final HttpHeaderEndDecoder decoder = new HttpHeaderEndDecoder();
     private final HeaderValueDecoder headerValueDecoder = new HeaderValueDecoder();
     private final IgnoreHeaderDecoder ignoreHeaderDecoder = new IgnoreHeaderDecoder();
 
+    public HttpHeaderDecoder(HttpServerConfiguration configuration) {
+        super(configuration);
+    }
+
     @Override
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
-        if (request.getHeaderSize() > 100) {
+        if (request.getHeaderSize() > getConfiguration().getHeaderLimiter()) {
             return ignoreHeaderDecoder.decode(byteBuffer, aioSession, request);
         }
         if (byteBuffer.remaining() < 2) {

@@ -42,6 +42,10 @@ public class HttpServerConfiguration {
 
     private String host;
     private int readPageSize = 1024 * 1024;
+    /**
+     * 解析的header数量上限
+     */
+    private int headerLimiter = 100;
 
     private Function<MessageProcessor<Request>, MessageProcessor<Request>> processor = messageProcessor -> messageProcessor;
 
@@ -126,5 +130,18 @@ public class HttpServerConfiguration {
     public HttpServerConfiguration bannerEnabled(boolean bannerEnabled) {
         this.bannerEnabled = bannerEnabled;
         return this;
+    }
+
+    public int getHeaderLimiter() {
+        return headerLimiter;
+    }
+
+    /**
+     * 支持解析的Header上限,若客户端提交Header数超过该值，超过部分将被忽略
+     *
+     * @param headerLimiter
+     */
+    public void headerLimiter(int headerLimiter) {
+        this.headerLimiter = headerLimiter;
     }
 }

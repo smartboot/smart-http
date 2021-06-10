@@ -8,6 +8,7 @@
 
 package org.smartboot.http.server.impl;
 
+import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.decode.Decoder;
 import org.smartboot.http.server.decode.HttpMethodDecoder;
 import org.smartboot.http.server.decode.WebSocketFrameDecoder;
@@ -21,7 +22,6 @@ import java.nio.ByteBuffer;
  * @version V1.0 , 2018/8/31
  */
 public class HttpRequestProtocol implements Protocol<Request> {
-
     /**
      * 普通Http消息解码完成
      */
@@ -34,10 +34,12 @@ public class HttpRequestProtocol implements Protocol<Request> {
      * websocket负载数据读取成功
      */
     public static final Decoder WS_FRAME_DECODER = (byteBuffer, aioSession, request) -> null;
-
-    private final HttpMethodDecoder httpMethodDecoder = new HttpMethodDecoder();
-
     private final WebSocketFrameDecoder wsFrameDecoder = new WebSocketFrameDecoder();
+    private final HttpMethodDecoder httpMethodDecoder;
+
+    public HttpRequestProtocol(HttpServerConfiguration configuration) {
+        httpMethodDecoder = new HttpMethodDecoder(configuration);
+    }
 
     @Override
     public Request decode(ByteBuffer buffer, AioSession session) {
