@@ -10,8 +10,7 @@ package org.smartboot.http.client.decode;
 
 import org.smartboot.http.client.impl.HttpResponseProtocol;
 import org.smartboot.http.client.impl.Response;
-import org.smartboot.http.common.utils.AttachKey;
-import org.smartboot.http.common.utils.Attachment;
+import org.smartboot.http.client.impl.ResponseAttachment;
 import org.smartboot.http.common.utils.FixedLengthFrameDecoder;
 import org.smartboot.http.common.utils.SmartDecoder;
 import org.smartboot.socket.transport.AioSession;
@@ -24,20 +23,19 @@ import java.nio.charset.Charset;
  * @version V1.0 , 2020/3/30
  */
 class HttpBodyDecoder implements Decoder {
-    private final AttachKey<SmartDecoder> ATTACH_KEY_FIX_LENGTH_DECODER = AttachKey.valueOf("fixLengthDecoder");
 
     @Override
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Response response) {
-        Attachment attachment = aioSession.getAttachment();
-        SmartDecoder smartDecoder = attachment.get(ATTACH_KEY_FIX_LENGTH_DECODER);
+        ResponseAttachment attachment = aioSession.getAttachment();
+        SmartDecoder smartDecoder = attachment.getBodyDecoder();
         if (smartDecoder == null) {
             smartDecoder = new FixedLengthFrameDecoder(response.getContentLength());
-            attachment.put(ATTACH_KEY_FIX_LENGTH_DECODER, smartDecoder);
+            attachment.setBodyDecoder(smartDecoder);
         }
 
         if (smartDecoder.decode(byteBuffer)) {
             response.setBody(new String(smartDecoder.getBuffer().array(), Charset.forName(response.getCharacterEncoding())));
-            attachment.remove(ATTACH_KEY_FIX_LENGTH_DECODER);
+            attachment.setBodyDecoder(null);
             return HttpResponseProtocol.HTTP_FINISH_DECODER;
         } else {
             return this;

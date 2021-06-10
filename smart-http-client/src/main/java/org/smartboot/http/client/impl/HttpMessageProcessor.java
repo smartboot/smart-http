@@ -9,7 +9,6 @@
 package org.smartboot.http.client.impl;
 
 import org.smartboot.http.client.HttpResponse;
-import org.smartboot.http.common.utils.Attachment;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.transport.AioSession;
@@ -66,8 +65,7 @@ public class HttpMessageProcessor implements MessageProcessor<Response> {
         switch (stateMachineEnum) {
             case NEW_SESSION:
                 map.put(session, new ConcurrentLinkedQueue<>());
-                Attachment attachment = new Attachment();
-                attachment.put(HttpResponseProtocol.ATTACH_KEY_RESPONSE, new Response());
+                ResponseAttachment attachment = new ResponseAttachment(new Response());
                 session.setAttachment(attachment);
                 break;
             case PROCESS_EXCEPTION:

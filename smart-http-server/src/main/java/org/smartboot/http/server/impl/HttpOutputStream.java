@@ -29,8 +29,6 @@ final class HttpOutputStream extends AbstractOutputStream {
      * key:status+contentType
      */
     private static final Map<String, byte[]>[] CACHE_CONTENT_TYPE_AND_LENGTH = new Map[512];
-    private static final byte[][] CACHE_TEXT_PLAIN_AND_LENGTH = new byte[512][];
-    private static final byte[][] CACHE_JSON_AND_LENGTH = new byte[1024][];
     /**
      * Key：status+contentType
      */
@@ -84,11 +82,7 @@ final class HttpOutputStream extends AbstractOutputStream {
         //此处用 == 性能更高
         boolean http10 = HttpProtocolEnum.HTTP_10.getProtocol() == request.getProtocol();
         if (cache && !http10) {
-            if ("text/plain; charset=UTF-8" == contentType && contentLength < CACHE_TEXT_PLAIN_AND_LENGTH.length) {
-                data = CACHE_TEXT_PLAIN_AND_LENGTH[contentLength];
-            } else if ("application/json" == contentType && contentLength < CACHE_JSON_AND_LENGTH.length) {
-                data = CACHE_JSON_AND_LENGTH[contentLength];
-            } else if (chunked) {
+            if (chunked) {
                 data = CACHE_CHUNKED_AND_LENGTH.get(contentType);
             } else if (contentLength < CACHE_CONTENT_TYPE_AND_LENGTH.length) {
                 data = CACHE_CONTENT_TYPE_AND_LENGTH[contentLength].get(contentType);
@@ -108,11 +102,7 @@ final class HttpOutputStream extends AbstractOutputStream {
         data = str.getBytes();
         //缓存响应头
         if (cache && !http10) {
-            if ("text/plain; charset=UTF-8" == contentType && contentLength < CACHE_TEXT_PLAIN_AND_LENGTH.length) {
-                CACHE_TEXT_PLAIN_AND_LENGTH[contentLength] = data;
-            } else if ("application/json" == contentType && contentLength < CACHE_JSON_AND_LENGTH.length) {
-                CACHE_JSON_AND_LENGTH[contentLength] = data;
-            } else if (chunked) {
+            if (chunked) {
                 CACHE_CHUNKED_AND_LENGTH.put(contentType, data);
             } else if (contentLength >= 0 && contentLength < CACHE_CONTENT_TYPE_AND_LENGTH.length) {
                 CACHE_CONTENT_TYPE_AND_LENGTH[contentLength].put(contentType, data);
@@ -130,9 +120,7 @@ final class HttpOutputStream extends AbstractOutputStream {
         if (cookies == null || cookies.size() == 0) {
             return;
         }
-        cookies.forEach(cookie -> {
-            response.addHeader(HeaderNameEnum.SET_COOKIE.getName(), cookie.toString());
-        });
+        cookies.forEach(cookie -> response.addHeader(HeaderNameEnum.SET_COOKIE.getName(), cookie.toString()));
 
     }
 }

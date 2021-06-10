@@ -123,7 +123,7 @@ public class SmartHttpDemo {
         WebSocketRouteHandle wsRouteHandle = new WebSocketRouteHandle();
         wsRouteHandle.route("/ws", new WebSocketDefaultHandle() {
             @Override
-            public void onHandShark(WebSocketRequest request, WebSocketResponse webSocketResponse) {
+            public void onHandShake(WebSocketRequest request, WebSocketResponse webSocketResponse) {
                 System.out.println("收到握手消息");
             }
 

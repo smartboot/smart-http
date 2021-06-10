@@ -25,7 +25,7 @@ public class Mimetypes {
 
     private static Mimetypes mimetypes = null;
 
-    private HashMap<String, String> extensionToMimetypeMap = new HashMap<String, String>();
+    private final HashMap<String, String> extensionToMimetypeMap = new HashMap<String, String>();
 
     private Mimetypes() {
     }
@@ -59,9 +59,8 @@ public class Mimetypes {
         int lastPeriodIndex = fileName.lastIndexOf(".");
         if (lastPeriodIndex > 0 && lastPeriodIndex + 1 < fileName.length()) {
             String ext = fileName.substring(lastPeriodIndex + 1).toLowerCase();
-            if (extensionToMimetypeMap.keySet().contains(ext)) {
-                String mimetype = (String) extensionToMimetypeMap.get(ext);
-                return mimetype;
+            if (extensionToMimetypeMap.containsKey(ext)) {
+                return extensionToMimetypeMap.get(ext);
             }
         }
         return DEFAULT_MIMETYPE;

@@ -10,8 +10,7 @@ package org.smartboot.http.client.decode;
 
 import org.smartboot.http.client.impl.HttpResponseProtocol;
 import org.smartboot.http.client.impl.Response;
-import org.smartboot.http.common.utils.AttachKey;
-import org.smartboot.http.common.utils.Attachment;
+import org.smartboot.http.client.impl.ResponseAttachment;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.FixedLengthFrameDecoder;
 import org.smartboot.http.common.utils.SmartDecoder;
@@ -26,8 +25,6 @@ import java.nio.charset.Charset;
  * @version V1.0 , 2021/2/3
  */
 public class HttpChunkedBodyDecoder implements Decoder {
-    private final AttachKey<SmartDecoder> ATTACH_KEY_FIX_LENGTH_DECODER = AttachKey.valueOf("chunkedContentDecoder");
-    private final AttachKey<StringBuilder> ATTACH_KEY_CHUNKED_CONTENT = AttachKey.valueOf("chunkedContentSB");
     private final HttpChunkedContentDecoder httpChunkedContentDecoder = new HttpChunkedContentDecoder();
     private final HttpChunkedEndDecoder httpChunkedEndDecoder = new HttpChunkedEndDecoder();
 
@@ -42,19 +39,19 @@ public class HttpChunkedBodyDecoder implements Decoder {
         }
         String contentLength = StringUtils.convertToString(byteBuffer, byteBuffer.position() - length - 1, length - 1);
         int len = Integer.parseInt(contentLength, 16);
-        Attachment attachment = aioSession.getAttachment();
+        ResponseAttachment attachment = aioSession.getAttachment();
         if (len == 0) {
-            StringBuilder stringBuilder = attachment.get(ATTACH_KEY_CHUNKED_CONTENT);
+            StringBuilder stringBuilder = attachment.getChunkBodyContent();
             if (stringBuilder != null) {
                 response.setBody(stringBuilder.toString());
             }
-            attachment.remove(ATTACH_KEY_CHUNKED_CONTENT);
+            attachment.setChunkBodyContent(null);
             return decode(byteBuffer, aioSession, response);
         }
-        SmartDecoder smartDecoder = attachment.get(ATTACH_KEY_FIX_LENGTH_DECODER);
+        SmartDecoder smartDecoder = attachment.getBodyDecoder();
         if (smartDecoder == null) {
             smartDecoder = new FixedLengthFrameDecoder(len);
-            attachment.put(ATTACH_KEY_FIX_LENGTH_DECODER, smartDecoder);
+            attachment.setBodyDecoder(smartDecoder);
         }
         return httpChunkedContentDecoder.decode(byteBuffer, aioSession, response);
     }
@@ -63,21 +60,21 @@ public class HttpChunkedBodyDecoder implements Decoder {
 
         @Override
         public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Response response) {
-            Attachment attachment = aioSession.getAttachment();
-            SmartDecoder smartDecoder = attachment.get(ATTACH_KEY_FIX_LENGTH_DECODER);
+            ResponseAttachment attachment = aioSession.getAttachment();
+            SmartDecoder smartDecoder = attachment.getBodyDecoder();
             if (!smartDecoder.decode(byteBuffer)) {
                 return this;
             }
             String chunkedContent = new String(smartDecoder.getBuffer().array(), Charset.forName(response.getCharacterEncoding()));
-            StringBuilder stringBuilder = attachment.get(ATTACH_KEY_CHUNKED_CONTENT);
+            StringBuilder stringBuilder = attachment.getChunkBodyContent();
             if (stringBuilder == null) {
                 stringBuilder = new StringBuilder(chunkedContent);
-                attachment.put(ATTACH_KEY_CHUNKED_CONTENT, stringBuilder);
+                attachment.setChunkBodyContent(stringBuilder);
             } else {
                 stringBuilder.append(chunkedContent);
             }
             stringBuilder.setLength(stringBuilder.length());
-            attachment.remove(ATTACH_KEY_FIX_LENGTH_DECODER);
+            attachment.setBodyDecoder(null);
             return httpChunkedEndDecoder.decode(byteBuffer, aioSession, response);
         }
     }

@@ -66,7 +66,7 @@ public class IMDemo {
             }
 
             @Override
-            public void onHandShark(WebSocketRequest request, WebSocketResponse response) {
+            public void onHandShake(WebSocketRequest request, WebSocketResponse response) {
                 System.out.println("加入群组 session");
                 sessionMap.put(request, response);
             }

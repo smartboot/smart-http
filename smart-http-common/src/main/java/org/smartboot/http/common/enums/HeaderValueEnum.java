@@ -19,6 +19,7 @@ public enum HeaderValueEnum {
     UPGRADE("Upgrade"),
     WEBSOCKET("websocket"),
     KEEPALIVE("Keep-Alive"),
+    keepalive("keep-alive"),
     DEFAULT_CONTENT_TYPE("text/html; charset=utf-8");
 
     private final String name;

@@ -147,6 +147,10 @@ public final class Request implements HttpRequest, Reset {
         return nameSet;
     }
 
+    public int getHeaderSize() {
+        return headerSize;
+    }
+
     @Override
     public InputStream getInputStream() throws IOException {
         throw new UnsupportedOperationException();

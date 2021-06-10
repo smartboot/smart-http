@@ -25,9 +25,13 @@ class HttpHeaderDecoder implements Decoder {
 
     private final HttpHeaderEndDecoder decoder = new HttpHeaderEndDecoder();
     private final HeaderValueDecoder headerValueDecoder = new HeaderValueDecoder();
+    private final IgnoreHeaderDecoder ignoreHeaderDecoder = new IgnoreHeaderDecoder();
 
     @Override
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
+        if (request.getHeaderSize() > 10) {
+            return ignoreHeaderDecoder.decode(byteBuffer, aioSession, request);
+        }
         if (byteBuffer.remaining() < 2) {
             return this;
         }

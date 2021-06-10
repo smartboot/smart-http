@@ -70,11 +70,11 @@ public class ParamReflect {
                 }
                 f.setAccessible(true);
                 if ("int".equals(fieldType)) {
-                    f.setInt(obj, Integer.valueOf(value));
+                    f.setInt(obj, Integer.parseInt(value));
                 } else if ("long".equals(fieldType)) {
-                    f.setLong(obj, Long.valueOf(value));
+                    f.setLong(obj, Long.parseLong(value));
                 } else if ("boolean".equals(fieldType)) {
-                    f.setBoolean(obj, Boolean.valueOf(value));
+                    f.setBoolean(obj, Boolean.parseBoolean(value));
                 } else if (f.getGenericType().equals(String.class)) {
                     f.set(obj, value);
                 }

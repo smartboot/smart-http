@@ -21,7 +21,6 @@ import java.nio.ByteBuffer;
 class HttpProtocolDecoder implements Decoder {
 
     private final HttpHeaderDecoder decoder = new HttpHeaderDecoder();
-    private final IgnoreHeaderDecoder ignoreHeaderDecoder = new IgnoreHeaderDecoder();
 
     @Override
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
@@ -30,7 +29,6 @@ class HttpProtocolDecoder implements Decoder {
             String protocol = StringUtils.convertToString(byteBuffer, byteBuffer.position() - length - 1, length - 1, StringUtils.String_CACHE_COMMON);
             request.setProtocol(protocol);
             return decoder.decode(byteBuffer, aioSession, request);
-//            return ignoreHeaderDecoder.decode(byteBuffer, aioSession, request);
         } else {
             return this;
         }

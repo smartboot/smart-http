@@ -71,10 +71,6 @@ public class StringUtils {
             addCache(String_CACHE_COMMON, headerNameEnum.getName());
         }
         addCache(String_CACHE_COMMON, HttpProtocolEnum.HTTP_11.getProtocol());
-        addCache(String_CACHE_COMMON, "10.0.0.1");
-        addCache(String_CACHE_COMMON, "application/json,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7");
-        addCache(String_CACHE_COMMON, "text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7");
-        addCache(String_CACHE_COMMON, "keep-alive");
     }
 
     public StringUtils() {

@@ -11,7 +11,6 @@ package org.smartboot.http.client.impl;
 import org.smartboot.http.client.HttpResponse;
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.enums.HeaderNameEnum;
-import org.smartboot.http.common.enums.YesNoEnum;
 import org.smartboot.http.common.utils.NumberUtils;
 import org.smartboot.http.common.utils.StringUtils;
 
@@ -44,8 +43,6 @@ public class Response implements HttpResponse {
     private String protocol;
     private String contentType;
     private int contentLength = INIT_CONTENT_LENGTH;
-
-    private YesNoEnum websocket = null;
 
     /**
      * body内容
@@ -150,14 +147,6 @@ public class Response implements HttpResponse {
             this.encoding = "utf8";
         }
         return this.encoding;
-    }
-
-    public final YesNoEnum isWebsocket() {
-        return websocket;
-    }
-
-    public final void setWebsocket(YesNoEnum websocket) {
-        this.websocket = websocket;
     }
 
     public String body() {
