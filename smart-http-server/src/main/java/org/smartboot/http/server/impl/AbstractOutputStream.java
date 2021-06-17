@@ -196,7 +196,7 @@ abstract class AbstractOutputStream extends BufferOutputStream implements Reset 
         closed = true;
     }
 
-    final protected byte[] getHeaderNameBytes(String name) {
+    private byte[] getHeaderNameBytes(String name) {
         HeaderNameEnum headerNameEnum = HeaderNameEnum.HEADER_NAME_ENUM_MAP.get(name);
         if (headerNameEnum != null) {
             return headerNameEnum.getBytesWithColon();
