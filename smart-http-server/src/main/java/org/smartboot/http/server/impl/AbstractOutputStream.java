@@ -9,6 +9,7 @@
 package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.BufferOutputStream;
+import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.Reset;
 import org.smartboot.http.common.enums.HeaderNameEnum;
@@ -23,6 +24,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -64,7 +66,7 @@ abstract class AbstractOutputStream extends BufferOutputStream implements Reset 
         this.writeBuffer = writeBuffer;
     }
 
-    protected static void flushDate() {
+    private static void flushDate() {
         if ((System.currentTimeMillis() - currentDate.getTime() > 990) && flushDateSemaphore.tryAcquire()) {
             try {
                 currentDate.setTime(System.currentTimeMillis());
@@ -128,12 +130,41 @@ abstract class AbstractOutputStream extends BufferOutputStream implements Reset 
 
     /**
      * 输出Http消息头
-     *
-     * @throws IOException
      */
-    abstract void writeHead() throws IOException;
+    private void writeHead() throws IOException {
+        if (committed) {
+            return;
+        }
 
-    protected final void writeHeader() throws IOException {
+        //输出http状态行、contentType,contentLength、Transfer-Encoding、server等信息
+        writeBuffer.write(getHeadPart());
+
+        //转换Cookie
+        convertCookieToHeader();
+
+        //输出Header部分
+        writeHeader();
+
+        /**
+         * RFC2616 3.3.1
+         * 只能用 RFC 1123 里定义的日期格式来填充头域 (header field)的值里用到 HTTP-date 的地方
+         */
+        flushDate();
+        writeBuffer.write(date);
+        committed = true;
+    }
+
+    private void convertCookieToHeader() {
+        List<Cookie> cookies = response.getCookies();
+        if (cookies == null || cookies.size() == 0) {
+            return;
+        }
+        cookies.forEach(cookie -> response.addHeader(HeaderNameEnum.SET_COOKIE.getName(), cookie.toString()));
+    }
+
+    protected abstract byte[] getHeadPart();
+
+    private void writeHeader() throws IOException {
         if (response.getHeaders() != null) {
             for (Map.Entry<String, HeaderValue> entry : response.getHeaders().entrySet()) {
                 HeaderValue headerValue = entry.getValue();

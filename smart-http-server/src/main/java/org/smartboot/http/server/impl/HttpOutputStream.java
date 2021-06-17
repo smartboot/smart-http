@@ -8,16 +8,13 @@
 
 package org.smartboot.http.server.impl;
 
-import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.socket.transport.WriteBuffer;
 
-import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -44,37 +41,11 @@ final class HttpOutputStream extends AbstractOutputStream {
         super(request, response, writeBuffer);
     }
 
-    /**
-     * 输出Http消息头
-     *
-     * @throws IOException
-     */
-    final protected void writeHead() throws IOException {
-        if (committed) {
-            return;
-        }
-
-        //输出http状态行、contentType,contentLength、Transfer-Encoding、server等信息
-        writeBuffer.write(getHeadPart(response.getContentType()));
-
-        //转换Cookie
-        convertCookieToHeader(response);
-
-        //输出Header部分
-        writeHeader();
-
-        /**
-         * RFC2616 3.3.1
-         * 只能用 RFC 1123 里定义的日期格式来填充头域 (header field)的值里用到 HTTP-date 的地方
-         */
-        flushDate();
-        writeBuffer.write(date);
-        committed = true;
-    }
-
-    private byte[] getHeadPart(String contentType) {
+    @Override
+    protected final byte[] getHeadPart() {
         HttpStatus httpStatus = response.getHttpStatus();
         int contentLength = response.getContentLength();
+        String contentType = response.getContentType();
         chunked = contentLength < 0;
         byte[] data = null;
         //成功消息优先从缓存中加载
@@ -115,12 +86,4 @@ final class HttpOutputStream extends AbstractOutputStream {
         return data;
     }
 
-    private void convertCookieToHeader(AbstractResponse response) {
-        List<Cookie> cookies = response.getCookies();
-        if (cookies == null || cookies.size() == 0) {
-            return;
-        }
-        cookies.forEach(cookie -> response.addHeader(HeaderNameEnum.SET_COOKIE.getName(), cookie.toString()));
-
-    }
 }

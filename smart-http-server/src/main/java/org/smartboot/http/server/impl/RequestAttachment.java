@@ -12,15 +12,32 @@ import org.smartboot.http.common.utils.SmartDecoder;
 import org.smartboot.http.server.decode.Decoder;
 
 /**
+ * Http/Ws 请求解码附件对象
+ *
  * @author 三刀（zhengjunweimail@163.com）
  * @version V1.0 , 2021/5/26
  */
 public class RequestAttachment {
+    /**
+     * 请求对象
+     */
     private final Request request;
+    /**
+     * 当前使用的解码器
+     */
     private Decoder decoder;
+    /**
+     * websocket 请求对象
+     */
     private WebSocketRequestImpl webSocketRequest;
+    /**
+     * http 请求对象
+     */
     private HttpRequestImpl httpRequest;
 
+    /**
+     * http body 解码器
+     */
     private SmartDecoder bodyDecoder;
 
     public RequestAttachment(Request request) {
