@@ -21,7 +21,7 @@ import java.util.Map;
  * @author 三刀
  * @version V1.0 , 2018/2/3
  */
-final class HttpOutputStream extends AbstractOutputStream {
+final class HttpOutputStream extends AbstractServerOutputStream {
     /**
      * key:status+contentType
      */

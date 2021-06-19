@@ -15,7 +15,7 @@ import org.smartboot.socket.transport.WriteBuffer;
  * @author 三刀
  * @version V1.0 , 2018/2/3
  */
-final class WebSocketOutputStream extends AbstractOutputStream {
+final class WebSocketOutputStream extends AbstractServerOutputStream {
 
     public WebSocketOutputStream(WebSocketRequestImpl request, WebSocketResponseImpl response, WriteBuffer writeBuffer) {
         super(request, response, writeBuffer);
