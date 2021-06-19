@@ -86,7 +86,6 @@ abstract class AbstractOutputStream extends BufferOutputStream {
         //输出http状态行、contentType,contentLength、Transfer-Encoding、server等信息
         String headLine = request.getMethod() + " " + request.getUri() + " " + request.getProtocol();
         writeBuffer.write(getBytes(headLine));
-        writeBuffer.write(Constant.CRLF);
         //转换Cookie
         convertCookieToHeader(request);
 
@@ -97,7 +96,6 @@ abstract class AbstractOutputStream extends BufferOutputStream {
                 while (headerValue != null) {
                     writeBuffer.write(getHeaderNameBytes(entry.getKey()));
                     writeBuffer.write(getBytes(headerValue.getValue()));
-                    writeBuffer.write(Constant.CRLF);
                     headerValue = headerValue.getNextValue();
                 }
             }

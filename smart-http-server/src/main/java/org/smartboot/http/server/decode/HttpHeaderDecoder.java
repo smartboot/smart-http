@@ -34,7 +34,7 @@ class HttpHeaderDecoder extends AbstractDecoder {
 
     @Override
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
-        if (request.getHeaderSize() >= getConfiguration().getHeaderLimiter()) {
+        if (request.getHeaderSize() >= 0 && request.getHeaderSize() >= getConfiguration().getHeaderLimiter()) {
             return ignoreHeaderDecoder.decode(byteBuffer, aioSession, request);
         }
         if (byteBuffer.remaining() < 2) {
