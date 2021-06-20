@@ -8,7 +8,7 @@
 
 package org.smartboot.http.client.impl;
 
-import org.smartboot.http.common.CommonOutputStream;
+import org.smartboot.http.common.BufferOutputStream;
 import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.enums.HeaderNameEnum;
@@ -23,7 +23,7 @@ import java.util.Map;
  * @author 三刀
  * @version V1.0 , 2018/2/3
  */
-abstract class AbstractOutputStream extends CommonOutputStream {
+abstract class AbstractOutputStream extends BufferOutputStream {
 
     protected final AbstractRequest request;
 

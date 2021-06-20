@@ -8,7 +8,7 @@
 
 package org.smartboot.http.server;
 
-import org.smartboot.http.common.CommonOutputStream;
+import org.smartboot.http.common.BufferOutputStream;
 import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.enums.HttpStatus;
 
@@ -28,7 +28,7 @@ public interface HttpResponse {
      *
      * @return
      */
-    CommonOutputStream getOutputStream();
+    BufferOutputStream getOutputStream();
 
     /**
      * 获取Http响应状态

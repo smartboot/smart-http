@@ -9,7 +9,7 @@
 package org.smartboot.http.client.impl;
 
 import org.smartboot.http.client.HttpRequest;
-import org.smartboot.http.common.CommonOutputStream;
+import org.smartboot.http.common.BufferOutputStream;
 import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
 
@@ -60,7 +60,7 @@ class AbstractRequest implements HttpRequest {
     }
 
 
-    public final CommonOutputStream getOutputStream() {
+    public final BufferOutputStream getOutputStream() {
         return outputStream;
     }
 

@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author 三刀
  * @version V1.0 , 2020/12/7
  */
-public abstract class CommonOutputStream extends OutputStream implements Reset {
+public abstract class BufferOutputStream extends OutputStream implements Reset {
     private static final Map<String, byte[]> HEADER_NAME_EXT_MAP = new ConcurrentHashMap<>();
     protected final WriteBuffer writeBuffer;
     protected boolean committed = false;
@@ -34,7 +34,7 @@ public abstract class CommonOutputStream extends OutputStream implements Reset {
      */
     private boolean closed = false;
 
-    public CommonOutputStream(WriteBuffer writeBuffer) {
+    public BufferOutputStream(WriteBuffer writeBuffer) {
         this.writeBuffer = writeBuffer;
     }
 
