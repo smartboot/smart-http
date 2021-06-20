@@ -27,7 +27,7 @@ public class HttpBootstrap {
             "                                                       | |    \n" +
             "                                                       (_)   ";
 
-    private static final String VERSION = "1.1.6-SNAPSHOT";
+    private static final String VERSION = "1.1.6";
     /**
      * http消息解码器
      */
