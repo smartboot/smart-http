@@ -8,10 +8,9 @@
 
 package org.smartboot.http.server.impl;
 
-import org.smartboot.http.common.AbstractOutputStream;
+import org.smartboot.http.common.CommonOutputStream;
 import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
-import org.smartboot.http.common.Reset;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.server.HttpRequest;
@@ -29,7 +28,7 @@ import java.util.concurrent.Semaphore;
  * @author 三刀
  * @version V1.0 , 2018/2/3
  */
-abstract class AbstractServerOutputStream extends AbstractOutputStream implements Reset {
+abstract class AbstractOutputStream extends CommonOutputStream {
     private static final SimpleDateFormat sdf = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
     private static final Semaphore flushDateSemaphore = new Semaphore(1);
     private static final Date currentDate = new Date(0);
@@ -47,7 +46,7 @@ abstract class AbstractServerOutputStream extends AbstractOutputStream implement
     protected final AbstractResponse response;
     protected final HttpRequest request;
 
-    public AbstractServerOutputStream(HttpRequest request, AbstractResponse response, WriteBuffer writeBuffer) {
+    public AbstractOutputStream(HttpRequest request, AbstractResponse response, WriteBuffer writeBuffer) {
         super(writeBuffer);
         this.response = response;
         this.request = request;
@@ -57,7 +56,7 @@ abstract class AbstractServerOutputStream extends AbstractOutputStream implement
         if ((System.currentTimeMillis() - currentDate.getTime() > 990) && flushDateSemaphore.tryAcquire()) {
             try {
                 currentDate.setTime(System.currentTimeMillis());
-                AbstractServerOutputStream.date = ("\r\n" + HeaderNameEnum.DATE.getName() + ":" + sdf.format(currentDate) + "\r\n"
+                AbstractOutputStream.date = ("\r\n" + HeaderNameEnum.DATE.getName() + ":" + sdf.format(currentDate) + "\r\n"
                         + HeaderNameEnum.SERVER.getName() + ":" + SERVER_ALIAS_NAME + "\r\n\r\n").getBytes();
             } finally {
                 flushDateSemaphore.release();

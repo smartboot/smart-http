@@ -35,7 +35,7 @@ class AbstractResponse implements HttpResponse, Reset {
     /**
      * 输入流
      */
-    private AbstractServerOutputStream outputStream;
+    private AbstractOutputStream outputStream;
 
     /**
      * 响应消息头
@@ -65,7 +65,7 @@ class AbstractResponse implements HttpResponse, Reset {
 
     private List<Cookie> cookies;
 
-    protected void init(HttpRequest request, AbstractServerOutputStream outputStream) {
+    protected void init(HttpRequest request, AbstractOutputStream outputStream) {
         this.request = request;
         this.outputStream = outputStream;
     }
@@ -85,7 +85,7 @@ class AbstractResponse implements HttpResponse, Reset {
     }
 
 
-    public final AbstractServerOutputStream getOutputStream() {
+    public final AbstractOutputStream getOutputStream() {
         return outputStream;
     }
 
