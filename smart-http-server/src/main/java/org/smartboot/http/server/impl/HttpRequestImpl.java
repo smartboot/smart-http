@@ -8,22 +8,20 @@
 
 package org.smartboot.http.server.impl;
 
-import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.utils.PostInputStream;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 
 /**
  * @author 三刀
  * @version V1.0 , 2018/8/31
  */
-final class HttpRequestImpl extends AbstractRequest {
+class HttpRequestImpl extends AbstractRequest {
     /**
      * 空流
      */
-    private static final InputStream EMPTY_INPUT_STREAM = new InputStream() {
+    protected static final InputStream EMPTY_INPUT_STREAM = new InputStream() {
         @Override
         public int read() {
             return -1;
@@ -43,28 +41,6 @@ final class HttpRequestImpl extends AbstractRequest {
 
     @Override
     public InputStream getInputStream() throws IOException {
-        if (request.getMethod() == HttpMethodEnum.CONNECT.getMethod()) {
-            RequestAttachment requestAttachment = request.getAioSession().getAttachment();
-            ByteBuffer buffer = requestAttachment.getProxyContent();
-            return buffer == null ? EMPTY_INPUT_STREAM : new InputStream() {
-                @Override
-                public int read() throws IOException {
-                    throw new UnsupportedOperationException();
-                }
-
-                @Override
-                public int read(byte[] b, int off, int len) throws IOException {
-                    int min = Math.min(len, buffer.remaining());
-                    buffer.get(b, off, min);
-                    return min;
-                }
-
-                @Override
-                public int available() throws IOException {
-                    return buffer.remaining();
-                }
-            };
-        }
         if (inputStream != null) {
             return inputStream;
         }

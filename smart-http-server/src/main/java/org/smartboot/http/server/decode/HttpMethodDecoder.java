@@ -8,6 +8,8 @@
 
 package org.smartboot.http.server.decode;
 
+import org.smartboot.http.common.enums.HttpMethodEnum;
+import org.smartboot.http.common.enums.HttpTypeEnum;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpServerConfiguration;
@@ -34,6 +36,9 @@ public class HttpMethodDecoder extends AbstractDecoder {
         if (length > 0) {
             String method = StringUtils.convertToString(byteBuffer, byteBuffer.position() - length - 1, length, StringUtils.String_CACHE_HTTP_METHOD);
             request.setMethod(method);
+            if (method == HttpMethodEnum.CONNECT.getMethod()) {
+                request.setType(HttpTypeEnum.PROXY_HTTPS);
+            }
             return decoder.decode(byteBuffer, aioSession, request);
         } else {
             return this;

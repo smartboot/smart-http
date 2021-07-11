@@ -10,7 +10,8 @@ package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.HandlerPipeline;
 import org.smartboot.http.common.Pipeline;
-import org.smartboot.http.common.enums.HttpMethodEnum;
+import org.smartboot.http.common.enums.HttpStatus;
+import org.smartboot.http.common.enums.HttpTypeEnum;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
 import org.smartboot.http.server.HttpRequest;
@@ -24,6 +25,8 @@ import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
 
 /**
  * @author 三刀
@@ -48,22 +51,33 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
     @Override
     public void process(AioSession session, Request baseHttpRequest) {
         try {
+            switch (baseHttpRequest.getType()) {
+                case PROXY_HTTPS:
+                    proxyHandle(session, baseHttpRequest);
+                    break;
+                case WEBSOCKET:
+                    websocketHandle(session);
+                    break;
+                default:
+                    httpHandle(session, baseHttpRequest);
+            }
             RequestAttachment attachment = session.getAttachment();
+
             AbstractRequest request;
             AbstractResponse response;
             HandlerPipeline pipeline;
-            if (baseHttpRequest.isWebsocket()) {
+            if (baseHttpRequest.getType() == HttpTypeEnum.WEBSOCKET) {
                 request = attachment.getWebSocketRequest();
                 response = attachment.getWebSocketRequest().getResponse();
                 pipeline = wsPipeline;
             } else {
-                HttpRequestImpl http11Request = attachment.getHttpRequest();
-                if (http11Request == null) {
-                    http11Request = new HttpRequestImpl(baseHttpRequest);
-                    attachment.setHttpRequest(http11Request);
+                HttpRequestImpl httpRequest = attachment.getHttpRequest();
+                if (httpRequest == null) {
+                    httpRequest = baseHttpRequest.getType() == HttpTypeEnum.PROXY_HTTPS ? new HttpProxyRequestImpl(baseHttpRequest) : new HttpRequestImpl(baseHttpRequest);
+                    attachment.setHttpRequest(httpRequest);
                 }
-                request = http11Request;
-                response = http11Request.getResponse();
+                request = httpRequest;
+                response = httpRequest.getResponse();
                 pipeline = httpPipeline;
             }
 
@@ -79,13 +93,115 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
             if (response.isClosed()) {
                 session.close(false);
             } else {
-                if (request.getMethod() != HttpMethodEnum.CONNECT.getMethod()) {
-                    //复用长连接
-                    request.reset();
-                }
+                //复用长连接
+                request.reset();
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * 处理 Https 代理消息
+     *
+     * @param session
+     * @param request
+     * @throws IOException
+     */
+    private void proxyHandle(AioSession session, Request request) throws IOException {
+        RequestAttachment attachment = session.getAttachment();
+        HttpProxyRequestImpl proxyRequest = attachment.getProxyRequest();
+        if (proxyRequest == null) {
+            proxyRequest = new HttpProxyRequestImpl(request);
+            attachment.setHttpRequest(proxyRequest);
+        }
+        HttpResponseImpl response = proxyRequest.getResponse();
+
+        //消息处理
+        httpPipeline.handle(proxyRequest, proxyRequest.getResponse());
+
+        //response被closed,则断开TCP连接
+        if (response.isClosed()) {
+            session.close(false);
+        }
+        //连接成功,建立传输通道
+        if (response.getHttpStatus() == HttpStatus.OK.value() && !proxyRequest.isConnected()) {
+            proxyRequest.setConnected(true);
+            ByteBuffer buffer = attachment.getProxyContent();
+            proxyRequest.setProxyInputStream(new InputStream() {
+                @Override
+                public int read() {
+                    throw new UnsupportedOperationException();
+                }
+
+                @Override
+                public int read(byte[] b, int off, int len) {
+                    int min = Math.min(len, buffer.remaining());
+                    buffer.get(b, off, min);
+                    return min;
+                }
+
+                @Override
+                public int available() {
+                    return buffer.remaining();
+                }
+            });
+        }
+    }
+
+    /**
+     * 处理 Http 消息
+     *
+     * @param session
+     * @param request
+     * @throws IOException
+     */
+    private void httpHandle(AioSession session, Request request) throws IOException {
+        RequestAttachment attachment = session.getAttachment();
+        HttpRequestImpl httpRequest = attachment.getHttpRequest();
+        if (httpRequest == null) {
+            httpRequest = new HttpRequestImpl(request);
+            attachment.setHttpRequest(httpRequest);
+        }
+        HttpResponseImpl response = httpRequest.getResponse();
+
+        //消息处理
+        httpPipeline.handle(request, httpRequest.getResponse());
+
+        //关闭本次请求的输出流
+        if (!response.getOutputStream().isClosed()) {
+            response.getOutputStream().close();
+        }
+
+        //response被closed,则断开TCP连接
+        if (response.isClosed()) {
+            session.close(false);
+        } else {
+            //复用长连接
+            request.reset();
+        }
+    }
+
+    private void websocketHandle(AioSession session) throws IOException {
+        RequestAttachment attachment = session.getAttachment();
+
+        WebSocketRequestImpl webSocketRequest = attachment.getWebSocketRequest();
+        WebSocketResponseImpl response = webSocketRequest.getResponse();
+
+        //消息处理
+        wsPipeline.handle(webSocketRequest, webSocketRequest.getResponse());
+
+        //关闭本次请求的输出流
+        if (!response.getOutputStream().isClosed()) {
+            response.getOutputStream().close();
+        }
+
+        //response被closed,则断开TCP连接
+        if (response.isClosed()) {
+            session.close(false);
+        } else {
+            //复用长连接
+            webSocketRequest.reset();
         }
     }
 

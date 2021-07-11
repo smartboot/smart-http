@@ -13,6 +13,7 @@ import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.Reset;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
+import org.smartboot.http.common.enums.HttpTypeEnum;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.HttpUtils;
 import org.smartboot.http.common.utils.NumberUtils;
@@ -85,8 +86,10 @@ public final class Request implements HttpRequest, Reset {
 
     private String hostHeader;
 
-
-    private boolean websocket = false;
+    /**
+     * 消息类型
+     */
+    private HttpTypeEnum type;
 
     /**
      * Post表单
@@ -152,7 +155,7 @@ public final class Request implements HttpRequest, Reset {
     }
 
     @Override
-    public InputStream getInputStream() throws IOException {
+    public InputStream getInputStream() {
         throw new UnsupportedOperationException();
     }
 
@@ -162,7 +165,7 @@ public final class Request implements HttpRequest, Reset {
 
     public final void setHeader(String headerName, String value) {
         if (headerName == HeaderNameEnum.UPGRADE.getName() && value == HeaderValueEnum.WEBSOCKET.getName()) {
-            websocket = true;
+            type = HttpTypeEnum.WEBSOCKET;
         }
         if (headerSize < headers.size()) {
             HeaderValue headerValue = headers.get(headerSize);
@@ -261,10 +264,6 @@ public final class Request implements HttpRequest, Reset {
         return contentLength;
     }
 
-    final void setContentLength(int contentLength) {
-        this.contentLength = contentLength;
-    }
-
     @Override
     public final String getParameter(String name) {
         String[] arr = (name != null ? getParameterValues(name) : null);
@@ -289,7 +288,6 @@ public final class Request implements HttpRequest, Reset {
         }
         return getParameterValues(name);
     }
-
 
     @Override
     public final Map<String, String[]> getParameters() {
@@ -456,8 +454,12 @@ public final class Request implements HttpRequest, Reset {
         return cookies;
     }
 
-    public final boolean isWebsocket() {
-        return websocket;
+    public HttpTypeEnum getType() {
+        return type;
+    }
+
+    public void setType(HttpTypeEnum type) {
+        this.type = type;
     }
 
     public String getFormUrlencoded() {

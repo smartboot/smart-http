@@ -8,7 +8,6 @@
 
 package org.smartboot.http.server.decode;
 
-import org.smartboot.http.server.impl.HttpRequestProtocol;
 import org.smartboot.http.server.impl.Request;
 import org.smartboot.http.server.impl.RequestAttachment;
 import org.smartboot.socket.transport.AioSession;
@@ -23,11 +22,8 @@ import java.nio.ByteBuffer;
 public class HttpProxyContentDecoder implements Decoder {
     @Override
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
-        if (!byteBuffer.hasRemaining()) {
-            return this;
-        }
         RequestAttachment attachment = aioSession.getAttachment();
         attachment.setProxyContent(byteBuffer);
-        return HttpRequestProtocol.HTTP_PROXY_CONTENT;
+        return this;
     }
 }

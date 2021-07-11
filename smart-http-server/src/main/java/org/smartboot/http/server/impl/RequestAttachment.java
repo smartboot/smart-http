@@ -38,6 +38,11 @@ public class RequestAttachment {
     private HttpRequestImpl httpRequest;
 
     /**
+     * http 请求对象
+     */
+    private HttpProxyRequestImpl proxyRequest;
+
+    /**
      * http body 解码器
      */
     private SmartDecoder bodyDecoder;
@@ -93,5 +98,13 @@ public class RequestAttachment {
 
     public void setProxyContent(ByteBuffer proxyContent) {
         this.proxyContent = proxyContent;
+    }
+
+    public HttpProxyRequestImpl getProxyRequest() {
+        return proxyRequest;
+    }
+
+    public void setProxyRequest(HttpProxyRequestImpl proxyRequest) {
+        this.proxyRequest = proxyRequest;
     }
 }

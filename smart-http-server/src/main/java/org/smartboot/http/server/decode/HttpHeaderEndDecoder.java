@@ -11,6 +11,7 @@ package org.smartboot.http.server.decode;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.enums.HttpStatus;
+import org.smartboot.http.common.enums.HttpTypeEnum;
 import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.StringUtils;
@@ -33,7 +34,7 @@ class HttpHeaderEndDecoder implements Decoder {
     @Override
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
         if (HttpMethodEnum.GET.getMethod().equals(request.getMethod())) {
-            if (request.isWebsocket()) {
+            if (request.getType() == HttpTypeEnum.WEBSOCKET) {
                 WebSocketRequestImpl webSocketRequest = new WebSocketRequestImpl(request);
                 RequestAttachment attachment = aioSession.getAttachment();
                 attachment.setWebSocketRequest(webSocketRequest);
@@ -53,7 +54,7 @@ class HttpHeaderEndDecoder implements Decoder {
             }
             return decoder.decode(byteBuffer, aioSession, request);
         } else if (HttpMethodEnum.CONNECT.getMethod().equals(request.getMethod())) {
-            return HttpRequestProtocol.HTTP_PROXY_CONTENT;
+            return HttpRequestProtocol.HTTP_PROXY_DECODER.decode(byteBuffer, aioSession, request);
         } else {
             return HttpRequestProtocol.HTTP_FINISH_DECODER;
         }
