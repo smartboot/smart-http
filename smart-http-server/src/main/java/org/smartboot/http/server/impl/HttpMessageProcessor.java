@@ -77,7 +77,7 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
         HttpProxyRequestImpl proxyRequest = attachment.getProxyRequest();
         if (proxyRequest == null) {
             proxyRequest = new HttpProxyRequestImpl(request);
-            attachment.setHttpRequest(proxyRequest);
+            attachment.setProxyRequest(proxyRequest);
         }
         HttpResponseImpl response = proxyRequest.getResponse();
 
@@ -130,7 +130,7 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
         HttpResponseImpl response = httpRequest.getResponse();
 
         //消息处理
-        httpPipeline.handle(request, httpRequest.getResponse());
+        httpPipeline.handle(httpRequest, httpRequest.getResponse());
 
         //关闭本次请求的输出流
         if (!response.getOutputStream().isClosed()) {
