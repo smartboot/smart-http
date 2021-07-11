@@ -11,7 +11,6 @@ package org.smartboot.http.server.impl;
 import org.smartboot.http.common.HandlerPipeline;
 import org.smartboot.http.common.Pipeline;
 import org.smartboot.http.common.enums.HttpStatus;
-import org.smartboot.http.common.enums.HttpTypeEnum;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
 import org.smartboot.http.server.HttpRequest;
@@ -60,41 +59,6 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
                     break;
                 default:
                     httpHandle(session, baseHttpRequest);
-            }
-            RequestAttachment attachment = session.getAttachment();
-
-            AbstractRequest request;
-            AbstractResponse response;
-            HandlerPipeline pipeline;
-            if (baseHttpRequest.getType() == HttpTypeEnum.WEBSOCKET) {
-                request = attachment.getWebSocketRequest();
-                response = attachment.getWebSocketRequest().getResponse();
-                pipeline = wsPipeline;
-            } else {
-                HttpRequestImpl httpRequest = attachment.getHttpRequest();
-                if (httpRequest == null) {
-                    httpRequest = baseHttpRequest.getType() == HttpTypeEnum.PROXY_HTTPS ? new HttpProxyRequestImpl(baseHttpRequest) : new HttpRequestImpl(baseHttpRequest);
-                    attachment.setHttpRequest(httpRequest);
-                }
-                request = httpRequest;
-                response = httpRequest.getResponse();
-                pipeline = httpPipeline;
-            }
-
-            //消息处理
-            pipeline.handle(request, response);
-
-            //关闭本次请求的输出流
-            if (!response.getOutputStream().isClosed()) {
-                response.getOutputStream().close();
-            }
-
-            //response被closed,则断开TCP连接
-            if (response.isClosed()) {
-                session.close(false);
-            } else {
-                //复用长连接
-                request.reset();
             }
         } catch (IOException e) {
             e.printStackTrace();
