@@ -89,7 +89,7 @@ public final class Request implements HttpRequest, Reset {
     /**
      * 消息类型
      */
-    private HttpTypeEnum type;
+    private HttpTypeEnum type = HttpTypeEnum.HTTP;
 
     /**
      * Post表单
