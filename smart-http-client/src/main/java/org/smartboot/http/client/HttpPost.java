@@ -11,7 +11,7 @@ package org.smartboot.http.client;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
-import org.smartboot.socket.transport.WriteBuffer;
+import org.smartboot.socket.transport.AioSession;
 
 import java.net.URLEncoder;
 import java.util.Iterator;
@@ -25,8 +25,8 @@ import java.util.function.Consumer;
  */
 public final class HttpPost extends HttpRest {
 
-    HttpPost(String uri, String host, WriteBuffer writeBuffer, Consumer<CompletableFuture<HttpResponse>> bindListener) {
-        super(uri, host, writeBuffer, bindListener);
+    HttpPost(String uri, String host, AioSession session, Consumer<CompletableFuture<HttpResponse>> bindListener) {
+        super(uri, host, session, bindListener);
         request.setMethod(HttpMethodEnum.POST.getMethod());
     }
 

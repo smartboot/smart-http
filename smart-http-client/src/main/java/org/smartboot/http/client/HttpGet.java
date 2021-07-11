@@ -9,7 +9,7 @@
 package org.smartboot.http.client;
 
 import org.smartboot.http.common.enums.HttpMethodEnum;
-import org.smartboot.socket.transport.WriteBuffer;
+import org.smartboot.socket.transport.AioSession;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -20,8 +20,8 @@ import java.util.function.Consumer;
  */
 public class HttpGet extends HttpRest {
 
-    HttpGet(String uri, String host, WriteBuffer writeBuffer, Consumer<CompletableFuture<HttpResponse>> consumer) {
-        super(uri, host, writeBuffer, consumer);
+    HttpGet(String uri, String host, AioSession session, Consumer<CompletableFuture<HttpResponse>> consumer) {
+        super(uri, host, session, consumer);
         request.setMethod(HttpMethodEnum.GET.getMethod());
     }
 

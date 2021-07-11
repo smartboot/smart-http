@@ -8,7 +8,7 @@
 
 package org.smartboot.http.client.impl;
 
-import org.smartboot.socket.transport.WriteBuffer;
+import org.smartboot.socket.transport.AioSession;
 
 /**
  * @author 三刀
@@ -16,7 +16,7 @@ import org.smartboot.socket.transport.WriteBuffer;
  */
 final class WebSocketOutputStream extends AbstractOutputStream {
 
-    public WebSocketOutputStream(WebSocketRequestImpl request, WriteBuffer writeBuffer) {
-        super(request, writeBuffer);
+    public WebSocketOutputStream(WebSocketRequestImpl request, AioSession session) {
+        super(request, session);
     }
 }

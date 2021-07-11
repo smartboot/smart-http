@@ -10,6 +10,7 @@ package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.HandlerPipeline;
 import org.smartboot.http.common.Pipeline;
+import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
 import org.smartboot.http.server.HttpRequest;
@@ -78,8 +79,10 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
             if (response.isClosed()) {
                 session.close(false);
             } else {
-                //复用长连接
-                request.reset();
+                if (request.getMethod() != HttpMethodEnum.CONNECT.getMethod()) {
+                    //复用长连接
+                    request.reset();
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();

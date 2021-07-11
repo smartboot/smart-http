@@ -49,15 +49,15 @@ public class HttpClient implements Closeable {
     }
 
     public HttpGet get(String uri) {
-        return new HttpGet(uri, host, aioSession.writeBuffer(), processor.getQueue(aioSession)::offer);
+        return new HttpGet(uri, host, aioSession, processor.getQueue(aioSession)::offer);
     }
 
     public HttpRest rest(String uri) {
-        return new HttpRest(uri, host, aioSession.writeBuffer(), processor.getQueue(aioSession)::offer);
+        return new HttpRest(uri, host, aioSession, processor.getQueue(aioSession)::offer);
     }
 
     public HttpPost post(String uri) {
-        return new HttpPost(uri, host, aioSession.writeBuffer(), processor.getQueue(aioSession)::offer);
+        return new HttpPost(uri, host, aioSession, processor.getQueue(aioSession)::offer);
     }
 
     public void connect() {

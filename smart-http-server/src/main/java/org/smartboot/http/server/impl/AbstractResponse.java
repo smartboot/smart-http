@@ -44,7 +44,11 @@ class AbstractResponse implements HttpResponse, Reset {
     /**
      * http响应码
      */
-    private HttpStatus httpStatus = HttpStatus.OK;
+    private int httpStatus = HttpStatus.OK.value();
+    /**
+     * 响应描述
+     */
+    private String reasonPhrase = HttpStatus.OK.getReasonPhrase();
     /**
      * 响应正文长度
      */
@@ -76,7 +80,7 @@ class AbstractResponse implements HttpResponse, Reset {
         if (headers != null) {
             headers.clear();
         }
-        httpStatus = HttpStatus.OK;
+        setHttpStatus(HttpStatus.OK);
         contentType = HeaderValueEnum.DEFAULT_CONTENT_TYPE.getName();
         contentLength = -1;
         characterEncoding = null;
@@ -89,12 +93,23 @@ class AbstractResponse implements HttpResponse, Reset {
         return outputStream;
     }
 
-    public final HttpStatus getHttpStatus() {
+    @Override
+    public int getHttpStatus() {
         return httpStatus;
     }
 
     public final void setHttpStatus(HttpStatus httpStatus) {
-        this.httpStatus = Objects.requireNonNull(httpStatus);
+        Objects.requireNonNull(httpStatus);
+        setHttpStatus(httpStatus.value(), httpStatus.getReasonPhrase());
+    }
+
+    public String getReasonPhrase() {
+        return reasonPhrase;
+    }
+
+    public final void setHttpStatus(int value, String reasonPhrase) {
+        this.httpStatus = value;
+        this.reasonPhrase = Objects.requireNonNull(reasonPhrase);
     }
 
     @Override

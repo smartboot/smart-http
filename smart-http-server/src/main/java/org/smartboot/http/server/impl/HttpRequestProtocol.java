@@ -11,6 +11,7 @@ package org.smartboot.http.server.impl;
 import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.decode.Decoder;
 import org.smartboot.http.server.decode.HttpMethodDecoder;
+import org.smartboot.http.server.decode.HttpProxyContentDecoder;
 import org.smartboot.http.server.decode.WebSocketFrameDecoder;
 import org.smartboot.socket.Protocol;
 import org.smartboot.socket.transport.AioSession;
@@ -26,6 +27,11 @@ public class HttpRequestProtocol implements Protocol<Request> {
      * 普通Http消息解码完成
      */
     public static final Decoder HTTP_FINISH_DECODER = (byteBuffer, aioSession, request) -> null;
+
+    /**
+     * Http 代理内容
+     */
+    public static final Decoder HTTP_PROXY_CONTENT = (byteBuffer, aioSession, request) -> null;
     /**
      * websocket握手消息
      */
@@ -35,6 +41,7 @@ public class HttpRequestProtocol implements Protocol<Request> {
      */
     public static final Decoder WS_FRAME_DECODER = (byteBuffer, aioSession, request) -> null;
     private final WebSocketFrameDecoder wsFrameDecoder = new WebSocketFrameDecoder();
+    private final HttpProxyContentDecoder httpProxyContentDecoder = new HttpProxyContentDecoder();
     private final HttpMethodDecoder httpMethodDecoder;
 
     public HttpRequestProtocol(HttpServerConfiguration configuration) {
@@ -54,6 +61,9 @@ public class HttpRequestProtocol implements Protocol<Request> {
 
         if (decodeChain == HTTP_FINISH_DECODER) {
             attachment.setDecoder(null);
+            return request;
+        } else if (decodeChain == HTTP_PROXY_CONTENT) {
+            attachment.setDecoder(httpProxyContentDecoder);
             return request;
         } else if (decodeChain == WS_HANDSHAKE_DECODER || decodeChain == WS_FRAME_DECODER) {
             attachment.setDecoder(wsFrameDecoder);

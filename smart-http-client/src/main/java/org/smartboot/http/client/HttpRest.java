@@ -12,7 +12,7 @@ import org.smartboot.http.client.impl.HttpRequestImpl;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
-import org.smartboot.socket.transport.WriteBuffer;
+import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -34,8 +34,8 @@ public class HttpRest {
     private final Consumer<CompletableFuture<HttpResponse>> responseListener;
     private Map<String, String> queryParams = null;
 
-    HttpRest(String uri, String host, WriteBuffer writeBuffer, Consumer<CompletableFuture<HttpResponse>> responseListener) {
-        this.request = new HttpRequestImpl(writeBuffer);
+    HttpRest(String uri, String host, AioSession session, Consumer<CompletableFuture<HttpResponse>> responseListener) {
+        this.request = new HttpRequestImpl(session);
         this.responseListener = responseListener;
         this.request.setUri(uri);
         this.request.setProtocol(HttpProtocolEnum.HTTP_11.getProtocol());

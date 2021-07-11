@@ -16,7 +16,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <properties>
-        <smarthttp.version>1.1.6</smarthttp.version>
+        <smarthttp.version>1.1.7-SNAPSHOT</smarthttp.version>
         <junit.version>4.13.1</junit.version>
         <enhance.version>1.0.3</enhance.version>
         <json.version>1.2.62</json.version>
@@ -68,7 +68,7 @@
         <dependency>
             <groupId>commons-fileupload</groupId>
             <artifactId>commons-fileupload</artifactId>
-            <scope>provided</scope>
+<!--            <scope>provided</scope>-->
             <version>${commons.fileupload.version}</version>
         </dependency>
     </dependencies>

@@ -12,7 +12,7 @@ import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.server.WebSocketResponse;
-import org.smartboot.socket.transport.WriteBuffer;
+import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -25,7 +25,7 @@ import java.util.Arrays;
 public class WebSocketResponseImpl extends AbstractResponse implements WebSocketResponse {
     private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketResponseImpl.class);
 
-    public WebSocketResponseImpl(WebSocketRequestImpl request, WriteBuffer outputStream) {
+    public WebSocketResponseImpl(WebSocketRequestImpl request, AioSession outputStream) {
         init(request, new WebSocketOutputStream(request, this, outputStream));
     }
 

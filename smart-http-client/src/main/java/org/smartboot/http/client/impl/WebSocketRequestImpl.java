@@ -11,7 +11,7 @@ package org.smartboot.http.client.impl;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
 import org.smartboot.http.common.utils.Constant;
-import org.smartboot.socket.transport.WriteBuffer;
+import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -23,8 +23,8 @@ import java.nio.charset.StandardCharsets;
 public class WebSocketRequestImpl extends AbstractRequest implements WebSocketRequest {
     private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketRequestImpl.class);
 
-    public WebSocketRequestImpl(WriteBuffer outputStream) {
-        init(new WebSocketOutputStream(this, outputStream));
+    public WebSocketRequestImpl(AioSession session) {
+        init(new WebSocketOutputStream(this, session));
     }
 
     @Override

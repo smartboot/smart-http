@@ -52,6 +52,8 @@ class HttpHeaderEndDecoder implements Decoder {
                 throw new HttpException(HttpStatus.LENGTH_REQUIRED);
             }
             return decoder.decode(byteBuffer, aioSession, request);
+        } else if (HttpMethodEnum.CONNECT.getMethod().equals(request.getMethod())) {
+            return HttpRequestProtocol.HTTP_PROXY_CONTENT;
         } else {
             return HttpRequestProtocol.HTTP_FINISH_DECODER;
         }

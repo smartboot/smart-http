@@ -11,6 +11,7 @@ package org.smartboot.http.common;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.socket.buffer.VirtualBuffer;
+import org.smartboot.socket.transport.AioSession;
 import org.smartboot.socket.transport.WriteBuffer;
 
 import java.io.IOException;
@@ -26,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public abstract class BufferOutputStream extends OutputStream implements Reset {
     private static final Map<String, byte[]> HEADER_NAME_EXT_MAP = new ConcurrentHashMap<>();
+    protected final AioSession session;
     protected final WriteBuffer writeBuffer;
     protected boolean committed = false;
     protected boolean chunked = false;
@@ -34,8 +36,9 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
      */
     private boolean closed = false;
 
-    public BufferOutputStream(WriteBuffer writeBuffer) {
-        this.writeBuffer = writeBuffer;
+    public BufferOutputStream(AioSession session) {
+        this.session = session;
+        this.writeBuffer = session.writeBuffer();
     }
 
     @Override
@@ -52,8 +55,8 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
      * @throws IOException
      */
     public final void write(byte b[], int off, int len) throws IOException {
-        writeHead();
         check();
+        writeHead();
         if (chunked) {
             byte[] start = getBytes(Integer.toHexString(len) + "\r\n");
             writeBuffer.write(start);
@@ -69,8 +72,8 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
     }
 
     public final void write(VirtualBuffer virtualBuffer) throws IOException {
-        writeHead();
         check();
+        writeHead();
         if (chunked) {
             byte[] start = getBytes(Integer.toHexString(virtualBuffer.buffer().remaining()) + "\r\n");
             writeBuffer.write(start);

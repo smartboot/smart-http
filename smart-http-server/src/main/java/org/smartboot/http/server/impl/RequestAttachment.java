@@ -11,6 +11,8 @@ package org.smartboot.http.server.impl;
 import org.smartboot.http.common.utils.SmartDecoder;
 import org.smartboot.http.server.decode.Decoder;
 
+import java.nio.ByteBuffer;
+
 /**
  * Http/Ws 请求解码附件对象
  *
@@ -39,6 +41,11 @@ public class RequestAttachment {
      * http body 解码器
      */
     private SmartDecoder bodyDecoder;
+
+    /**
+     * 代理内容
+     */
+    private ByteBuffer proxyContent;
 
     public RequestAttachment(Request request) {
         this.request = request;
@@ -78,5 +85,13 @@ public class RequestAttachment {
 
     public void setBodyDecoder(SmartDecoder bodyDecoder) {
         this.bodyDecoder = bodyDecoder;
+    }
+
+    public ByteBuffer getProxyContent() {
+        return proxyContent;
+    }
+
+    public void setProxyContent(ByteBuffer proxyContent) {
+        this.proxyContent = proxyContent;
     }
 }

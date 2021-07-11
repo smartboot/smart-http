@@ -261,6 +261,10 @@ public final class Request implements HttpRequest, Reset {
         return contentLength;
     }
 
+    final void setContentLength(int contentLength) {
+        this.contentLength = contentLength;
+    }
+
     @Override
     public final String getParameter(String name) {
         String[] arr = (name != null ? getParameterValues(name) : null);

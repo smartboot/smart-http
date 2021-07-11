@@ -13,8 +13,10 @@ import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
+import org.smartboot.http.common.enums.HttpStatus;
+import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.server.HttpRequest;
-import org.smartboot.socket.transport.WriteBuffer;
+import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -46,8 +48,8 @@ abstract class AbstractOutputStream extends BufferOutputStream {
     protected final AbstractResponse response;
     protected final HttpRequest request;
 
-    public AbstractOutputStream(HttpRequest request, AbstractResponse response, WriteBuffer writeBuffer) {
-        super(writeBuffer);
+    public AbstractOutputStream(HttpRequest request, AbstractResponse response, AioSession session) {
+        super(session);
         this.response = response;
         this.request = request;
     }
@@ -81,12 +83,18 @@ abstract class AbstractOutputStream extends BufferOutputStream {
         //输出Header部分
         writeHeader();
 
-        /**
-         * RFC2616 3.3.1
-         * 只能用 RFC 1123 里定义的日期格式来填充头域 (header field)的值里用到 HTTP-date 的地方
-         */
-        flushDate();
-        writeBuffer.write(date);
+
+        if (request.getMethod() == HttpMethodEnum.CONNECT.getMethod()) {
+            writeBuffer.write(Constant.CRLF);
+        } else {
+            /**
+             * RFC2616 3.3.1
+             * 只能用 RFC 1123 里定义的日期格式来填充头域 (header field)的值里用到 HTTP-date 的地方
+             */
+            flushDate();
+            writeBuffer.write(date);
+        }
+
         committed = true;
     }
 
@@ -118,5 +126,21 @@ abstract class AbstractOutputStream extends BufferOutputStream {
         if (HttpMethodEnum.HEAD.getMethod().equals(request.getMethod())) {
             throw new UnsupportedOperationException(request.getMethod() + " can not write http body");
         }
+        //识别是否采用 chunked 输出
+        if (!committed) {
+            chunked = supportChunked(request, response);
+        }
+    }
+
+    /**
+     * 是否支持chunked输出
+     *
+     * @return
+     */
+    private boolean supportChunked(HttpRequest request, AbstractResponse response) {
+        return (request.getMethod() == HttpMethodEnum.GET.getMethod()
+                || request.getMethod() == HttpMethodEnum.POST.getMethod())
+                && response.getHttpStatus() != HttpStatus.CONTINUE.value()
+                && response.getContentLength() < 0;
     }
 }

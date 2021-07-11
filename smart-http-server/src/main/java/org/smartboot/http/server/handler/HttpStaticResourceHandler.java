@@ -113,6 +113,7 @@ public class HttpStaticResourceHandler extends HttpServerHandler {
             mappedByteBuffer.get(data);
             response.write(data);
         }
+        fileChannel.close();
         fis.close();
     }
 }

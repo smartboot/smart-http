@@ -8,6 +8,7 @@
 
 package org.smartboot.http.server;
 
+import org.smartboot.aio.EnhanceAsynchronousChannelProvider;
 import org.smartboot.http.common.Pipeline;
 import org.smartboot.http.server.impl.HttpMessageProcessor;
 import org.smartboot.http.server.impl.HttpRequestProtocol;
@@ -27,7 +28,7 @@ public class HttpBootstrap {
             "                                                       | |    \n" +
             "                                                       (_)   ";
 
-    private static final String VERSION = "1.1.6";
+    private static final String VERSION = "1.1.7-SNAPSHOT";
     /**
      * http消息解码器
      */
@@ -92,6 +93,7 @@ public class HttpBootstrap {
      * 启动HTTP服务
      */
     public void start() {
+        System.setProperty("java.nio.channels.spi.AsynchronousChannelProvider", EnhanceAsynchronousChannelProvider.class.getName());
         BufferPagePool readBufferPool = new BufferPagePool(configuration.getReadPageSize(), 1, false);
         server = new AioQuickServer(configuration.getHost(), port, new HttpRequestProtocol(configuration), configuration.getProcessor().apply(processor));
         server.setThreadNum(configuration.getThreadNum())

@@ -38,7 +38,7 @@ public class WebSocketRequestImpl extends AbstractRequest implements WebSocketRe
     public WebSocketRequestImpl(Request baseHttpRequest) {
         init(baseHttpRequest);
         this.websocketStatus = WebsocketStatus.HandShake;
-        this.response = new WebSocketResponseImpl(this, baseHttpRequest.getAioSession().writeBuffer());
+        this.response = new WebSocketResponseImpl(this, baseHttpRequest.getAioSession());
     }
 
     public final WebSocketResponseImpl getResponse() {

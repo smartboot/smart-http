@@ -442,20 +442,11 @@ public enum HttpStatus {
 
     private final int value;
 
-    private final byte[] valueStringBytes;
-
     private final String reasonPhrase;
-
-    private final byte[] reasonPhraseBytes;
-
-    private final String httpStatusLine;
 
     HttpStatus(int value, String reasonPhrase) {
         this.value = value;
-        this.valueStringBytes = String.valueOf(value).getBytes();
         this.reasonPhrase = reasonPhrase;
-        this.reasonPhraseBytes = reasonPhrase.getBytes();
-        this.httpStatusLine = " " + value + " " + reasonPhrase;
     }
 
     /**
@@ -481,9 +472,6 @@ public enum HttpStatus {
         return this.value;
     }
 
-    public byte[] getValueStringBytes() {
-        return valueStringBytes;
-    }
 
     /**
      * Return the reason phrase of this status code.
@@ -492,9 +480,6 @@ public enum HttpStatus {
         return reasonPhrase;
     }
 
-    public byte[] getReasonPhraseBytes() {
-        return reasonPhraseBytes;
-    }
 
     /**
      * Whether this status code is in the HTTP series
@@ -550,9 +535,6 @@ public enum HttpStatus {
         return Series.valueOf(this);
     }
 
-    public String getHttpStatusLine() {
-        return httpStatusLine;
-    }
 
     /**
      * Return a string representation of this status code.

@@ -8,10 +8,12 @@
 
 package org.smartboot.http.server.impl;
 
+import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.utils.PostInputStream;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 
 /**
  * @author 三刀
@@ -27,13 +29,12 @@ final class HttpRequestImpl extends AbstractRequest {
             return -1;
         }
     };
-    private InputStream inputStream;
-
     private final HttpResponseImpl response;
+    private InputStream inputStream;
 
     HttpRequestImpl(Request request) {
         init(request);
-        this.response = new HttpResponseImpl(this, request.getAioSession().writeBuffer());
+        this.response = new HttpResponseImpl(this, request.getAioSession());
     }
 
     public final HttpResponseImpl getResponse() {
@@ -42,14 +43,36 @@ final class HttpRequestImpl extends AbstractRequest {
 
     @Override
     public InputStream getInputStream() throws IOException {
+        if (request.getMethod() == HttpMethodEnum.CONNECT.getMethod()) {
+            RequestAttachment requestAttachment = request.getAioSession().getAttachment();
+            ByteBuffer buffer = requestAttachment.getProxyContent();
+            return buffer == null ? EMPTY_INPUT_STREAM : new InputStream() {
+                @Override
+                public int read() throws IOException {
+                    throw new UnsupportedOperationException();
+                }
+
+                @Override
+                public int read(byte[] b, int off, int len) throws IOException {
+                    int min = Math.min(len, buffer.remaining());
+                    buffer.get(b, off, min);
+                    return min;
+                }
+
+                @Override
+                public int available() throws IOException {
+                    return buffer.remaining();
+                }
+            };
+        }
         if (inputStream != null) {
             return inputStream;
         }
         int contentLength = getContentLength();
-        if (contentLength <= 0 || request.getFormUrlencoded() != null) {
-            inputStream = EMPTY_INPUT_STREAM;
-        } else {
+        if (contentLength > 0 && request.getFormUrlencoded() == null) {
             inputStream = new PostInputStream(request.getAioSession().getInputStream(contentLength), contentLength);
+        } else {
+            inputStream = EMPTY_INPUT_STREAM;
         }
         return inputStream;
     }

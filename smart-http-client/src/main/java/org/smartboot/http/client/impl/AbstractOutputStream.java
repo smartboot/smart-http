@@ -13,7 +13,7 @@ import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.utils.Constant;
-import org.smartboot.socket.transport.WriteBuffer;
+import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
 import java.util.List;
@@ -27,8 +27,8 @@ abstract class AbstractOutputStream extends BufferOutputStream {
 
     protected final AbstractRequest request;
 
-    public AbstractOutputStream(AbstractRequest request, WriteBuffer writeBuffer) {
-        super(writeBuffer);
+    public AbstractOutputStream(AbstractRequest request, AioSession aioSession) {
+        super(aioSession);
         this.request = request;
     }
 
