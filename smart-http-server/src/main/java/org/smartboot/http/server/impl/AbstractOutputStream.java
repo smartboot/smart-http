@@ -58,7 +58,7 @@ abstract class AbstractOutputStream extends BufferOutputStream {
         if ((System.currentTimeMillis() - currentDate.getTime() > 990) && flushDateSemaphore.tryAcquire()) {
             try {
                 currentDate.setTime(System.currentTimeMillis());
-                AbstractOutputStream.date = ("\r\n" + HeaderNameEnum.DATE.getName() + ":" + sdf.format(currentDate) + "\r\n"
+                AbstractOutputStream.date = (HeaderNameEnum.DATE.getName() + ":" + sdf.format(currentDate) + "\r\n"
                         + HeaderNameEnum.SERVER.getName() + ":" + SERVER_ALIAS_NAME + "\r\n\r\n").getBytes();
             } finally {
                 flushDateSemaphore.release();
@@ -83,17 +83,12 @@ abstract class AbstractOutputStream extends BufferOutputStream {
         //输出Header部分
         writeHeader();
 
-
-        if (request.getMethod() == HttpMethodEnum.CONNECT.getMethod()) {
-            writeBuffer.write(Constant.CRLF);
-        } else {
-            /**
-             * RFC2616 3.3.1
-             * 只能用 RFC 1123 里定义的日期格式来填充头域 (header field)的值里用到 HTTP-date 的地方
-             */
-            flushDate();
-            writeBuffer.write(date);
-        }
+        /**
+         * RFC2616 3.3.1
+         * 只能用 RFC 1123 里定义的日期格式来填充头域 (header field)的值里用到 HTTP-date 的地方
+         */
+        flushDate();
+        writeBuffer.write(date);
 
         committed = true;
     }
@@ -115,6 +110,7 @@ abstract class AbstractOutputStream extends BufferOutputStream {
                 while (headerValue != null) {
                     writeBuffer.write(getHeaderNameBytes(entry.getKey()));
                     writeBuffer.write(getBytes(headerValue.getValue()));
+                    writeBuffer.write(Constant.CRLF);
                     headerValue = headerValue.getNextValue();
                 }
             }

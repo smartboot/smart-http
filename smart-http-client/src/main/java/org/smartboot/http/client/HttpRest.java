@@ -33,6 +33,10 @@ public class HttpRest {
     protected final CompletableFuture<HttpResponse> completableFuture = new CompletableFuture<>();
     private final Consumer<CompletableFuture<HttpResponse>> responseListener;
     private Map<String, String> queryParams = null;
+    /**
+     * http body 解码器
+     */
+    private BodyCodec bodyCodec;
 
     HttpRest(String uri, String host, AioSession session, Consumer<CompletableFuture<HttpResponse>> responseListener) {
         this.request = new HttpRequestImpl(session);

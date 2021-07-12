@@ -32,16 +32,22 @@ public class HttpBootstrap {
     /**
      * http消息解码器
      */
-    private final HttpMessageProcessor processor = new HttpMessageProcessor();
+    private final HttpMessageProcessor processor;
     private final HttpServerConfiguration configuration = new HttpServerConfiguration();
 
     private AioQuickServer server;
-
-
     /**
      * Http服务端口号
      */
     private int port = 8080;
+
+    public HttpBootstrap() {
+        this(new HttpMessageProcessor());
+    }
+
+    public HttpBootstrap(HttpMessageProcessor processor) {
+        this.processor = processor;
+    }
 
     /**
      * Http服务端口号

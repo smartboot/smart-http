@@ -111,7 +111,7 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
         byte[] extBytes = HEADER_NAME_EXT_MAP.get(name);
         if (extBytes == null) {
             synchronized (name) {
-                extBytes = getBytes("\r\n" + name + ":");
+                extBytes = getBytes(name + ":");
                 HEADER_NAME_EXT_MAP.put(name, extBytes);
             }
         }

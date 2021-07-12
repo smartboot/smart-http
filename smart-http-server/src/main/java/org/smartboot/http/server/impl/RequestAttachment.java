@@ -38,19 +38,14 @@ public class RequestAttachment {
     private HttpRequestImpl httpRequest;
 
     /**
-     * http 请求对象
-     */
-    private HttpProxyRequestImpl proxyRequest;
-
-    /**
      * http body 解码器
      */
     private SmartDecoder bodyDecoder;
 
     /**
-     * 代理内容
+     * read缓冲区
      */
-    private ByteBuffer proxyContent;
+    private ByteBuffer readBuffer;
 
     public RequestAttachment(Request request) {
         this.request = request;
@@ -92,19 +87,11 @@ public class RequestAttachment {
         this.bodyDecoder = bodyDecoder;
     }
 
-    public ByteBuffer getProxyContent() {
-        return proxyContent;
+    public ByteBuffer getReadBuffer() {
+        return readBuffer;
     }
 
-    public void setProxyContent(ByteBuffer proxyContent) {
-        this.proxyContent = proxyContent;
-    }
-
-    public HttpProxyRequestImpl getProxyRequest() {
-        return proxyRequest;
-    }
-
-    public void setProxyRequest(HttpProxyRequestImpl proxyRequest) {
-        this.proxyRequest = proxyRequest;
+    public void setReadBuffer(ByteBuffer readBuffer) {
+        this.readBuffer = readBuffer;
     }
 }

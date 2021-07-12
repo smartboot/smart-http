@@ -49,9 +49,15 @@ public class Response implements HttpResponse {
      */
     private String body;
 
-    private int statusCode;
+    /**
+     * http 响应码
+     */
+    private int status;
 
-    private String statusDesc;
+    /**
+     * 响应码描述
+     */
+    private String reasonPhrase;
 
     private String encoding;
 
@@ -157,19 +163,19 @@ public class Response implements HttpResponse {
         this.body = body;
     }
 
-    public int getStatusCode() {
-        return statusCode;
+    public int getStatus() {
+        return status;
     }
 
-    public void setStatusCode(int statusCode) {
-        this.statusCode = statusCode;
+    public void setStatus(int status) {
+        this.status = status;
     }
 
-    public String getStatusDesc() {
-        return statusDesc;
+    public String getReasonPhrase() {
+        return reasonPhrase;
     }
 
-    public void setStatusDesc(String statusDesc) {
-        this.statusDesc = statusDesc;
+    public void setReasonPhrase(String reasonPhrase) {
+        this.reasonPhrase = reasonPhrase;
     }
 }

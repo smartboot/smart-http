@@ -27,7 +27,7 @@ class HttpStatusCodeDecoder implements Decoder {
         int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.SP);
         if (length > 0) {
             int statusCode = StringUtils.convertToInteger(byteBuffer, byteBuffer.position() - length - 1, length, StringUtils.INTEGER_CACHE_HTTP_STATUS_CODE);
-            response.setStatusCode(statusCode);
+            response.setStatus(statusCode);
             return protocolDecoder.decode(byteBuffer, aioSession, response);
         } else {
             return this;

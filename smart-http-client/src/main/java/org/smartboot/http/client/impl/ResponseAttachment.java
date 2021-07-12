@@ -11,6 +11,8 @@ package org.smartboot.http.client.impl;
 import org.smartboot.http.client.decode.Decoder;
 import org.smartboot.http.common.utils.SmartDecoder;
 
+import java.io.ByteArrayOutputStream;
+
 /**
  * @author 三刀（zhengjunweimail@163.com）
  * @version V1.0 , 2021/5/26
@@ -18,7 +20,7 @@ import org.smartboot.http.common.utils.SmartDecoder;
 public class ResponseAttachment {
     private final Response response;
     private Decoder decoder;
-    private StringBuilder chunkBodyContent;
+    private ByteArrayOutputStream chunkBodyContent;
     private WebSocketRequestImpl webSocketRequest;
     private HttpRequestImpl httpRequest;
 
@@ -64,11 +66,11 @@ public class ResponseAttachment {
         this.bodyDecoder = bodyDecoder;
     }
 
-    public StringBuilder getChunkBodyContent() {
+    public ByteArrayOutputStream getChunkBodyContent() {
         return chunkBodyContent;
     }
 
-    public void setChunkBodyContent(StringBuilder chunkBodyContent) {
+    public void setChunkBodyContent(ByteArrayOutputStream chunkBodyContent) {
         this.chunkBodyContent = chunkBodyContent;
     }
 }

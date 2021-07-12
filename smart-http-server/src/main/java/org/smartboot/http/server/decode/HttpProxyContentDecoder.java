@@ -23,7 +23,8 @@ public class HttpProxyContentDecoder implements Decoder {
     @Override
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
         RequestAttachment attachment = aioSession.getAttachment();
-        attachment.setProxyContent(byteBuffer);
+        attachment.setReadBuffer(byteBuffer);
+        System.out.println("decode " + request.getRequestURI());
         return this;
     }
 }

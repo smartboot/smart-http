@@ -11,12 +11,16 @@ package org.smartboot.http.client.decode;
 import org.smartboot.http.client.impl.HttpResponseProtocol;
 import org.smartboot.http.client.impl.Response;
 import org.smartboot.http.client.impl.ResponseAttachment;
+import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.FixedLengthFrameDecoder;
+import org.smartboot.http.common.utils.GzipUtils;
 import org.smartboot.http.common.utils.SmartDecoder;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.socket.transport.AioSession;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
@@ -41,9 +45,14 @@ public class HttpChunkedBodyDecoder implements Decoder {
         int len = Integer.parseInt(contentLength, 16);
         ResponseAttachment attachment = aioSession.getAttachment();
         if (len == 0) {
-            StringBuilder stringBuilder = attachment.getChunkBodyContent();
+            ByteArrayOutputStream stringBuilder = attachment.getChunkBodyContent();
             if (stringBuilder != null) {
-                response.setBody(stringBuilder.toString());
+                if (StringUtils.equals("gzip", response.getHeader(HeaderNameEnum.CONTENT_ENCODING.getName()))) {
+                    response.setBody(GzipUtils.uncompressToString(stringBuilder.toByteArray()));
+                } else {
+                    response.setBody(new String(stringBuilder.toByteArray()));
+                }
+
             }
             attachment.setChunkBodyContent(null);
             return decode(byteBuffer, aioSession, response);
@@ -65,15 +74,18 @@ public class HttpChunkedBodyDecoder implements Decoder {
             if (!smartDecoder.decode(byteBuffer)) {
                 return this;
             }
+//            boolean gzip = StringUtils.equals("gzip", response.getHeader(HeaderNameEnum.CONTENT_ENCODING.getName()));
             String chunkedContent = new String(smartDecoder.getBuffer().array(), Charset.forName(response.getCharacterEncoding()));
-            StringBuilder stringBuilder = attachment.getChunkBodyContent();
+            ByteArrayOutputStream stringBuilder = attachment.getChunkBodyContent();
             if (stringBuilder == null) {
-                stringBuilder = new StringBuilder(chunkedContent);
+                stringBuilder = new ByteArrayOutputStream();
                 attachment.setChunkBodyContent(stringBuilder);
-            } else {
-                stringBuilder.append(chunkedContent);
             }
-            stringBuilder.setLength(stringBuilder.length());
+            try {
+                stringBuilder.write(smartDecoder.getBuffer().array());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             attachment.setBodyDecoder(null);
             return httpChunkedEndDecoder.decode(byteBuffer, aioSession, response);
         }

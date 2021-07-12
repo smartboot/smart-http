@@ -85,7 +85,7 @@ public enum HeaderNameEnum {
     HeaderNameEnum(String name) {
         this.name = name;
         this.bytes = name.getBytes();
-        this.bytesWithColon = ("\r\n" + name + ":").getBytes();
+        this.bytesWithColon = (name + ":").getBytes();
     }
 
 

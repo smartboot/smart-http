@@ -66,11 +66,11 @@ final class HttpOutputStream extends AbstractOutputStream {
         StringBuilder sb = new StringBuilder(request.getProtocol());
         sb.append(' ').append(httpStatus).append(' ').append(reasonPhrase).append("\r\n");
         if (chunked || contentLength > 0) {
-            sb.append(HeaderNameEnum.CONTENT_TYPE.getName()).append(':').append(contentType);
+            sb.append(HeaderNameEnum.CONTENT_TYPE.getName()).append(':').append(contentType).append("\r\n");
             if (contentLength >= 0) {
-                sb.append("\r\n").append(HeaderNameEnum.CONTENT_LENGTH.getName()).append(':').append(contentLength);
+                sb.append(HeaderNameEnum.CONTENT_LENGTH.getName()).append(':').append(contentLength).append("\r\n");
             } else {
-                sb.append("\r\n").append(HeaderNameEnum.TRANSFER_ENCODING.getName()).append(':').append(HeaderValueEnum.CHUNKED.getName());
+                sb.append(HeaderNameEnum.TRANSFER_ENCODING.getName()).append(':').append(HeaderValueEnum.CHUNKED.getName()).append("\r\n");
             }
         }
         data = sb.toString().getBytes();
