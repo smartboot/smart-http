@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2017-2020, org.smartboot. All rights reserved.
+ * Copyright (c) 2017-2021, org.smartboot. All rights reserved.
  * project name: smart-http
- * file name: DecodeChain.java
- * Date: 2020-03-30
+ * file name: HeaderDecoder.java
+ * Date: 2021-07-13
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
-package org.smartboot.http.client.decode;
+package org.smartboot.http.client.decode.header;
 
 import org.smartboot.http.client.impl.Response;
 import org.smartboot.socket.transport.AioSession;
@@ -14,11 +14,13 @@ import org.smartboot.socket.transport.AioSession;
 import java.nio.ByteBuffer;
 
 /**
+ * Http Header解码器
+ *
  * @author 三刀
  * @version V1.0 , 2020/3/30
  */
-public interface Decoder {
+public interface HeaderDecoder {
 
-    Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Response response);
+    HeaderDecoder decode(ByteBuffer byteBuffer, AioSession aioSession, Response response);
 
 }

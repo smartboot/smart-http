@@ -8,7 +8,9 @@
 
 package org.smartboot.http.client;
 
+import org.smartboot.http.client.decode.body.BodyDecoder;
 import org.smartboot.http.client.impl.HttpRequestImpl;
+import org.smartboot.http.client.impl.QueueUnit;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
@@ -17,6 +19,7 @@ import org.smartboot.socket.transport.AioSession;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.AbstractQueue;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -31,16 +34,16 @@ public class HttpRest {
     private final static String DEFAULT_USER_AGENT = "smart-http";
     protected final HttpRequestImpl request;
     protected final CompletableFuture<HttpResponse> completableFuture = new CompletableFuture<>();
-    private final Consumer<CompletableFuture<HttpResponse>> responseListener;
+    private final AbstractQueue<QueueUnit> queue;
     private Map<String, String> queryParams = null;
     /**
      * http body 解码器
      */
-    private BodyCodec bodyCodec;
+    private BodyDecoder bodyDecoder;
 
-    HttpRest(String uri, String host, AioSession session, Consumer<CompletableFuture<HttpResponse>> responseListener) {
+    HttpRest(String uri, String host, AioSession session, AbstractQueue<QueueUnit> queue) {
         this.request = new HttpRequestImpl(session);
-        this.responseListener = responseListener;
+        this.queue = queue;
         this.request.setUri(uri);
         this.request.setProtocol(HttpProtocolEnum.HTTP_11.getProtocol());
         this.keepalive(true)
@@ -48,9 +51,18 @@ public class HttpRest {
                 .addHeader(HeaderNameEnum.USER_AGENT.getName(), DEFAULT_USER_AGENT);
     }
 
+    public BodyDecoder bodyDecoder() {
+        return bodyDecoder;
+    }
+
+    public HttpRest bodyDecoder(BodyDecoder bodyDecoder) {
+        this.bodyDecoder = bodyDecoder;
+        return this;
+    }
+
     protected final void willSendRequest() {
         resetUri();
-        responseListener.accept(completableFuture);
+        queue.offer(new QueueUnit(this, completableFuture));
     }
 
     private void resetUri() {
@@ -102,6 +114,11 @@ public class HttpRest {
             consumer.accept(throwable);
             return null;
         });
+        return this;
+    }
+
+    public HttpRest setHeader(String headerName, String headerValue) {
+        this.request.setHeader(headerName, headerValue);
         return this;
     }
 

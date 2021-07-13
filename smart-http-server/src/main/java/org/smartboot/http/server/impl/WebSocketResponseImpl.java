@@ -25,8 +25,8 @@ import java.util.Arrays;
 public class WebSocketResponseImpl extends AbstractResponse implements WebSocketResponse {
     private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketResponseImpl.class);
 
-    public WebSocketResponseImpl(WebSocketRequestImpl request, AioSession outputStream) {
-        init(request, new WebSocketOutputStream(request, this, outputStream));
+    public WebSocketResponseImpl(WebSocketRequestImpl request, AioSession session) {
+        init(request, new WebSocketOutputStream(request, this, session));
     }
 
     @Override

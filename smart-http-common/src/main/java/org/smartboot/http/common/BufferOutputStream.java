@@ -67,6 +67,17 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
         }
     }
 
+    /**
+     * 直接输出，不执行编码
+     *
+     * @param b
+     * @param off
+     * @param len
+     */
+    public final void directWrite(byte[] b, int off, int len) throws IOException {
+        writeBuffer.write(b, off, len);
+    }
+
     public final void write(ByteBuffer buffer) throws IOException {
         write(VirtualBuffer.wrap(buffer));
     }

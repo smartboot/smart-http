@@ -8,15 +8,16 @@
 
 package org.smartboot.http.client;
 
+import org.smartboot.http.client.impl.QueueUnit;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.socket.transport.AioSession;
 
 import java.net.URLEncoder;
+import java.util.AbstractQueue;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 /**
@@ -25,8 +26,8 @@ import java.util.function.Consumer;
  */
 public final class HttpPost extends HttpRest {
 
-    HttpPost(String uri, String host, AioSession session, Consumer<CompletableFuture<HttpResponse>> bindListener) {
-        super(uri, host, session, bindListener);
+    HttpPost(String uri, String host, AioSession session, AbstractQueue<QueueUnit> queue) {
+        super(uri, host, session, queue);
         request.setMethod(HttpMethodEnum.POST.getMethod());
     }
 

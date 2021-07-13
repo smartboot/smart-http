@@ -37,8 +37,8 @@ final class HttpOutputStream extends AbstractOutputStream {
         }
     }
 
-    public HttpOutputStream(HttpRequestImpl request, HttpResponseImpl response, AioSession writeBuffer) {
-        super(request, response, writeBuffer);
+    public HttpOutputStream(HttpRequestImpl request, HttpResponseImpl response, AioSession session) {
+        super(request, response, session);
     }
 
     @Override

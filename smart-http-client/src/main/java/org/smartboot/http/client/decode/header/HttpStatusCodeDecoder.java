@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2017-2020, org.smartboot. All rights reserved.
+ * Copyright (c) 2017-2021, org.smartboot. All rights reserved.
  * project name: smart-http
- * file name: RequestLineDecoder.java
- * Date: 2020-03-30
+ * file name: HttpStatusCodeDecoder.java
+ * Date: 2021-07-13
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
-package org.smartboot.http.client.decode;
+package org.smartboot.http.client.decode.header;
 
 import org.smartboot.http.client.impl.Response;
 import org.smartboot.http.common.utils.Constant;
@@ -19,18 +19,20 @@ import java.nio.ByteBuffer;
  * @author 三刀
  * @version V1.0 , 2020/3/30
  */
-public class HttpProtocolDecoder implements Decoder {
-
-    private final HttpStatusCodeDecoder decoder = new HttpStatusCodeDecoder();
+class HttpStatusCodeDecoder implements HeaderDecoder {
+    private final HttpStatusDescDecoder protocolDecoder = new HttpStatusDescDecoder();
 
     @Override
-    public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Response request) {
+    public HeaderDecoder decode(ByteBuffer byteBuffer, AioSession aioSession, Response response) {
         int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.SP);
         if (length > 0) {
-            request.setProtocol(StringUtils.convertToString(byteBuffer, byteBuffer.position() - length - 1, length, StringUtils.String_CACHE_COMMON));
-            return decoder.decode(byteBuffer, aioSession, request);
+            int statusCode = StringUtils.convertToInteger(byteBuffer, byteBuffer.position() - length - 1, length, StringUtils.INTEGER_CACHE_HTTP_STATUS_CODE);
+            response.setStatus(statusCode);
+            return protocolDecoder.decode(byteBuffer, aioSession, response);
         } else {
             return this;
         }
     }
+
+
 }

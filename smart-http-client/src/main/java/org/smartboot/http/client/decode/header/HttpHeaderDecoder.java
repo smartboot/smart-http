@@ -1,14 +1,16 @@
 /*******************************************************************************
- * Copyright (c) 2017-2020, org.smartboot. All rights reserved.
+ * Copyright (c) 2017-2021, org.smartboot. All rights reserved.
  * project name: smart-http
- * file name: RequestLineDecoder.java
- * Date: 2020-03-30
+ * file name: HttpHeaderDecoder.java
+ * Date: 2021-07-13
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
-package org.smartboot.http.client.decode;
+package org.smartboot.http.client.decode.header;
 
+import org.smartboot.http.client.impl.HttpResponseProtocol;
 import org.smartboot.http.client.impl.Response;
+import org.smartboot.http.client.impl.ResponseAttachment;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.utils.Constant;
@@ -21,13 +23,12 @@ import java.nio.ByteBuffer;
  * @author 三刀
  * @version V1.0 , 2020/3/30
  */
-class HttpHeaderDecoder implements Decoder {
+class HttpHeaderDecoder implements HeaderDecoder {
 
-    private final HttpHeaderEndDecoder decoder = new HttpHeaderEndDecoder();
     private final HeaderValueDecoder headerValueDecoder = new HeaderValueDecoder();
 
     @Override
-    public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Response request) {
+    public HeaderDecoder decode(ByteBuffer byteBuffer, AioSession aioSession, Response request) {
         if (byteBuffer.remaining() < 2) {
             return this;
         }
@@ -37,7 +38,10 @@ class HttpHeaderDecoder implements Decoder {
                 throw new HttpException(HttpStatus.BAD_REQUEST);
             }
             byteBuffer.position(byteBuffer.position() + 2);
-            return decoder.decode(byteBuffer, aioSession, request);
+//            return decoder.decode(byteBuffer, aioSession, request);
+            ResponseAttachment attachment = aioSession.getAttachment();
+            attachment.setByteBuffer(byteBuffer);
+            return HttpResponseProtocol.REACTIVE_STREAM_DECODER;
         }
         //Header name解码
         int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.COLON);
@@ -52,9 +56,9 @@ class HttpHeaderDecoder implements Decoder {
     /**
      * Value值解码
      */
-    class HeaderValueDecoder implements Decoder {
+    class HeaderValueDecoder implements HeaderDecoder {
         @Override
-        public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Response request) {
+        public HeaderDecoder decode(ByteBuffer byteBuffer, AioSession aioSession, Response request) {
             int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.LF);
             if (length == -1) {
                 return this;

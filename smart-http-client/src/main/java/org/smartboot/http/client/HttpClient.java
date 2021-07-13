@@ -32,6 +32,7 @@ public class HttpClient implements Closeable {
     private final HttpMessageProcessor processor;
     private final String host;
     private final int port;
+    private final String hostHeader;
     private AioQuickClient client;
     private AioSession aioSession;
     private BufferPagePool writeBufferPool;
@@ -46,18 +47,19 @@ public class HttpClient implements Closeable {
         this.port = port;
         this.protocol = protocol;
         this.processor = processor;
+        hostHeader = host + ":" + port;
     }
 
     public HttpGet get(String uri) {
-        return new HttpGet(uri, host, aioSession, processor.getQueue(aioSession)::offer);
+        return new HttpGet(uri, hostHeader, aioSession, processor.getQueue(aioSession));
     }
 
     public HttpRest rest(String uri) {
-        return new HttpRest(uri, host, aioSession, processor.getQueue(aioSession)::offer);
+        return new HttpRest(uri, hostHeader, aioSession, processor.getQueue(aioSession));
     }
 
     public HttpPost post(String uri) {
-        return new HttpPost(uri, host, aioSession, processor.getQueue(aioSession)::offer);
+        return new HttpPost(uri, hostHeader, aioSession, processor.getQueue(aioSession));
     }
 
     public void connect() {

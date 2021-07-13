@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2017-2020, org.smartboot. All rights reserved.
+ * Copyright (c) 2017-2021, org.smartboot. All rights reserved.
  * project name: smart-http
- * file name: RequestLineDecoder.java
- * Date: 2020-03-30
+ * file name: WebSocketFrameDecoder.java
+ * Date: 2021-07-13
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
-package org.smartboot.http.client.decode;
+package org.smartboot.http.client.decode.header;
 
 import org.smartboot.http.client.impl.Response;
 import org.smartboot.http.common.logging.Logger;
@@ -20,12 +20,12 @@ import java.nio.ByteOrder;
  * @author 三刀
  * @version V1.0 , 2020/3/30
  */
-public class WebSocketFrameDecoder implements Decoder {
+public class WebSocketFrameDecoder implements HeaderDecoder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketFrameDecoder.class);
 
     @Override
-    public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Response request) {
+    public HeaderDecoder decode(ByteBuffer byteBuffer, AioSession aioSession, Response request) {
         throw new UnsupportedOperationException();
     }
 

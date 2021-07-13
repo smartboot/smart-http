@@ -140,8 +140,9 @@ public class HttpProxyMessageProcessor extends HttpMessageProcessor {
             @Override
             public void process(AioSession session, byte[] msg) {
                 try {
-                    request.getResponse().getOutputStream().write(msg);
-                    request.getResponse().getOutputStream().flush();
+                    request.getRequest().getAioSession().writeBuffer().write(msg);
+//                    request.getResponse().getOutputStream().write(msg);
+                    request.getRequest().getAioSession().writeBuffer().flush();
                 } catch (IOException e) {
                     System.out.println(request.getRequestURI());
                     e.printStackTrace();

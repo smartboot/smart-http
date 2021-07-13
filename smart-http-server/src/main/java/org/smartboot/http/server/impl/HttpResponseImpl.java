@@ -16,7 +16,7 @@ import org.smartboot.socket.transport.AioSession;
  */
 class HttpResponseImpl extends AbstractResponse {
 
-    public HttpResponseImpl(HttpRequestImpl request, AioSession outputStream) {
-        init(request, new HttpOutputStream(request, this, outputStream));
+    public HttpResponseImpl(HttpRequestImpl request, AioSession session) {
+        init(request, new HttpOutputStream(request, this, session));
     }
 }
