@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.AbstractQueue;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -46,9 +47,7 @@ public class HttpRest {
         this.queue = queue;
         this.request.setUri(uri);
         this.request.setProtocol(HttpProtocolEnum.HTTP_11.getProtocol());
-        this.keepalive(true)
-                .addHeader(HeaderNameEnum.HOST.getName(), host)
-                .addHeader(HeaderNameEnum.USER_AGENT.getName(), DEFAULT_USER_AGENT);
+        this.addHeader(HeaderNameEnum.HOST.getName(), host);
     }
 
     public BodyDecoder bodyDecoder() {
@@ -62,6 +61,13 @@ public class HttpRest {
 
     protected final void willSendRequest() {
         resetUri();
+        Collection<String> headers = request.getHeaderNames();
+        if (!headers.contains(HeaderNameEnum.CONNECTION.getName())) {
+            keepalive(true);
+        }
+        if (!headers.contains(HeaderNameEnum.USER_AGENT.getName())) {
+            addHeader(HeaderNameEnum.USER_AGENT.getName(), DEFAULT_USER_AGENT);
+        }
         queue.offer(new QueueUnit(this, completableFuture));
     }
 

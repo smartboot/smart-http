@@ -87,8 +87,14 @@ abstract class AbstractOutputStream extends BufferOutputStream {
          * RFC2616 3.3.1
          * 只能用 RFC 1123 里定义的日期格式来填充头域 (header field)的值里用到 HTTP-date 的地方
          */
-        flushDate();
-        writeBuffer.write(date);
+        if (response.getHeader(HeaderNameEnum.DATE.getName()) == null
+                && response.getHeader(HeaderNameEnum.SERVER.getName()) == null) {
+            flushDate();
+            writeBuffer.write(date);
+        } else {
+            writeBuffer.write(Constant.CRLF);
+        }
+
 
         committed = true;
     }
