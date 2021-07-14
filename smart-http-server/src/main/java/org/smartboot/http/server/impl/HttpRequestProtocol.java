@@ -37,6 +37,7 @@ public class HttpRequestProtocol implements Protocol<Request> {
      * websocket握手消息
      */
     public static final Decoder WS_HANDSHAKE_DECODER = (byteBuffer, aioSession, request) -> null;
+    public static final Decoder REACTIVE_STREAM_DECODER = (byteBuffer, aioSession, response) -> null;
     /**
      * websocket负载数据读取成功
      */
@@ -56,11 +57,14 @@ public class HttpRequestProtocol implements Protocol<Request> {
         if (decodeChain == null) {
             decodeChain = httpMethodDecoder;
         }
-
+        if (decodeChain == REACTIVE_STREAM_DECODER) {
+            return request;
+        }
         decodeChain = decodeChain.decode(buffer, session, request);
 
-        if (decodeChain == HTTP_FINISH_DECODER) {
-            attachment.setDecoder(null);
+        if (decodeChain == REACTIVE_STREAM_DECODER) {
+            attachment.setReadBuffer(buffer);
+            attachment.setDecoder(decodeChain);
             return request;
         } else if (decodeChain == HTTP_PROXY_DECODER) {
             attachment.setDecoder(HTTP_PROXY_DECODER);

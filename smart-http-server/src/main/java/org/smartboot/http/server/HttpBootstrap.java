@@ -12,10 +12,12 @@ import org.smartboot.aio.EnhanceAsynchronousChannelProvider;
 import org.smartboot.http.common.Pipeline;
 import org.smartboot.http.server.impl.HttpMessageProcessor;
 import org.smartboot.http.server.impl.HttpRequestProtocol;
+import org.smartboot.http.server.impl.Request;
 import org.smartboot.socket.buffer.BufferPagePool;
 import org.smartboot.socket.transport.AioQuickServer;
 
 import java.io.IOException;
+import java.util.function.Function;
 
 public class HttpBootstrap {
 
@@ -34,7 +36,16 @@ public class HttpBootstrap {
      */
     private final HttpMessageProcessor processor;
     private final HttpServerConfiguration configuration = new HttpServerConfiguration();
-
+    //    /**
+//     * Http 解析完成后的回调
+//     *
+//     * @param httpHeader
+//     * @return
+//     */
+//    public HttpBootstrap onHeaderCompletion(Completion httpHeader) {
+//        return this;
+//    }
+//
     private AioQuickServer server;
     /**
      * Http服务端口号
@@ -64,6 +75,17 @@ public class HttpBootstrap {
      */
     public Pipeline<HttpRequest, HttpResponse> pipeline() {
         return processor.pipeline();
+    }
+
+    /**
+     * 接收到  http body 数据流时回调
+     *
+     * @param bodyDecoder
+     * @return
+     */
+    public HttpBootstrap onBodyStream(Function<Request, HttpLifecycle> bodyDecoder) {
+        processor.setBodyDecoder(bodyDecoder);
+        return this;
     }
 
     /**

@@ -8,9 +8,9 @@
 
 package org.smartboot.http.client.impl;
 
-import org.smartboot.http.client.DecodePartEnum;
 import org.smartboot.http.client.HttpResponse;
 import org.smartboot.http.common.HeaderValue;
+import org.smartboot.http.common.enums.DecodePartEnum;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.utils.NumberUtils;
 import org.smartboot.http.common.utils.StringUtils;

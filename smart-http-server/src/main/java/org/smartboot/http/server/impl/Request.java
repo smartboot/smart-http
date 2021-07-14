@@ -11,6 +11,7 @@ package org.smartboot.http.server.impl;
 import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.Reset;
+import org.smartboot.http.common.enums.DecodePartEnum;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpTypeEnum;
@@ -18,6 +19,7 @@ import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.HttpUtils;
 import org.smartboot.http.common.utils.NumberUtils;
 import org.smartboot.http.common.utils.StringUtils;
+import org.smartboot.http.server.HttpLifecycle;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.socket.transport.AioSession;
 
@@ -102,6 +104,23 @@ public final class Request implements HttpRequest, Reset {
      * 附件对象
      */
     private Object attachment;
+    private DecodePartEnum decodePartEnum = DecodePartEnum.HEADER_FINISH;
+private HttpLifecycle bodyDecoder;
+    public DecodePartEnum getDecodePartEnum() {
+        return decodePartEnum;
+    }
+
+    public void setDecodePartEnum(DecodePartEnum decodePartEnum) {
+        this.decodePartEnum = decodePartEnum;
+    }
+
+    public HttpLifecycle getBodyDecoder() {
+        return bodyDecoder;
+    }
+
+    public void setBodyDecoder(HttpLifecycle bodyDecoder) {
+        this.bodyDecoder = bodyDecoder;
+    }
 
     Request(AioSession aioSession) {
         this.aioSession = aioSession;

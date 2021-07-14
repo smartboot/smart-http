@@ -13,6 +13,7 @@ import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpServerConfiguration;
+import org.smartboot.http.server.impl.HttpRequestProtocol;
 import org.smartboot.http.server.impl.Request;
 import org.smartboot.socket.transport.AioSession;
 
@@ -46,7 +47,8 @@ class HttpHeaderDecoder extends AbstractDecoder {
                 throw new HttpException(HttpStatus.BAD_REQUEST);
             }
             byteBuffer.position(byteBuffer.position() + 2);
-            return decoder.decode(byteBuffer, aioSession, request);
+//            return decoder.decode(byteBuffer, aioSession, request);
+            return HttpRequestProtocol.REACTIVE_STREAM_DECODER;
         }
         //Header name解码
         int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.COLON);

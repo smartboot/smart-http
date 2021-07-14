@@ -10,8 +10,10 @@ package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.HandlerPipeline;
 import org.smartboot.http.common.Pipeline;
+import org.smartboot.http.common.enums.DecodePartEnum;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
+import org.smartboot.http.server.HttpLifecycle;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
 import org.smartboot.http.server.HttpServerHandler;
@@ -23,6 +25,7 @@ import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
+import java.util.function.Function;
 
 /**
  * @author 三刀
@@ -39,22 +42,27 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
      */
     protected final HandlerPipeline<WebSocketRequest, WebSocketResponse> wsPipeline = new HandlerPipeline<>();
 
+    private Function<Request, HttpLifecycle> bodyDecoder;
+
     public HttpMessageProcessor() {
         httpPipeline.next(new HttpExceptionHandler()).next(new RFC2612RequestHandler());
         wsPipeline.next(new WebSocketHandSharkHandler());
     }
 
+    public void setBodyDecoder(Function<Request, HttpLifecycle> bodyDecoder) {
+        this.bodyDecoder = bodyDecoder;
+    }
+
     @Override
-    public void process(AioSession session, Request baseHttpRequest) {
+    public void process(AioSession session, Request request) {
+
         try {
-            switch (baseHttpRequest.getType()) {
-                case PROXY_HTTPS:
-                    throw new UnsupportedOperationException();
+            switch (request.getType()) {
                 case WEBSOCKET:
                     websocketHandle(session);
                     break;
                 default:
-                    httpHandle(session, baseHttpRequest);
+                    httpHandle(session, request);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -69,22 +77,50 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
      * @throws IOException
      */
     private void httpHandle(AioSession session, Request request) throws IOException {
-        HttpRequestImpl httpRequest = new HttpRequestImpl(request);
-        HttpResponseImpl response = httpRequest.getResponse();
-        //消息处理
-        httpPipeline.handle(httpRequest, response);
-
-        //关闭本次请求的输出流
-        if (!response.getOutputStream().isClosed()) {
-            response.getOutputStream().close();
+        RequestAttachment attachment = session.getAttachment();
+        HttpRequestImpl httpRequest = attachment.getHttpRequest();
+        if (httpRequest == null) {
+            httpRequest = new HttpRequestImpl(request);
+            attachment.setHttpRequest(httpRequest);
         }
+        HttpResponseImpl response = httpRequest.getResponse();
 
-        //response被closed,则断开TCP连接
-        if (response.isClosed()) {
-            session.close(false);
-        } else {
-            //复用长连接
-            request.reset();
+        //定义 body 解码器
+        if (request.getDecodePartEnum() == DecodePartEnum.HEADER_FINISH) {
+            request.setDecodePartEnum(DecodePartEnum.BODY);
+            if (bodyDecoder == null) {
+                request.setBodyDecoder(new DefaultHttpLifecycle());
+            } else {
+                request.setBodyDecoder(bodyDecoder.apply(request));
+            }
+            request.getBodyDecoder().onHeaderComplete(request, response);
+            if (response.isClosed()) {
+                session.close(false);
+                return;
+            }
+        }
+        //定义 body 解码
+        if (request.getDecodePartEnum() == DecodePartEnum.BODY) {
+            if (request.getBodyDecoder().decode(attachment.getReadBuffer(), request, response)) {
+                request.setDecodePartEnum(DecodePartEnum.FINISH);
+            }
+        }
+        if (request.getDecodePartEnum() == DecodePartEnum.FINISH) {
+            //消息处理
+            httpPipeline.handle(httpRequest, response);
+
+            //关闭本次请求的输出流
+            if (!response.getOutputStream().isClosed()) {
+                response.getOutputStream().close();
+            }
+
+            //response被closed,则断开TCP连接
+            if (response.isClosed()) {
+                session.close(false);
+            } else {
+                //复用长连接
+                request.reset();
+            }
         }
     }
 
@@ -121,6 +157,10 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
             case PROCESS_EXCEPTION:
                 LOGGER.error("process exception", throwable);
                 session.close();
+                break;
+            case SESSION_CLOSED:
+                RequestAttachment att = session.getAttachment();
+                att.getRequest().getBodyDecoder().onClose();
                 break;
 //            case INPUT_SHUTDOWN:
 //                LOGGER.error("inputShutdown", throwable);

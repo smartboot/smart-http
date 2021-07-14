@@ -8,11 +8,11 @@
 
 package org.smartboot.http.client.impl;
 
-import org.smartboot.http.client.DecodePartEnum;
 import org.smartboot.http.client.HttpRest;
 import org.smartboot.http.client.decode.body.BodyDecoder;
 import org.smartboot.http.client.decode.body.ChunkedBodyDecoder;
 import org.smartboot.http.client.decode.body.StringBodyDecoder;
+import org.smartboot.http.common.enums.DecodePartEnum;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.utils.StringUtils;
