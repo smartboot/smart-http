@@ -8,7 +8,7 @@
 
 package org.smartboot.http.client.impl;
 
-import org.smartboot.http.client.decode.header.HeaderDecoder;
+import org.smartboot.http.client.decode.HeaderDecoder;
 
 import java.nio.ByteBuffer;
 

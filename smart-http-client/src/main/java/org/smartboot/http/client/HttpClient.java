@@ -37,6 +37,10 @@ public class HttpClient implements Closeable {
     private AioSession aioSession;
     private BufferPagePool writeBufferPool;
     private AsynchronousChannelGroup asynchronousChannelGroup;
+    private String proxyHost;
+    private int proxyPort;
+    private String proxyUserName;
+    private String proxyPassword;
 
     public HttpClient(String host, int port) {
         this(host, port, new HttpResponseProtocol(), new HttpMessageProcessor());
@@ -62,8 +66,16 @@ public class HttpClient implements Closeable {
         return new HttpPost(uri, hostHeader, aioSession, processor.getQueue(aioSession));
     }
 
+    public HttpClient proxy(String host, int port, String username, String password) {
+        return this;
+    }
+
+    public HttpClient proxy(String host, int port) {
+        return this.proxy(host, port, null, null);
+    }
+
     public void connect() {
-        client = new AioQuickClient(host, port, protocol, processor);
+        client = proxyHost == null ? new AioQuickClient(host, port, protocol, processor) : new AioQuickClient(proxyHost, proxyPort, protocol, processor);
         try {
             client.setBufferPagePool(writeBufferPool).setReadBufferFactory(bufferPage -> VirtualBuffer.wrap(ByteBuffer.allocate(1024)));
             aioSession = asynchronousChannelGroup == null ? client.start() : client.start(asynchronousChannelGroup);

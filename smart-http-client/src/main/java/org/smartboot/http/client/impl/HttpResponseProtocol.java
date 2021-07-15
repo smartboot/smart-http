@@ -8,9 +8,9 @@
 
 package org.smartboot.http.client.impl;
 
-import org.smartboot.http.client.decode.header.HeaderDecoder;
-import org.smartboot.http.client.decode.header.HttpProtocolDecoder;
-import org.smartboot.http.client.decode.header.WebSocketFrameDecoder;
+import org.smartboot.http.client.decode.HeaderDecoder;
+import org.smartboot.http.client.decode.HttpProtocolDecoder;
+import org.smartboot.http.client.decode.WebSocketFrameDecoder;
 import org.smartboot.socket.Protocol;
 import org.smartboot.socket.transport.AioSession;
 

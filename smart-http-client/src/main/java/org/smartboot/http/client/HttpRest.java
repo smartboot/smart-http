@@ -8,7 +8,6 @@
 
 package org.smartboot.http.client;
 
-import org.smartboot.http.client.decode.body.BodyDecoder;
 import org.smartboot.http.client.impl.HttpRequestImpl;
 import org.smartboot.http.client.impl.QueueUnit;
 import org.smartboot.http.common.enums.HeaderNameEnum;
@@ -40,7 +39,7 @@ public class HttpRest {
     /**
      * http body 解码器
      */
-    private BodyDecoder bodyDecoder;
+    private HttpLifecycle bodyDecoder;
 
     HttpRest(String uri, String host, AioSession session, AbstractQueue<QueueUnit> queue) {
         this.request = new HttpRequestImpl(session);
@@ -50,11 +49,11 @@ public class HttpRest {
         this.addHeader(HeaderNameEnum.HOST.getName(), host);
     }
 
-    public BodyDecoder bodyDecoder() {
+    public HttpLifecycle bodyDecoder() {
         return bodyDecoder;
     }
 
-    public HttpRest bodyDecoder(BodyDecoder bodyDecoder) {
+    public HttpRest bodyDecoder(HttpLifecycle bodyDecoder) {
         this.bodyDecoder = bodyDecoder;
         return this;
     }

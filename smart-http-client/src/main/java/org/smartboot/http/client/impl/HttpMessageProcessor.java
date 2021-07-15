@@ -9,13 +9,7 @@
 package org.smartboot.http.client.impl;
 
 import org.smartboot.http.client.HttpRest;
-import org.smartboot.http.client.decode.body.BodyDecoder;
-import org.smartboot.http.client.decode.body.ChunkedBodyDecoder;
-import org.smartboot.http.client.decode.body.StringBodyDecoder;
 import org.smartboot.http.common.enums.DecodePartEnum;
-import org.smartboot.http.common.enums.HeaderNameEnum;
-import org.smartboot.http.common.enums.HeaderValueEnum;
-import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.transport.AioSession;
@@ -44,45 +38,33 @@ public class HttpMessageProcessor implements MessageProcessor<Response> {
     }
 
     @Override
-    public void process(AioSession session, Response baseHttpResponse) {
+    public void process(AioSession session, Response response) {
         ResponseAttachment responseAttachment = session.getAttachment();
         AbstractQueue<QueueUnit> queue = map.get(session);
         QueueUnit queueUnit = queue.peek();
         HttpRest httpRest = queueUnit.getHttpRest();
         //定义 body 解码器
-        if (baseHttpResponse.getDecodePartEnum() == DecodePartEnum.HEADER_FINISH) {
-            baseHttpResponse.setDecodePartEnum(DecodePartEnum.BODY);
-            BodyDecoder bodyCodec = httpRest.bodyDecoder();
-            String transferEncoding = baseHttpResponse.getHeader(HeaderNameEnum.TRANSFER_ENCODING.getName());
-            if (StringUtils.equals(transferEncoding, HeaderValueEnum.CHUNKED.getName())) {
-                if (bodyCodec == null) {
-                    bodyCodec = new ChunkedBodyDecoder();
-                    httpRest.bodyDecoder(bodyCodec);
-                }
-            } else if (baseHttpResponse.getContentLength() > 0) {
-                if (bodyCodec == null) {
-                    bodyCodec = new StringBodyDecoder();
-                    httpRest.bodyDecoder(bodyCodec);
-                }
-            } else {
-                httpRest.bodyDecoder(null);
-                baseHttpResponse.setDecodePartEnum(DecodePartEnum.FINISH);
+        if (response.getDecodePartEnum() == DecodePartEnum.HEADER_FINISH) {
+            response.setDecodePartEnum(DecodePartEnum.BODY);
+            if (httpRest.bodyDecoder() == null) {
+                httpRest.bodyDecoder(new DefaultHttpLifecycle());
             }
+            httpRest.bodyDecoder().onHeaderComplete(response);
         }
         //定义 body 解码
-        if (baseHttpResponse.getDecodePartEnum() == DecodePartEnum.BODY) {
-            if (queueUnit.getHttpRest().bodyDecoder().decode(responseAttachment.getByteBuffer(), baseHttpResponse)) {
-                baseHttpResponse.setDecodePartEnum(DecodePartEnum.FINISH);
+        if (response.getDecodePartEnum() == DecodePartEnum.BODY) {
+            if (queueUnit.getHttpRest().bodyDecoder().decode(responseAttachment.getByteBuffer(), response)) {
+                response.setDecodePartEnum(DecodePartEnum.FINISH);
             }
         }
         //解码完成
-        if (baseHttpResponse.getDecodePartEnum() == DecodePartEnum.FINISH) {
+        if (response.getDecodePartEnum() == DecodePartEnum.FINISH) {
             if (executorService == null) {
-                queueUnit.getFuture().complete(baseHttpResponse);
+                queueUnit.getFuture().complete(response);
             } else {
                 session.awaitRead();
                 executorService.execute(() -> {
-                    queueUnit.getFuture().complete(baseHttpResponse);
+                    queueUnit.getFuture().complete(response);
                     session.signalRead();
                 });
             }
