@@ -8,6 +8,7 @@
 
 package org.smartboot.http.client;
 
+import org.smartboot.http.client.impl.DefaultHttpLifecycle;
 import org.smartboot.http.client.impl.HttpRequestImpl;
 import org.smartboot.http.client.impl.QueueUnit;
 import org.smartboot.http.common.enums.HeaderNameEnum;
@@ -22,6 +23,7 @@ import java.util.AbstractQueue;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
@@ -36,10 +38,11 @@ public class HttpRest {
     protected final CompletableFuture<HttpResponse> completableFuture = new CompletableFuture<>();
     private final AbstractQueue<QueueUnit> queue;
     private Map<String, String> queryParams = null;
+    private boolean commit = false;
     /**
      * http body 解码器
      */
-    private HttpLifecycle bodyDecoder;
+    private HttpLifecycle httpLifecycle = new DefaultHttpLifecycle();
 
     HttpRest(String uri, String host, AioSession session, AbstractQueue<QueueUnit> queue) {
         this.request = new HttpRequestImpl(session);
@@ -49,16 +52,20 @@ public class HttpRest {
         this.addHeader(HeaderNameEnum.HOST.getName(), host);
     }
 
-    public HttpLifecycle bodyDecoder() {
-        return bodyDecoder;
+    public HttpLifecycle httpLifecycle() {
+        return httpLifecycle;
     }
 
-    public HttpRest bodyDecoder(HttpLifecycle bodyDecoder) {
-        this.bodyDecoder = bodyDecoder;
+    public HttpRest httpLifecycle(HttpLifecycle httpLifecycle) {
+        this.httpLifecycle = Objects.requireNonNull(httpLifecycle);
         return this;
     }
 
     protected final void willSendRequest() {
+        if (commit) {
+            return;
+        }
+        commit = true;
         resetUri();
         Collection<String> headers = request.getHeaderNames();
         if (!headers.contains(HeaderNameEnum.CONNECTION.getName())) {
@@ -96,6 +103,18 @@ public class HttpRest {
             stringBuilder.setLength(stringBuilder.length() - 1);
         }
         request.setUri(stringBuilder.toString());
+    }
+
+    public final Future<HttpResponse> sendStream(byte[] data, int offset, int len) {
+        try {
+            willSendRequest();
+            request.getOutputStream().write(data, offset, len);
+            request.getOutputStream().flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+            completableFuture.completeExceptionally(e);
+        }
+        return completableFuture;
     }
 
     public final Future<HttpResponse> send() {

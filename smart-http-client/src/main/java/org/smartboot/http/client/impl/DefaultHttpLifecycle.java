@@ -33,9 +33,9 @@ public class DefaultHttpLifecycle implements HttpLifecycle {
     private HttpLifecycle httpLifecycle;
 
     @Override
-    public boolean decode(ByteBuffer buffer, Response baseHttpResponse) {
+    public boolean onBodyStream(ByteBuffer buffer, Response baseHttpResponse) {
         if (httpLifecycle != null) {
-            return httpLifecycle.decode(buffer, baseHttpResponse);
+            return httpLifecycle.onBodyStream(buffer, baseHttpResponse);
         }
         String transferEncoding = baseHttpResponse.getHeader(HeaderNameEnum.TRANSFER_ENCODING.getName());
         if (StringUtils.equals(transferEncoding, HeaderValueEnum.CHUNKED.getName())) {
@@ -49,7 +49,7 @@ public class DefaultHttpLifecycle implements HttpLifecycle {
         } else {
             return true;
         }
-        return httpLifecycle.decode(buffer, baseHttpResponse);
+        return httpLifecycle.onBodyStream(buffer, baseHttpResponse);
     }
 
     /**
@@ -62,7 +62,7 @@ public class DefaultHttpLifecycle implements HttpLifecycle {
         private SmartDecoder chunkedDecoder;
 
         @Override
-        public boolean decode(ByteBuffer buffer, Response response) {
+        public boolean onBodyStream(ByteBuffer buffer, Response response) {
             switch (part) {
                 case CHUNK_LENGTH:
                     return decodeChunkedLength(buffer, response);
@@ -83,7 +83,7 @@ public class DefaultHttpLifecycle implements HttpLifecycle {
                     e.printStackTrace();
                 }
                 part = PART.CHUNK_END;
-                return decode(buffer, response);
+                return onBodyStream(buffer, response);
             }
             return false;
         }
@@ -94,7 +94,7 @@ public class DefaultHttpLifecycle implements HttpLifecycle {
             }
             if (buffer.get() == Constant.CR && buffer.get() == Constant.LF) {
                 part = PART.CHUNK_LENGTH;
-                return decode(buffer, response);
+                return onBodyStream(buffer, response);
             }
             throw new IllegalStateException();
         }
@@ -111,11 +111,11 @@ public class DefaultHttpLifecycle implements HttpLifecycle {
             String contentLength = StringUtils.convertToString(buffer, buffer.position() - length - 1, length - 1);
             int chunkedLength = Integer.parseInt(contentLength, 16);
             if (chunkedLength == 0) {
-                return decode(buffer, response);
+                return onBodyStream(buffer, response);
             }
             part = PART.CHUNK_CONTENT;
             chunkedDecoder = new FixedLengthFrameDecoder(chunkedLength);
-            return decode(buffer, response);
+            return onBodyStream(buffer, response);
         }
 
         public void finishDecode(Response response, OutputStream outputStream) {
@@ -141,7 +141,7 @@ public class DefaultHttpLifecycle implements HttpLifecycle {
         private SmartDecoder smartDecoder;
 
         @Override
-        public boolean decode(ByteBuffer buffer, Response response) {
+        public boolean onBodyStream(ByteBuffer buffer, Response response) {
             if (smartDecoder == null) {
                 int bodyLength = response.getContentLength();
                 if (bodyLength > Constant.maxPostSize) {

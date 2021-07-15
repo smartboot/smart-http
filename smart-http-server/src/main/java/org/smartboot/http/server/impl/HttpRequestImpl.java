@@ -17,7 +17,7 @@ import java.io.InputStream;
  * @author 三刀
  * @version V1.0 , 2018/8/31
  */
-class HttpRequestImpl extends AbstractRequest {
+public class HttpRequestImpl extends AbstractRequest {
     /**
      * 空流
      */

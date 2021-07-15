@@ -105,7 +105,14 @@ public final class Request implements HttpRequest, Reset {
      */
     private Object attachment;
     private DecodePartEnum decodePartEnum = DecodePartEnum.HEADER_FINISH;
-private HttpLifecycle bodyDecoder;
+    private HttpLifecycle httpLifecycle;
+    private HttpRequestImpl httpRequest;
+    private WebSocketRequestImpl webSocketRequest;
+
+    Request(AioSession aioSession) {
+        this.aioSession = aioSession;
+    }
+
     public DecodePartEnum getDecodePartEnum() {
         return decodePartEnum;
     }
@@ -114,16 +121,12 @@ private HttpLifecycle bodyDecoder;
         this.decodePartEnum = decodePartEnum;
     }
 
-    public HttpLifecycle getBodyDecoder() {
-        return bodyDecoder;
+    public HttpLifecycle getHttpLifecycle() {
+        return httpLifecycle;
     }
 
-    public void setBodyDecoder(HttpLifecycle bodyDecoder) {
-        this.bodyDecoder = bodyDecoder;
-    }
-
-    Request(AioSession aioSession) {
-        this.aioSession = aioSession;
+    public void setHttpLifecycle(HttpLifecycle httpLifecycle) {
+        this.httpLifecycle = httpLifecycle;
     }
 
     public AioSession getAioSession() {
@@ -195,7 +198,6 @@ private HttpLifecycle bodyDecoder;
         }
         headerSize++;
     }
-
 
     @Override
     public final String getRequestURI() {
@@ -477,10 +479,6 @@ private HttpLifecycle bodyDecoder;
         return type;
     }
 
-    public void setType(HttpTypeEnum type) {
-        this.type = type;
-    }
-
     public String getFormUrlencoded() {
         return formUrlencoded;
     }
@@ -488,7 +486,6 @@ private HttpLifecycle bodyDecoder;
     public void setFormUrlencoded(String formUrlencoded) {
         this.formUrlencoded = formUrlencoded;
     }
-
 
     /**
      * 获取附件对象
@@ -510,6 +507,20 @@ private HttpLifecycle bodyDecoder;
         this.attachment = attachment;
     }
 
+    public HttpRequestImpl newHttpRequest() {
+        if (httpRequest == null) {
+            httpRequest = new HttpRequestImpl(this);
+        }
+        return httpRequest;
+    }
+
+    public WebSocketRequestImpl newWebsocketRequest() {
+        if (webSocketRequest == null) {
+            webSocketRequest = new WebSocketRequestImpl(this);
+        }
+        return webSocketRequest;
+    }
+
     public void reset() {
         headerSize = 0;
         method = null;
@@ -521,5 +532,7 @@ private HttpLifecycle bodyDecoder;
         formUrlencoded = null;
         queryString = null;
         cookies = null;
+        httpRequest = null;
+        webSocketRequest = null;
     }
 }

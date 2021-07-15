@@ -25,7 +25,6 @@ import java.nio.ByteBuffer;
  */
 class HttpHeaderDecoder extends AbstractDecoder {
 
-    private final HttpHeaderEndDecoder decoder = new HttpHeaderEndDecoder();
     private final HeaderValueDecoder headerValueDecoder = new HeaderValueDecoder();
     private final IgnoreHeaderDecoder ignoreHeaderDecoder = new IgnoreHeaderDecoder();
 
@@ -48,7 +47,7 @@ class HttpHeaderDecoder extends AbstractDecoder {
             }
             byteBuffer.position(byteBuffer.position() + 2);
 //            return decoder.decode(byteBuffer, aioSession, request);
-            return HttpRequestProtocol.REACTIVE_STREAM_DECODER;
+            return HttpRequestProtocol.BODY_STREAM_DECODER;
         }
         //Header name解码
         int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.COLON);

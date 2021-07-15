@@ -156,4 +156,6 @@ abstract class AbstractRequest implements HttpRequest, Reset, RequestHook {
     public <A> void setAttachment(A attachment) {
         request.setAttachment(attachment);
     }
+
+    public abstract AbstractResponse getResponse();
 }

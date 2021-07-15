@@ -21,15 +21,23 @@ import java.nio.ByteBuffer;
 public interface HttpLifecycle {
 
     /**
-     * Http 解码成功
-     *
-     * @param request
+     * Http header 完成解析
      */
-    default void onHeaderComplete(Request request, HttpResponse response) {
+    default void onHeaderComplete(Request request) {
     }
 
-    boolean decode(ByteBuffer buffer, Request request, HttpResponse response);
+    /**
+     * 解析 body 数据流
+     *
+     * @param buffer
+     * @param request
+     * @return
+     */
+    boolean onBodyStream(ByteBuffer buffer, Request request);
 
+    /**
+     * 断开 TCP 连接
+     */
     default void onClose() {
     }
 }

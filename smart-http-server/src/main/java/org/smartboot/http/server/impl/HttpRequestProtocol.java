@@ -11,8 +11,6 @@ package org.smartboot.http.server.impl;
 import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.decode.Decoder;
 import org.smartboot.http.server.decode.HttpMethodDecoder;
-import org.smartboot.http.server.decode.HttpProxyContentDecoder;
-import org.smartboot.http.server.decode.WebSocketFrameDecoder;
 import org.smartboot.socket.Protocol;
 import org.smartboot.socket.transport.AioSession;
 
@@ -24,25 +22,14 @@ import java.nio.ByteBuffer;
  */
 public class HttpRequestProtocol implements Protocol<Request> {
     /**
-     * 普通Http消息解码完成
-     */
-    public static final Decoder HTTP_FINISH_DECODER = (byteBuffer, aioSession, request) -> null;
-
-    /**
-     * Http 代理解码器
-     */
-    public static final Decoder HTTP_PROXY_DECODER = new HttpProxyContentDecoder();
-
-    /**
      * websocket握手消息
      */
     public static final Decoder WS_HANDSHAKE_DECODER = (byteBuffer, aioSession, request) -> null;
-    public static final Decoder REACTIVE_STREAM_DECODER = (byteBuffer, aioSession, response) -> null;
+    public static final Decoder BODY_STREAM_DECODER = (byteBuffer, aioSession, response) -> null;
     /**
      * websocket负载数据读取成功
      */
     public static final Decoder WS_FRAME_DECODER = (byteBuffer, aioSession, request) -> null;
-    private final WebSocketFrameDecoder wsFrameDecoder = new WebSocketFrameDecoder();
     private final HttpMethodDecoder httpMethodDecoder;
 
     public HttpRequestProtocol(HttpServerConfiguration configuration) {
@@ -56,21 +43,15 @@ public class HttpRequestProtocol implements Protocol<Request> {
         Decoder decodeChain = attachment.getDecoder();
         if (decodeChain == null) {
             decodeChain = httpMethodDecoder;
+            attachment.setReadBuffer(buffer);
         }
-        if (decodeChain == REACTIVE_STREAM_DECODER) {
+        if (decodeChain == BODY_STREAM_DECODER) {
             return request;
         }
         decodeChain = decodeChain.decode(buffer, session, request);
 
-        if (decodeChain == REACTIVE_STREAM_DECODER) {
-            attachment.setReadBuffer(buffer);
+        if (decodeChain == BODY_STREAM_DECODER) {
             attachment.setDecoder(decodeChain);
-            return request;
-        } else if (decodeChain == HTTP_PROXY_DECODER) {
-            attachment.setDecoder(HTTP_PROXY_DECODER);
-            return request;
-        } else if (decodeChain == WS_HANDSHAKE_DECODER || decodeChain == WS_FRAME_DECODER) {
-            attachment.setDecoder(wsFrameDecoder);
             return request;
         }
         attachment.setDecoder(decodeChain);

@@ -28,5 +28,5 @@ public interface HttpLifecycle {
     default void onHeaderComplete(Response response) {
     }
 
-    boolean decode(ByteBuffer buffer, Response response);
+    boolean onBodyStream(ByteBuffer buffer, Response response);
 }

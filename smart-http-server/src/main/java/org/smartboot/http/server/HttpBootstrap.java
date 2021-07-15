@@ -84,7 +84,7 @@ public class HttpBootstrap {
      * @return
      */
     public HttpBootstrap onBodyStream(Function<Request, HttpLifecycle> bodyDecoder) {
-        processor.setBodyDecoder(bodyDecoder);
+        processor.setHttpLifecycleFunction(bodyDecoder);
         return this;
     }
 

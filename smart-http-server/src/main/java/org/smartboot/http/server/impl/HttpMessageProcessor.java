@@ -11,6 +11,7 @@ package org.smartboot.http.server.impl;
 import org.smartboot.http.common.HandlerPipeline;
 import org.smartboot.http.common.Pipeline;
 import org.smartboot.http.common.enums.DecodePartEnum;
+import org.smartboot.http.common.enums.HttpTypeEnum;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
 import org.smartboot.http.server.HttpLifecycle;
@@ -25,6 +26,7 @@ import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -42,108 +44,67 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
      */
     protected final HandlerPipeline<WebSocketRequest, WebSocketResponse> wsPipeline = new HandlerPipeline<>();
 
-    private Function<Request, HttpLifecycle> bodyDecoder;
+    private Function<Request, HttpLifecycle> httpLifecycleFunction = request -> new DefaultHttpLifecycle();
 
     public HttpMessageProcessor() {
         httpPipeline.next(new HttpExceptionHandler()).next(new RFC2612RequestHandler());
         wsPipeline.next(new WebSocketHandSharkHandler());
     }
 
-    public void setBodyDecoder(Function<Request, HttpLifecycle> bodyDecoder) {
-        this.bodyDecoder = bodyDecoder;
+    public void setHttpLifecycleFunction(Function<Request, HttpLifecycle> httpLifecycleFunction) {
+        this.httpLifecycleFunction = Objects.requireNonNull(httpLifecycleFunction);
     }
 
     @Override
     public void process(AioSession session, Request request) {
-
-        try {
-            switch (request.getType()) {
-                case WEBSOCKET:
-                    websocketHandle(session);
-                    break;
-                default:
-                    httpHandle(session, request);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * 处理 Http 消息
-     *
-     * @param session
-     * @param request
-     * @throws IOException
-     */
-    private void httpHandle(AioSession session, Request request) throws IOException {
         RequestAttachment attachment = session.getAttachment();
-        HttpRequestImpl httpRequest = attachment.getHttpRequest();
-        if (httpRequest == null) {
-            httpRequest = new HttpRequestImpl(request);
-            attachment.setHttpRequest(httpRequest);
+        AbstractRequest abstractRequest = null;
+        HandlerPipeline pipeline = null;
+        if (request.getType() == HttpTypeEnum.WEBSOCKET) {
+            abstractRequest = request.newWebsocketRequest();
+            pipeline = wsPipeline;
+        } else {
+            abstractRequest = request.newHttpRequest();
+            pipeline = httpPipeline;
         }
-        HttpResponseImpl response = httpRequest.getResponse();
-
         //定义 body 解码器
         if (request.getDecodePartEnum() == DecodePartEnum.HEADER_FINISH) {
+
+            request.setHttpLifecycle(httpLifecycleFunction.apply(request));
             request.setDecodePartEnum(DecodePartEnum.BODY);
-            if (bodyDecoder == null) {
-                request.setBodyDecoder(new DefaultHttpLifecycle());
-            } else {
-                request.setBodyDecoder(bodyDecoder.apply(request));
-            }
-            request.getBodyDecoder().onHeaderComplete(request, response);
-            if (response.isClosed()) {
+
+            request.getHttpLifecycle().onHeaderComplete(request);
+            if (abstractRequest.getResponse().isClosed()) {
                 session.close(false);
                 return;
             }
         }
         //定义 body 解码
         if (request.getDecodePartEnum() == DecodePartEnum.BODY) {
-            if (request.getBodyDecoder().decode(attachment.getReadBuffer(), request, response)) {
+            if (request.getHttpLifecycle().onBodyStream(attachment.getReadBuffer(), request)) {
                 request.setDecodePartEnum(DecodePartEnum.FINISH);
             }
         }
         if (request.getDecodePartEnum() == DecodePartEnum.FINISH) {
-            //消息处理
-            httpPipeline.handle(httpRequest, response);
-
-            //关闭本次请求的输出流
-            if (!response.getOutputStream().isClosed()) {
-                response.getOutputStream().close();
+            try {
+                AbstractResponse response = abstractRequest.getResponse();
+                //消息处理
+                pipeline.handle(abstractRequest, abstractRequest.getResponse());
+                //关闭本次请求的输出流
+                if (!response.getOutputStream().isClosed()) {
+                    response.getOutputStream().close();
+                }
+                //response被closed,则断开TCP连接
+                if (response.isClosed()) {
+                    session.close(false);
+                } else {
+                    //复用长连接
+                    request.reset();
+                    attachment.setDecoder(null);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-
-            //response被closed,则断开TCP连接
-            if (response.isClosed()) {
-                session.close(false);
-            } else {
-                //复用长连接
-                request.reset();
-            }
-        }
-    }
-
-    private void websocketHandle(AioSession session) throws IOException {
-        RequestAttachment attachment = session.getAttachment();
-
-        WebSocketRequestImpl webSocketRequest = attachment.getWebSocketRequest();
-        WebSocketResponseImpl response = webSocketRequest.getResponse();
-
-        //消息处理
-        wsPipeline.handle(webSocketRequest, webSocketRequest.getResponse());
-
-        //关闭本次请求的输出流
-        if (!response.getOutputStream().isClosed()) {
-            response.getOutputStream().close();
-        }
-
-        //response被closed,则断开TCP连接
-        if (response.isClosed()) {
-            session.close(false);
-        } else {
-            //复用长连接
-            webSocketRequest.reset();
         }
     }
 
@@ -160,7 +121,7 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
                 break;
             case SESSION_CLOSED:
                 RequestAttachment att = session.getAttachment();
-                att.getRequest().getBodyDecoder().onClose();
+                att.getRequest().getHttpLifecycle().onClose();
                 break;
 //            case INPUT_SHUTDOWN:
 //                LOGGER.error("inputShutdown", throwable);

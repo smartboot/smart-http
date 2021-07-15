@@ -1,23 +1,19 @@
 /*******************************************************************************
- * Copyright (c) 2017-2020, org.smartboot. All rights reserved.
+ * Copyright (c) 2017-2021, org.smartboot. All rights reserved.
  * project name: smart-http
- * file name: RequestLineDecoder.java
- * Date: 2020-03-30
+ * file name: WebSocketFrameLifecycle.java
+ * Date: 2021-07-15
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
-package org.smartboot.http.server.decode;
+package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
 import org.smartboot.http.common.utils.Constant;
-import org.smartboot.http.server.impl.HttpRequestProtocol;
-import org.smartboot.http.server.impl.Request;
-import org.smartboot.http.server.impl.RequestAttachment;
-import org.smartboot.http.server.impl.WebSocketRequestImpl;
-import org.smartboot.socket.transport.AioSession;
+import org.smartboot.http.server.HttpLifecycle;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -26,14 +22,14 @@ import java.nio.ByteOrder;
  * @author 三刀
  * @version V1.0 , 2020/3/30
  */
-public class WebSocketFrameDecoder implements Decoder {
+public class WebSocketFrameLifecycle implements HttpLifecycle {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketFrameDecoder.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketFrameLifecycle.class);
 
     @Override
-    public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
+    public boolean onBodyStream(ByteBuffer byteBuffer, Request request) {
         if (byteBuffer.remaining() < 2) {
-            return this;
+            return false;
         }
         byteBuffer.mark();
         int first = byteBuffer.get();
@@ -46,7 +42,7 @@ public class WebSocketFrameDecoder implements Decoder {
         if (length == Constant.WS_PLAY_LOAD_126) {
             if (byteBuffer.remaining() < Short.BYTES) {
                 byteBuffer.reset();
-                return this;
+                return false;
             }
             length = Short.toUnsignedInt(byteBuffer.getShort());
         }
@@ -55,15 +51,13 @@ public class WebSocketFrameDecoder implements Decoder {
         }
         if (byteBuffer.remaining() < (mask ? length + 4 : length)) {
             byteBuffer.reset();
-            return this;
+            return false;
         }
 
         boolean fin = (first & 0x80) != 0;
         int rsv = (first & 0x70) >> 4;
         int opcode = first & 0x0f;
-
-        RequestAttachment attachment = aioSession.getAttachment();
-        WebSocketRequestImpl webSocketRequest = attachment.getWebSocketRequest();
+        WebSocketRequestImpl webSocketRequest = request.newWebsocketRequest();
         webSocketRequest.setFrameFinalFlag(fin);
         webSocketRequest.setFrameRsv(rsv);
         webSocketRequest.setFrameOpcode(opcode);
@@ -79,7 +73,7 @@ public class WebSocketFrameDecoder implements Decoder {
         LOGGER.info("read ws data...");
         webSocketRequest.setPayload(payload);
 
-        return fin ? HttpRequestProtocol.WS_FRAME_DECODER : this;
+        return fin;
     }
 
     private void unmask(ByteBuffer frame, byte[] maskingKey, int length) {

@@ -46,19 +46,17 @@ public class HttpMessageProcessor implements MessageProcessor<Response> {
         //定义 body 解码器
         if (response.getDecodePartEnum() == DecodePartEnum.HEADER_FINISH) {
             response.setDecodePartEnum(DecodePartEnum.BODY);
-            if (httpRest.bodyDecoder() == null) {
-                httpRest.bodyDecoder(new DefaultHttpLifecycle());
-            }
-            httpRest.bodyDecoder().onHeaderComplete(response);
+            httpRest.httpLifecycle().onHeaderComplete(response);
         }
         //定义 body 解码
         if (response.getDecodePartEnum() == DecodePartEnum.BODY) {
-            if (queueUnit.getHttpRest().bodyDecoder().decode(responseAttachment.getByteBuffer(), response)) {
+            if (queueUnit.getHttpRest().httpLifecycle().onBodyStream(responseAttachment.getByteBuffer(), response)) {
                 response.setDecodePartEnum(DecodePartEnum.FINISH);
             }
         }
         //解码完成
         if (response.getDecodePartEnum() == DecodePartEnum.FINISH) {
+            queue.poll();
             if (executorService == null) {
                 queueUnit.getFuture().complete(response);
             } else {

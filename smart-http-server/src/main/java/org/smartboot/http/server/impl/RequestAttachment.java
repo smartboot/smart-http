@@ -8,7 +8,6 @@
 
 package org.smartboot.http.server.impl;
 
-import org.smartboot.http.common.utils.SmartDecoder;
 import org.smartboot.http.server.decode.Decoder;
 
 import java.nio.ByteBuffer;
@@ -32,15 +31,6 @@ public class RequestAttachment {
      * websocket 请求对象
      */
     private WebSocketRequestImpl webSocketRequest;
-    /**
-     * http 请求对象
-     */
-    private HttpRequestImpl httpRequest;
-
-    /**
-     * http body 解码器
-     */
-    private SmartDecoder bodyDecoder;
 
     /**
      * read缓冲区
@@ -71,21 +61,6 @@ public class RequestAttachment {
         this.webSocketRequest = webSocketRequest;
     }
 
-    public HttpRequestImpl getHttpRequest() {
-        return httpRequest;
-    }
-
-    public void setHttpRequest(HttpRequestImpl httpRequest) {
-        this.httpRequest = httpRequest;
-    }
-
-    public SmartDecoder getBodyDecoder() {
-        return bodyDecoder;
-    }
-
-    public void setBodyDecoder(SmartDecoder bodyDecoder) {
-        this.bodyDecoder = bodyDecoder;
-    }
 
     public ByteBuffer getReadBuffer() {
         return readBuffer;

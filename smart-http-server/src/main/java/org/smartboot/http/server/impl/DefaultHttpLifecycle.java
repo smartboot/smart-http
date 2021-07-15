@@ -11,13 +11,13 @@ package org.smartboot.http.server.impl;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.enums.HttpStatus;
+import org.smartboot.http.common.enums.HttpTypeEnum;
 import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.FixedLengthFrameDecoder;
 import org.smartboot.http.common.utils.SmartDecoder;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpLifecycle;
-import org.smartboot.http.server.HttpResponse;
 
 import java.nio.ByteBuffer;
 
@@ -26,11 +26,17 @@ import java.nio.ByteBuffer;
  * @version V1.0 , 2021/7/13
  */
 public class DefaultHttpLifecycle implements HttpLifecycle {
-    SmartDecoder smartDecoder;
-    
+    private SmartDecoder smartDecoder;
+    private WebSocketFrameLifecycle webSocketFrameLifecycle;
 
     @Override
-    public boolean decode(ByteBuffer buffer, Request request, HttpResponse response) {
+    public boolean onBodyStream(ByteBuffer buffer, Request request) {
+        if (request.getType() == HttpTypeEnum.WEBSOCKET) {
+            if (webSocketFrameLifecycle == null) {
+                webSocketFrameLifecycle = new WebSocketFrameLifecycle();
+            }
+            return webSocketFrameLifecycle.onBodyStream(buffer, request);
+        }
         if (HttpMethodEnum.GET.getMethod().equals(request.getMethod())) {
             return true;
         }
@@ -57,4 +63,6 @@ public class DefaultHttpLifecycle implements HttpLifecycle {
             return true;
         }
     }
+
+
 }
