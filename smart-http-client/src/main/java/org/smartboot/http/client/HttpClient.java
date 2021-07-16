@@ -11,6 +11,8 @@ package org.smartboot.http.client;
 import org.smartboot.http.client.impl.HttpMessageProcessor;
 import org.smartboot.http.client.impl.HttpResponseProtocol;
 import org.smartboot.http.client.impl.Response;
+import org.smartboot.http.common.enums.HeaderNameEnum;
+import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.socket.Protocol;
 import org.smartboot.socket.buffer.BufferPagePool;
 import org.smartboot.socket.buffer.VirtualBuffer;
@@ -21,6 +23,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousChannelGroup;
+import java.util.Base64;
 
 /**
  * @author 三刀（zhengjunweimail@163.com）
@@ -55,18 +58,34 @@ public class HttpClient implements Closeable {
     }
 
     public HttpGet get(String uri) {
-        return new HttpGet(uri, hostHeader, aioSession, processor.getQueue(aioSession));
+        HttpGet httpGet = new HttpGet(uri, hostHeader, aioSession, processor.getQueue(aioSession));
+        setProxyAuthorization(httpGet);
+        return httpGet;
     }
 
     public HttpRest rest(String uri) {
-        return new HttpRest(uri, hostHeader, aioSession, processor.getQueue(aioSession));
+        HttpRest httpRest = new HttpRest(uri, hostHeader, aioSession, processor.getQueue(aioSession));
+        setProxyAuthorization(httpRest);
+        return httpRest;
     }
 
     public HttpPost post(String uri) {
-        return new HttpPost(uri, hostHeader, aioSession, processor.getQueue(aioSession));
+        HttpPost httpRest = new HttpPost(uri, hostHeader, aioSession, processor.getQueue(aioSession));
+        setProxyAuthorization(httpRest);
+        return httpRest;
+    }
+
+    private void setProxyAuthorization(HttpRest httpRest) {
+        if (StringUtils.isNotBlank(proxyUserName)) {
+            httpRest.addHeader(HeaderNameEnum.PROXY_AUTHORIZATION.getName(), "Basic " + Base64.getEncoder().encodeToString((proxyUserName + ":" + proxyPassword).getBytes()));
+        }
     }
 
     public HttpClient proxy(String host, int port, String username, String password) {
+        this.proxyHost = host;
+        this.proxyPort = port;
+        this.proxyUserName = username;
+        this.proxyPassword = password;
         return this;
     }
 
