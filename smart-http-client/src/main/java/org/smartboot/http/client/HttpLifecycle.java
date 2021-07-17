@@ -21,7 +21,7 @@ import java.nio.ByteBuffer;
 public interface HttpLifecycle {
 
     /**
-     * Http 解码成功
+     * Http Header 解码成功
      *
      * @param response
      */

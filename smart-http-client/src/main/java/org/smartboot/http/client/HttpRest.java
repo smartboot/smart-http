@@ -105,16 +105,32 @@ public class HttpRest {
         request.setUri(stringBuilder.toString());
     }
 
-    public final Future<HttpResponse> sendStream(byte[] data, int offset, int len) {
-        try {
-            willSendRequest();
-            request.getOutputStream().write(data, offset, len);
-            request.getOutputStream().flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-            completableFuture.completeExceptionally(e);
-        }
-        return completableFuture;
+    public final BodyStream bodyStream() {
+        return new BodyStream() {
+            @Override
+            public BodyStream write(byte[] bytes, int offset, int len) {
+                try {
+                    willSendRequest();
+                    request.getOutputStream().write(bytes, offset, len);
+                } catch (IOException e) {
+                    System.out.println("body stream write error! " + e.getMessage());
+                    completableFuture.completeExceptionally(e);
+                }
+                return this;
+            }
+
+            @Override
+            public BodyStream flush() {
+                try {
+                    request.getOutputStream().flush();
+                } catch (IOException e) {
+                    System.out.println("body stream flush error! " + e.getMessage());
+                    e.printStackTrace();
+                    completableFuture.completeExceptionally(e);
+                }
+                return this;
+            }
+        };
     }
 
     public final Future<HttpResponse> send() {

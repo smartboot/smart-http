@@ -30,7 +30,6 @@ import java.util.Base64;
  * @version V1.0 , 2021/2/2
  */
 public class HttpClient implements Closeable {
-
     private final Protocol<Response> protocol;
     private final HttpMessageProcessor processor;
     private final String host;
@@ -40,6 +39,7 @@ public class HttpClient implements Closeable {
     private AioSession aioSession;
     private BufferPagePool writeBufferPool;
     private AsynchronousChannelGroup asynchronousChannelGroup;
+
     private String proxyHost;
     private int proxyPort;
     private String proxyUserName;
@@ -81,6 +81,15 @@ public class HttpClient implements Closeable {
         }
     }
 
+    /**
+     * 设置 Http 代理服务器
+     *
+     * @param host     代理服务器地址
+     * @param port     代理服务器端口
+     * @param username 授权账户
+     * @param password 授权密码
+     * @return
+     */
     public HttpClient proxy(String host, int port, String username, String password) {
         this.proxyHost = host;
         this.proxyPort = port;
