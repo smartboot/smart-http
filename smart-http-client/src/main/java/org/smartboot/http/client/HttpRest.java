@@ -111,7 +111,7 @@ public class HttpRest {
             public BodyStream write(byte[] bytes, int offset, int len) {
                 try {
                     willSendRequest();
-                    request.getOutputStream().write(bytes, offset, len);
+                    request.getOutputStream().directWrite(bytes, offset, len);
                 } catch (IOException e) {
                     System.out.println("body stream write error! " + e.getMessage());
                     completableFuture.completeExceptionally(e);
