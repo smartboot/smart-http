@@ -39,6 +39,7 @@ public class HttpRest {
     private final AbstractQueue<QueueUnit> queue;
     private Map<String, String> queryParams = null;
     private boolean commit = false;
+    private BodyStream bodyStream;
     /**
      * http body 解码器
      */
@@ -106,31 +107,40 @@ public class HttpRest {
     }
 
     public final BodyStream bodyStream() {
-        return new BodyStream() {
-            @Override
-            public BodyStream write(byte[] bytes, int offset, int len) {
-                try {
-                    willSendRequest();
-                    request.getOutputStream().directWrite(bytes, offset, len);
-                } catch (IOException e) {
-                    System.out.println("body stream write error! " + e.getMessage());
-                    completableFuture.completeExceptionally(e);
-                }
-                return this;
-            }
+        if (bodyStream == null) {
+            bodyStream = new BodyStream() {
+                boolean flushHeader = false;
 
-            @Override
-            public BodyStream flush() {
-                try {
-                    request.getOutputStream().flush();
-                } catch (IOException e) {
-                    System.out.println("body stream flush error! " + e.getMessage());
-                    e.printStackTrace();
-                    completableFuture.completeExceptionally(e);
+                @Override
+                public BodyStream write(byte[] bytes, int offset, int len) {
+                    try {
+                        willSendRequest();
+                        if (!flushHeader) {
+                            flush();
+                        }
+                        request.getOutputStream().directWrite(bytes, offset, len);
+                    } catch (IOException e) {
+                        System.out.println("body stream write error! " + e.getMessage());
+                        completableFuture.completeExceptionally(e);
+                    }
+                    return this;
                 }
-                return this;
-            }
-        };
+
+                @Override
+                public BodyStream flush() {
+                    try {
+                        request.getOutputStream().flush();
+                        flushHeader = true;
+                    } catch (IOException e) {
+                        System.out.println("body stream flush error! " + e.getMessage());
+                        e.printStackTrace();
+                        completableFuture.completeExceptionally(e);
+                    }
+                    return this;
+                }
+            };
+        }
+        return bodyStream;
     }
 
     public final Future<HttpResponse> send() {

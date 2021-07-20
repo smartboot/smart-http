@@ -86,14 +86,18 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
             }
         }
         if (request.getDecodePartEnum() == DecodePartEnum.FINISH) {
+            AbstractResponse response = abstractRequest.getResponse();
             try {
-                AbstractResponse response = abstractRequest.getResponse();
                 //消息处理
                 pipeline.handle(abstractRequest, abstractRequest.getResponse());
                 //关闭本次请求的输出流
                 if (!response.getOutputStream().isClosed()) {
                     response.getOutputStream().close();
                 }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
                 //response被closed,则断开TCP连接
                 if (response.isClosed()) {
                     session.close(false);
@@ -102,8 +106,6 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
                     request.reset();
                     attachment.setDecoder(null);
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         }
     }

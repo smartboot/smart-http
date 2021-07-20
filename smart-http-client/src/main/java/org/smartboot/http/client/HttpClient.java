@@ -15,10 +15,12 @@ import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.socket.Protocol;
 import org.smartboot.socket.buffer.BufferPagePool;
+import org.smartboot.socket.buffer.VirtualBuffer;
 import org.smartboot.socket.transport.AioQuickClient;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.util.Base64;
 
@@ -148,7 +150,7 @@ public class HttpClient implements Closeable {
     public void connect() {
         client = proxyHost == null ? new AioQuickClient(host, port, protocol, processor) : new AioQuickClient(proxyHost, proxyPort, protocol, processor);
         try {
-            client.setBufferPagePool(writeBufferPool).setReadBufferFactory(bufferPage -> writeBufferPool.allocateBufferPage().allocate(1024 * 4));
+            client.setBufferPagePool(writeBufferPool).setReadBufferFactory(bufferPage -> writeBufferPool == null ? VirtualBuffer.wrap(ByteBuffer.allocate(4096)) : writeBufferPool.allocateBufferPage().allocate(1024 * 4));
             if (timeout > 0) {
                 client.connectTimeout(timeout);
             }
