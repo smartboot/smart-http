@@ -91,7 +91,7 @@ public final class Request implements HttpRequest, Reset {
     /**
      * 消息类型
      */
-    private HttpTypeEnum type = HttpTypeEnum.HTTP;
+    private HttpTypeEnum type = null;
 
     /**
      * Post表单
@@ -186,9 +186,6 @@ public final class Request implements HttpRequest, Reset {
     }
 
     public final void setHeader(String headerName, String value) {
-        if (headerName == HeaderNameEnum.UPGRADE.getName() && value == HeaderValueEnum.WEBSOCKET.getName()) {
-            type = HttpTypeEnum.WEBSOCKET;
-        }
         if (headerSize < headers.size()) {
             HeaderValue headerValue = headers.get(headerSize);
             headerValue.setName(headerName);
@@ -197,6 +194,19 @@ public final class Request implements HttpRequest, Reset {
             headers.add(new HeaderValue(headerName, value));
         }
         headerSize++;
+    }
+
+    public boolean isWebsocket() {
+        if (type != null) {
+            return type == HttpTypeEnum.WEBSOCKET;
+        }
+        if (HeaderValueEnum.WEBSOCKET.getName().equals(getHeader(HeaderNameEnum.UPGRADE.getName()))) {
+            type = HttpTypeEnum.WEBSOCKET;
+            return true;
+        } else {
+            type = HttpTypeEnum.HTTP;
+            return false;
+        }
     }
 
     @Override
@@ -473,10 +483,6 @@ public final class Request implements HttpRequest, Reset {
         cookies = new Cookie[cookieList.size()];
         cookieList.toArray(cookies);
         return cookies;
-    }
-
-    public HttpTypeEnum getType() {
-        return type;
     }
 
     public String getFormUrlencoded() {

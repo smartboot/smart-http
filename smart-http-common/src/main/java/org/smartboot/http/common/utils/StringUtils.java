@@ -498,6 +498,7 @@ public class StringUtils {
                     buffer.position(buffer.position() + 2);
                     return length;
                 }
+                throw new IllegalStateException();
             } else if (b == Constant.CR) {
                 buffer.position(buffer.position() + 1);
             } else {

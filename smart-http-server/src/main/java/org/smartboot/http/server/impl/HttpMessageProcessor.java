@@ -11,7 +11,6 @@ package org.smartboot.http.server.impl;
 import org.smartboot.http.common.HandlerPipeline;
 import org.smartboot.http.common.Pipeline;
 import org.smartboot.http.common.enums.DecodePartEnum;
-import org.smartboot.http.common.enums.HttpTypeEnum;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
 import org.smartboot.http.server.HttpLifecycle;
@@ -43,7 +42,6 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
      * Websocket处理管道
      */
     protected final HandlerPipeline<WebSocketRequest, WebSocketResponse> wsPipeline = new HandlerPipeline<>();
-
     private Function<Request, HttpLifecycle> httpLifecycleFunction = request -> new DefaultHttpLifecycle();
 
     public HttpMessageProcessor() {
@@ -60,19 +58,20 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
         RequestAttachment attachment = session.getAttachment();
         AbstractRequest abstractRequest = null;
         HandlerPipeline pipeline = null;
-        if (request.getType() == HttpTypeEnum.WEBSOCKET) {
+
+        if (request.isWebsocket()) {
             abstractRequest = request.newWebsocketRequest();
             pipeline = wsPipeline;
         } else {
             abstractRequest = request.newHttpRequest();
             pipeline = httpPipeline;
         }
+
         //定义 body 解码器
         if (request.getDecodePartEnum() == DecodePartEnum.HEADER_FINISH) {
-
             request.setHttpLifecycle(httpLifecycleFunction.apply(request));
-            request.setDecodePartEnum(DecodePartEnum.BODY);
 
+            request.setDecodePartEnum(DecodePartEnum.BODY);
             request.getHttpLifecycle().onHeaderComplete(request);
             if (abstractRequest.getResponse().isClosed()) {
                 session.close(false);
@@ -88,15 +87,16 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
         if (request.getDecodePartEnum() == DecodePartEnum.FINISH) {
             AbstractResponse response = abstractRequest.getResponse();
             try {
-                //消息处理
-                pipeline.handle(abstractRequest, abstractRequest.getResponse());
-                //关闭本次请求的输出流
-                if (!response.getOutputStream().isClosed()) {
-                    response.getOutputStream().close();
+                if (!response.isClosed()) {
+                    //消息处理
+                    pipeline.handle(abstractRequest, response);
+                    //关闭本次请求的输出流
+                    if (!response.getOutputStream().isClosed()) {
+                        response.getOutputStream().close();
+                    }
                 }
-
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.error("", e);
             } finally {
                 //response被closed,则断开TCP连接
                 if (response.isClosed()) {

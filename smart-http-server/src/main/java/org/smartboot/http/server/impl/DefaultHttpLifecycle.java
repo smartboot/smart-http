@@ -11,7 +11,6 @@ package org.smartboot.http.server.impl;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.enums.HttpStatus;
-import org.smartboot.http.common.enums.HttpTypeEnum;
 import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.FixedLengthFrameDecoder;
@@ -30,13 +29,18 @@ public class DefaultHttpLifecycle implements HttpLifecycle {
     private WebSocketFrameLifecycle webSocketFrameLifecycle;
 
     @Override
+    public void onHeaderComplete(Request request) {
+        if (request.isWebsocket()) {
+            webSocketFrameLifecycle = new WebSocketFrameLifecycle();
+        }
+    }
+
+    @Override
     public boolean onBodyStream(ByteBuffer buffer, Request request) {
-        if (request.getType() == HttpTypeEnum.WEBSOCKET) {
-            if (webSocketFrameLifecycle == null) {
-                webSocketFrameLifecycle = new WebSocketFrameLifecycle();
-            }
+        if (webSocketFrameLifecycle != null) {
             return webSocketFrameLifecycle.onBodyStream(buffer, request);
         }
+
         if (HttpMethodEnum.GET.getMethod().equals(request.getMethod())) {
             return true;
         }

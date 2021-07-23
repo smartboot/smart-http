@@ -24,12 +24,10 @@ public class HttpRequestProtocol implements Protocol<Request> {
     /**
      * websocket握手消息
      */
-    public static final Decoder WS_HANDSHAKE_DECODER = (byteBuffer, aioSession, request) -> null;
     public static final Decoder BODY_STREAM_DECODER = (byteBuffer, aioSession, response) -> null;
     /**
      * websocket负载数据读取成功
      */
-    public static final Decoder WS_FRAME_DECODER = (byteBuffer, aioSession, request) -> null;
     private final HttpMethodDecoder httpMethodDecoder;
 
     public HttpRequestProtocol(HttpServerConfiguration configuration) {
