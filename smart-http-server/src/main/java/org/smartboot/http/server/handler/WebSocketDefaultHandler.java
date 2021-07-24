@@ -8,13 +8,12 @@
 
 package org.smartboot.http.server.handler;
 
-import org.smartboot.http.common.enums.HttpStatus;
-import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
 import org.smartboot.http.server.WebSocketHandler;
 import org.smartboot.http.server.WebSocketRequest;
 import org.smartboot.http.server.WebSocketResponse;
+import org.smartboot.http.server.impl.Request;
 import org.smartboot.http.server.impl.WebSocketRequestImpl;
 
 import java.io.IOException;
@@ -29,40 +28,37 @@ public class WebSocketDefaultHandler extends WebSocketHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketDefaultHandler.class);
 
     @Override
+    public void onHeaderComplete(Request request) throws IOException {
+        super.onHeaderComplete(request);
+        WebSocketRequestImpl webSocketRequest = request.newWebsocketRequest();
+        onHandShake(webSocketRequest, webSocketRequest.getResponse());
+    }
+
+    @Override
     public final void handle(WebSocketRequest request, WebSocketResponse response) throws IOException {
         try {
-            switch (request.getWebsocketStatus()) {
-                case HandShake:
-                    onHandShake(request, response);
+            switch (request.getFrameOpcode()) {
+                case WebSocketRequestImpl.OPCODE_TEXT:
+                    handleTextMessage(request, response, new String(request.getPayload(), StandardCharsets.UTF_8));
                     break;
-                case DataFrame: {
-                    switch (request.getFrameOpcode()) {
-                        case WebSocketRequestImpl.OPCODE_TEXT:
-                            handleTextMessage(request, response, new String(request.getPayload(), StandardCharsets.UTF_8));
-                            break;
-                        case WebSocketRequestImpl.OPCODE_BINARY:
-                            handleBinaryMessage(request, response, request.getPayload());
-                            break;
-                        case WebSocketRequestImpl.OPCODE_CLOSE:
-                            try {
-                                onClose(request, response);
-                            } finally {
-                                response.close();
-                            }
-                            break;
-                        case WebSocketRequestImpl.OPCODE_PING:
-//                            LOGGER.warn("unSupport ping now");
-                            break;
-                        case WebSocketRequestImpl.OPCODE_PONG:
-//                            LOGGER.warn("unSupport pong now");
-                            break;
-                        default:
-                            throw new UnsupportedOperationException();
+                case WebSocketRequestImpl.OPCODE_BINARY:
+                    handleBinaryMessage(request, response, request.getPayload());
+                    break;
+                case WebSocketRequestImpl.OPCODE_CLOSE:
+                    try {
+                        onClose(request, response);
+                    } finally {
+                        response.close();
                     }
-                }
-                break;
+                    break;
+                case WebSocketRequestImpl.OPCODE_PING:
+//                            LOGGER.warn("unSupport ping now");
+                    break;
+                case WebSocketRequestImpl.OPCODE_PONG:
+//                            LOGGER.warn("unSupport pong now");
+                    break;
                 default:
-                    throw new HttpException(HttpStatus.BAD_REQUEST);
+                    throw new UnsupportedOperationException();
             }
         } catch (Throwable throwable) {
             onError(throwable);
@@ -111,7 +107,7 @@ public class WebSocketDefaultHandler extends WebSocketHandler {
     public void handleBinaryMessage(WebSocketRequest request, WebSocketResponse response, byte[] data) {
         System.out.println(data);
     }
-    
+
     /**
      * 连接异常
      *

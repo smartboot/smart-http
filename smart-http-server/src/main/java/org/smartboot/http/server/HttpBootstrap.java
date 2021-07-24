@@ -17,7 +17,6 @@ import org.smartboot.socket.buffer.BufferPagePool;
 import org.smartboot.socket.transport.AioQuickServer;
 
 import java.io.IOException;
-import java.util.function.Function;
 
 public class HttpBootstrap {
 
@@ -73,19 +72,8 @@ public class HttpBootstrap {
      *
      * @return
      */
-    public Pipeline<HttpRequest, HttpResponse> pipeline() {
+    public Pipeline<HttpRequest, HttpResponse, Request> pipeline() {
         return processor.pipeline();
-    }
-
-    /**
-     * 接收到  http body 数据流时回调
-     *
-     * @param bodyDecoder
-     * @return
-     */
-    public HttpBootstrap onBodyStream(Function<Request, HttpLifecycle> bodyDecoder) {
-        processor.setHttpLifecycleFunction(bodyDecoder);
-        return this;
     }
 
     /**
@@ -104,7 +92,7 @@ public class HttpBootstrap {
      *
      * @return
      */
-    public Pipeline<WebSocketRequest, WebSocketResponse> wsPipeline() {
+    public Pipeline<WebSocketRequest, WebSocketResponse, Request> wsPipeline() {
         return processor.wsPipeline();
     }
 

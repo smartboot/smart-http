@@ -8,8 +8,6 @@
 
 package org.smartboot.http.server;
 
-import org.smartboot.http.common.enums.WebsocketStatus;
-
 import java.net.InetSocketAddress;
 import java.util.Map;
 
@@ -20,7 +18,6 @@ import java.util.Map;
  * @version V1.0 , 2020/4/1
  */
 public interface WebSocketRequest {
-    public WebsocketStatus getWebsocketStatus();
 
     public int getFrameOpcode();
 

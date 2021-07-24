@@ -14,6 +14,6 @@ package org.smartboot.http.common;
  * @author 三刀
  * @version V1.0 , 2019/11/3
  */
-public interface Pipeline<REQ, RSP> {
-    Pipeline<REQ, RSP> next(Handler<REQ, RSP> nextHandle);
+public interface Pipeline<REQ, RSP, T> {
+    Pipeline<REQ, RSP, T> next(Handler<REQ, RSP, T> nextHandle);
 }

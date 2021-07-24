@@ -43,14 +43,14 @@ public class HttpMessageProcessor implements MessageProcessor<Response> {
         AbstractQueue<QueueUnit> queue = map.get(session);
         QueueUnit queueUnit = queue.peek();
         HttpRest httpRest = queueUnit.getHttpRest();
-        //定义 body 解码器
+        //Http Header解析成功
         if (response.getDecodePartEnum() == DecodePartEnum.HEADER_FINISH) {
             response.setDecodePartEnum(DecodePartEnum.BODY);
-            httpRest.httpLifecycle().onHeaderComplete(response);
+            httpRest.responseEvent().onHeader(response);
         }
         //定义 body 解码
         if (response.getDecodePartEnum() == DecodePartEnum.BODY) {
-            if (queueUnit.getHttpRest().httpLifecycle().onBodyStream(responseAttachment.getByteBuffer(), response)) {
+            if (queueUnit.getHttpRest().responseEvent().onBody(responseAttachment.getByteBuffer(), response)) {
                 response.setDecodePartEnum(DecodePartEnum.FINISH);
             }
         }

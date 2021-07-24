@@ -55,7 +55,7 @@ public class HttpRequestImpl extends AbstractRequest {
 
 
     public void reset() {
-        getRequest().reset();
+        request.reset();
         response.reset();
         if (inputStream != null) {
             try {

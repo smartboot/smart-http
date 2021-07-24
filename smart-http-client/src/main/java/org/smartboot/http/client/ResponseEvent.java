@@ -1,8 +1,8 @@
 /*******************************************************************************
  * Copyright (c) 2017-2021, org.smartboot. All rights reserved.
  * project name: smart-http
- * file name: HttpLifecycle.java
- * Date: 2021-07-15
+ * file name: ResponseEvent.java
+ * Date: 2021-07-24
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
@@ -13,20 +13,12 @@ import org.smartboot.http.client.impl.Response;
 import java.nio.ByteBuffer;
 
 /**
- * Http body解码器
- *
  * @author 三刀（zhengjunweimail@163.com）
- * @version V1.0 , 2021/7/12
+ * @version V1.0 , 2021/7/24
  */
-public interface HttpLifecycle {
-
-    /**
-     * Http Header 解码成功
-     *
-     * @param response
-     */
-    default void onHeaderComplete(Response response) {
+public interface ResponseEvent {
+    default void onHeader(Response response) {
     }
 
-    boolean onBodyStream(ByteBuffer buffer, Response response);
+    boolean onBody(ByteBuffer buffer, Response baseHttpResponse);
 }

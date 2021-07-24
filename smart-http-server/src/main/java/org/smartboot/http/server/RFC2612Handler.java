@@ -1,60 +1,32 @@
 /*******************************************************************************
  * Copyright (c) 2017-2021, org.smartboot. All rights reserved.
  * project name: smart-http
- * file name: RFC2612RequestHandle.java
- * Date: 2021-02-07
+ * file name: RFC2612Handler.java
+ * Date: 2021-07-24
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
-package org.smartboot.http.server.impl;
+package org.smartboot.http.server;
 
-import org.smartboot.http.common.enums.HeaderNameEnum;
-import org.smartboot.http.common.enums.HeaderValueEnum;
-import org.smartboot.http.common.enums.HttpMethodEnum;
-import org.smartboot.http.common.enums.HttpProtocolEnum;
+import org.smartboot.http.common.Handler;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.utils.StringUtils;
-import org.smartboot.http.server.HttpRequest;
-import org.smartboot.http.server.HttpResponse;
-import org.smartboot.http.server.HttpServerHandler;
+import org.smartboot.http.server.impl.Request;
 
 import java.io.IOException;
 
 /**
- * @author 三刀
- * @version V1.0 , 2018/6/3
+ * @author 三刀（zhengjunweimail@163.com）
+ * @version V1.0 , 2021/7/24
  */
-class RFC2612RequestHandler extends HttpServerHandler {
+abstract class RFC2612Handler<REQ, RSP> extends Handler<REQ, RSP, Request> {
     public static final int MAX_LENGTH = 255 * 1024;
 
     @Override
-    public void handle(HttpRequest request, HttpResponse response) throws IOException {
-        Request http11Request = ((RequestHook) request).getRequest();
-        methodCheck(http11Request);
-//        hostCheck(http11Request);
-        uriCheck(http11Request);
-
-        boolean keepAlive = true;
-        // http/1.0兼容长连接。此处用 == 性能更高
-        if (HttpProtocolEnum.HTTP_10.getProtocol() == request.getProtocol()) {
-            keepAlive = HeaderValueEnum.KEEPALIVE.getName().equalsIgnoreCase(request.getHeader(HeaderNameEnum.CONNECTION.getName()));
-            if (keepAlive) {
-                response.setHeader(HeaderNameEnum.CONNECTION.getName(), HeaderValueEnum.KEEPALIVE.getName());
-            }
-        }
-
-        doNext(request, response);
-
-        if (!keepAlive) {
-            response.close();
-        }
-        //body部分未读取完毕,释放连接资源
-        if (!HttpMethodEnum.GET.getMethod().equals(request.getMethod())
-                && request.getContentLength() > 0
-                && request.getInputStream().available() > 0) {
-            response.close();
-        }
+    public void onHeaderComplete(Request request) throws IOException {
+        methodCheck(request);
+        uriCheck(request);
     }
 
     /**
@@ -66,8 +38,6 @@ class RFC2612RequestHandler extends HttpServerHandler {
      * 如果源服务器不能识别或没有实现某个方法，那么服务器应返回 501 状态码(没有实现)。
      * 方法 GET 和 HEAD 必须被所有一般的服务器支持。 所有其它的方法是可选的;
      * 然而，如果上面的方法都被实现， 这些方法遵循的语意必须和第 9 章指定的相同
-     *
-     * @param request
      */
     private void methodCheck(HttpRequest request) {
         if (request.getMethod() == null) {
@@ -79,8 +49,6 @@ class RFC2612RequestHandler extends HttpServerHandler {
      * 1、客户端和服务器都必须支持 Host 请求头域。
      * 2、发送 HTTP/1.1 请求的客户端必须发送 Host 头域。
      * 3、如果 HTTP/1.1 请求不包括 Host 请求头域，服务器必须报告错误 400(Bad Request)。 --服务器必须接受绝对 URIs(absolute URIs)。
-     *
-     * @param request
      */
     private void hostCheck(Request request) {
         if (request.getHost() == null) {
@@ -93,8 +61,6 @@ class RFC2612RequestHandler extends HttpServerHandler {
      * RFC2616 3.2.1
      * HTTP 协议不对 URI 的长度作事先的限制，服务器必须能够处理任何他们提供资源的 URI，并 且应该能够处理无限长度的 URIs，这种无效长度的 URL 可能会在客户端以基于 GET 方式的 请求时产生。如果服务器不能处理太长的 URI 的时候，服务器应该返回 414 状态码(此状态码 代表 Request-URI 太长)。
      * 注:服务器在依赖大于 255 字节的 URI 时应谨慎，因为一些旧的客户或代理实现可能不支持这 些长度。
-     *
-     * @param request
      */
     private void uriCheck(Request request) {
         String originalUri = request.getUri();

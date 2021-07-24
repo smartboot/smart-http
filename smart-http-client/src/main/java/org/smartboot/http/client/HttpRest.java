@@ -8,7 +8,7 @@
 
 package org.smartboot.http.client;
 
-import org.smartboot.http.client.impl.DefaultHttpLifecycle;
+import org.smartboot.http.client.impl.DefaultHttpResponseEvent;
 import org.smartboot.http.client.impl.HttpRequestImpl;
 import org.smartboot.http.client.impl.QueueUnit;
 import org.smartboot.http.common.enums.HeaderNameEnum;
@@ -43,7 +43,7 @@ public class HttpRest {
     /**
      * http body 解码器
      */
-    private HttpLifecycle httpLifecycle = new DefaultHttpLifecycle();
+    private ResponseEvent responseEvent = new DefaultHttpResponseEvent();
 
     HttpRest(String uri, String host, AioSession session, AbstractQueue<QueueUnit> queue) {
         this.request = new HttpRequestImpl(session);
@@ -51,15 +51,6 @@ public class HttpRest {
         this.request.setUri(uri);
         this.request.setProtocol(HttpProtocolEnum.HTTP_11.getProtocol());
         this.addHeader(HeaderNameEnum.HOST.getName(), host);
-    }
-
-    public HttpLifecycle httpLifecycle() {
-        return httpLifecycle;
-    }
-
-    public HttpRest httpLifecycle(HttpLifecycle httpLifecycle) {
-        this.httpLifecycle = Objects.requireNonNull(httpLifecycle);
-        return this;
     }
 
     protected final void willSendRequest() {
@@ -199,5 +190,17 @@ public class HttpRest {
         }
         queryParams.put(name, value);
         return this;
+    }
+
+    /**
+     * Http 响应事件
+     */
+    public HttpRest responseEvent(ResponseEvent responseEvent) {
+        this.responseEvent = Objects.requireNonNull(responseEvent);
+        return this;
+    }
+
+    public ResponseEvent responseEvent() {
+        return responseEvent;
     }
 }

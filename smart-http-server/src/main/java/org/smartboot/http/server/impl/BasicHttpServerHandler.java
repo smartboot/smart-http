@@ -8,6 +8,10 @@
 
 package org.smartboot.http.server.impl;
 
+import org.smartboot.http.common.enums.HeaderNameEnum;
+import org.smartboot.http.common.enums.HeaderValueEnum;
+import org.smartboot.http.common.enums.HttpMethodEnum;
+import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.server.HttpRequest;
@@ -15,6 +19,7 @@ import org.smartboot.http.server.HttpResponse;
 import org.smartboot.http.server.HttpServerHandler;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * Http异常统一处理
@@ -22,11 +27,35 @@ import java.io.IOException;
  * @author 三刀
  * @version V1.0 , 2020/6/23
  */
-public class HttpExceptionHandler extends HttpServerHandler {
+class BasicHttpServerHandler extends HttpServerHandler {
+    @Override
+    public int onBodyStream(ByteBuffer buffer, Request request) {
+        return BODY_SKIP;
+    }
+
     @Override
     public void handle(HttpRequest request, HttpResponse response) throws IOException {
         try {
+            boolean keepAlive = true;
+            // http/1.0兼容长连接。此处用 == 性能更高
+            if (HttpProtocolEnum.HTTP_10.getProtocol() == request.getProtocol()) {
+                keepAlive = HeaderValueEnum.KEEPALIVE.getName().equalsIgnoreCase(request.getHeader(HeaderNameEnum.CONNECTION.getName()));
+                if (keepAlive) {
+                    response.setHeader(HeaderNameEnum.CONNECTION.getName(), HeaderValueEnum.KEEPALIVE.getName());
+                }
+            }
+
             doNext(request, response);
+
+            if (!keepAlive) {
+                response.close();
+            }
+            //body部分未读取完毕,释放连接资源
+            if (!HttpMethodEnum.GET.getMethod().equals(request.getMethod())
+                    && request.getContentLength() > 0
+                    && request.getInputStream().available() > 0) {
+                response.close();
+            }
         } catch (HttpException e) {
             e.printStackTrace();
             response.setHttpStatus(HttpStatus.valueOf(e.getHttpCode()));

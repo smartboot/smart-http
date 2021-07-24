@@ -19,7 +19,6 @@ import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.HttpUtils;
 import org.smartboot.http.common.utils.NumberUtils;
 import org.smartboot.http.common.utils.StringUtils;
-import org.smartboot.http.server.HttpLifecycle;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.socket.transport.AioSession;
 
@@ -105,7 +104,6 @@ public final class Request implements HttpRequest, Reset {
      */
     private Object attachment;
     private DecodePartEnum decodePartEnum = DecodePartEnum.HEADER_FINISH;
-    private HttpLifecycle httpLifecycle;
     private HttpRequestImpl httpRequest;
     private WebSocketRequestImpl webSocketRequest;
 
@@ -121,13 +119,6 @@ public final class Request implements HttpRequest, Reset {
         this.decodePartEnum = decodePartEnum;
     }
 
-    public HttpLifecycle getHttpLifecycle() {
-        return httpLifecycle;
-    }
-
-    public void setHttpLifecycle(HttpLifecycle httpLifecycle) {
-        this.httpLifecycle = httpLifecycle;
-    }
 
     public AioSession getAioSession() {
         return aioSession;
@@ -264,7 +255,7 @@ public final class Request implements HttpRequest, Reset {
         return scheme;
     }
 
-    final void setScheme(String scheme) {
+    public final void setScheme(String scheme) {
         this.scheme = scheme;
     }
 

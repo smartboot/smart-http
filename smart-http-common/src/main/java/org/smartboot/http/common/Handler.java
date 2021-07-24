@@ -9,6 +9,7 @@
 package org.smartboot.http.common;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * 消息处理器
@@ -16,11 +17,24 @@ import java.io.IOException;
  * @author 三刀
  * @version V1.0 , 2018/2/6
  */
-public abstract class Handler<REQ, RSP> {
+public abstract class Handler<REQ, RSP, T> {
+    public static final int BODY_CONTINUE = 1;
+    public static final int BODY_SKIP = 2;
+    public static final int BODY_FINISH = 3;
+
     /**
      * 持有下一个处理器的句柄
      */
-    protected Handler<REQ, RSP> nextHandler;
+    protected Handler<REQ, RSP, T> nextHandler;
+
+    /**
+     * 解析 body 数据流
+     *
+     * @param buffer
+     * @param request
+     * @return
+     */
+    public abstract int onBodyStream(ByteBuffer buffer, T request);
 
     /**
      * 执行当前处理器逻辑。
@@ -38,5 +52,17 @@ public abstract class Handler<REQ, RSP> {
         if (nextHandler != null) {
             nextHandler.handle(request, response);
         }
+    }
+
+    /**
+     * Http header 完成解析
+     */
+    public void onHeaderComplete(T request) throws IOException {
+    }
+
+    /**
+     * 断开 TCP 连接
+     */
+    public void onClose(T request) {
     }
 }

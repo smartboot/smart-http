@@ -8,7 +8,7 @@
 
 package org.smartboot.http.client.impl;
 
-import org.smartboot.http.client.HttpLifecycle;
+import org.smartboot.http.client.ResponseEvent;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpStatus;
@@ -29,40 +29,40 @@ import java.nio.charset.Charset;
  * @author 三刀（zhengjunweimail@163.com）
  * @version V1.0 , 2021/7/15
  */
-public class DefaultHttpLifecycle implements HttpLifecycle {
-    private HttpLifecycle httpLifecycle;
+public class DefaultHttpResponseEvent implements ResponseEvent {
+    private ResponseEvent responseEvent;
 
     @Override
-    public boolean onBodyStream(ByteBuffer buffer, Response baseHttpResponse) {
-        if (httpLifecycle != null) {
-            return httpLifecycle.onBodyStream(buffer, baseHttpResponse);
+    public boolean onBody(ByteBuffer buffer, Response baseHttpResponse) {
+        if (responseEvent != null) {
+            return responseEvent.onBody(buffer, baseHttpResponse);
         }
         String transferEncoding = baseHttpResponse.getHeader(HeaderNameEnum.TRANSFER_ENCODING.getName());
         if (StringUtils.equals(transferEncoding, HeaderValueEnum.CHUNKED.getName())) {
-            if (httpLifecycle == null) {
-                httpLifecycle = new ChunkedHttpLifecycle();
+            if (responseEvent == null) {
+                responseEvent = new ChunkedHttpLifecycle();
             }
         } else if (baseHttpResponse.getContentLength() > 0) {
-            if (httpLifecycle == null) {
-                httpLifecycle = new ContentLengthHttpLifecycle();
+            if (responseEvent == null) {
+                responseEvent = new ContentLengthHttpLifecycle();
             }
         } else {
             return true;
         }
-        return httpLifecycle.onBodyStream(buffer, baseHttpResponse);
+        return responseEvent.onBody(buffer, baseHttpResponse);
     }
 
     /**
      * @author 三刀（zhengjunweimail@163.com）
      * @version V1.0 , 2021/7/12
      */
-    public static class ChunkedHttpLifecycle implements HttpLifecycle {
+    public static class ChunkedHttpLifecycle implements ResponseEvent {
         private final ByteArrayOutputStream body = new ByteArrayOutputStream();
         private PART part = PART.CHUNK_LENGTH;
         private SmartDecoder chunkedDecoder;
 
         @Override
-        public boolean onBodyStream(ByteBuffer buffer, Response response) {
+        public boolean onBody(ByteBuffer buffer, Response response) {
             switch (part) {
                 case CHUNK_LENGTH:
                     return decodeChunkedLength(buffer, response);
@@ -83,7 +83,7 @@ public class DefaultHttpLifecycle implements HttpLifecycle {
                     e.printStackTrace();
                 }
                 part = PART.CHUNK_END;
-                return onBodyStream(buffer, response);
+                return onBody(buffer, response);
             }
             return false;
         }
@@ -94,7 +94,7 @@ public class DefaultHttpLifecycle implements HttpLifecycle {
             }
             if (buffer.get() == Constant.CR && buffer.get() == Constant.LF) {
                 part = PART.CHUNK_LENGTH;
-                return onBodyStream(buffer, response);
+                return onBody(buffer, response);
             }
             throw new IllegalStateException();
         }
@@ -111,11 +111,11 @@ public class DefaultHttpLifecycle implements HttpLifecycle {
             String contentLength = StringUtils.convertToString(buffer, buffer.position() - length - 1, length - 1);
             int chunkedLength = Integer.parseInt(contentLength, 16);
             if (chunkedLength == 0) {
-                return onBodyStream(buffer, response);
+                return onBody(buffer, response);
             }
             part = PART.CHUNK_CONTENT;
             chunkedDecoder = new FixedLengthFrameDecoder(chunkedLength);
-            return onBodyStream(buffer, response);
+            return onBody(buffer, response);
         }
 
         public void finishDecode(Response response, OutputStream outputStream) {
@@ -137,11 +137,11 @@ public class DefaultHttpLifecycle implements HttpLifecycle {
      * @author 三刀（zhengjunweimail@163.com）
      * @version V1.0 , 2021/7/12
      */
-    public static class ContentLengthHttpLifecycle implements HttpLifecycle {
+    public static class ContentLengthHttpLifecycle implements ResponseEvent {
         private SmartDecoder smartDecoder;
 
         @Override
-        public boolean onBodyStream(ByteBuffer buffer, Response response) {
+        public boolean onBody(ByteBuffer buffer, Response response) {
             if (smartDecoder == null) {
                 int bodyLength = response.getContentLength();
                 if (bodyLength > Constant.maxPostSize) {

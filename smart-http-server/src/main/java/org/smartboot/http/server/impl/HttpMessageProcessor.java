@@ -8,12 +8,12 @@
 
 package org.smartboot.http.server.impl;
 
+import org.smartboot.http.common.Handler;
 import org.smartboot.http.common.HandlerPipeline;
 import org.smartboot.http.common.Pipeline;
 import org.smartboot.http.common.enums.DecodePartEnum;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
-import org.smartboot.http.server.HttpLifecycle;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
 import org.smartboot.http.server.HttpServerHandler;
@@ -25,8 +25,6 @@ import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
-import java.util.Objects;
-import java.util.function.Function;
 
 /**
  * @author 三刀
@@ -37,20 +35,14 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
     /**
      * Http消息处理管道
      */
-    protected final HandlerPipeline<HttpRequest, HttpResponse> httpPipeline = new HandlerPipeline<>();
+    protected final HandlerPipeline<HttpRequest, HttpResponse, Request> httpPipeline = new HandlerPipeline<>();
     /**
      * Websocket处理管道
      */
-    protected final HandlerPipeline<WebSocketRequest, WebSocketResponse> wsPipeline = new HandlerPipeline<>();
-    private Function<Request, HttpLifecycle> httpLifecycleFunction = request -> new DefaultHttpLifecycle();
+    protected final HandlerPipeline<WebSocketRequest, WebSocketResponse, Request> wsPipeline = new HandlerPipeline<>();
 
     public HttpMessageProcessor() {
-        httpPipeline.next(new HttpExceptionHandler()).next(new RFC2612RequestHandler());
-        wsPipeline.next(new WebSocketHandSharkHandler());
-    }
-
-    public void setHttpLifecycleFunction(Function<Request, HttpLifecycle> httpLifecycleFunction) {
-        this.httpLifecycleFunction = Objects.requireNonNull(httpLifecycleFunction);
+        httpPipeline.next(new BasicHttpServerHandler());
     }
 
     @Override
@@ -67,20 +59,22 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
             pipeline = httpPipeline;
         }
 
-        //定义 body 解码器
+        //Header解码成功
         if (request.getDecodePartEnum() == DecodePartEnum.HEADER_FINISH) {
-            request.setHttpLifecycle(httpLifecycleFunction.apply(request));
-
+            try {
+                pipeline.onHeaderComplete(request);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             request.setDecodePartEnum(DecodePartEnum.BODY);
-            request.getHttpLifecycle().onHeaderComplete(request);
             if (abstractRequest.getResponse().isClosed()) {
                 session.close(false);
                 return;
             }
         }
-        //定义 body 解码
+        //解码 Body 内容
         if (request.getDecodePartEnum() == DecodePartEnum.BODY) {
-            if (request.getHttpLifecycle().onBodyStream(attachment.getReadBuffer(), request)) {
+            if (pipeline.onBodyStream(attachment.getReadBuffer(), request) == Handler.BODY_FINISH) {
                 request.setDecodePartEnum(DecodePartEnum.FINISH);
             }
         }
@@ -123,42 +117,31 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
                 break;
             case SESSION_CLOSED:
                 RequestAttachment att = session.getAttachment();
-                att.getRequest().getHttpLifecycle().onClose();
+                if (att.getRequest().isWebsocket()) {
+                    wsPipeline.onClose(att.getRequest());
+                } else {
+                    httpPipeline.onClose(att.getRequest());
+                }
                 break;
-//            case INPUT_SHUTDOWN:
-//                LOGGER.error("inputShutdown", throwable);
-//                break;
-//            case OUTPUT_EXCEPTION:
-//                LOGGER.error("", throwable);
-//                break;
-//            case INPUT_EXCEPTION:
-//                LOGGER.error("",throwable);
-//                break;
-//            case SESSION_CLOSED:
-//                System.out.println("closeSession");
-//                LOGGER.info("connection closed:{}");
-//                break;
             case DECODE_EXCEPTION:
                 throwable.printStackTrace();
                 break;
-//                default:
-//                    System.out.println(stateMachineEnum);
         }
     }
 
-    public Pipeline<HttpRequest, HttpResponse> pipeline(HttpServerHandler httpHandle) {
+    public Pipeline<HttpRequest, HttpResponse, Request> pipeline(HttpServerHandler httpHandle) {
         return httpPipeline.next(httpHandle);
     }
 
-    public Pipeline<HttpRequest, HttpResponse> pipeline() {
+    public Pipeline<HttpRequest, HttpResponse, Request> pipeline() {
         return httpPipeline;
     }
 
-    public Pipeline<WebSocketRequest, WebSocketResponse> wsPipeline(WebSocketHandler httpHandle) {
+    public Pipeline<WebSocketRequest, WebSocketResponse, Request> wsPipeline(WebSocketHandler httpHandle) {
         return wsPipeline.next(httpHandle);
     }
 
-    public Pipeline<WebSocketRequest, WebSocketResponse> wsPipeline() {
+    public Pipeline<WebSocketRequest, WebSocketResponse, Request> wsPipeline() {
         return wsPipeline;
     }
 
