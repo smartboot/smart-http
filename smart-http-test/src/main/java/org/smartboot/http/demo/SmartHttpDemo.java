@@ -118,7 +118,7 @@ public class SmartHttpDemo {
 
         HttpBootstrap bootstrap = new HttpBootstrap();
         //配置HTTP消息处理管道
-        bootstrap.pipeline().next(routeHandle);
+        bootstrap.httpHandler(routeHandle);
 
         WebSocketRouteHandler wsRouteHandle = new WebSocketRouteHandler();
         wsRouteHandle.route("/ws", new WebSocketDefaultHandler() {
@@ -143,7 +143,7 @@ public class SmartHttpDemo {
                 response.sendBinaryMessage(data);
             }
         });
-        bootstrap.wsPipeline().next(wsRouteHandle);
+        bootstrap.webSocketHandler(wsRouteHandle);
 
         //设定服务器配置并启动
         bootstrap.start();

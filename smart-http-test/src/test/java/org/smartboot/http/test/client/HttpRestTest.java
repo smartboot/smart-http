@@ -46,7 +46,7 @@ public class HttpRestTest {
                 response.write(jsonObject.toString().getBytes());
             }
         });
-        httpBootstrap.pipeline(routeHandler).setPort(8080).start();
+        httpBootstrap.httpHandler(routeHandler).setPort(8080).start();
     }
 
     @Test

@@ -79,8 +79,8 @@ public class IMDemo {
         });
         HttpBootstrap bootstrap = new HttpBootstrap();
         //配置HTTP消息处理管道
-        bootstrap.pipeline().next(routeHandle);
-        bootstrap.wsPipeline().next(webSocketRouteHandle);
+        bootstrap.httpHandler(routeHandle)
+                .webSocketHandler(webSocketRouteHandle);
 
         //设定服务器配置并启动
         bootstrap.start();

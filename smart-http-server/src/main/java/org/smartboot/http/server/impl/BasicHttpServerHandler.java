@@ -28,6 +28,10 @@ import java.nio.ByteBuffer;
  * @version V1.0 , 2020/6/23
  */
 class BasicHttpServerHandler extends HttpServerHandler {
+    public BasicHttpServerHandler(HttpServerHandler httpServerHandler) {
+        this.nextHandler = httpServerHandler;
+    }
+
     @Override
     public int onBodyStream(ByteBuffer buffer, Request request) {
         return BODY_SKIP;

@@ -8,6 +8,7 @@
 
 package org.smartboot.http.server;
 
+import org.smartboot.http.common.Handler;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.enums.HttpStatus;
@@ -28,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author 三刀
  * @version V1.0 , 2018/2/6
  */
-public abstract class HttpServerHandler extends RFC2612Handler<HttpRequest, HttpResponse> {
+public abstract class HttpServerHandler extends Handler<HttpRequest, HttpResponse,Request> {
     private final Map<Request, SmartDecoder> bodyDecoderMap = new ConcurrentHashMap<>();
 
     @Override

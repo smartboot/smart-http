@@ -9,7 +9,7 @@ import java.io.IOException;
 public class HttpBootstrapTest {
 
     public static void main(String[] args) {
-        new HttpBootstrap().pipeline(new HttpServerHandler() {
+        new HttpBootstrap().httpHandler(new HttpServerHandler() {
             @Override
             public void handle(HttpRequest request, HttpResponse response) throws IOException {
                 System.out.println("url:"+request.getRequestURL());

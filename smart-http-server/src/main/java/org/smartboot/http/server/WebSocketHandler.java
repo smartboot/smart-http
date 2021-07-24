@@ -8,6 +8,7 @@
 
 package org.smartboot.http.server;
 
+import org.smartboot.http.common.Handler;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpStatus;
@@ -30,7 +31,7 @@ import java.util.Base64;
  * @author 三刀
  * @version V1.0 , 2018/2/6
  */
-public abstract class WebSocketHandler extends RFC2612Handler<WebSocketRequest, WebSocketResponse> {
+public abstract class WebSocketHandler extends Handler<WebSocketRequest, WebSocketResponse, Request> {
     public static final String WEBSOCKET_13_ACCEPT_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 
     @Override

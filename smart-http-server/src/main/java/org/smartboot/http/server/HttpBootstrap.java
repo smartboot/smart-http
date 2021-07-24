@@ -9,10 +9,8 @@
 package org.smartboot.http.server;
 
 import org.smartboot.aio.EnhanceAsynchronousChannelProvider;
-import org.smartboot.http.common.Pipeline;
 import org.smartboot.http.server.impl.HttpMessageProcessor;
 import org.smartboot.http.server.impl.HttpRequestProtocol;
-import org.smartboot.http.server.impl.Request;
 import org.smartboot.socket.buffer.BufferPagePool;
 import org.smartboot.socket.transport.AioQuickServer;
 
@@ -35,16 +33,6 @@ public class HttpBootstrap {
      */
     private final HttpMessageProcessor processor;
     private final HttpServerConfiguration configuration = new HttpServerConfiguration();
-    //    /**
-//     * Http 解析完成后的回调
-//     *
-//     * @param httpHeader
-//     * @return
-//     */
-//    public HttpBootstrap onHeaderCompletion(Completion httpHeader) {
-//        return this;
-//    }
-//
     private AioQuickServer server;
     /**
      * Http服务端口号
@@ -68,22 +56,13 @@ public class HttpBootstrap {
     }
 
     /**
-     * 获取 Http 请求的处理器管道
-     *
-     * @return
-     */
-    public Pipeline<HttpRequest, HttpResponse, Request> pipeline() {
-        return processor.pipeline();
-    }
-
-    /**
      * 往 http 处理器管道中注册 Handle
      *
      * @param httpHandler
      * @return
      */
-    public HttpBootstrap pipeline(HttpServerHandler httpHandler) {
-        pipeline().next(httpHandler);
+    public HttpBootstrap httpHandler(HttpServerHandler httpHandler) {
+        processor.httpServerHandler(httpHandler);
         return this;
     }
 
@@ -92,8 +71,9 @@ public class HttpBootstrap {
      *
      * @return
      */
-    public Pipeline<WebSocketRequest, WebSocketResponse, Request> wsPipeline() {
-        return processor.wsPipeline();
+    public HttpBootstrap webSocketHandler(WebSocketHandler webSocketHandler) {
+        processor.setWebSocketHandler(webSocketHandler);
+        return this;
     }
 
     /**

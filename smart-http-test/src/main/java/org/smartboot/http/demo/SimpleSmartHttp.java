@@ -19,7 +19,7 @@ import java.io.IOException;
 public class SimpleSmartHttp {
     public static void main(String[] args) {
         HttpBootstrap bootstrap = new HttpBootstrap();
-        bootstrap.pipeline(new HttpServerHandler() {
+        bootstrap.httpHandler(new HttpServerHandler() {
             @Override
             public void handle(HttpRequest request, HttpResponse response) throws IOException {
                 response.write("hello world<br/>".getBytes());

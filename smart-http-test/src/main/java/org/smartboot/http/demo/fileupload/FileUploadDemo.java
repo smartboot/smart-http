@@ -72,7 +72,7 @@ public class FileUploadDemo {
 
         HttpBootstrap bootstrap = new HttpBootstrap();
         //配置HTTP消息处理管道
-        bootstrap.pipeline().next(routeHandler);
+        bootstrap.httpHandler(routeHandler);
 
         //设定服务器配置并启动
         bootstrap.start();
