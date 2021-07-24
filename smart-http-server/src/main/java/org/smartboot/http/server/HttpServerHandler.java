@@ -29,13 +29,13 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author 三刀
  * @version V1.0 , 2018/2/6
  */
-public abstract class HttpServerHandler extends Handler<HttpRequest, HttpResponse,Request> {
+public abstract class HttpServerHandler extends Handler<HttpRequest, HttpResponse, Request> {
     private final Map<Request, SmartDecoder> bodyDecoderMap = new ConcurrentHashMap<>();
 
     @Override
-    public int onBodyStream(ByteBuffer buffer, Request request) {
+    public boolean onBodyStream(ByteBuffer buffer, Request request) {
         if (HttpMethodEnum.GET.getMethod().equals(request.getMethod())) {
-            return BODY_FINISH;
+            return true;
         }
         //Post请求
         if (HttpMethodEnum.POST.getMethod().equals(request.getMethod())
@@ -51,12 +51,12 @@ public abstract class HttpServerHandler extends Handler<HttpRequest, HttpRespons
             if (smartDecoder.decode(buffer)) {
                 bodyDecoderMap.remove(request);
                 request.setFormUrlencoded(new String(smartDecoder.getBuffer().array()));
-                return BODY_FINISH;
+                return true;
             } else {
-                return BODY_CONTINUE;
+                return false;
             }
         } else {
-            return BODY_FINISH;
+            return true;
         }
     }
 

@@ -18,14 +18,6 @@ import java.nio.ByteBuffer;
  * @version V1.0 , 2018/2/6
  */
 public abstract class Handler<REQ, RSP, T> {
-    public static final int BODY_CONTINUE = 1;
-    public static final int BODY_SKIP = 2;
-    public static final int BODY_FINISH = 3;
-
-    /**
-     * 持有下一个处理器的句柄
-     */
-    protected Handler<REQ, RSP, T> nextHandler;
 
     /**
      * 解析 body 数据流
@@ -34,7 +26,7 @@ public abstract class Handler<REQ, RSP, T> {
      * @param request
      * @return
      */
-    public abstract int onBodyStream(ByteBuffer buffer, T request);
+    public abstract boolean onBodyStream(ByteBuffer buffer, T request);
 
     /**
      * 执行当前处理器逻辑。
@@ -47,12 +39,6 @@ public abstract class Handler<REQ, RSP, T> {
      * @throws IOException
      */
     public abstract void handle(REQ request, RSP response) throws IOException;
-
-    protected final void doNext(REQ request, RSP response) throws IOException {
-        if (nextHandler != null) {
-            nextHandler.handle(request, response);
-        }
-    }
 
     /**
      * Http header 完成解析

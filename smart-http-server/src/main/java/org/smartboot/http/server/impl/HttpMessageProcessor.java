@@ -66,7 +66,7 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
         }
         //解码 Body 内容
         if (request.getDecodePartEnum() == DecodePartEnum.BODY) {
-            if (handler.onBodyStream(attachment.getReadBuffer(), request) == Handler.BODY_FINISH) {
+            if (handler.onBodyStream(attachment.getReadBuffer(), request)) {
                 request.setDecodePartEnum(DecodePartEnum.FINISH);
             }
         }

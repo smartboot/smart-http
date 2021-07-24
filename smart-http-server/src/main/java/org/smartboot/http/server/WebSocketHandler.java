@@ -51,9 +51,9 @@ public abstract class WebSocketHandler extends Handler<WebSocketRequest, WebSock
     }
 
     @Override
-    public int onBodyStream(ByteBuffer byteBuffer, Request request) {
+    public boolean onBodyStream(ByteBuffer byteBuffer, Request request) {
         if (byteBuffer.remaining() < 2) {
-            return BODY_CONTINUE;
+            return false;
         }
         byteBuffer.mark();
         int first = byteBuffer.get();
@@ -66,7 +66,7 @@ public abstract class WebSocketHandler extends Handler<WebSocketRequest, WebSock
         if (length == Constant.WS_PLAY_LOAD_126) {
             if (byteBuffer.remaining() < Short.BYTES) {
                 byteBuffer.reset();
-                return BODY_CONTINUE;
+                return false;
             }
             length = Short.toUnsignedInt(byteBuffer.getShort());
         }
@@ -75,7 +75,7 @@ public abstract class WebSocketHandler extends Handler<WebSocketRequest, WebSock
         }
         if (byteBuffer.remaining() < (mask ? length + 4 : length)) {
             byteBuffer.reset();
-            return BODY_CONTINUE;
+            return false;
         }
 
         boolean fin = (first & 0x80) != 0;
@@ -96,7 +96,7 @@ public abstract class WebSocketHandler extends Handler<WebSocketRequest, WebSock
         byteBuffer.get(payload);
         webSocketRequest.setPayload(payload);
 
-        return fin ? BODY_FINISH : BODY_CONTINUE;
+        return fin;
     }
 
     private void unmask(ByteBuffer frame, byte[] maskingKey, int length) {

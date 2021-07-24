@@ -28,13 +28,25 @@ import java.nio.ByteBuffer;
  * @version V1.0 , 2020/6/23
  */
 class BasicHttpServerHandler extends HttpServerHandler {
+    private final HttpServerHandler nextHandler;
+
     public BasicHttpServerHandler(HttpServerHandler httpServerHandler) {
         this.nextHandler = httpServerHandler;
     }
 
     @Override
-    public int onBodyStream(ByteBuffer buffer, Request request) {
-        return BODY_SKIP;
+    public boolean onBodyStream(ByteBuffer buffer, Request request) {
+        return nextHandler.onBodyStream(buffer, request);
+    }
+
+    @Override
+    public void onHeaderComplete(Request request) throws IOException {
+        nextHandler.onHeaderComplete(request);
+    }
+
+    @Override
+    public void onClose(Request request) {
+        nextHandler.onClose(request);
     }
 
     @Override
@@ -49,7 +61,7 @@ class BasicHttpServerHandler extends HttpServerHandler {
                 }
             }
 
-            doNext(request, response);
+            nextHandler.handle(request, response);
 
             if (!keepAlive) {
                 response.close();
