@@ -27,10 +27,10 @@ import java.nio.ByteBuffer;
  * @author 三刀
  * @version V1.0 , 2020/6/23
  */
-class BasicHttpServerHandler extends HttpServerHandler {
+class BaseHttpServerHandler extends HttpServerHandler {
     private final HttpServerHandler nextHandler;
 
-    public BasicHttpServerHandler(HttpServerHandler httpServerHandler) {
+    public BaseHttpServerHandler(HttpServerHandler httpServerHandler) {
         this.nextHandler = httpServerHandler;
     }
 

@@ -126,7 +126,7 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
     }
 
     public void httpServerHandler(HttpServerHandler httpServerHandler) {
-        this.httpServerHandler = new BasicHttpServerHandler(Objects.requireNonNull(httpServerHandler));
+        this.httpServerHandler = new BaseHttpServerHandler(Objects.requireNonNull(httpServerHandler));
     }
 
     public void setWebSocketHandler(WebSocketHandler webSocketHandler) {
