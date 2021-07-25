@@ -38,8 +38,8 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
     @Override
     public void process(AioSession session, Request request) {
         RequestAttachment attachment = session.getAttachment();
-        AbstractRequest abstractRequest = null;
-        ServerHandler handler = null;
+        AbstractRequest abstractRequest;
+        ServerHandler handler;
 
         if (request.isWebsocket()) {
             abstractRequest = request.newWebsocketRequest();
@@ -48,56 +48,55 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
             abstractRequest = request.newHttpRequest();
             handler = httpServerHandler;
         }
+        AbstractResponse response = abstractRequest.getResponse();
 
-        //Header解码成功
-        if (request.getDecodePartEnum() == DecodePartEnum.HEADER_FINISH) {
-            try {
-                methodCheck(request);
-                uriCheck(request);
-                handler.onHeaderComplete(request);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+        try {
+            switch (request.getDecodePartEnum()) {
+                case HEADER_FINISH:
+                    doHttpHeader(request, handler);
+                    if (response.isClosed()) {
+                        break;
+                    }
+                case BODY:
+                    onHttpBody(request, attachment, handler);
+                    if (response.isClosed()) {
+                        break;
+                    }
+                case FINISH:
+                    doHttpHandler(abstractRequest, handler, response);
             }
-            request.setDecodePartEnum(DecodePartEnum.BODY);
-            if (abstractRequest.getResponse().isClosed()) {
+            if (response.isClosed()) {
                 session.close(false);
-                return;
             }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-        //解码 Body 内容
-        if (request.getDecodePartEnum() == DecodePartEnum.BODY) {
-            if (handler.onBodyStream(attachment.getReadBuffer(), request)) {
-                request.setDecodePartEnum(DecodePartEnum.FINISH);
-            }
-        }
-        if (request.getDecodePartEnum() == DecodePartEnum.FINISH) {
-            AbstractResponse response = abstractRequest.getResponse();
-            try {
-                if (!response.isClosed()) {
-                    //消息处理
-                    handler.handle(abstractRequest, response);
-                    //关闭本次请求的输出流
-                    if (!response.getOutputStream().isClosed()) {
-                        response.getOutputStream().close();
-                    }
-                }
-            } catch (IOException e) {
-                LOGGER.error("", e);
-            } finally {
-                //response被closed,则断开TCP连接
-                if (response.isClosed()) {
-                    session.close(false);
-                } else {
-                    //复用长连接
-                    abstractRequest.reset();
-                    // 普通Http请求重置解码器，复用连接
-                    if (!request.isWebsocket()) {
-                        attachment.setDecoder(null);
-                    }
+    }
 
-                }
+    private void doHttpHandler(AbstractRequest abstractRequest, ServerHandler handler, AbstractResponse response) throws IOException {
+        //消息处理
+        handler.handle(abstractRequest, response);
+        //关闭本次请求的输出流
+        if (!response.getOutputStream().isClosed()) {
+            response.getOutputStream().close();
+        }
+        abstractRequest.reset();
+    }
+
+    private void onHttpBody(Request request, RequestAttachment attachment, ServerHandler<?, ?> handler) {
+        if (handler.onBodyStream(attachment.getReadBuffer(), request)) {
+            request.setDecodePartEnum(DecodePartEnum.FINISH);
+            if (!request.isWebsocket()) {
+                attachment.setDecoder(null);
             }
         }
+    }
+
+    private void doHttpHeader(Request request, ServerHandler<?, ?> handler) throws IOException {
+        methodCheck(request);
+        uriCheck(request);
+        handler.onHeaderComplete(request);
+        request.setDecodePartEnum(DecodePartEnum.BODY);
     }
 
     @Override

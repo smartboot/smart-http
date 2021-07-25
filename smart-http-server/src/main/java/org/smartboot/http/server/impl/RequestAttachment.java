@@ -27,10 +27,6 @@ public class RequestAttachment {
      * 当前使用的解码器
      */
     private Decoder decoder;
-    /**
-     * websocket 请求对象
-     */
-    private WebSocketRequestImpl webSocketRequest;
 
     /**
      * read缓冲区
@@ -52,15 +48,6 @@ public class RequestAttachment {
     public void setDecoder(Decoder decoder) {
         this.decoder = decoder;
     }
-
-    public WebSocketRequestImpl getWebSocketRequest() {
-        return webSocketRequest;
-    }
-
-    public void setWebSocketRequest(WebSocketRequestImpl webSocketRequest) {
-        this.webSocketRequest = webSocketRequest;
-    }
-
 
     public ByteBuffer getReadBuffer() {
         return readBuffer;
