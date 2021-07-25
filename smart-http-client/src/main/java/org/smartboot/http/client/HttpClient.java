@@ -59,6 +59,11 @@ public class HttpClient implements Closeable {
     private BufferPagePool writeBufferPool;
 
     /**
+     * 缓冲池，必须是堆内缓冲区
+     */
+    private BufferPagePool readBufferPool;
+
+    /**
      * 绑定线程池资源组
      */
     private AsynchronousChannelGroup asynchronousChannelGroup;
@@ -150,7 +155,7 @@ public class HttpClient implements Closeable {
     public void connect() {
         client = proxyHost == null ? new AioQuickClient(host, port, protocol, processor) : new AioQuickClient(proxyHost, proxyPort, protocol, processor);
         try {
-            client.setBufferPagePool(writeBufferPool).setReadBufferFactory(bufferPage -> writeBufferPool == null ? VirtualBuffer.wrap(ByteBuffer.allocate(4096)) : writeBufferPool.allocateBufferPage().allocate(1024 * 4));
+            client.setBufferPagePool(writeBufferPool).setReadBufferFactory(bufferPage -> readBufferPool == null ? VirtualBuffer.wrap(ByteBuffer.allocate(4096)) : readBufferPool.allocateBufferPage().allocate(1024 * 4));
             if (timeout > 0) {
                 client.connectTimeout(timeout);
             }
@@ -162,6 +167,10 @@ public class HttpClient implements Closeable {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void setReadBufferPool(BufferPagePool readBufferPool) {
+        this.readBufferPool = readBufferPool;
     }
 
     public void setWriteBufferPool(BufferPagePool writeBufferPool) {
