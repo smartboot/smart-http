@@ -28,7 +28,7 @@ import java.nio.charset.Charset;
  * @author 三刀（zhengjunweimail@163.com）
  * @version V1.0 , 2021/7/15
  */
-public class DefaultHttpResponseHandler implements ResponseHandler {
+public class DefaultHttpResponseHandler extends ResponseHandler {
     private ResponseHandler responseHandler;
 
     @Override
@@ -55,7 +55,7 @@ public class DefaultHttpResponseHandler implements ResponseHandler {
      * @author 三刀（zhengjunweimail@163.com）
      * @version V1.0 , 2021/7/12
      */
-    public static class ChunkedHttpLifecycle implements ResponseHandler {
+    public static class ChunkedHttpLifecycle extends ResponseHandler {
         private final ByteArrayOutputStream body = new ByteArrayOutputStream();
         private PART part = PART.CHUNK_LENGTH;
         private SmartDecoder chunkedDecoder;
@@ -136,7 +136,7 @@ public class DefaultHttpResponseHandler implements ResponseHandler {
      * @author 三刀（zhengjunweimail@163.com）
      * @version V1.0 , 2021/7/12
      */
-    public static class ContentLengthHttpLifecycle implements ResponseHandler {
+    public static class ContentLengthHttpLifecycle extends ResponseHandler {
         private SmartDecoder smartDecoder;
 
         @Override

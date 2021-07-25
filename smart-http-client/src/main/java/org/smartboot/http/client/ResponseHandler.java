@@ -15,5 +15,10 @@ import org.smartboot.http.common.Handler;
  * @author 三刀（zhengjunweimail@163.com）
  * @version V1.0 , 2021/7/25
  */
-public interface ResponseHandler extends Handler<Response> {
+public abstract class ResponseHandler implements Handler<Response> {
+
+    @Override
+    public final void onClose(Response request) {
+
+    }
 }
