@@ -8,7 +8,6 @@
 
 package org.smartboot.http.client.impl;
 
-import org.smartboot.http.client.HttpRest;
 import org.smartboot.http.common.enums.DecodePartEnum;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.StateMachineEnum;
@@ -42,15 +41,19 @@ public class HttpMessageProcessor implements MessageProcessor<Response> {
         ResponseAttachment responseAttachment = session.getAttachment();
         AbstractQueue<QueueUnit> queue = map.get(session);
         QueueUnit queueUnit = queue.peek();
-        HttpRest httpRest = queueUnit.getHttpRest();
         //Http Header解析成功
         if (response.getDecodePartEnum() == DecodePartEnum.HEADER_FINISH) {
             response.setDecodePartEnum(DecodePartEnum.BODY);
-            httpRest.responseEvent().onHeader(response);
+            try {
+                queueUnit.getResponseHandler().onHeaderComplete(response);
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new RuntimeException(e);
+            }
         }
         //定义 body 解码
         if (response.getDecodePartEnum() == DecodePartEnum.BODY) {
-            if (queueUnit.getHttpRest().responseEvent().onBody(responseAttachment.getByteBuffer(), response)) {
+            if (queueUnit.getResponseHandler().onBodyStream(responseAttachment.getByteBuffer(), response)) {
                 response.setDecodePartEnum(DecodePartEnum.FINISH);
             }
         }

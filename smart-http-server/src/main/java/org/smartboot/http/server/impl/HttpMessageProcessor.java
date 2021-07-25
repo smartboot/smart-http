@@ -8,7 +8,6 @@
 
 package org.smartboot.http.server.impl;
 
-import org.smartboot.http.common.Handler;
 import org.smartboot.http.common.enums.DecodePartEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.exception.HttpException;
@@ -17,6 +16,7 @@ import org.smartboot.http.common.logging.LoggerFactory;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpServerHandler;
+import org.smartboot.http.server.ServerHandler;
 import org.smartboot.http.server.WebSocketHandler;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.StateMachineEnum;
@@ -39,7 +39,7 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
     public void process(AioSession session, Request request) {
         RequestAttachment attachment = session.getAttachment();
         AbstractRequest abstractRequest = null;
-        Handler handler = null;
+        ServerHandler handler = null;
 
         if (request.isWebsocket()) {
             abstractRequest = request.newWebsocketRequest();

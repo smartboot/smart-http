@@ -8,7 +8,6 @@
 
 package org.smartboot.http.server;
 
-import org.smartboot.http.common.Handler;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpStatus;
@@ -31,12 +30,11 @@ import java.util.Base64;
  * @author 三刀
  * @version V1.0 , 2018/2/6
  */
-public abstract class WebSocketHandler extends Handler<WebSocketRequest, WebSocketResponse, Request> {
+public abstract class WebSocketHandler implements ServerHandler<WebSocketRequest, WebSocketResponse> {
     public static final String WEBSOCKET_13_ACCEPT_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 
     @Override
     public void onHeaderComplete(Request request) throws IOException {
-        super.onHeaderComplete(request);
         WebSocketResponseImpl response = request.newWebsocketRequest().getResponse();
         String key = request.getHeader(HeaderNameEnum.Sec_WebSocket_Key.getName());
         String acceptSeed = key + WEBSOCKET_13_ACCEPT_GUID;

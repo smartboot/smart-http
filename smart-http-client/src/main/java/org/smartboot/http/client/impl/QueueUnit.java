@@ -9,24 +9,24 @@
 package org.smartboot.http.client.impl;
 
 import org.smartboot.http.client.HttpResponse;
-import org.smartboot.http.client.HttpRest;
+import org.smartboot.http.client.ResponseHandler;
 
 import java.util.concurrent.CompletableFuture;
 
 public class QueueUnit {
-    private HttpRest httpRest;
-    private CompletableFuture<HttpResponse> future;
+    private final CompletableFuture<HttpResponse> future;
+    private final ResponseHandler responseHandler;
 
-    public QueueUnit(HttpRest httpRest, CompletableFuture<HttpResponse> future) {
-        this.httpRest = httpRest;
+    public QueueUnit(CompletableFuture<HttpResponse> future, ResponseHandler responseHandler) {
         this.future = future;
-    }
-
-    public HttpRest getHttpRest() {
-        return httpRest;
+        this.responseHandler = responseHandler;
     }
 
     public CompletableFuture<HttpResponse> getFuture() {
         return future;
+    }
+
+    public ResponseHandler getResponseHandler() {
+        return responseHandler;
     }
 }

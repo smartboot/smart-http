@@ -8,7 +8,7 @@
 
 package org.smartboot.http.client;
 
-import org.smartboot.http.client.impl.DefaultHttpResponseEvent;
+import org.smartboot.http.client.impl.DefaultHttpResponseHandler;
 import org.smartboot.http.client.impl.HttpRequestImpl;
 import org.smartboot.http.client.impl.QueueUnit;
 import org.smartboot.http.common.enums.HeaderNameEnum;
@@ -43,7 +43,7 @@ public class HttpRest {
     /**
      * http body 解码器
      */
-    private ResponseEvent responseEvent = new DefaultHttpResponseEvent();
+    private ResponseHandler responseHandler = new DefaultHttpResponseHandler();
 
     HttpRest(String uri, String host, AioSession session, AbstractQueue<QueueUnit> queue) {
         this.request = new HttpRequestImpl(session);
@@ -66,7 +66,7 @@ public class HttpRest {
         if (!headers.contains(HeaderNameEnum.USER_AGENT.getName())) {
             addHeader(HeaderNameEnum.USER_AGENT.getName(), DEFAULT_USER_AGENT);
         }
-        queue.offer(new QueueUnit(this, completableFuture));
+        queue.offer(new QueueUnit(completableFuture, responseHandler));
     }
 
     private void resetUri() {
@@ -195,12 +195,8 @@ public class HttpRest {
     /**
      * Http 响应事件
      */
-    public HttpRest responseEvent(ResponseEvent responseEvent) {
-        this.responseEvent = Objects.requireNonNull(responseEvent);
+    public HttpRest onResponse(ResponseHandler responseHandler) {
+        this.responseHandler = Objects.requireNonNull(responseHandler);
         return this;
-    }
-
-    public ResponseEvent responseEvent() {
-        return responseEvent;
     }
 }
