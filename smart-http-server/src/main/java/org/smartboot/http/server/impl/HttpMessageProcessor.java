@@ -89,8 +89,12 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
                     session.close(false);
                 } else {
                     //复用长连接
-                    request.reset();
-                    attachment.setDecoder(null);
+                    abstractRequest.reset();
+                    // 普通Http请求重置解码器，复用连接
+                    if (!request.isWebsocket()) {
+                        attachment.setDecoder(null);
+                    }
+
                 }
             }
         }

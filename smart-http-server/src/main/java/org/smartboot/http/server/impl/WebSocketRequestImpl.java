@@ -8,6 +8,7 @@
 
 package org.smartboot.http.server.impl;
 
+import org.smartboot.http.common.enums.DecodePartEnum;
 import org.smartboot.http.server.WebSocketRequest;
 
 import java.io.ByteArrayOutputStream;
@@ -49,6 +50,7 @@ public class WebSocketRequestImpl extends AbstractRequest implements WebSocketRe
 
     @Override
     public void reset() {
+        request.setDecodePartEnum(DecodePartEnum.BODY);
         payload.reset();
     }
 

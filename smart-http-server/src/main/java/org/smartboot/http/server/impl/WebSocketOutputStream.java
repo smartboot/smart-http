@@ -25,6 +25,6 @@ final class WebSocketOutputStream extends AbstractOutputStream {
     @Override
     protected final byte[] getHeadPart() {
         return getBytes(request.getProtocol() + " " + response.getHttpStatus() + " " + response.getReasonPhrase() + "\r\n"
-                + HeaderNameEnum.CONTENT_TYPE.getName() + ":" + response.getContentType());
+                + HeaderNameEnum.CONTENT_TYPE.getName() + ":" + response.getContentType() + "\r\n");
     }
 }
