@@ -61,6 +61,9 @@ public abstract class HttpServerHandler extends Handler<HttpRequest, HttpRespons
     }
 
 
+    /**
+     * 若子类重写 onClose 则必须调用 super.onClose();释放内存
+     */
     @Override
     public void onClose(Request request) {
         bodyDecoderMap.remove(request);
