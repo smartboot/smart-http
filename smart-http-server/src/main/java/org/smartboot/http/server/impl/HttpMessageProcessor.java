@@ -15,6 +15,7 @@ import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpRequest;
+import org.smartboot.http.server.HttpResponse;
 import org.smartboot.http.server.HttpServerHandler;
 import org.smartboot.http.server.ServerHandler;
 import org.smartboot.http.server.WebSocketHandler;
@@ -23,6 +24,7 @@ import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 /**
@@ -32,7 +34,12 @@ import java.util.Objects;
 public class HttpMessageProcessor implements MessageProcessor<Request> {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpMessageProcessor.class);
     private static final int MAX_LENGTH = 255 * 1024;
-    private HttpServerHandler httpServerHandler;
+    private HttpServerHandler httpServerHandler = new BaseHttpServerHandler(new HttpServerHandler() {
+        @Override
+        public void handle(HttpRequest request, HttpResponse response) throws IOException {
+            response.write("Hello smart-http".getBytes(StandardCharsets.UTF_8));
+        }
+    });
     private WebSocketHandler webSocketHandler;
 
     @Override
