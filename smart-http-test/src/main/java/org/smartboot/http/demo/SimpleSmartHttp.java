@@ -22,7 +22,7 @@ public class SimpleSmartHttp {
         bootstrap.httpHandler(new HttpServerHandler() {
             @Override
             public void handle(HttpRequest request, HttpResponse response) throws IOException {
-                response.write("hello world<br/>".getBytes());
+                response.write("hello smart-http<br/>".getBytes());
             }
         });
         bootstrap.setPort(8080).start();
