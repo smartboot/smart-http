@@ -47,7 +47,7 @@ class HttpHeaderDecoder extends AbstractDecoder {
             }
             byteBuffer.position(byteBuffer.position() + 2);
 //            return decoder.decode(byteBuffer, aioSession, request);
-            return HttpRequestProtocol.BODY_STREAM_DECODER;
+            return HttpRequestProtocol.BODY_READY_DECODER;
         }
         //Header name解码
         int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.COLON);

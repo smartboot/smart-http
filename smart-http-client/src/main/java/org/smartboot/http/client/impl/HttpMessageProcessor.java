@@ -8,6 +8,7 @@
 
 package org.smartboot.http.client.impl;
 
+import org.smartboot.http.client.ResponseHandler;
 import org.smartboot.http.common.enums.DecodePartEnum;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.StateMachineEnum;
@@ -41,34 +42,45 @@ public class HttpMessageProcessor implements MessageProcessor<Response> {
         ResponseAttachment responseAttachment = session.getAttachment();
         AbstractQueue<QueueUnit> queue = map.get(session);
         QueueUnit queueUnit = queue.peek();
-        //Http Header解析成功
-        if (response.getDecodePartEnum() == DecodePartEnum.HEADER_FINISH) {
-            response.setDecodePartEnum(DecodePartEnum.BODY);
-            try {
-                queueUnit.getResponseHandler().onHeaderComplete(response);
-            } catch (IOException e) {
-                e.printStackTrace();
-                throw new RuntimeException(e);
-            }
-        }
-        //定义 body 解码
-        if (response.getDecodePartEnum() == DecodePartEnum.BODY) {
-            if (queueUnit.getResponseHandler().onBodyStream(responseAttachment.getByteBuffer(), response)) {
-                response.setDecodePartEnum(DecodePartEnum.FINISH);
-            }
-        }
-        //解码完成
-        if (response.getDecodePartEnum() == DecodePartEnum.FINISH) {
-            queue.poll();
-            if (executorService == null) {
-                queueUnit.getFuture().complete(response);
-            } else {
-                session.awaitRead();
-                executorService.execute(() -> {
+        ResponseHandler responseHandler = queueUnit.getResponseHandler();
+        switch (response.getDecodePartEnum()) {
+            case HEADER_FINISH:
+                doHttpHeader(response, responseHandler);
+            case BODY:
+                doHttpBody(response, responseAttachment, responseHandler);
+                if (response.getDecodePartEnum() != DecodePartEnum.FINISH) {
+                    break;
+                }
+            case FINISH:
+                queue.poll();
+                if (executorService == null) {
                     queueUnit.getFuture().complete(response);
-                    session.signalRead();
-                });
-            }
+                } else {
+                    session.awaitRead();
+                    executorService.execute(() -> {
+                        queueUnit.getFuture().complete(response);
+                        session.signalRead();
+                    });
+                }
+        }
+    }
+
+    private void doHttpBody(Response response, ResponseAttachment responseAttachment, ResponseHandler responseHandler) {
+        if (responseHandler.onBodyStream(responseAttachment.getByteBuffer(), response)) {
+            response.setDecodePartEnum(DecodePartEnum.FINISH);
+        } else if (responseAttachment.getByteBuffer().hasRemaining()) {
+            //半包,继续读数据
+            responseAttachment.setDecoder(HttpResponseProtocol.BODY_CONTINUE_DECODER);
+        }
+    }
+
+    private void doHttpHeader(Response response, ResponseHandler responseHandler) {
+        response.setDecodePartEnum(DecodePartEnum.BODY);
+        try {
+            responseHandler.onHeaderComplete(response);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 

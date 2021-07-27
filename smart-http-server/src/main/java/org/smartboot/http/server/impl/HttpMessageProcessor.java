@@ -59,7 +59,7 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
                     }
                 case BODY:
                     onHttpBody(request, attachment, handler);
-                    if (response.isClosed()) {
+                    if (response.isClosed() || request.getDecodePartEnum() != DecodePartEnum.FINISH) {
                         break;
                     }
                 case FINISH:
@@ -89,6 +89,9 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
             if (!request.isWebsocket()) {
                 attachment.setDecoder(null);
             }
+        } else if (attachment.getReadBuffer().hasRemaining()) {
+            //半包,继续读数据
+            attachment.setDecoder(HttpRequestProtocol.BODY_CONTINUE_DECODER);
         }
     }
 

@@ -41,7 +41,7 @@ class HttpHeaderDecoder implements HeaderDecoder {
 //            return decoder.decode(byteBuffer, aioSession, request);
             ResponseAttachment attachment = aioSession.getAttachment();
             attachment.setByteBuffer(byteBuffer);
-            return HttpResponseProtocol.REACTIVE_STREAM_DECODER;
+            return HttpResponseProtocol.BODY_READY_DECODER;
         }
         //Header name解码
         int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.COLON);

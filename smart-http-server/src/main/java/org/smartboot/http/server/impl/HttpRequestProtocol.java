@@ -21,10 +21,8 @@ import java.nio.ByteBuffer;
  * @version V1.0 , 2018/8/31
  */
 public class HttpRequestProtocol implements Protocol<Request> {
-    /**
-     * websocket握手消息
-     */
-    public static final Decoder BODY_STREAM_DECODER = (byteBuffer, aioSession, response) -> null;
+    public static final Decoder BODY_READY_DECODER = (byteBuffer, aioSession, response) -> null;
+    public static final Decoder BODY_CONTINUE_DECODER = (byteBuffer, aioSession, response) -> null;
     /**
      * websocket负载数据读取成功
      */
@@ -43,12 +41,17 @@ public class HttpRequestProtocol implements Protocol<Request> {
             decodeChain = httpMethodDecoder;
             attachment.setReadBuffer(buffer);
         }
-        if (decodeChain == BODY_STREAM_DECODER) {
+        // 数据还未就绪，继续读
+        if (decodeChain == BODY_CONTINUE_DECODER) {
+            attachment.setDecoder(BODY_READY_DECODER);
+            return null;
+        } else if (decodeChain == BODY_READY_DECODER) {
             return request;
         }
+
         decodeChain = decodeChain.decode(buffer, session, request);
 
-        if (decodeChain == BODY_STREAM_DECODER) {
+        if (decodeChain == BODY_READY_DECODER) {
             attachment.setDecoder(decodeChain);
             return request;
         }

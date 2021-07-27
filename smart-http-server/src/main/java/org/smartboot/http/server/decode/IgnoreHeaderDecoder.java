@@ -34,7 +34,7 @@ public class IgnoreHeaderDecoder implements Decoder {
             int index = 0;
             while (byteBuffer.get() == Constant.HEADER_END[index]) {
                 if (index == 3) {
-                    return HttpRequestProtocol.BODY_STREAM_DECODER;
+                    return HttpRequestProtocol.BODY_READY_DECODER;
                 } else {
                     index++;
                 }
