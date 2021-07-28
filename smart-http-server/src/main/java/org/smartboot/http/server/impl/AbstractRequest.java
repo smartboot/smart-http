@@ -22,7 +22,7 @@ import java.util.Map;
  * @author 三刀
  * @version V1.0 , 2018/8/31
  */
-abstract class AbstractRequest implements HttpRequest, Reset, RequestHook {
+abstract class AbstractRequest implements HttpRequest, Reset {
 
     protected Request request;
 
@@ -137,7 +137,6 @@ abstract class AbstractRequest implements HttpRequest, Reset, RequestHook {
         return request.getCharacterEncoding();
     }
 
-    @Override
     public final Request getRequest() {
         return request;
     }
@@ -156,4 +155,6 @@ abstract class AbstractRequest implements HttpRequest, Reset, RequestHook {
     public <A> void setAttachment(A attachment) {
         request.setAttachment(attachment);
     }
+
+    public abstract AbstractResponse getResponse();
 }

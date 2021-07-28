@@ -11,8 +11,10 @@ package org.smartboot.http.server.impl;
 import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.Reset;
+import org.smartboot.http.common.enums.DecodePartEnum;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
+import org.smartboot.http.common.enums.HttpTypeEnum;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.HttpUtils;
 import org.smartboot.http.common.utils.NumberUtils;
@@ -85,8 +87,10 @@ public final class Request implements HttpRequest, Reset {
 
     private String hostHeader;
 
-
-    private boolean websocket = false;
+    /**
+     * 消息类型
+     */
+    private HttpTypeEnum type = null;
 
     /**
      * Post表单
@@ -99,10 +103,22 @@ public final class Request implements HttpRequest, Reset {
      * 附件对象
      */
     private Object attachment;
+    private DecodePartEnum decodePartEnum = DecodePartEnum.HEADER_FINISH;
+    private HttpRequestImpl httpRequest;
+    private WebSocketRequestImpl webSocketRequest;
 
     Request(AioSession aioSession) {
         this.aioSession = aioSession;
     }
+
+    public DecodePartEnum getDecodePartEnum() {
+        return decodePartEnum;
+    }
+
+    public void setDecodePartEnum(DecodePartEnum decodePartEnum) {
+        this.decodePartEnum = decodePartEnum;
+    }
+
 
     public AioSession getAioSession() {
         return aioSession;
@@ -152,7 +168,7 @@ public final class Request implements HttpRequest, Reset {
     }
 
     @Override
-    public InputStream getInputStream() throws IOException {
+    public InputStream getInputStream() {
         throw new UnsupportedOperationException();
     }
 
@@ -161,9 +177,6 @@ public final class Request implements HttpRequest, Reset {
     }
 
     public final void setHeader(String headerName, String value) {
-        if (headerName == HeaderNameEnum.UPGRADE.getName() && value == HeaderValueEnum.WEBSOCKET.getName()) {
-            websocket = true;
-        }
         if (headerSize < headers.size()) {
             HeaderValue headerValue = headers.get(headerSize);
             headerValue.setName(headerName);
@@ -174,6 +187,18 @@ public final class Request implements HttpRequest, Reset {
         headerSize++;
     }
 
+    public boolean isWebsocket() {
+        if (type != null) {
+            return type == HttpTypeEnum.WEBSOCKET;
+        }
+        if (HeaderValueEnum.WEBSOCKET.getName().equals(getHeader(HeaderNameEnum.UPGRADE.getName()))) {
+            type = HttpTypeEnum.WEBSOCKET;
+            return true;
+        } else {
+            type = HttpTypeEnum.HTTP;
+            return false;
+        }
+    }
 
     @Override
     public final String getRequestURI() {
@@ -230,7 +255,7 @@ public final class Request implements HttpRequest, Reset {
         return scheme;
     }
 
-    final void setScheme(String scheme) {
+    public final void setScheme(String scheme) {
         this.scheme = scheme;
     }
 
@@ -285,7 +310,6 @@ public final class Request implements HttpRequest, Reset {
         }
         return getParameterValues(name);
     }
-
 
     @Override
     public final Map<String, String[]> getParameters() {
@@ -452,10 +476,6 @@ public final class Request implements HttpRequest, Reset {
         return cookies;
     }
 
-    public final boolean isWebsocket() {
-        return websocket;
-    }
-
     public String getFormUrlencoded() {
         return formUrlencoded;
     }
@@ -463,7 +483,6 @@ public final class Request implements HttpRequest, Reset {
     public void setFormUrlencoded(String formUrlencoded) {
         this.formUrlencoded = formUrlencoded;
     }
-
 
     /**
      * 获取附件对象
@@ -485,6 +504,20 @@ public final class Request implements HttpRequest, Reset {
         this.attachment = attachment;
     }
 
+    public HttpRequestImpl newHttpRequest() {
+        if (httpRequest == null) {
+            httpRequest = new HttpRequestImpl(this);
+        }
+        return httpRequest;
+    }
+
+    public WebSocketRequestImpl newWebsocketRequest() {
+        if (webSocketRequest == null) {
+            webSocketRequest = new WebSocketRequestImpl(this);
+        }
+        return webSocketRequest;
+    }
+
     public void reset() {
         headerSize = 0;
         method = null;
@@ -496,5 +529,8 @@ public final class Request implements HttpRequest, Reset {
         formUrlencoded = null;
         queryString = null;
         cookies = null;
+        httpRequest = null;
+        webSocketRequest = null;
+        decodePartEnum = DecodePartEnum.HEADER_FINISH;
     }
 }

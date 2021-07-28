@@ -40,4 +40,18 @@ public interface HttpResponse {
     String getCharacterEncoding();
 
     String body();
+
+    /**
+     * 获取响应码
+     *
+     * @return
+     */
+    int getStatus();
+
+    /**
+     * 获取响应描述
+     *
+     * @return
+     */
+    String getReasonPhrase();
 }

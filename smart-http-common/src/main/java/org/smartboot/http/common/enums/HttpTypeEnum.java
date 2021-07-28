@@ -1,19 +1,24 @@
 /*******************************************************************************
  * Copyright (c) 2017-2021, org.smartboot. All rights reserved.
  * project name: smart-http
- * file name: Pipeline.java
- * Date: 2021-02-04
+ * file name: HttpTypeEnum.java
+ * Date: 2021-07-11
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
-package org.smartboot.http.common;
+package org.smartboot.http.common.enums;
 
 /**
- * 消息处理管道
- *
- * @author 三刀
- * @version V1.0 , 2019/11/3
+ * @author 三刀（zhengjunweimail@163.com）
+ * @version V1.0 , 2021/7/11
  */
-public interface Pipeline<REQ, RSP> {
-    Pipeline<REQ, RSP> next(Handler<REQ, RSP> nextHandle);
+public enum HttpTypeEnum {
+    /**
+     * 普通http消息
+     */
+    HTTP,
+    /**
+     * websocket消息
+     */
+    WEBSOCKET,
 }

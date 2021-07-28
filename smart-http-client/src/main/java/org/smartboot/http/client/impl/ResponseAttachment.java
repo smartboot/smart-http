@@ -8,8 +8,9 @@
 
 package org.smartboot.http.client.impl;
 
-import org.smartboot.http.client.decode.Decoder;
-import org.smartboot.http.common.utils.SmartDecoder;
+import org.smartboot.http.client.decode.HeaderDecoder;
+
+import java.nio.ByteBuffer;
 
 /**
  * @author 三刀（zhengjunweimail@163.com）
@@ -17,12 +18,10 @@ import org.smartboot.http.common.utils.SmartDecoder;
  */
 public class ResponseAttachment {
     private final Response response;
-    private Decoder decoder;
-    private StringBuilder chunkBodyContent;
-    private WebSocketRequestImpl webSocketRequest;
-    private HttpRequestImpl httpRequest;
 
-    private SmartDecoder bodyDecoder;
+    private HeaderDecoder decoder;
+
+    private ByteBuffer byteBuffer;
 
     public ResponseAttachment(Response response) {
         this.response = response;
@@ -32,43 +31,19 @@ public class ResponseAttachment {
         return response;
     }
 
-    public Decoder getDecoder() {
+    public HeaderDecoder getDecoder() {
         return decoder;
     }
 
-    public void setDecoder(Decoder decoder) {
+    public void setDecoder(HeaderDecoder decoder) {
         this.decoder = decoder;
     }
 
-    public WebSocketRequestImpl getWebSocketRequest() {
-        return webSocketRequest;
+    public ByteBuffer getByteBuffer() {
+        return byteBuffer;
     }
 
-    public void setWebSocketRequest(WebSocketRequestImpl webSocketRequest) {
-        this.webSocketRequest = webSocketRequest;
-    }
-
-    public HttpRequestImpl getHttpRequest() {
-        return httpRequest;
-    }
-
-    public void setHttpRequest(HttpRequestImpl httpRequest) {
-        this.httpRequest = httpRequest;
-    }
-
-    public SmartDecoder getBodyDecoder() {
-        return bodyDecoder;
-    }
-
-    public void setBodyDecoder(SmartDecoder bodyDecoder) {
-        this.bodyDecoder = bodyDecoder;
-    }
-
-    public StringBuilder getChunkBodyContent() {
-        return chunkBodyContent;
-    }
-
-    public void setChunkBodyContent(StringBuilder chunkBodyContent) {
-        this.chunkBodyContent = chunkBodyContent;
+    public void setByteBuffer(ByteBuffer byteBuffer) {
+        this.byteBuffer = byteBuffer;
     }
 }

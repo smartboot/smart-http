@@ -8,17 +8,22 @@
 
 package org.smartboot.http.client;
 
+import org.smartboot.http.client.impl.DefaultHttpResponseHandler;
 import org.smartboot.http.client.impl.HttpRequestImpl;
+import org.smartboot.http.client.impl.QueueUnit;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
-import org.smartboot.socket.transport.WriteBuffer;
+import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.AbstractQueue;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
@@ -31,22 +36,37 @@ public class HttpRest {
     private final static String DEFAULT_USER_AGENT = "smart-http";
     protected final HttpRequestImpl request;
     protected final CompletableFuture<HttpResponse> completableFuture = new CompletableFuture<>();
-    private final Consumer<CompletableFuture<HttpResponse>> responseListener;
+    private final AbstractQueue<QueueUnit> queue;
     private Map<String, String> queryParams = null;
+    private boolean commit = false;
+    private BodyStream bodyStream;
+    /**
+     * http body 解码器
+     */
+    private ResponseHandler responseHandler = new DefaultHttpResponseHandler();
 
-    HttpRest(String uri, String host, WriteBuffer writeBuffer, Consumer<CompletableFuture<HttpResponse>> responseListener) {
-        this.request = new HttpRequestImpl(writeBuffer);
-        this.responseListener = responseListener;
+    HttpRest(String uri, String host, AioSession session, AbstractQueue<QueueUnit> queue) {
+        this.request = new HttpRequestImpl(session);
+        this.queue = queue;
         this.request.setUri(uri);
         this.request.setProtocol(HttpProtocolEnum.HTTP_11.getProtocol());
-        this.keepalive(true)
-                .addHeader(HeaderNameEnum.HOST.getName(), host)
-                .addHeader(HeaderNameEnum.USER_AGENT.getName(), DEFAULT_USER_AGENT);
+        this.addHeader(HeaderNameEnum.HOST.getName(), host);
     }
 
     protected final void willSendRequest() {
+        if (commit) {
+            return;
+        }
+        commit = true;
         resetUri();
-        responseListener.accept(completableFuture);
+        Collection<String> headers = request.getHeaderNames();
+        if (!headers.contains(HeaderNameEnum.CONNECTION.getName())) {
+            keepalive(true);
+        }
+        if (!headers.contains(HeaderNameEnum.USER_AGENT.getName())) {
+            addHeader(HeaderNameEnum.USER_AGENT.getName(), DEFAULT_USER_AGENT);
+        }
+        queue.offer(new QueueUnit(completableFuture, responseHandler));
     }
 
     private void resetUri() {
@@ -77,6 +97,43 @@ public class HttpRest {
         request.setUri(stringBuilder.toString());
     }
 
+    public final BodyStream bodyStream() {
+        if (bodyStream == null) {
+            bodyStream = new BodyStream() {
+                boolean flushHeader = false;
+
+                @Override
+                public BodyStream write(byte[] bytes, int offset, int len) {
+                    try {
+                        willSendRequest();
+                        if (!flushHeader) {
+                            flush();
+                        }
+                        request.getOutputStream().directWrite(bytes, offset, len);
+                    } catch (IOException e) {
+                        System.out.println("body stream write error! " + e.getMessage());
+                        completableFuture.completeExceptionally(e);
+                    }
+                    return this;
+                }
+
+                @Override
+                public BodyStream flush() {
+                    try {
+                        request.getOutputStream().flush();
+                        flushHeader = true;
+                    } catch (IOException e) {
+                        System.out.println("body stream flush error! " + e.getMessage());
+                        e.printStackTrace();
+                        completableFuture.completeExceptionally(e);
+                    }
+                    return this;
+                }
+            };
+        }
+        return bodyStream;
+    }
+
     public final Future<HttpResponse> send() {
         try {
             willSendRequest();
@@ -98,6 +155,11 @@ public class HttpRest {
             consumer.accept(throwable);
             return null;
         });
+        return this;
+    }
+
+    public HttpRest setHeader(String headerName, String headerValue) {
+        this.request.setHeader(headerName, headerValue);
         return this;
     }
 
@@ -127,6 +189,14 @@ public class HttpRest {
             queryParams = new HashMap<>();
         }
         queryParams.put(name, value);
+        return this;
+    }
+
+    /**
+     * Http 响应事件
+     */
+    public HttpRest onResponse(ResponseHandler responseHandler) {
+        this.responseHandler = Objects.requireNonNull(responseHandler);
         return this;
     }
 }

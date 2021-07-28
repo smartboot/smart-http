@@ -50,7 +50,7 @@ public class HttpPostTest {
                 response.write(jsonObject.toString().getBytes());
             }
         });
-        httpBootstrap.pipeline(routeHandle).setPort(8080).start();
+        httpBootstrap.httpHandler(routeHandle).setPort(8080).start();
     }
 
     @Test

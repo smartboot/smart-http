@@ -17,23 +17,22 @@ import java.io.InputStream;
  * @author 三刀
  * @version V1.0 , 2018/8/31
  */
-final class HttpRequestImpl extends AbstractRequest {
+public class HttpRequestImpl extends AbstractRequest {
     /**
      * 空流
      */
-    private static final InputStream EMPTY_INPUT_STREAM = new InputStream() {
+    protected static final InputStream EMPTY_INPUT_STREAM = new InputStream() {
         @Override
         public int read() {
             return -1;
         }
     };
-    private InputStream inputStream;
-
     private final HttpResponseImpl response;
+    private InputStream inputStream;
 
     HttpRequestImpl(Request request) {
         init(request);
-        this.response = new HttpResponseImpl(this, request.getAioSession().writeBuffer());
+        this.response = new HttpResponseImpl(this, request.getAioSession());
     }
 
     public final HttpResponseImpl getResponse() {
@@ -46,17 +45,17 @@ final class HttpRequestImpl extends AbstractRequest {
             return inputStream;
         }
         int contentLength = getContentLength();
-        if (contentLength <= 0 || request.getFormUrlencoded() != null) {
-            inputStream = EMPTY_INPUT_STREAM;
-        } else {
+        if (contentLength > 0 && request.getFormUrlencoded() == null) {
             inputStream = new PostInputStream(request.getAioSession().getInputStream(contentLength), contentLength);
+        } else {
+            inputStream = EMPTY_INPUT_STREAM;
         }
         return inputStream;
     }
 
 
     public void reset() {
-        getRequest().reset();
+        request.reset();
         response.reset();
         if (inputStream != null) {
             try {

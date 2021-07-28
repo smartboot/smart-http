@@ -56,7 +56,7 @@ public class HttpServerTest extends BastTest {
     @Before
     public void init() {
         bootstrap = new HttpBootstrap();
-        bootstrap.pipeline(new HttpServerHandler() {
+        bootstrap.httpHandler(new HttpServerHandler() {
             @Override
             public void handle(HttpRequest request, HttpResponse response) throws IOException {
                 JSONObject jsonObject = new JSONObject();

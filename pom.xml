@@ -5,16 +5,22 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.smartboot.http</groupId>
     <artifactId>smart-http-parent</artifactId>
-    <version>1.1.6</version>
+    <version>1.1.7</version>
     <packaging>pom</packaging>
 
     <properties>
         <smartsocket.version>1.5.10</smartsocket.version>
-        <smarthttp.version>1.1.6</smarthttp.version>
+        <smarthttp.version>1.1.7</smarthttp.version>
+        <aio.enhance.version>1.0.6</aio.enhance.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.smartboot.aio</groupId>
+                <artifactId>aio-enhance</artifactId>
+                <version>${aio.enhance.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.smartboot.socket</groupId>
                 <artifactId>aio-core</artifactId>
@@ -149,7 +155,7 @@
                     <execution>
                         <id>sign-artifacts</id>
 <!--                        <phase>verify</phase>-->
-                        <phase>deploy</phase>
+                                                <phase>deploy</phase>
                         <goals>
                             <goal>sign</goal>
                         </goals>

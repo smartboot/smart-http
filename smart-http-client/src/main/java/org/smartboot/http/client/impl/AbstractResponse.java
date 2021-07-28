@@ -60,4 +60,14 @@ abstract class AbstractResponse implements HttpResponse {
     public final String body() {
         return response.body();
     }
+
+    @Override
+    public int getStatus() {
+        return response.getStatus();
+    }
+
+    @Override
+    public String getReasonPhrase() {
+        return response.getReasonPhrase();
+    }
 }

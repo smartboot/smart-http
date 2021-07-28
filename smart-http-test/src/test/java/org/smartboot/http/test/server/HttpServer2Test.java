@@ -71,7 +71,7 @@ public class HttpServer2Test extends BastTest {
 
     @Test
     public void test1() throws ExecutionException, InterruptedException {
-        bootstrap.pipeline(new HttpServerHandler() {
+        bootstrap.httpHandler(new HttpServerHandler() {
             @Override
             public void handle(HttpRequest request, HttpResponse response) throws IOException {
                 response.setContentType("test");
@@ -85,7 +85,7 @@ public class HttpServer2Test extends BastTest {
 
     @Test
     public void test2() throws ExecutionException, InterruptedException {
-        bootstrap.pipeline(new HttpServerHandler() {
+        bootstrap.httpHandler(new HttpServerHandler() {
             @Override
             public void handle(HttpRequest request, HttpResponse response) throws IOException {
                 response.write("Hello World".getBytes(StandardCharsets.UTF_8));

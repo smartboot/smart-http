@@ -8,9 +8,8 @@
 
 package org.smartboot.http.client.impl;
 
-import org.smartboot.http.client.decode.Decoder;
+import org.smartboot.http.client.decode.HeaderDecoder;
 import org.smartboot.http.client.decode.HttpProtocolDecoder;
-import org.smartboot.http.client.decode.WebSocketFrameDecoder;
 import org.smartboot.socket.Protocol;
 import org.smartboot.socket.transport.AioSession;
 
@@ -22,45 +21,36 @@ import java.nio.ByteBuffer;
  */
 public class HttpResponseProtocol implements Protocol<Response> {
 
-    /**
-     * 普通Http消息解码完成
-     */
-    public static final Decoder HTTP_FINISH_DECODER = (byteBuffer, aioSession, response) -> null;
-    /**
-     * websocket握手消息
-     */
-    public static final Decoder WS_HAND_SHARK_DECODER = (byteBuffer, aioSession, response) -> null;
-    /**
-     * websocket负载数据读取成功
-     */
-    public static final Decoder WS_FRAME_DECODER = (byteBuffer, aioSession, response) -> null;
+    public static final HeaderDecoder BODY_READY_DECODER = (byteBuffer, aioSession, response) -> null;
+    public static final HeaderDecoder BODY_CONTINUE_DECODER = (byteBuffer, aioSession, response) -> null;
 
     private final HttpProtocolDecoder httpMethodDecoder = new HttpProtocolDecoder();
-
-    private final WebSocketFrameDecoder wsFrameDecoder = new WebSocketFrameDecoder();
 
     @Override
     public Response decode(ByteBuffer buffer, AioSession session) {
         ResponseAttachment attachment = session.getAttachment();
-        Response request = attachment.getResponse();
-        Decoder decodeChain = attachment.getDecoder();
+        Response response = attachment.getResponse();
+        HeaderDecoder decodeChain = attachment.getDecoder();
         if (decodeChain == null) {
             decodeChain = httpMethodDecoder;
         }
 
-        decodeChain = decodeChain.decode(buffer, session, request);
-
-        if (decodeChain == HTTP_FINISH_DECODER || decodeChain == WS_HAND_SHARK_DECODER || decodeChain == WS_FRAME_DECODER) {
-            if (decodeChain == HTTP_FINISH_DECODER) {
-                attachment.setDecoder(null);
-            } else {
-                attachment.setDecoder(wsFrameDecoder);
-            }
-            return request;
+        // 数据还未就绪，继续读
+        if (decodeChain == BODY_CONTINUE_DECODER) {
+            attachment.setDecoder(BODY_READY_DECODER);
+            return null;
+        } else if (decodeChain == BODY_READY_DECODER) {
+            return response;
         }
+
+        decodeChain = decodeChain.decode(buffer, session, response);
         attachment.setDecoder(decodeChain);
+        // 响应式流
+        if (decodeChain == BODY_READY_DECODER) {
+            return response;
+        }
         if (buffer.remaining() == buffer.capacity()) {
-            throw new RuntimeException("buffer is too small when decode " + decodeChain.getClass().getName() + " ," + request);
+            throw new RuntimeException("buffer is too small when decode " + decodeChain.getClass().getName() + " ," + response);
         }
         return null;
     }

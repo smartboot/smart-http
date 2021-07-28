@@ -12,7 +12,7 @@ import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpStatus;
-import org.smartboot.socket.transport.WriteBuffer;
+import org.smartboot.socket.transport.AioSession;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,25 +37,25 @@ final class HttpOutputStream extends AbstractOutputStream {
         }
     }
 
-    public HttpOutputStream(HttpRequestImpl request, HttpResponseImpl response, WriteBuffer writeBuffer) {
-        super(request, response, writeBuffer);
+    public HttpOutputStream(HttpRequestImpl request, HttpResponseImpl response, AioSession session) {
+        super(request, response, session);
     }
 
     @Override
     protected final byte[] getHeadPart() {
-        HttpStatus httpStatus = response.getHttpStatus();
+        int httpStatus = response.getHttpStatus();
+        String reasonPhrase = response.getReasonPhrase();
         int contentLength = response.getContentLength();
         String contentType = response.getContentType();
-        chunked = contentLength < 0;
         byte[] data = null;
         //成功消息优先从缓存中加载
-        boolean cache = httpStatus == HttpStatus.OK;
+        boolean cache = httpStatus == HttpStatus.OK.value() && HttpStatus.OK.getReasonPhrase().equals(reasonPhrase);
         //此处用 == 性能更高
         boolean http10 = HttpProtocolEnum.HTTP_10.getProtocol() == request.getProtocol();
         if (cache && !http10) {
             if (chunked) {
                 data = CACHE_CHUNKED_AND_LENGTH.get(contentType);
-            } else if (contentLength < CACHE_CONTENT_TYPE_AND_LENGTH.length) {
+            } else if (contentLength > 0 && contentLength < CACHE_CONTENT_TYPE_AND_LENGTH.length) {
                 data = CACHE_CONTENT_TYPE_AND_LENGTH[contentLength].get(contentType);
             }
             if (data != null) {
@@ -63,14 +63,19 @@ final class HttpOutputStream extends AbstractOutputStream {
             }
         }
 
-        String str = request.getProtocol() + httpStatus.getHttpStatusLine() + "\r\n"
-                + HeaderNameEnum.CONTENT_TYPE.getName() + ":" + contentType;
-        if (contentLength >= 0) {
-            str += "\r\n" + HeaderNameEnum.CONTENT_LENGTH.getName() + ":" + contentLength;
-        } else if (chunked) {
-            str += "\r\n" + HeaderNameEnum.TRANSFER_ENCODING.getName() + ":" + HeaderValueEnum.CHUNKED.getName();
+        StringBuilder sb = new StringBuilder(request.getProtocol());
+        sb.append(' ').append(httpStatus).append(' ').append(reasonPhrase).append("\r\n");
+        if (contentType != null) {
+            sb.append(HeaderNameEnum.CONTENT_TYPE.getName()).append(':').append(contentType).append("\r\n");
         }
-        data = str.getBytes();
+        if (chunked || contentLength > 0) {
+            if (contentLength >= 0) {
+                sb.append(HeaderNameEnum.CONTENT_LENGTH.getName()).append(':').append(contentLength).append("\r\n");
+            } else {
+                sb.append(HeaderNameEnum.TRANSFER_ENCODING.getName()).append(':').append(HeaderValueEnum.CHUNKED.getName()).append("\r\n");
+            }
+        }
+        data = sb.toString().getBytes();
         //缓存响应头
         if (cache && !http10) {
             if (chunked) {

@@ -9,6 +9,7 @@
 package org.smartboot.http.server.decode;
 
 import org.smartboot.http.common.utils.Constant;
+import org.smartboot.http.server.impl.HttpRequestProtocol;
 import org.smartboot.http.server.impl.Request;
 import org.smartboot.socket.transport.AioSession;
 
@@ -19,7 +20,6 @@ import java.nio.ByteBuffer;
  * @version V1.0 , 2021/4/10
  */
 public class IgnoreHeaderDecoder implements Decoder {
-    private final HttpHeaderEndDecoder decoder = new HttpHeaderEndDecoder();
 
     @Override
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request httpHeader) {
@@ -34,7 +34,7 @@ public class IgnoreHeaderDecoder implements Decoder {
             int index = 0;
             while (byteBuffer.get() == Constant.HEADER_END[index]) {
                 if (index == 3) {
-                    return decoder.decode(byteBuffer, aioSession, httpHeader);
+                    return HttpRequestProtocol.BODY_READY_DECODER;
                 } else {
                     index++;
                 }

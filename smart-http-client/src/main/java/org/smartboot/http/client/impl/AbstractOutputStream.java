@@ -13,7 +13,7 @@ import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.utils.Constant;
-import org.smartboot.socket.transport.WriteBuffer;
+import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
 import java.util.List;
@@ -27,8 +27,8 @@ abstract class AbstractOutputStream extends BufferOutputStream {
 
     protected final AbstractRequest request;
 
-    public AbstractOutputStream(AbstractRequest request, WriteBuffer writeBuffer) {
-        super(writeBuffer);
+    public AbstractOutputStream(AbstractRequest request, AioSession aioSession) {
+        super(aioSession);
         this.request = request;
     }
 
@@ -44,7 +44,7 @@ abstract class AbstractOutputStream extends BufferOutputStream {
         }
         this.chunked = false;
         //输出http状态行、contentType,contentLength、Transfer-Encoding、server等信息
-        String headLine = request.getMethod() + " " + request.getUri() + " " + request.getProtocol();
+        String headLine = request.getMethod() + " " + request.getUri() + " " + request.getProtocol() + "\r\n";
         writeBuffer.write(getBytes(headLine));
         //转换Cookie
         convertCookieToHeader(request);
@@ -56,11 +56,12 @@ abstract class AbstractOutputStream extends BufferOutputStream {
                 while (headerValue != null) {
                     writeBuffer.write(getHeaderNameBytes(entry.getKey()));
                     writeBuffer.write(getBytes(headerValue.getValue()));
+                    writeBuffer.write(Constant.CRLF);
                     headerValue = headerValue.getNextValue();
                 }
             }
         }
-        writeBuffer.write(Constant.HEADER_END);
+        writeBuffer.write(Constant.CRLF);
         committed = true;
     }
 

@@ -13,8 +13,10 @@ import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
+import org.smartboot.http.common.enums.HttpStatus;
+import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.server.HttpRequest;
-import org.smartboot.socket.transport.WriteBuffer;
+import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -46,8 +48,8 @@ abstract class AbstractOutputStream extends BufferOutputStream {
     protected final AbstractResponse response;
     protected final HttpRequest request;
 
-    public AbstractOutputStream(HttpRequest request, AbstractResponse response, WriteBuffer writeBuffer) {
-        super(writeBuffer);
+    public AbstractOutputStream(HttpRequest request, AbstractResponse response, AioSession session) {
+        super(session);
         this.response = response;
         this.request = request;
     }
@@ -56,7 +58,7 @@ abstract class AbstractOutputStream extends BufferOutputStream {
         if ((System.currentTimeMillis() - currentDate.getTime() > 990) && flushDateSemaphore.tryAcquire()) {
             try {
                 currentDate.setTime(System.currentTimeMillis());
-                AbstractOutputStream.date = ("\r\n" + HeaderNameEnum.DATE.getName() + ":" + sdf.format(currentDate) + "\r\n"
+                AbstractOutputStream.date = (HeaderNameEnum.DATE.getName() + ":" + sdf.format(currentDate) + "\r\n"
                         + HeaderNameEnum.SERVER.getName() + ":" + SERVER_ALIAS_NAME + "\r\n\r\n").getBytes();
             } finally {
                 flushDateSemaphore.release();
@@ -85,8 +87,15 @@ abstract class AbstractOutputStream extends BufferOutputStream {
          * RFC2616 3.3.1
          * 只能用 RFC 1123 里定义的日期格式来填充头域 (header field)的值里用到 HTTP-date 的地方
          */
-        flushDate();
-        writeBuffer.write(date);
+        if (response.getHeader(HeaderNameEnum.DATE.getName()) == null
+                && response.getHeader(HeaderNameEnum.SERVER.getName()) == null) {
+            flushDate();
+            writeBuffer.write(date);
+        } else {
+            writeBuffer.write(Constant.CRLF);
+        }
+
+
         committed = true;
     }
 
@@ -107,6 +116,7 @@ abstract class AbstractOutputStream extends BufferOutputStream {
                 while (headerValue != null) {
                     writeBuffer.write(getHeaderNameBytes(entry.getKey()));
                     writeBuffer.write(getBytes(headerValue.getValue()));
+                    writeBuffer.write(Constant.CRLF);
                     headerValue = headerValue.getNextValue();
                 }
             }
@@ -118,5 +128,21 @@ abstract class AbstractOutputStream extends BufferOutputStream {
         if (HttpMethodEnum.HEAD.getMethod().equals(request.getMethod())) {
             throw new UnsupportedOperationException(request.getMethod() + " can not write http body");
         }
+        //识别是否采用 chunked 输出
+        if (!committed) {
+            chunked = supportChunked(request, response);
+        }
+    }
+
+    /**
+     * 是否支持chunked输出
+     *
+     * @return
+     */
+    private boolean supportChunked(HttpRequest request, AbstractResponse response) {
+        return (request.getMethod() == HttpMethodEnum.GET.getMethod()
+                || request.getMethod() == HttpMethodEnum.POST.getMethod())
+                && response.getHttpStatus() != HttpStatus.CONTINUE.value()
+                && response.getContentLength() < 0;
     }
 }

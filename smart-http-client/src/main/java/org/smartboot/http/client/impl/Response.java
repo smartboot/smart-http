@@ -10,9 +10,11 @@ package org.smartboot.http.client.impl;
 
 import org.smartboot.http.client.HttpResponse;
 import org.smartboot.http.common.HeaderValue;
+import org.smartboot.http.common.enums.DecodePartEnum;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.utils.NumberUtils;
 import org.smartboot.http.common.utils.StringUtils;
+import org.smartboot.socket.transport.AioSession;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -32,28 +34,37 @@ public class Response implements HttpResponse {
      * Http请求头
      */
     private final List<HeaderValue> headers = new ArrayList<>(8);
-
+    private final AioSession session;
     private String headerTemp;
-
     private int headerSize = 0;
-
     /**
      * Http协议版本
      */
     private String protocol;
     private String contentType;
     private int contentLength = INIT_CONTENT_LENGTH;
-
     /**
      * body内容
      */
     private String body;
-
-    private int statusCode;
-
-    private String statusDesc;
-
+    /**
+     * http 响应码
+     */
+    private int status;
+    /**
+     * 响应码描述
+     */
+    private String reasonPhrase;
     private String encoding;
+    private DecodePartEnum decodePartEnum = DecodePartEnum.HEADER_FINISH;
+
+    public Response(AioSession session) {
+        this.session = session;
+    }
+
+    public AioSession getSession() {
+        return session;
+    }
 
     @Override
     public final String getHeader(String headName) {
@@ -100,6 +111,14 @@ public class Response implements HttpResponse {
             headers.add(new HeaderValue(headerName, value));
         }
         headerSize++;
+    }
+
+    public DecodePartEnum getDecodePartEnum() {
+        return decodePartEnum;
+    }
+
+    public void setDecodePartEnum(DecodePartEnum decodePartEnum) {
+        this.decodePartEnum = decodePartEnum;
     }
 
     @Override
@@ -157,19 +176,19 @@ public class Response implements HttpResponse {
         this.body = body;
     }
 
-    public int getStatusCode() {
-        return statusCode;
+    public int getStatus() {
+        return status;
     }
 
-    public void setStatusCode(int statusCode) {
-        this.statusCode = statusCode;
+    public void setStatus(int status) {
+        this.status = status;
     }
 
-    public String getStatusDesc() {
-        return statusDesc;
+    public String getReasonPhrase() {
+        return reasonPhrase;
     }
 
-    public void setStatusDesc(String statusDesc) {
-        this.statusDesc = statusDesc;
+    public void setReasonPhrase(String reasonPhrase) {
+        this.reasonPhrase = reasonPhrase;
     }
 }

@@ -35,7 +35,7 @@ public interface HttpResponse {
      *
      * @return
      */
-    HttpStatus getHttpStatus();
+    int getHttpStatus();
 
     /**
      * 设置Http响应状态,若不设置默认{@link HttpStatus#OK}
@@ -43,6 +43,20 @@ public interface HttpResponse {
      * @param httpStatus
      */
     void setHttpStatus(HttpStatus httpStatus);
+
+    /**
+     * 设置Http响应状态,若不设置默认{@link HttpStatus#OK}
+     *
+     * @param httpStatus
+     */
+    void setHttpStatus(int httpStatus, String reasonPhrase);
+
+    /**
+     * 获取Http响应描述
+     *
+     * @return
+     */
+    String getReasonPhrase();
 
     /**
      * Sets a response header with the given name and value. If the header had

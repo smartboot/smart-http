@@ -1,20 +1,19 @@
 /*******************************************************************************
  * Copyright (c) 2017-2021, org.smartboot. All rights reserved.
  * project name: smart-http
- * file name: HttpResponseImpl.java
- * Date: 2021-02-04
+ * file name: DecodePartEnum.java
+ * Date: 2021-07-13
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
-package org.smartboot.http.client.impl;
+package org.smartboot.http.common.enums;
 
 /**
- * @author 三刀
- * @version V1.0 , 2018/8/31
+ * @author 三刀（zhengjunweimail@163.com）
+ * @version V1.0 , 2021/7/12
  */
-public final class HttpResponseImpl extends AbstractResponse {
-
-    public HttpResponseImpl(Response request) {
-        init(request);
-    }
+public enum DecodePartEnum {
+    HEADER_FINISH,
+    BODY,
+    FINISH;
 }

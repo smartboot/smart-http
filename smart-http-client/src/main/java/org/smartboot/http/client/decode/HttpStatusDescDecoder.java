@@ -1,8 +1,8 @@
 /*******************************************************************************
- * Copyright (c) 2017-2020, org.smartboot. All rights reserved.
+ * Copyright (c) 2017-2021, org.smartboot. All rights reserved.
  * project name: smart-http
- * file name: RequestLineDecoder.java
- * Date: 2020-03-30
+ * file name: HttpStatusDescDecoder.java
+ * Date: 2021-07-15
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
@@ -19,16 +19,16 @@ import java.nio.ByteBuffer;
  * @author 三刀
  * @version V1.0 , 2020/3/30
  */
-class HttpStatusDescDecoder implements Decoder {
+class HttpStatusDescDecoder implements HeaderDecoder {
 
     private final HttpHeaderDecoder decoder = new HttpHeaderDecoder();
 
     @Override
-    public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Response request) {
+    public HeaderDecoder decode(ByteBuffer byteBuffer, AioSession aioSession, Response request) {
         int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.LF);
         if (length > 0) {
             String protocol = StringUtils.convertToString(byteBuffer, byteBuffer.position() - length - 1, length - 1, StringUtils.String_CACHE_EMPTY);
-            request.setStatusDesc(protocol);
+            request.setReasonPhrase(protocol);
             return decoder.decode(byteBuffer, aioSession, request);
         } else {
             return this;

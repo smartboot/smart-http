@@ -19,6 +19,6 @@ import java.nio.ByteBuffer;
  */
 public interface Decoder {
 
-    Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request httpHeader);
+    Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request);
 
 }

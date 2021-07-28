@@ -14,8 +14,10 @@ import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
 import org.smartboot.http.server.HttpServerHandler;
+import org.smartboot.http.server.impl.Request;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -39,15 +41,48 @@ public final class HttpRouteHandler extends HttpServerHandler {
     private final Map<String, HttpServerHandler> handlerMap = new ConcurrentHashMap<>();
 
     @Override
+    public void onHeaderComplete(Request request) throws IOException {
+        matchHandler(request.getRequestURI()).onHeaderComplete(request);
+    }
+
+    @Override
+    public boolean onBodyStream(ByteBuffer buffer, Request request) {
+        return matchHandler(request.getRequestURI()).onBodyStream(buffer, request);
+    }
+
+    @Override
+    public void onClose(Request request) {
+        matchHandler(request.getRequestURI()).onClose(request);
+    }
+
+    @Override
     public void handle(HttpRequest request, HttpResponse response) throws IOException {
-        String uri = request.getRequestURI();
+        matchHandler(request.getRequestURI()).handle(request, response);
+    }
+
+    /**
+     * 配置URL路由
+     *
+     * @param urlPattern  url匹配
+     * @param httpHandler 处理handler
+     * @return
+     */
+    public HttpRouteHandler route(String urlPattern, HttpServerHandler httpHandler) {
+        //缓存精准路径
+        if (!urlPattern.contains("*") && StringUtils.addCache(StringUtils.String_CACHE_URI, urlPattern) && urlPattern.length() < handlerCaches.length) {
+            handlerCaches[urlPattern.length() - 1] = new HandlerCache(urlPattern, httpHandler);
+        }
+        handlerMap.put(urlPattern, httpHandler);
+        return this;
+    }
+
+    private HttpServerHandler matchHandler(String uri) {
         int len = uri.length();
         int index = len - 1;
         if (index < handlerCaches.length) {
             HandlerCache handleCache = handlerCaches[index];
             if (handleCache != null && handleCache.getUri() == uri) {
-                handleCache.handler.handle(request, response);
-                return;
+                return handleCache.handler;
             }
         }
         HttpServerHandler httpHandler = handlerMap.get(uri);
@@ -63,23 +98,7 @@ public final class HttpRouteHandler extends HttpServerHandler {
             }
             handlerMap.put(uri, httpHandler);
         }
-        httpHandler.handle(request, response);
-    }
-
-    /**
-     * 配置URL路由
-     *
-     * @param urlPattern url匹配
-     * @param httpHandler 处理handler
-     * @return
-     */
-    public HttpRouteHandler route(String urlPattern, HttpServerHandler httpHandler) {
-        //缓存精准路径
-        if (!urlPattern.contains("*") && StringUtils.addCache(StringUtils.String_CACHE_URI, urlPattern) && urlPattern.length() < handlerCaches.length) {
-            handlerCaches[urlPattern.length() - 1] = new HandlerCache(urlPattern, httpHandler);
-        }
-        handlerMap.put(urlPattern, httpHandler);
-        return this;
+        return httpHandler;
     }
 
     private static class HandlerCache {

@@ -33,7 +33,7 @@ public class WebSocketDemo {
 
         // 3. 启动服务
         HttpBootstrap bootstrap = new HttpBootstrap();
-        bootstrap.wsPipeline().next(routeHandle);
+        bootstrap.webSocketHandler(routeHandle);
         bootstrap.start();
     }
 }

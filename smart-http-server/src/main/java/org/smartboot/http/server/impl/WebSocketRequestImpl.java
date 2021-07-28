@@ -8,7 +8,7 @@
 
 package org.smartboot.http.server.impl;
 
-import org.smartboot.http.common.enums.WebsocketStatus;
+import org.smartboot.http.common.enums.DecodePartEnum;
 import org.smartboot.http.server.WebSocketRequest;
 
 import java.io.ByteArrayOutputStream;
@@ -26,7 +26,6 @@ public class WebSocketRequestImpl extends AbstractRequest implements WebSocketRe
     public static final byte OPCODE_CLOSE = 0x8;
     public static final byte OPCODE_PING = 0x9;
     public static final byte OPCODE_PONG = 0xA;
-    private WebsocketStatus websocketStatus;
     private boolean frameFinalFlag;
     private boolean frameMasked;
     private int frameRsv;
@@ -37,20 +36,11 @@ public class WebSocketRequestImpl extends AbstractRequest implements WebSocketRe
 
     public WebSocketRequestImpl(Request baseHttpRequest) {
         init(baseHttpRequest);
-        this.websocketStatus = WebsocketStatus.HandShake;
-        this.response = new WebSocketResponseImpl(this, baseHttpRequest.getAioSession().writeBuffer());
+        this.response = new WebSocketResponseImpl(this, baseHttpRequest.getAioSession());
     }
 
     public final WebSocketResponseImpl getResponse() {
         return response;
-    }
-
-    public WebsocketStatus getWebsocketStatus() {
-        return websocketStatus;
-    }
-
-    public void setWebsocketStatus(WebsocketStatus websocketStatus) {
-        this.websocketStatus = websocketStatus;
     }
 
     public InputStream getInputStream() {
@@ -60,6 +50,7 @@ public class WebSocketRequestImpl extends AbstractRequest implements WebSocketRe
 
     @Override
     public void reset() {
+        request.setDecodePartEnum(DecodePartEnum.BODY);
         payload.reset();
     }
 

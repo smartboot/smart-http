@@ -8,7 +8,7 @@
 
 package org.smartboot.http.client.impl;
 
-import org.smartboot.socket.transport.WriteBuffer;
+import org.smartboot.socket.transport.AioSession;
 
 /**
  * @author 三刀
@@ -16,7 +16,7 @@ import org.smartboot.socket.transport.WriteBuffer;
  */
 public final class HttpRequestImpl extends AbstractRequest {
 
-    public HttpRequestImpl(WriteBuffer outputStream) {
-        init(new HttpOutputStream(this, outputStream));
+    public HttpRequestImpl(AioSession session) {
+        init(new HttpOutputStream(this, session));
     }
 }

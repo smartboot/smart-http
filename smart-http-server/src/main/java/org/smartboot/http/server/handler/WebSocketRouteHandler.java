@@ -14,8 +14,10 @@ import org.smartboot.http.common.utils.AntPathMatcher;
 import org.smartboot.http.server.WebSocketHandler;
 import org.smartboot.http.server.WebSocketRequest;
 import org.smartboot.http.server.WebSocketResponse;
+import org.smartboot.http.server.impl.Request;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -38,7 +40,12 @@ public final class WebSocketRouteHandler extends WebSocketHandler {
     private final Map<String, WebSocketHandler> handlerMap = new ConcurrentHashMap<>();
 
     @Override
-    public void handle(WebSocketRequest request, WebSocketResponse response) throws IOException {
+    public void onClose(Request request) {
+        handlerMap.get(request.getRequestURI()).onClose(request);
+    }
+
+    @Override
+    public void onHeaderComplete(Request request) throws IOException {
         String uri = request.getRequestURI();
         WebSocketHandler httpHandler = handlerMap.get(uri);
         if (httpHandler == null) {
@@ -53,7 +60,18 @@ public final class WebSocketRouteHandler extends WebSocketHandler {
             }
             handlerMap.put(uri, httpHandler);
         }
+        httpHandler.onHeaderComplete(request);
+    }
 
+    @Override
+    public boolean onBodyStream(ByteBuffer byteBuffer, Request request) {
+        return handlerMap.get(request.getRequestURI()).onBodyStream(byteBuffer, request);
+    }
+
+    @Override
+    public void handle(WebSocketRequest request, WebSocketResponse response) throws IOException {
+        String uri = request.getRequestURI();
+        WebSocketHandler httpHandler = handlerMap.get(uri);
         httpHandler.handle(request, response);
     }
 

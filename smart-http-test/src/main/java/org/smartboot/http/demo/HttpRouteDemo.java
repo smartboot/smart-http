@@ -47,7 +47,7 @@ public class HttpRouteDemo {
 
         // 3. 启动服务
         HttpBootstrap bootstrap = new HttpBootstrap();
-        bootstrap.pipeline().next(routeHandle);
+        bootstrap.httpHandler(routeHandle);
         bootstrap.start();
     }
 }

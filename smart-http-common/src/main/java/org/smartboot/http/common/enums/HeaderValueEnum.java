@@ -20,7 +20,8 @@ public enum HeaderValueEnum {
     WEBSOCKET("websocket"),
     KEEPALIVE("Keep-Alive"),
     keepalive("keep-alive"),
-    DEFAULT_CONTENT_TYPE("text/html; charset=utf-8");
+    DEFAULT_CONTENT_TYPE("text/html; charset=utf-8"),
+    CONTINUE("100-continue");
 
     private final String name;
 
