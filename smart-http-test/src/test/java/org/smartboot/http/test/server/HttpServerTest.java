@@ -98,6 +98,7 @@ public class HttpServerTest extends BastTest {
         for (int i = 0; i < 10; i++) {
             headers.put("header_" + i, UUID.randomUUID().toString());
         }
+        headers.put("header_empty", "");
         requestUnit.setHeaders(headers);
         Map<String, String> params = new HashMap<>();
         for (int i = 0; i < 10; i++) {

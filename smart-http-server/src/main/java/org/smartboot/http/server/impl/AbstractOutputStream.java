@@ -124,6 +124,15 @@ abstract class AbstractOutputStream extends BufferOutputStream {
     }
 
     @Override
+    public void close() throws IOException {
+        //识别是否采用 chunked 输出
+        if (!committed) {
+            chunked = supportChunked(request, response);
+        }
+        super.close();
+    }
+
+    @Override
     protected final void check() {
         if (HttpMethodEnum.HEAD.getMethod().equals(request.getMethod())) {
             throw new UnsupportedOperationException(request.getMethod() + " can not write http body");

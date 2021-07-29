@@ -102,7 +102,7 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
     }
 
     @Override
-    public final void close() throws IOException {
+    public void close() throws IOException {
         if (closed) {
             throw new IOException("outputStream has already closed");
         }

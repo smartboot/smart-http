@@ -68,12 +68,10 @@ final class HttpOutputStream extends AbstractOutputStream {
         if (contentType != null) {
             sb.append(HeaderNameEnum.CONTENT_TYPE.getName()).append(':').append(contentType).append("\r\n");
         }
-        if (chunked || contentLength > 0) {
-            if (contentLength >= 0) {
-                sb.append(HeaderNameEnum.CONTENT_LENGTH.getName()).append(':').append(contentLength).append("\r\n");
-            } else {
-                sb.append(HeaderNameEnum.TRANSFER_ENCODING.getName()).append(':').append(HeaderValueEnum.CHUNKED.getName()).append("\r\n");
-            }
+        if (contentLength >= 0) {
+            sb.append(HeaderNameEnum.CONTENT_LENGTH.getName()).append(':').append(contentLength).append("\r\n");
+        } else if (chunked) {
+            sb.append(HeaderNameEnum.TRANSFER_ENCODING.getName()).append(':').append(HeaderValueEnum.CHUNKED.getName()).append("\r\n");
         }
         data = sb.toString().getBytes();
         //缓存响应头
