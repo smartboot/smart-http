@@ -36,7 +36,7 @@ public class HttpServerConfiguration {
     /**
      * 服务线程数
      */
-    private int threadNum = Runtime.getRuntime().availableProcessors();
+    private int threadNum = Runtime.getRuntime().availableProcessors() < 2 ? 2 : Runtime.getRuntime().availableProcessors();
     private int writePageSize = 1024 * 1024;
     private int writePageNum = threadNum;
 
