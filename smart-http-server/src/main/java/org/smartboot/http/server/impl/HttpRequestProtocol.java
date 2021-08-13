@@ -39,7 +39,6 @@ public class HttpRequestProtocol implements Protocol<Request> {
         Decoder decodeChain = attachment.getDecoder();
         if (decodeChain == null) {
             decodeChain = httpMethodDecoder;
-            attachment.setReadBuffer(buffer);
         }
         // 数据还未就绪，继续读
         if (decodeChain == BODY_CONTINUE_DECODER) {

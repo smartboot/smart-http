@@ -15,6 +15,7 @@ import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.AbstractQueue;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -47,7 +48,7 @@ public class HttpMessageProcessor implements MessageProcessor<Response> {
             case HEADER_FINISH:
                 doHttpHeader(response, responseHandler);
             case BODY:
-                doHttpBody(response, responseAttachment, responseHandler);
+                doHttpBody(response, session.readBuffer(), responseAttachment, responseHandler);
                 if (response.getDecodePartEnum() != DecodePartEnum.FINISH) {
                     break;
                 }
@@ -65,10 +66,10 @@ public class HttpMessageProcessor implements MessageProcessor<Response> {
         }
     }
 
-    private void doHttpBody(Response response, ResponseAttachment responseAttachment, ResponseHandler responseHandler) {
-        if (responseHandler.onBodyStream(responseAttachment.getByteBuffer(), response)) {
+    private void doHttpBody(Response response, ByteBuffer readBuffer, ResponseAttachment responseAttachment, ResponseHandler responseHandler) {
+        if (responseHandler.onBodyStream(readBuffer, response)) {
             response.setDecodePartEnum(DecodePartEnum.FINISH);
-        } else if (responseAttachment.getByteBuffer().hasRemaining()) {
+        } else if (readBuffer.hasRemaining()) {
             //半包,继续读数据
             responseAttachment.setDecoder(HttpResponseProtocol.BODY_CONTINUE_DECODER);
         }

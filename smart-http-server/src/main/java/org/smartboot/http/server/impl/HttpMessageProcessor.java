@@ -24,6 +24,7 @@ import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
@@ -65,7 +66,7 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
                         break;
                     }
                 case BODY:
-                    onHttpBody(request, attachment, handler);
+                    onHttpBody(request, session.readBuffer(), attachment, handler);
                     if (response.isClosed() || request.getDecodePartEnum() != DecodePartEnum.FINISH) {
                         break;
                     }
@@ -90,13 +91,13 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
         abstractRequest.reset();
     }
 
-    private void onHttpBody(Request request, RequestAttachment attachment, ServerHandler<?, ?> handler) {
-        if (handler.onBodyStream(attachment.getReadBuffer(), request)) {
+    private void onHttpBody(Request request, ByteBuffer readBuffer, RequestAttachment attachment, ServerHandler<?, ?> handler) {
+        if (handler.onBodyStream(readBuffer, request)) {
             request.setDecodePartEnum(DecodePartEnum.FINISH);
             if (!request.isWebsocket()) {
                 attachment.setDecoder(null);
             }
-        } else if (attachment.getReadBuffer().hasRemaining()) {
+        } else if (readBuffer.hasRemaining()) {
             //半包,继续读数据
             attachment.setDecoder(HttpRequestProtocol.BODY_CONTINUE_DECODER);
         }

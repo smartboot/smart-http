@@ -10,8 +10,6 @@ package org.smartboot.http.server.impl;
 
 import org.smartboot.http.server.decode.Decoder;
 
-import java.nio.ByteBuffer;
-
 /**
  * Http/Ws 请求解码附件对象
  *
@@ -27,11 +25,6 @@ public class RequestAttachment {
      * 当前使用的解码器
      */
     private Decoder decoder;
-
-    /**
-     * read缓冲区
-     */
-    private ByteBuffer readBuffer;
 
     public RequestAttachment(Request request) {
         this.request = request;
@@ -49,11 +42,4 @@ public class RequestAttachment {
         this.decoder = decoder;
     }
 
-    public ByteBuffer getReadBuffer() {
-        return readBuffer;
-    }
-
-    public void setReadBuffer(ByteBuffer readBuffer) {
-        this.readBuffer = readBuffer;
-    }
 }
