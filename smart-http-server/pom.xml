@@ -22,9 +22,5 @@
             <groupId>org.smartboot.http</groupId>
             <artifactId>smart-http-common</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.smartboot.aio</groupId>
-            <artifactId>aio-enhance</artifactId>
-        </dependency>
     </dependencies>
 </project>

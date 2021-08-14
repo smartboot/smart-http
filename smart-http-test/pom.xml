@@ -18,7 +18,6 @@
     <properties>
         <smarthttp.version>1.1.8-SNAPSHOT</smarthttp.version>
         <junit.version>4.13.1</junit.version>
-        <enhance.version>1.0.3</enhance.version>
         <json.version>1.2.62</json.version>
         <slf4j.version>1.7.30</slf4j.version>
         <commons.fileupload.version>1.4</commons.fileupload.version>
@@ -27,12 +26,7 @@
         <dependency>
             <groupId>org.smartboot.socket</groupId>
             <artifactId>aio-pro</artifactId>
-            <version>1.5.10</version>
-        </dependency>
-        <dependency>
-            <groupId>org.smartboot.aio</groupId>
-            <artifactId>aio-enhance</artifactId>
-            <version>${enhance.version}</version>
+            <version>1.5.11</version>
         </dependency>
         <dependency>
             <groupId>org.smartboot.http</groupId>
