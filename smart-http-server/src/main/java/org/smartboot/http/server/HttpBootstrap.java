@@ -8,7 +8,6 @@
 
 package org.smartboot.http.server;
 
-import org.smartboot.aio.EnhanceAsynchronousChannelProvider;
 import org.smartboot.http.server.impl.HttpMessageProcessor;
 import org.smartboot.http.server.impl.HttpRequestProtocol;
 import org.smartboot.socket.buffer.BufferPagePool;
@@ -89,7 +88,6 @@ public class HttpBootstrap {
      * 启动HTTP服务
      */
     public void start() {
-        System.setProperty("java.nio.channels.spi.AsynchronousChannelProvider", EnhanceAsynchronousChannelProvider.class.getName());
         BufferPagePool readBufferPool = new BufferPagePool(configuration.getReadPageSize(), 1, false);
         server = new AioQuickServer(configuration.getHost(), port, new HttpRequestProtocol(configuration), configuration.getProcessor().apply(processor));
         server.setThreadNum(configuration.getThreadNum())

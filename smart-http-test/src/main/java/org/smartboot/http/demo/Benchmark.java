@@ -8,7 +8,6 @@
 
 package org.smartboot.http.demo;
 
-import org.smartboot.aio.EnhanceAsynchronousChannelProvider;
 import org.smartboot.http.client.HttpClient;
 import org.smartboot.http.client.HttpResponse;
 import org.smartboot.http.client.impl.HttpMessageProcessor;
@@ -32,7 +31,6 @@ import java.util.function.Consumer;
  */
 public class Benchmark {
     public static void main(String[] args) throws InterruptedException, IOException {
-        System.setProperty("java.nio.channels.spi.AsynchronousChannelProvider", EnhanceAsynchronousChannelProvider.class.getName());
 
         int time = 15 * 1000;
 //        int time = Integer.MAX_VALUE;
