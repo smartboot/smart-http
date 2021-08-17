@@ -36,7 +36,7 @@ public class HttpServerConfiguration {
     /**
      * 服务线程数
      */
-    private int threadNum = Runtime.getRuntime().availableProcessors() < 2 ? 2 : Runtime.getRuntime().availableProcessors();
+    private int threadNum = Math.max(Runtime.getRuntime().availableProcessors(), 2);
     private int writePageSize = 1024 * 1024;
     private int writePageNum = threadNum;
 
@@ -46,6 +46,11 @@ public class HttpServerConfiguration {
      * 解析的header数量上限
      */
     private int headerLimiter = 100;
+
+    /**
+     * 启用 debug 模式后会打印码流
+     */
+    private boolean debug;
 
     private Function<MessageProcessor<Request>, MessageProcessor<Request>> processor = messageProcessor -> messageProcessor;
 
@@ -143,5 +148,14 @@ public class HttpServerConfiguration {
      */
     public void headerLimiter(int headerLimiter) {
         this.headerLimiter = headerLimiter;
+    }
+
+    boolean isDebug() {
+        return debug;
+    }
+
+    public HttpServerConfiguration debug(boolean debug) {
+        this.debug = debug;
+        return this;
     }
 }

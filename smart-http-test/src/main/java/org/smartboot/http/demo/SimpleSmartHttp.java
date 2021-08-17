@@ -25,6 +25,7 @@ public class SimpleSmartHttp {
                 response.write("hello smart-http<br/>".getBytes());
             }
         });
+        bootstrap.configuration().debug(true);
         bootstrap.setPort(8080).start();
     }
 }

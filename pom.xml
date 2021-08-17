@@ -9,7 +9,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <smartsocket.version>1.5.11</smartsocket.version>
+        <smartsocket.version>1.5.12-SNAPSHOT</smartsocket.version>
         <smarthttp.version>1.1.8</smarthttp.version>
     </properties>
 
@@ -17,7 +17,7 @@
         <dependencies>
             <dependency>
                 <groupId>org.smartboot.socket</groupId>
-                <artifactId>aio-core</artifactId>
+                <artifactId>aio-pro</artifactId>
                 <version>${smartsocket.version}</version>
             </dependency>
             <dependency>
@@ -148,8 +148,8 @@
                 <executions>
                     <execution>
                         <id>sign-artifacts</id>
-<!--                        <phase>verify</phase>-->
-                                                <phase>deploy</phase>
+                        <!--                        <phase>verify</phase>-->
+                        <phase>deploy</phase>
                         <goals>
                             <goal>sign</goal>
                         </goals>

@@ -10,8 +10,14 @@ package org.smartboot.http.server;
 
 import org.smartboot.http.server.impl.HttpMessageProcessor;
 import org.smartboot.http.server.impl.HttpRequestProtocol;
+import org.smartboot.http.server.impl.Request;
+import org.smartboot.socket.MessageProcessor;
+import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.buffer.BufferPagePool;
+import org.smartboot.socket.extension.plugins.StreamMonitorPlugin;
+import org.smartboot.socket.extension.processor.AbstractMessageProcessor;
 import org.smartboot.socket.transport.AioQuickServer;
+import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
 
@@ -89,7 +95,7 @@ public class HttpBootstrap {
      */
     public void start() {
         BufferPagePool readBufferPool = new BufferPagePool(configuration.getReadPageSize(), 1, false);
-        server = new AioQuickServer(configuration.getHost(), port, new HttpRequestProtocol(configuration), configuration.getProcessor().apply(processor));
+        server = new AioQuickServer(configuration.getHost(), port, new HttpRequestProtocol(configuration), getProcessor());
         server.setThreadNum(configuration.getThreadNum())
                 .setBannerEnabled(false)
                 .setBufferFactory(() -> new BufferPagePool(configuration.getWritePageSize(), configuration.getWritePageNum(), true))
@@ -102,6 +108,27 @@ public class HttpBootstrap {
             server.start();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private MessageProcessor<Request> getProcessor() {
+        MessageProcessor<Request> messageProcessor = configuration.getProcessor().apply(processor);
+        if (configuration.isDebug()) {
+            AbstractMessageProcessor<Request> abstractMessageProcessor = new AbstractMessageProcessor<Request>() {
+                @Override
+                public void process0(AioSession session, Request msg) {
+                    messageProcessor.process(session, msg);
+                }
+
+                @Override
+                public void stateEvent0(AioSession session, StateMachineEnum stateMachineEnum, Throwable throwable) {
+                    messageProcessor.stateEvent(session, stateMachineEnum, throwable);
+                }
+            };
+            abstractMessageProcessor.addPlugin(new StreamMonitorPlugin<>(StreamMonitorPlugin.BLUE_TEXT_INPUT_STREAM,StreamMonitorPlugin.RED_TEXT_OUTPUT_STREAM));
+            return abstractMessageProcessor;
+        } else {
+            return messageProcessor;
         }
     }
 
