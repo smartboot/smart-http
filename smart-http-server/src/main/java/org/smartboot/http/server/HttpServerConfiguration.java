@@ -8,6 +8,7 @@
 
 package org.smartboot.http.server;
 
+import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.impl.Request;
 import org.smartboot.socket.MessageProcessor;
 
@@ -51,6 +52,11 @@ public class HttpServerConfiguration {
      * 启用 debug 模式后会打印码流
      */
     private boolean debug;
+
+    /**
+     * 服务器名称
+     */
+    private String serverName = "smart-http";
 
     private Function<MessageProcessor<Request>, MessageProcessor<Request>> processor = messageProcessor -> messageProcessor;
 
@@ -146,8 +152,9 @@ public class HttpServerConfiguration {
      *
      * @param headerLimiter
      */
-    public void headerLimiter(int headerLimiter) {
+    public HttpServerConfiguration headerLimiter(int headerLimiter) {
         this.headerLimiter = headerLimiter;
+        return this;
     }
 
     boolean isDebug() {
@@ -156,6 +163,19 @@ public class HttpServerConfiguration {
 
     public HttpServerConfiguration debug(boolean debug) {
         this.debug = debug;
+        return this;
+    }
+
+    public String serverName() {
+        return serverName;
+    }
+
+    public HttpServerConfiguration serverName(String server) {
+        if (server == null) {
+            this.serverName = null;
+        } else {
+            this.serverName = StringUtils.trim(server).replaceAll("\r", "").replaceAll("\n", "");
+        }
         return this;
     }
 }

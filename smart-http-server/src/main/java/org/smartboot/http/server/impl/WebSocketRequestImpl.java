@@ -26,17 +26,16 @@ public class WebSocketRequestImpl extends AbstractRequest implements WebSocketRe
     public static final byte OPCODE_CLOSE = 0x8;
     public static final byte OPCODE_PING = 0x9;
     public static final byte OPCODE_PONG = 0xA;
+    private final ByteArrayOutputStream payload = new ByteArrayOutputStream();
+    private final WebSocketResponseImpl response;
     private boolean frameFinalFlag;
     private boolean frameMasked;
     private int frameRsv;
     private int frameOpcode;
 
-    private ByteArrayOutputStream payload = new ByteArrayOutputStream();
-    private WebSocketResponseImpl response;
-
     public WebSocketRequestImpl(Request baseHttpRequest) {
         init(baseHttpRequest);
-        this.response = new WebSocketResponseImpl(this, baseHttpRequest.getAioSession());
+        this.response = new WebSocketResponseImpl(this, baseHttpRequest);
     }
 
     public final WebSocketResponseImpl getResponse() {

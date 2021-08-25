@@ -9,7 +9,6 @@
 package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.enums.HeaderNameEnum;
-import org.smartboot.socket.transport.AioSession;
 
 /**
  * @author 三刀
@@ -17,14 +16,14 @@ import org.smartboot.socket.transport.AioSession;
  */
 final class WebSocketOutputStream extends AbstractOutputStream {
 
-    public WebSocketOutputStream(WebSocketRequestImpl request, WebSocketResponseImpl response, AioSession writeBuffer) {
-        super(request, response, writeBuffer);
+    public WebSocketOutputStream(WebSocketRequestImpl webSocketRequest, WebSocketResponseImpl response, Request request) {
+        super(webSocketRequest, response, request);
         super.chunked = false;
     }
 
     @Override
-    protected final byte[] getHeadPart() {
+    protected byte[] getHeadPart() {
         return getBytes(request.getProtocol() + " " + response.getHttpStatus() + " " + response.getReasonPhrase() + "\r\n"
-                + HeaderNameEnum.CONTENT_TYPE.getName() + ":" + response.getContentType() + "\r\n");
+                + HeaderNameEnum.CONTENT_TYPE.getName() + ":" + response.getContentType() + (hasHeader() ? "\r\n" : "\r\n\r\n"));
     }
 }

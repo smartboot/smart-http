@@ -16,6 +16,7 @@ import org.smartboot.http.common.logging.LoggerFactory;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
+import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.HttpServerHandler;
 import org.smartboot.http.server.ServerHandler;
 import org.smartboot.http.server.WebSocketHandler;
@@ -42,6 +43,7 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
         }
     });
     private WebSocketHandler webSocketHandler;
+    private HttpServerConfiguration configuration;
 
     @Override
     public void process(AioSession session, Request request) {
@@ -114,7 +116,7 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
     public void stateEvent(AioSession session, StateMachineEnum stateMachineEnum, Throwable throwable) {
         switch (stateMachineEnum) {
             case NEW_SESSION:
-                RequestAttachment attachment = new RequestAttachment(new Request(session));
+                RequestAttachment attachment = new RequestAttachment(new Request(configuration, session));
                 session.setAttachment(attachment);
                 break;
             case PROCESS_EXCEPTION:
@@ -203,5 +205,9 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
         } else {
             request.setRequestURI(originalUri);
         }
+    }
+
+    public void setConfiguration(HttpServerConfiguration configuration) {
+        this.configuration = configuration;
     }
 }

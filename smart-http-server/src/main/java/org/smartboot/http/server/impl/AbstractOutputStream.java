@@ -13,10 +13,11 @@ import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
+import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.server.HttpRequest;
-import org.smartboot.socket.transport.AioSession;
+import org.smartboot.http.server.HttpServerConfiguration;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -31,35 +32,31 @@ import java.util.concurrent.Semaphore;
  * @version V1.0 , 2018/2/3
  */
 abstract class AbstractOutputStream extends BufferOutputStream {
+    protected static final Date currentDate = new Date(0);
     private static final SimpleDateFormat sdf = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
     private static final Semaphore flushDateSemaphore = new Semaphore(1);
-    private static final Date currentDate = new Date(0);
     protected static byte[] date;
-    private static String SERVER_ALIAS_NAME = "smart-http";
 
     static {
-        String aliasServer = System.getProperty("smartHttp.server.alias");
-        if (aliasServer != null) {
-            SERVER_ALIAS_NAME = aliasServer + "smart-http";
-        }
         flushDate();
     }
 
     protected final AbstractResponse response;
     protected final HttpRequest request;
+    protected final HttpServerConfiguration configuration;
 
-    public AbstractOutputStream(HttpRequest request, AbstractResponse response, AioSession session) {
-        super(session);
+    public AbstractOutputStream(HttpRequest httpRequest, AbstractResponse response, Request request) {
+        super(request.getAioSession());
         this.response = response;
-        this.request = request;
+        this.request = httpRequest;
+        this.configuration = request.getConfiguration();
     }
 
     private static void flushDate() {
         if ((System.currentTimeMillis() - currentDate.getTime() > 990) && flushDateSemaphore.tryAcquire()) {
             try {
                 currentDate.setTime(System.currentTimeMillis());
-                AbstractOutputStream.date = (HeaderNameEnum.DATE.getName() + ":" + sdf.format(currentDate) + "\r\n"
-                        + HeaderNameEnum.SERVER.getName() + ":" + SERVER_ALIAS_NAME + "\r\n\r\n").getBytes();
+                AbstractOutputStream.date = sdf.format(currentDate).getBytes();
             } finally {
                 flushDateSemaphore.release();
             }
@@ -73,28 +70,15 @@ abstract class AbstractOutputStream extends BufferOutputStream {
         if (committed) {
             return;
         }
+        flushDate();
+        //转换Cookie
+        convertCookieToHeader();
 
         //输出http状态行、contentType,contentLength、Transfer-Encoding、server等信息
         writeBuffer.write(getHeadPart());
 
-        //转换Cookie
-        convertCookieToHeader();
-
         //输出Header部分
         writeHeader();
-
-        /**
-         * RFC2616 3.3.1
-         * 只能用 RFC 1123 里定义的日期格式来填充头域 (header field)的值里用到 HTTP-date 的地方
-         */
-        if (response.getHeader(HeaderNameEnum.DATE.getName()) == null
-                && response.getHeader(HeaderNameEnum.SERVER.getName()) == null) {
-            flushDate();
-            writeBuffer.write(date);
-        } else {
-            writeBuffer.write(Constant.CRLF);
-        }
-
 
         committed = true;
     }
@@ -109,6 +93,10 @@ abstract class AbstractOutputStream extends BufferOutputStream {
 
     protected abstract byte[] getHeadPart();
 
+    protected boolean hasHeader() {
+        return response.getHeaders() != null && response.getHeaders().size() > 0;
+    }
+
     private void writeHeader() throws IOException {
         if (response.getHeaders() != null) {
             for (Map.Entry<String, HeaderValue> entry : response.getHeaders().entrySet()) {
@@ -119,6 +107,9 @@ abstract class AbstractOutputStream extends BufferOutputStream {
                     writeBuffer.write(Constant.CRLF);
                     headerValue = headerValue.getNextValue();
                 }
+            }
+            if (response.getHeaders().size() > 0) {
+                writeBuffer.write(Constant.CRLF);
             }
         }
     }
@@ -152,6 +143,7 @@ abstract class AbstractOutputStream extends BufferOutputStream {
         return (request.getMethod() == HttpMethodEnum.GET.getMethod()
                 || request.getMethod() == HttpMethodEnum.POST.getMethod())
                 && response.getHttpStatus() != HttpStatus.CONTINUE.value()
-                && response.getContentLength() < 0;
+                && response.getContentLength() < 0
+                && HttpProtocolEnum.HTTP_10.getProtocol() != request.getProtocol();
     }
 }

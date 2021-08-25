@@ -32,7 +32,7 @@ public class HttpRequestImpl extends AbstractRequest {
 
     HttpRequestImpl(Request request) {
         init(request);
-        this.response = new HttpResponseImpl(this, request.getAioSession());
+        this.response = new HttpResponseImpl(this, request);
     }
 
     public final HttpResponseImpl getResponse() {

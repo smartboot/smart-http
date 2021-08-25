@@ -32,7 +32,7 @@ public class HttpBootstrap {
             "                                                       | |    \n" +
             "                                                       (_)   ";
 
-    private static final String VERSION = "1.1.8";
+    private static final String VERSION = "1.1.9-SNAPSHOT";
     /**
      * http消息解码器
      */
@@ -50,6 +50,7 @@ public class HttpBootstrap {
 
     public HttpBootstrap(HttpMessageProcessor processor) {
         this.processor = processor;
+        this.processor.setConfiguration(configuration);
     }
 
     /**
@@ -125,7 +126,7 @@ public class HttpBootstrap {
                     messageProcessor.stateEvent(session, stateMachineEnum, throwable);
                 }
             };
-            abstractMessageProcessor.addPlugin(new StreamMonitorPlugin<>(StreamMonitorPlugin.BLUE_TEXT_INPUT_STREAM,StreamMonitorPlugin.RED_TEXT_OUTPUT_STREAM));
+            abstractMessageProcessor.addPlugin(new StreamMonitorPlugin<>(StreamMonitorPlugin.BLUE_TEXT_INPUT_STREAM, StreamMonitorPlugin.RED_TEXT_OUTPUT_STREAM));
             return abstractMessageProcessor;
         } else {
             return messageProcessor;

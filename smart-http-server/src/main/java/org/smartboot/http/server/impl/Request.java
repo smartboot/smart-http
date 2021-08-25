@@ -20,6 +20,7 @@ import org.smartboot.http.common.utils.HttpUtils;
 import org.smartboot.http.common.utils.NumberUtils;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpRequest;
+import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
@@ -50,7 +51,7 @@ public final class Request implements HttpRequest, Reset {
      * Http请求头
      */
     private final List<HeaderValue> headers = new ArrayList<>(8);
-
+    private final HttpServerConfiguration configuration;
     private String headerTemp;
     /**
      * 请求参数
@@ -82,23 +83,17 @@ public final class Request implements HttpRequest, Reset {
     private String scheme = Constant.SCHEMA_HTTP;
     private int contentLength = INIT_CONTENT_LENGTH;
     private String remoteAddr;
-
     private String remoteHost;
-
     private String hostHeader;
-
     /**
      * 消息类型
      */
     private HttpTypeEnum type = null;
-
     /**
      * Post表单
      */
     private String formUrlencoded;
-
     private Cookie[] cookies;
-
     /**
      * 附件对象
      */
@@ -107,7 +102,8 @@ public final class Request implements HttpRequest, Reset {
     private HttpRequestImpl httpRequest;
     private WebSocketRequestImpl webSocketRequest;
 
-    Request(AioSession aioSession) {
+    Request(HttpServerConfiguration configuration, AioSession aioSession) {
+        this.configuration = configuration;
         this.aioSession = aioSession;
     }
 
@@ -516,6 +512,10 @@ public final class Request implements HttpRequest, Reset {
             webSocketRequest = new WebSocketRequestImpl(this);
         }
         return webSocketRequest;
+    }
+
+    public HttpServerConfiguration getConfiguration() {
+        return configuration;
     }
 
     public void reset() {

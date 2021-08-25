@@ -10,11 +10,12 @@ package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
-import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpStatus;
-import org.smartboot.socket.transport.AioSession;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -22,14 +23,16 @@ import java.util.Map;
  * @version V1.0 , 2018/2/3
  */
 final class HttpOutputStream extends AbstractOutputStream {
+    private static final ThreadLocal<SimpleDateFormat> sdf = ThreadLocal.withInitial(() -> new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH));
     /**
      * key:status+contentType
      */
-    private static final Map<String, byte[]>[] CACHE_CONTENT_TYPE_AND_LENGTH = new Map[512];
+    private static final Map<String, CacheHeader>[] CACHE_CONTENT_TYPE_AND_LENGTH = new Map[512];
     /**
      * Key：status+contentType
      */
-    private static final Map<String, byte[]> CACHE_CHUNKED_AND_LENGTH = new HashMap<>();
+    private static final Map<String, CacheHeader> CACHE_CHUNKED_AND_LENGTH = new HashMap<>();
+    private static final Date currentDate = new Date(0);
 
     static {
         for (int i = 0; i < CACHE_CONTENT_TYPE_AND_LENGTH.length; i++) {
@@ -37,29 +40,35 @@ final class HttpOutputStream extends AbstractOutputStream {
         }
     }
 
-    public HttpOutputStream(HttpRequestImpl request, HttpResponseImpl response, AioSession session) {
-        super(request, response, session);
+    public HttpOutputStream(HttpRequestImpl httpRequest, HttpResponseImpl response, Request request) {
+        super(httpRequest, response, request);
     }
 
     @Override
-    protected final byte[] getHeadPart() {
+    protected byte[] getHeadPart() {
         int httpStatus = response.getHttpStatus();
         String reasonPhrase = response.getReasonPhrase();
         int contentLength = response.getContentLength();
         String contentType = response.getContentType();
-        byte[] data = null;
+        CacheHeader data = null;
         //成功消息优先从缓存中加载
         boolean cache = httpStatus == HttpStatus.OK.value() && HttpStatus.OK.getReasonPhrase().equals(reasonPhrase);
-        //此处用 == 性能更高
-        boolean http10 = HttpProtocolEnum.HTTP_10.getProtocol() == request.getProtocol();
-        if (cache && !http10) {
+
+        if (cache) {
             if (chunked) {
                 data = CACHE_CHUNKED_AND_LENGTH.get(contentType);
             } else if (contentLength > 0 && contentLength < CACHE_CONTENT_TYPE_AND_LENGTH.length) {
                 data = CACHE_CONTENT_TYPE_AND_LENGTH[contentLength].get(contentType);
             }
+
             if (data != null) {
-                return data;
+                if (hasHeader()) {
+                    System.arraycopy(AbstractOutputStream.date, 0, data.data, data.data.length - 2 - date.length, date.length);
+                    return data.data;
+                } else {
+                    System.arraycopy(AbstractOutputStream.date, 0, data.data2, data.data2.length - 4 - date.length, date.length);
+                    return data.data2;
+                }
             }
         }
 
@@ -73,20 +82,34 @@ final class HttpOutputStream extends AbstractOutputStream {
         } else if (chunked) {
             sb.append(HeaderNameEnum.TRANSFER_ENCODING.getName()).append(':').append(HeaderValueEnum.CHUNKED.getName()).append("\r\n");
         }
-        data = sb.toString().getBytes();
+
+        if (configuration.serverName() != null && response.getHeader(HeaderNameEnum.SERVER.getName()) == null) {
+            sb.append(HeaderNameEnum.SERVER.getName()).append(':').append(configuration.serverName()).append("\r\n");
+        }
+        currentDate.setTime(System.currentTimeMillis());
+        sb.append(HeaderNameEnum.DATE.getName()).append(':').append(sdf.get().format(currentDate)).append("\r\n");
+
         //缓存响应头
-        if (cache && !http10) {
+        if (cache) {
             if (chunked) {
-                CACHE_CHUNKED_AND_LENGTH.put(contentType, data);
+                CACHE_CHUNKED_AND_LENGTH.put(contentType, new CacheHeader(sb.toString().getBytes()));
             } else if (contentLength >= 0 && contentLength < CACHE_CONTENT_TYPE_AND_LENGTH.length) {
-                CACHE_CONTENT_TYPE_AND_LENGTH[contentLength].put(contentType, data);
+                CACHE_CONTENT_TYPE_AND_LENGTH[contentLength].put(contentType, new CacheHeader(sb.toString().getBytes()));
             }
         }
-        // http 1.0 不支持 chunked
-        if (chunked && http10) {
-            chunked = false;
-        }
-        return data;
+        return hasHeader() ? sb.toString().getBytes() : sb.append("\r\n").toString().getBytes();
     }
 
+    private static class CacheHeader {
+        byte[] data;
+        byte[] data2;
+
+        public CacheHeader(byte[] data) {
+            this.data = data;
+            this.data2 = new byte[data.length + 2];
+            System.arraycopy(data, 0, data2, 0, data.length);
+            this.data2[data2.length - 2] = '\r';
+            this.data2[data2.length - 1] = '\n';
+        }
+    }
 }
