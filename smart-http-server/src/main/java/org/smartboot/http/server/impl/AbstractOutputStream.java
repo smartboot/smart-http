@@ -20,26 +20,15 @@ import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpServerConfiguration;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.Semaphore;
 
 /**
  * @author 三刀
  * @version V1.0 , 2018/2/3
  */
 abstract class AbstractOutputStream extends BufferOutputStream {
-    protected static final Date currentDate = new Date(0);
-    private static final SimpleDateFormat sdf = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
-    private static final Semaphore flushDateSemaphore = new Semaphore(1);
-    protected static byte[] date;
 
-    static {
-        flushDate();
-    }
 
     protected final AbstractResponse response;
     protected final HttpRequest request;
@@ -52,16 +41,7 @@ abstract class AbstractOutputStream extends BufferOutputStream {
         this.configuration = request.getConfiguration();
     }
 
-    private static void flushDate() {
-        if ((System.currentTimeMillis() - currentDate.getTime() > 990) && flushDateSemaphore.tryAcquire()) {
-            try {
-                currentDate.setTime(System.currentTimeMillis());
-                AbstractOutputStream.date = sdf.format(currentDate).getBytes();
-            } finally {
-                flushDateSemaphore.release();
-            }
-        }
-    }
+
 
     /**
      * 输出Http消息头
@@ -70,7 +50,6 @@ abstract class AbstractOutputStream extends BufferOutputStream {
         if (committed) {
             return;
         }
-        flushDate();
         //转换Cookie
         convertCookieToHeader();
 

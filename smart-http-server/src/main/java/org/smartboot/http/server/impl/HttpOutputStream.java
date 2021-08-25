@@ -17,13 +17,14 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
 
 /**
  * @author 三刀
  * @version V1.0 , 2018/2/3
  */
 final class HttpOutputStream extends AbstractOutputStream {
-    private static final ThreadLocal<SimpleDateFormat> sdf = ThreadLocal.withInitial(() -> new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH));
+    private static final SimpleDateFormat sdf = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
     /**
      * key:status+contentType
      */
@@ -33,6 +34,14 @@ final class HttpOutputStream extends AbstractOutputStream {
      */
     private static final Map<String, CacheHeader> CACHE_CHUNKED_AND_LENGTH = new HashMap<>();
     private static final Date currentDate = new Date(0);
+    private static final Semaphore flushDateSemaphore = new Semaphore(1);
+    private static byte[] dateBytes;
+    private static String date;
+
+
+    static {
+        flushDate();
+    }
 
     static {
         for (int i = 0; i < CACHE_CONTENT_TYPE_AND_LENGTH.length; i++) {
@@ -44,8 +53,21 @@ final class HttpOutputStream extends AbstractOutputStream {
         super(httpRequest, response, request);
     }
 
+    private static void flushDate() {
+        if ((System.currentTimeMillis() - currentDate.getTime() > 990) && flushDateSemaphore.tryAcquire()) {
+            try {
+                currentDate.setTime(System.currentTimeMillis());
+                date = sdf.format(currentDate);
+                dateBytes = date.getBytes();
+            } finally {
+                flushDateSemaphore.release();
+            }
+        }
+    }
+
     @Override
     protected byte[] getHeadPart() {
+        flushDate();
         int httpStatus = response.getHttpStatus();
         String reasonPhrase = response.getReasonPhrase();
         int contentLength = response.getContentLength();
@@ -63,10 +85,16 @@ final class HttpOutputStream extends AbstractOutputStream {
 
             if (data != null) {
                 if (hasHeader()) {
-                    System.arraycopy(AbstractOutputStream.date, 0, data.data, data.data.length - 2 - date.length, date.length);
+                    if (currentDate.getTime() - data.cacheTime > 1000) {
+                        data.cacheTime = currentDate.getTime();
+                        System.arraycopy(dateBytes, 0, data.data, data.data.length - 2 - dateBytes.length, dateBytes.length);
+                    }
                     return data.data;
                 } else {
-                    System.arraycopy(AbstractOutputStream.date, 0, data.data2, data.data2.length - 4 - date.length, date.length);
+                    if (currentDate.getTime() - data.cacheTime > 1000) {
+                        data.cacheTime = currentDate.getTime();
+                        System.arraycopy(dateBytes, 0, data.data2, data.data2.length - 4 - dateBytes.length, dateBytes.length);
+                    }
                     return data.data2;
                 }
             }
@@ -86,25 +114,26 @@ final class HttpOutputStream extends AbstractOutputStream {
         if (configuration.serverName() != null && response.getHeader(HeaderNameEnum.SERVER.getName()) == null) {
             sb.append(HeaderNameEnum.SERVER.getName()).append(':').append(configuration.serverName()).append("\r\n");
         }
-        currentDate.setTime(System.currentTimeMillis());
-        sb.append(HeaderNameEnum.DATE.getName()).append(':').append(sdf.get().format(currentDate)).append("\r\n");
+        sb.append(HeaderNameEnum.DATE.getName()).append(':').append(date).append("\r\n");
 
         //缓存响应头
         if (cache) {
             if (chunked) {
-                CACHE_CHUNKED_AND_LENGTH.put(contentType, new CacheHeader(sb.toString().getBytes()));
+                CACHE_CHUNKED_AND_LENGTH.put(contentType, new CacheHeader(currentDate.getTime(), sb.toString().getBytes()));
             } else if (contentLength >= 0 && contentLength < CACHE_CONTENT_TYPE_AND_LENGTH.length) {
-                CACHE_CONTENT_TYPE_AND_LENGTH[contentLength].put(contentType, new CacheHeader(sb.toString().getBytes()));
+                CACHE_CONTENT_TYPE_AND_LENGTH[contentLength].put(contentType, new CacheHeader(currentDate.getTime(), sb.toString().getBytes()));
             }
         }
         return hasHeader() ? sb.toString().getBytes() : sb.append("\r\n").toString().getBytes();
     }
 
     private static class CacheHeader {
+        long cacheTime;
         byte[] data;
         byte[] data2;
 
-        public CacheHeader(byte[] data) {
+        public CacheHeader(long cacheTime, byte[] data) {
+            this.cacheTime = cacheTime;
             this.data = data;
             this.data2 = new byte[data.length + 2];
             System.arraycopy(data, 0, data2, 0, data.length);
