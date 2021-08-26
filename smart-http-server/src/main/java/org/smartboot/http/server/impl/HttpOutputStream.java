@@ -102,20 +102,20 @@ final class HttpOutputStream extends AbstractOutputStream {
         }
 
         StringBuilder sb = new StringBuilder(request.getProtocol());
-        sb.append(Constant.SP).append(httpStatus).append(Constant.SP).append(reasonPhrase).append(Constant.CRLF);
+        sb.append(Constant.SP_CHAR).append(httpStatus).append(Constant.SP_CHAR).append(reasonPhrase).append(Constant.CRLF);
         if (contentType != null) {
-            sb.append(HeaderNameEnum.CONTENT_TYPE.getName()).append(Constant.COLON).append(contentType).append(Constant.CRLF);
+            sb.append(HeaderNameEnum.CONTENT_TYPE.getName()).append(Constant.COLON_CHAR).append(contentType).append(Constant.CRLF);
         }
         if (contentLength >= 0) {
-            sb.append(HeaderNameEnum.CONTENT_LENGTH.getName()).append(Constant.COLON).append(contentLength).append(Constant.CRLF);
+            sb.append(HeaderNameEnum.CONTENT_LENGTH.getName()).append(Constant.COLON_CHAR).append(contentLength).append(Constant.CRLF);
         } else if (chunked) {
-            sb.append(HeaderNameEnum.TRANSFER_ENCODING.getName()).append(Constant.COLON).append(HeaderValueEnum.CHUNKED.getName()).append(Constant.CRLF);
+            sb.append(HeaderNameEnum.TRANSFER_ENCODING.getName()).append(Constant.COLON_CHAR).append(HeaderValueEnum.CHUNKED.getName()).append(Constant.CRLF);
         }
 
         if (configuration.serverName() != null && response.getHeader(HeaderNameEnum.SERVER.getName()) == null) {
-            sb.append(HeaderNameEnum.SERVER.getName()).append(Constant.COLON).append(configuration.serverName()).append(Constant.CRLF);
+            sb.append(HeaderNameEnum.SERVER.getName()).append(Constant.COLON_CHAR).append(configuration.serverName()).append(Constant.CRLF);
         }
-        sb.append(HeaderNameEnum.DATE.getName()).append(Constant.COLON).append(date).append(Constant.CRLF);
+        sb.append(HeaderNameEnum.DATE.getName()).append(Constant.COLON_CHAR).append(date).append(Constant.CRLF);
 
         //缓存响应头
         if (cache) {

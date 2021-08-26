@@ -73,6 +73,8 @@ public interface Constant {
      */
     public static final char SP_CHAR = (char) SP;
 
+    char COLON_CHAR = COLON;
+
     public static final byte[] CRLF_BYTES = {Constant.CR, Constant.LF};
 
     String CRLF = "\r\n";
