@@ -56,12 +56,12 @@ abstract class AbstractOutputStream extends BufferOutputStream {
                 while (headerValue != null) {
                     writeBuffer.write(getHeaderNameBytes(entry.getKey()));
                     writeBuffer.write(getBytes(headerValue.getValue()));
-                    writeBuffer.write(Constant.CRLF);
+                    writeBuffer.write(Constant.CRLF_BYTES);
                     headerValue = headerValue.getNextValue();
                 }
             }
         }
-        writeBuffer.write(Constant.CRLF);
+        writeBuffer.write(Constant.CRLF_BYTES);
         committed = true;
     }
 

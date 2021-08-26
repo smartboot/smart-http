@@ -11,6 +11,7 @@ package org.smartboot.http.server.impl;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpStatus;
+import org.smartboot.http.common.utils.Constant;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -87,34 +88,34 @@ final class HttpOutputStream extends AbstractOutputStream {
                 if (hasHeader()) {
                     if (currentDate.getTime() - data.cacheTime > 1000) {
                         data.cacheTime = currentDate.getTime();
-                        System.arraycopy(dateBytes, 0, data.data, data.data.length - 2 - dateBytes.length, dateBytes.length);
+                        System.arraycopy(dateBytes, 0, data.partialHeaderData, data.partialHeaderData.length - 2 - dateBytes.length, dateBytes.length);
                     }
-                    return data.data;
+                    return data.partialHeaderData;
                 } else {
                     if (currentDate.getTime() - data.cacheTime > 1000) {
                         data.cacheTime = currentDate.getTime();
-                        System.arraycopy(dateBytes, 0, data.data2, data.data2.length - 4 - dateBytes.length, dateBytes.length);
+                        System.arraycopy(dateBytes, 0, data.fullHeaderData, data.fullHeaderData.length - 4 - dateBytes.length, dateBytes.length);
                     }
-                    return data.data2;
+                    return data.fullHeaderData;
                 }
             }
         }
 
         StringBuilder sb = new StringBuilder(request.getProtocol());
-        sb.append(' ').append(httpStatus).append(' ').append(reasonPhrase).append("\r\n");
+        sb.append(Constant.SP).append(httpStatus).append(Constant.SP).append(reasonPhrase).append(Constant.CRLF);
         if (contentType != null) {
-            sb.append(HeaderNameEnum.CONTENT_TYPE.getName()).append(':').append(contentType).append("\r\n");
+            sb.append(HeaderNameEnum.CONTENT_TYPE.getName()).append(Constant.COLON).append(contentType).append(Constant.CRLF);
         }
         if (contentLength >= 0) {
-            sb.append(HeaderNameEnum.CONTENT_LENGTH.getName()).append(':').append(contentLength).append("\r\n");
+            sb.append(HeaderNameEnum.CONTENT_LENGTH.getName()).append(Constant.COLON).append(contentLength).append(Constant.CRLF);
         } else if (chunked) {
-            sb.append(HeaderNameEnum.TRANSFER_ENCODING.getName()).append(':').append(HeaderValueEnum.CHUNKED.getName()).append("\r\n");
+            sb.append(HeaderNameEnum.TRANSFER_ENCODING.getName()).append(Constant.COLON).append(HeaderValueEnum.CHUNKED.getName()).append(Constant.CRLF);
         }
 
         if (configuration.serverName() != null && response.getHeader(HeaderNameEnum.SERVER.getName()) == null) {
-            sb.append(HeaderNameEnum.SERVER.getName()).append(':').append(configuration.serverName()).append("\r\n");
+            sb.append(HeaderNameEnum.SERVER.getName()).append(Constant.COLON).append(configuration.serverName()).append(Constant.CRLF);
         }
-        sb.append(HeaderNameEnum.DATE.getName()).append(':').append(date).append("\r\n");
+        sb.append(HeaderNameEnum.DATE.getName()).append(Constant.COLON).append(date).append(Constant.CRLF);
 
         //缓存响应头
         if (cache) {
@@ -124,21 +125,21 @@ final class HttpOutputStream extends AbstractOutputStream {
                 CACHE_CONTENT_TYPE_AND_LENGTH[contentLength].put(contentType, new CacheHeader(currentDate.getTime(), sb.toString().getBytes()));
             }
         }
-        return hasHeader() ? sb.toString().getBytes() : sb.append("\r\n").toString().getBytes();
+        return hasHeader() ? sb.toString().getBytes() : sb.append(Constant.CRLF).toString().getBytes();
     }
 
     private static class CacheHeader {
         long cacheTime;
-        byte[] data;
-        byte[] data2;
+        byte[] partialHeaderData;
+        byte[] fullHeaderData;
 
         public CacheHeader(long cacheTime, byte[] data) {
             this.cacheTime = cacheTime;
-            this.data = data;
-            this.data2 = new byte[data.length + 2];
-            System.arraycopy(data, 0, data2, 0, data.length);
-            this.data2[data2.length - 2] = '\r';
-            this.data2[data2.length - 1] = '\n';
+            this.partialHeaderData = data;
+            this.fullHeaderData = new byte[data.length + 2];
+            System.arraycopy(data, 0, fullHeaderData, 0, data.length);
+            this.fullHeaderData[fullHeaderData.length - 2] = Constant.CR;
+            this.fullHeaderData[fullHeaderData.length - 1] = Constant.LF;
         }
     }
 }

@@ -73,13 +73,12 @@ public interface Constant {
      */
     public static final char SP_CHAR = (char) SP;
 
-    public static final byte[] CRLF = {Constant.CR, Constant.LF};
+    public static final byte[] CRLF_BYTES = {Constant.CR, Constant.LF};
+
+    String CRLF = "\r\n";
 
     byte[] HEADER_END = {Constant.CR, Constant.LF, Constant.CR, Constant.LF};
 
-    byte[] COLON_ARRAY = {COLON};
-
-    byte[] SP_ARRAY = {SP};
     byte[] CHUNKED_END_BYTES = "0\r\n\r\n".getBytes(StandardCharsets.US_ASCII);
 
 }

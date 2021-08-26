@@ -61,7 +61,7 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
             byte[] start = getBytes(Integer.toHexString(len) + "\r\n");
             writeBuffer.write(start);
             writeBuffer.write(b, off, len);
-            writeBuffer.write(Constant.CRLF);
+            writeBuffer.write(Constant.CRLF_BYTES);
         } else {
             writeBuffer.write(b, off, len);
         }
@@ -89,7 +89,7 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
             byte[] start = getBytes(Integer.toHexString(virtualBuffer.buffer().remaining()) + "\r\n");
             writeBuffer.write(start);
             writeBuffer.write(virtualBuffer);
-            writeBuffer.write(Constant.CRLF);
+            writeBuffer.write(Constant.CRLF_BYTES);
         } else {
             writeBuffer.write(virtualBuffer);
         }
