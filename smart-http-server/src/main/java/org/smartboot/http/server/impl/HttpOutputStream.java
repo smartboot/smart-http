@@ -30,6 +30,7 @@ final class HttpOutputStream extends AbstractOutputStream {
      * key:status+contentType
      */
     private static final Map<String, CacheHeader>[] CACHE_CONTENT_TYPE_AND_LENGTH = new Map[512];
+    private static final CacheHeader[] LATEST_CACHE_CONTENT_TYPE_AND_LENGTH = new CacheHeader[512];
     /**
      * Key：status+contentType
      */
@@ -81,20 +82,26 @@ final class HttpOutputStream extends AbstractOutputStream {
             if (chunked) {
                 data = CACHE_CHUNKED_AND_LENGTH.get(contentType);
             } else if (contentLength > 0 && contentLength < CACHE_CONTENT_TYPE_AND_LENGTH.length) {
-                data = CACHE_CONTENT_TYPE_AND_LENGTH[contentLength].get(contentType);
+                data = LATEST_CACHE_CONTENT_TYPE_AND_LENGTH[contentLength];
+                if (data == null || !data.contentType.equals(contentType)) {
+                    data = CACHE_CONTENT_TYPE_AND_LENGTH[contentLength].get(contentType);
+                    LATEST_CACHE_CONTENT_TYPE_AND_LENGTH[contentLength] = data;
+                }
             }
 
             if (data != null) {
                 if (hasHeader()) {
-                    if (currentDate.getTime() - data.cacheTime > 1000) {
+                    if (currentDate.getTime() - data.cacheTime > 1000 && data.semaphore.tryAcquire()) {
                         data.cacheTime = currentDate.getTime();
                         System.arraycopy(dateBytes, 0, data.partialHeaderData, data.partialHeaderData.length - 2 - dateBytes.length, dateBytes.length);
+                        data.semaphore.release();
                     }
                     return data.partialHeaderData;
                 } else {
-                    if (currentDate.getTime() - data.cacheTime > 1000) {
+                    if (currentDate.getTime() - data.cacheTime > 1000 && data.semaphore.tryAcquire()) {
                         data.cacheTime = currentDate.getTime();
                         System.arraycopy(dateBytes, 0, data.fullHeaderData, data.fullHeaderData.length - 4 - dateBytes.length, dateBytes.length);
+                        data.semaphore.release();
                     }
                     return data.fullHeaderData;
                 }
@@ -120,20 +127,23 @@ final class HttpOutputStream extends AbstractOutputStream {
         //缓存响应头
         if (cache) {
             if (chunked) {
-                CACHE_CHUNKED_AND_LENGTH.put(contentType, new CacheHeader(currentDate.getTime(), sb.toString().getBytes()));
+                CACHE_CHUNKED_AND_LENGTH.put(contentType, new CacheHeader(contentType, currentDate.getTime(), sb.toString().getBytes()));
             } else if (contentLength >= 0 && contentLength < CACHE_CONTENT_TYPE_AND_LENGTH.length) {
-                CACHE_CONTENT_TYPE_AND_LENGTH[contentLength].put(contentType, new CacheHeader(currentDate.getTime(), sb.toString().getBytes()));
+                CACHE_CONTENT_TYPE_AND_LENGTH[contentLength].put(contentType, new CacheHeader(contentType, currentDate.getTime(), sb.toString().getBytes()));
             }
         }
         return hasHeader() ? sb.toString().getBytes() : sb.append(Constant.CRLF).toString().getBytes();
     }
 
     private static class CacheHeader {
+        final String contentType;
+        final Semaphore semaphore = new Semaphore(1);
         long cacheTime;
         byte[] partialHeaderData;
         byte[] fullHeaderData;
 
-        public CacheHeader(long cacheTime, byte[] data) {
+        public CacheHeader(String contentType, long cacheTime, byte[] data) {
+            this.contentType = contentType;
             this.cacheTime = cacheTime;
             this.partialHeaderData = data;
             this.fullHeaderData = new byte[data.length + 2];
