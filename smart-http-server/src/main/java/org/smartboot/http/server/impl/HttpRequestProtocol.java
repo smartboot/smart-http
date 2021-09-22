@@ -49,12 +49,10 @@ public class HttpRequestProtocol implements Protocol<Request> {
         }
 
         decodeChain = decodeChain.decode(buffer, session, request);
-
+        attachment.setDecoder(decodeChain);
         if (decodeChain == BODY_READY_DECODER) {
-            attachment.setDecoder(decodeChain);
             return request;
         }
-        attachment.setDecoder(decodeChain);
         if (buffer.remaining() == buffer.capacity()) {
             throw new RuntimeException("buffer is too small when decode " + decodeChain.getClass().getName() + " ," + request);
         }
