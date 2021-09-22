@@ -17,17 +17,14 @@ import org.slf4j.LoggerFactory;
 import org.smartboot.http.client.HttpClient;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
+import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
+import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.server.HttpBootstrap;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
 import org.smartboot.http.server.HttpServerHandler;
-import org.smartboot.http.server.impl.Request;
 import org.smartboot.http.test.BastTest;
-import org.smartboot.socket.StateMachineEnum;
-import org.smartboot.socket.extension.plugins.StreamMonitorPlugin;
-import org.smartboot.socket.extension.processor.AbstractMessageProcessor;
-import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -50,21 +47,7 @@ public class HttpServer2Test extends BastTest {
     @Before
     public void init() {
         bootstrap = new HttpBootstrap();
-        bootstrap.configuration().messageProcessor(requestMessageProcessor -> {
-            AbstractMessageProcessor<Request> processor = new AbstractMessageProcessor<Request>() {
-                @Override
-                public void process0(AioSession session, Request msg) {
-                    requestMessageProcessor.process(session, msg);
-                }
-
-                @Override
-                public void stateEvent0(AioSession session, StateMachineEnum stateMachineEnum, Throwable throwable) {
-                    requestMessageProcessor.stateEvent(session, stateMachineEnum, throwable);
-                }
-            };
-            processor.addPlugin(new StreamMonitorPlugin<>((asynchronousSocketChannel, bytes) -> System.out.println(new String(bytes)), (asynchronousSocketChannel, bytes) -> System.out.println(new String(bytes))));
-            return processor;
-        });
+        bootstrap.configuration().debug(true);
         bootstrap.start();
         httpClient = getHttpClient();
     }
@@ -94,6 +77,19 @@ public class HttpServer2Test extends BastTest {
         org.smartboot.http.client.HttpResponse httpResponse = httpClient.get("/").send().get();
         Assert.assertEquals(httpResponse.getProtocol(), HttpProtocolEnum.HTTP_11.getProtocol());
         Assert.assertEquals(httpResponse.getHeader(HeaderNameEnum.TRANSFER_ENCODING.getName()), HeaderValueEnum.CHUNKED.getName());
+    }
+
+    @Test
+    public void testPut() throws ExecutionException, InterruptedException {
+        bootstrap.httpHandler(new HttpServerHandler() {
+            @Override
+            public void handle(HttpRequest request, HttpResponse response) throws IOException {
+                response.write("Hello World".getBytes(StandardCharsets.UTF_8));
+            }
+        }).setPort(SERVER_PORT);
+        org.smartboot.http.client.HttpResponse httpResponse = httpClient.rest("/").setMethod(HttpMethodEnum.PUT.getMethod()).send().get();
+        Assert.assertEquals(httpResponse.getProtocol(), HttpProtocolEnum.HTTP_11.getProtocol());
+        Assert.assertEquals(httpResponse.getStatus(), HttpStatus.OK.value());
     }
 
     @After
