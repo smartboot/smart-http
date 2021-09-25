@@ -42,7 +42,6 @@ abstract class AbstractOutputStream extends BufferOutputStream {
     }
 
 
-
     /**
      * 输出Http消息头
      */
@@ -120,7 +119,8 @@ abstract class AbstractOutputStream extends BufferOutputStream {
      */
     private boolean supportChunked(HttpRequest request, AbstractResponse response) {
         return (request.getMethod() == HttpMethodEnum.GET.getMethod()
-                || request.getMethod() == HttpMethodEnum.POST.getMethod())
+                || request.getMethod() == HttpMethodEnum.POST.getMethod()
+                || request.getMethod() == HttpMethodEnum.PUT.getMethod())
                 && response.getHttpStatus() != HttpStatus.CONTINUE.value()
                 && response.getContentLength() < 0
                 && HttpProtocolEnum.HTTP_10.getProtocol() != request.getProtocol();
