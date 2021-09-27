@@ -72,26 +72,26 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
                     if (response.isClosed() || request.getDecodePartEnum() != DecodePartEnum.FINISH) {
                         break;
                     }
-                case FINISH:
-                    doHttpHandler(abstractRequest, handler, response);
+                case FINISH: {
+                    //消息处理
+                    handler.handle(abstractRequest, response);
+                    //关闭本次请求的输出流
+                    if (!response.getOutputStream().isClosed()) {
+                        response.getOutputStream().close();
+                    }
+                }
             }
             if (response.isClosed()) {
                 session.close(false);
+            }
+            if (request.getDecodePartEnum() == DecodePartEnum.FINISH) {
+                abstractRequest.reset();
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void doHttpHandler(AbstractRequest abstractRequest, ServerHandler handler, AbstractResponse response) throws IOException {
-        //消息处理
-        handler.handle(abstractRequest, response);
-        //关闭本次请求的输出流
-        if (!response.getOutputStream().isClosed()) {
-            response.getOutputStream().close();
-        }
-        abstractRequest.reset();
-    }
 
     private void onHttpBody(Request request, ByteBuffer readBuffer, RequestAttachment attachment, ServerHandler<?, ?> handler) {
         if (handler.onBodyStream(readBuffer, request)) {
