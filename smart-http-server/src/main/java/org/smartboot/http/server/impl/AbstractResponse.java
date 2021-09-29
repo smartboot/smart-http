@@ -40,7 +40,7 @@ class AbstractResponse implements HttpResponse, Reset {
     /**
      * 响应消息头
      */
-    private Map<String, HeaderValue> headers = null;
+    private Map<String, HeaderValue> headers = Collections.emptyMap();
     /**
      * http响应码
      */
@@ -77,9 +77,7 @@ class AbstractResponse implements HttpResponse, Reset {
 
     public final void reset() {
         outputStream.reset();
-        if (headers != null) {
-            headers.clear();
-        }
+        headers.clear();
         setHttpStatus(HttpStatus.OK);
         contentType = HeaderValueEnum.DEFAULT_CONTENT_TYPE.getName();
         contentLength = -1;
@@ -133,8 +131,8 @@ class AbstractResponse implements HttpResponse, Reset {
             if (checkSpecialHeader(name, value))
                 return;
         }
-
-        if (headers == null) {
+        Map<String, HeaderValue> emptyHeaders = Collections.emptyMap();
+        if (headers == emptyHeaders) {
             headers = new HashMap<>();
         }
         if (replace) {
@@ -174,10 +172,7 @@ class AbstractResponse implements HttpResponse, Reset {
 
     @Override
     public final String getHeader(String name) {
-        HeaderValue headerValue = null;
-        if (headers != null) {
-            headerValue = headers.get(name);
-        }
+        HeaderValue headerValue = headers.get(name);
         return headerValue == null ? null : headerValue.getValue();
     }
 
@@ -187,9 +182,6 @@ class AbstractResponse implements HttpResponse, Reset {
 
     @Override
     public final Collection<String> getHeaders(String name) {
-        if (headers == null) {
-            return Collections.emptyList();
-        }
         Vector<String> result = new Vector<>();
         HeaderValue headerValue = headers.get(name);
         while (headerValue != null) {
@@ -201,9 +193,6 @@ class AbstractResponse implements HttpResponse, Reset {
 
     @Override
     public final Collection<String> getHeaderNames() {
-        if (headers == null) {
-            return Collections.emptyList();
-        }
         return new ArrayList<>(headers.keySet());
     }
 

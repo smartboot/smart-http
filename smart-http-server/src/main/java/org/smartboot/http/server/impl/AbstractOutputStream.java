@@ -30,6 +30,7 @@ import java.util.Map;
 abstract class AbstractOutputStream extends BufferOutputStream {
 
 
+    protected static String SERVER_LINE = null;
     protected final AbstractResponse response;
     protected final HttpRequest request;
     protected final HttpServerConfiguration configuration;
@@ -39,6 +40,9 @@ abstract class AbstractOutputStream extends BufferOutputStream {
         this.response = response;
         this.request = httpRequest;
         this.configuration = request.getConfiguration();
+        if (SERVER_LINE == null) {
+            SERVER_LINE = HeaderNameEnum.SERVER.getName() + Constant.COLON_CHAR + configuration.serverName() + Constant.CRLF;
+        }
     }
 
 
@@ -72,11 +76,11 @@ abstract class AbstractOutputStream extends BufferOutputStream {
     protected abstract byte[] getHeadPart();
 
     protected boolean hasHeader() {
-        return response.getHeaders() != null && response.getHeaders().size() > 0;
+        return response.getHeaders().size() > 0;
     }
 
     private void writeHeader() throws IOException {
-        if (response.getHeaders() != null) {
+        if (hasHeader()) {
             for (Map.Entry<String, HeaderValue> entry : response.getHeaders().entrySet()) {
                 HeaderValue headerValue = entry.getValue();
                 while (headerValue != null) {
@@ -86,9 +90,7 @@ abstract class AbstractOutputStream extends BufferOutputStream {
                     headerValue = headerValue.getNextValue();
                 }
             }
-            if (response.getHeaders().size() > 0) {
-                writeBuffer.write(Constant.CRLF_BYTES);
-            }
+            writeBuffer.write(Constant.CRLF_BYTES);
         }
     }
 

@@ -56,7 +56,7 @@ final class HttpOutputStream extends AbstractOutputStream {
     }
 
     private static void flushDate() {
-        if ((System.currentTimeMillis() - currentDate.getTime() > 990) && flushDateSemaphore.tryAcquire()) {
+        if ((System.currentTimeMillis() - currentDate.getTime() > 1000) && flushDateSemaphore.tryAcquire()) {
             try {
                 currentDate.setTime(System.currentTimeMillis());
                 date = sdf.format(currentDate);
@@ -108,8 +108,8 @@ final class HttpOutputStream extends AbstractOutputStream {
             }
         }
 
-        StringBuilder sb = new StringBuilder(request.getProtocol());
-        sb.append(Constant.SP_CHAR).append(httpStatus).append(Constant.SP_CHAR).append(reasonPhrase).append(Constant.CRLF);
+        StringBuilder sb = new StringBuilder(128);
+        sb.append(request.getProtocol()).append(Constant.SP_CHAR).append(httpStatus).append(Constant.SP_CHAR).append(reasonPhrase).append(Constant.CRLF);
         if (contentType != null) {
             sb.append(HeaderNameEnum.CONTENT_TYPE.getName()).append(Constant.COLON_CHAR).append(contentType).append(Constant.CRLF);
         }
@@ -120,7 +120,7 @@ final class HttpOutputStream extends AbstractOutputStream {
         }
 
         if (configuration.serverName() != null && response.getHeader(HeaderNameEnum.SERVER.getName()) == null) {
-            sb.append(HeaderNameEnum.SERVER.getName()).append(Constant.COLON_CHAR).append(configuration.serverName()).append(Constant.CRLF);
+            sb.append(SERVER_LINE);
         }
         sb.append(HeaderNameEnum.DATE.getName()).append(Constant.COLON_CHAR).append(date).append(Constant.CRLF);
 
