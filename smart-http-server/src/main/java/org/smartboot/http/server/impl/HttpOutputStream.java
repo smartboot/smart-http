@@ -108,7 +108,7 @@ final class HttpOutputStream extends AbstractOutputStream {
             }
         }
 
-        StringBuilder sb = new StringBuilder(128);
+        StringBuilder sb = new StringBuilder(256);
         sb.append(request.getProtocol()).append(Constant.SP_CHAR).append(httpStatus).append(Constant.SP_CHAR).append(reasonPhrase).append(Constant.CRLF);
         if (contentType != null) {
             sb.append(HeaderNameEnum.CONTENT_TYPE.getName()).append(Constant.COLON_CHAR).append(contentType).append(Constant.CRLF);
