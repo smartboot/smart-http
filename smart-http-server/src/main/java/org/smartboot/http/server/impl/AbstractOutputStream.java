@@ -67,10 +67,9 @@ abstract class AbstractOutputStream extends BufferOutputStream {
 
     private void convertCookieToHeader() {
         List<Cookie> cookies = response.getCookies();
-        if (cookies == null || cookies.size() == 0) {
-            return;
+        if (cookies.size() > 0) {
+            cookies.forEach(cookie -> response.addHeader(HeaderNameEnum.SET_COOKIE.getName(), cookie.toString()));
         }
-        cookies.forEach(cookie -> response.addHeader(HeaderNameEnum.SET_COOKIE.getName(), cookie.toString()));
     }
 
     protected abstract byte[] getHeadPart();

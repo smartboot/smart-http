@@ -67,7 +67,7 @@ class AbstractResponse implements HttpResponse, Reset {
      */
     private boolean closed = false;
 
-    private List<Cookie> cookies;
+    private List<Cookie> cookies = Collections.emptyList();
 
     protected void init(HttpRequest request, AbstractOutputStream outputStream) {
         this.request = request;
@@ -82,7 +82,7 @@ class AbstractResponse implements HttpResponse, Reset {
         contentType = HeaderValueEnum.DEFAULT_CONTENT_TYPE.getName();
         contentLength = -1;
         characterEncoding = null;
-        cookies = null;
+        cookies = Collections.emptyList();
         this.closed = false;
     }
 
@@ -232,7 +232,8 @@ class AbstractResponse implements HttpResponse, Reset {
 
     @Override
     public void addCookie(Cookie cookie) {
-        if (cookies == null) {
+        List<Cookie> emptyList = Collections.emptyList();
+        if (cookies == emptyList) {
             cookies = new ArrayList<>();
         }
         cookies.add(cookie);
