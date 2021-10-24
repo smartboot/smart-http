@@ -118,7 +118,7 @@ public class DefaultHttpResponseHandler extends ResponseHandler {
         }
 
         public void finishDecode(Response response) {
-            if (StringUtils.equals("gzip", response.getHeader(HeaderNameEnum.CONTENT_ENCODING.getName()))) {
+            if (StringUtils.equals(HeaderValueEnum.GZIP.getName(), response.getHeader(HeaderNameEnum.CONTENT_ENCODING.getName()))) {
                 response.setBody(GzipUtils.uncompressToString(body.toByteArray()));
             } else {
                 response.setBody(body.toString());

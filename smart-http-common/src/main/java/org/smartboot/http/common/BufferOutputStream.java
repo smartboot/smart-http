@@ -10,6 +10,7 @@ package org.smartboot.http.common;
 
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.utils.Constant;
+import org.smartboot.http.common.utils.GzipUtils;
 import org.smartboot.socket.buffer.VirtualBuffer;
 import org.smartboot.socket.transport.AioSession;
 import org.smartboot.socket.transport.WriteBuffer;
@@ -31,6 +32,7 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
     protected final WriteBuffer writeBuffer;
     protected boolean committed = false;
     protected boolean chunked = false;
+    protected boolean gzip = false;
     /**
      * 当前流是否完结
      */
@@ -58,6 +60,11 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
         check();
         writeHead();
         if (chunked) {
+            if (gzip) {
+                b = GzipUtils.compress(b, off, len);
+                off = 0;
+                len = b.length;
+            }
             byte[] start = getBytes(Integer.toHexString(len) + "\r\n");
             writeBuffer.write(start);
             writeBuffer.write(b, off, len);
@@ -138,7 +145,7 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
     }
 
     public final void reset() {
-        committed = closed = chunked = false;
+        committed = closed = chunked = gzip = false;
     }
 
 
