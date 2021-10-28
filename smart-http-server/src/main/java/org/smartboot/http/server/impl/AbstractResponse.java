@@ -14,7 +14,6 @@ import org.smartboot.http.common.Reset;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpStatus;
-import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
 
 import java.io.IOException;
@@ -59,7 +58,7 @@ class AbstractResponse implements HttpResponse, Reset {
      */
     private String contentType = HeaderValueEnum.DEFAULT_CONTENT_TYPE.getName();
 
-    private HttpRequest request;
+    private AbstractRequest request;
 
     private String characterEncoding;
     /**
@@ -69,7 +68,7 @@ class AbstractResponse implements HttpResponse, Reset {
 
     private List<Cookie> cookies = Collections.emptyList();
 
-    protected void init(HttpRequest request, AbstractOutputStream outputStream) {
+    protected void init(AbstractRequest request, AbstractOutputStream outputStream) {
         this.request = request;
         this.outputStream = outputStream;
     }
@@ -222,6 +221,8 @@ class AbstractResponse implements HttpResponse, Reset {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            request.getRequest().getAioSession().close(false);
         }
         closed = true;
     }

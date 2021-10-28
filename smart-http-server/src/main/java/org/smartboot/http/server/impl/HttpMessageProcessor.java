@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @author 三刀
@@ -74,22 +75,35 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
                     }
                 case FINISH: {
                     //消息处理
-                    handler.handle(abstractRequest, response);
-                    //关闭本次请求的输出流
-                    if (!response.getOutputStream().isClosed()) {
-                        response.getOutputStream().close();
+                    CompletableFuture<Void> future = handler.asyncHandle(abstractRequest, response);
+                    if (future == HttpServerHandler.SYNC_HANDLE_COMPLETABLE_FUTURE) {
+                        whenFinish(abstractRequest, response);
+                    } else {
+                        session.awaitRead();
+                        future.thenAccept(unused -> {
+                            try {
+                                whenFinish(abstractRequest, response);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                response.close();
+                            } finally {
+                                session.signalRead();
+                            }
+                        });
                     }
                 }
-            }
-            if (response.isClosed()) {
-                session.close(false);
-            }
-            if (request.getDecodePartEnum() == DecodePartEnum.FINISH) {
-                abstractRequest.reset();
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void whenFinish(AbstractRequest abstractRequest, AbstractResponse response) throws IOException {
+        //关闭本次请求的输出流
+        if (!response.getOutputStream().isClosed()) {
+            response.getOutputStream().close();
+        }
+        abstractRequest.reset();
     }
 
 

@@ -20,6 +20,7 @@ import org.smartboot.http.server.HttpServerHandler;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Http异常统一处理
@@ -51,6 +52,12 @@ class BaseHttpServerHandler extends HttpServerHandler {
 
     @Override
     public void handle(HttpRequest request, HttpResponse response) throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public CompletableFuture<Void> asyncHandle(HttpRequest request, HttpResponse response) throws IOException {
+        CompletableFuture<Void> completableFuture = null;
         try {
             boolean keepAlive = true;
             // http/1.0兼容长连接。此处用 == 性能更高
@@ -61,17 +68,22 @@ class BaseHttpServerHandler extends HttpServerHandler {
                 }
             }
 
-            nextHandler.handle(request, response);
+            completableFuture = nextHandler.asyncHandle(request, response);
+            if (completableFuture == SYNC_HANDLE_COMPLETABLE_FUTURE) {
+                afterHandle(request, response, keepAlive);
+            } else {
+                boolean finalKeepAlive = keepAlive;
+                completableFuture.thenAccept((unused) -> {
+                    try {
+                        afterHandle(request, response, finalKeepAlive);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        response.close();
+                    }
+                });
+            }
 
-            if (!keepAlive) {
-                response.close();
-            }
-            //body部分未读取完毕,释放连接资源
-            if (!HttpMethodEnum.GET.getMethod().equals(request.getMethod())
-                    && request.getContentLength() > 0
-                    && request.getInputStream().available() > 0) {
-                response.close();
-            }
+
         } catch (HttpException e) {
             e.printStackTrace();
             response.setHttpStatus(HttpStatus.valueOf(e.getHttpCode()));
@@ -81,6 +93,19 @@ class BaseHttpServerHandler extends HttpServerHandler {
             e.printStackTrace();
             response.setHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR);
             response.getOutputStream().write(e.fillInStackTrace().toString().getBytes());
+            response.close();
+        }
+        return completableFuture;
+    }
+
+    private void afterHandle(HttpRequest request, HttpResponse response, boolean keepAlive) throws IOException {
+        if (!keepAlive) {
+            response.close();
+        }
+        //body部分未读取完毕,释放连接资源
+        if (!HttpMethodEnum.GET.getMethod().equals(request.getMethod())
+                && request.getContentLength() > 0
+                && request.getInputStream().available() > 0) {
             response.close();
         }
     }

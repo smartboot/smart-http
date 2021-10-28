@@ -12,12 +12,15 @@ import org.smartboot.http.common.Handler;
 import org.smartboot.http.server.impl.Request;
 
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @author 三刀（zhengjunweimail@163.com）
  * @version V1.0 , 2021/7/25
  */
 public interface ServerHandler<REQ, RSP> extends Handler<Request> {
+    CompletableFuture<Void> SYNC_HANDLE_COMPLETABLE_FUTURE = new CompletableFuture<>();
+
     /**
      * 执行当前处理器逻辑。
      * <p>
@@ -28,5 +31,11 @@ public interface ServerHandler<REQ, RSP> extends Handler<Request> {
      * @param response
      * @throws IOException
      */
-    void handle(REQ request, RSP response) throws IOException;
+    default void handle(REQ request, RSP response) throws IOException {
+    }
+
+    default CompletableFuture<Void> asyncHandle(REQ request, RSP response) throws IOException {
+        handle(request, response);
+        return SYNC_HANDLE_COMPLETABLE_FUTURE;
+    }
 }
