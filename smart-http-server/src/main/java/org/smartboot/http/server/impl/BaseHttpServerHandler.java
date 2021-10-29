@@ -51,13 +51,7 @@ class BaseHttpServerHandler extends HttpServerHandler {
     }
 
     @Override
-    public void handle(HttpRequest request, HttpResponse response) throws IOException {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public CompletableFuture<Void> asyncHandle(HttpRequest request, HttpResponse response) throws IOException {
-        CompletableFuture<Void> completableFuture = null;
+    public void handle(HttpRequest request, HttpResponse response, CompletableFuture<Object> completableFuture) throws IOException {
         try {
             boolean keepAlive = true;
             // http/1.0兼容长连接。此处用 == 性能更高
@@ -68,22 +62,12 @@ class BaseHttpServerHandler extends HttpServerHandler {
                 }
             }
 
-            completableFuture = nextHandler.asyncHandle(request, response);
-            if (completableFuture == SYNC_HANDLE_COMPLETABLE_FUTURE) {
+            nextHandler.handle(request, response, completableFuture);
+            if (completableFuture.isDone()) {
                 afterHandle(request, response, keepAlive);
             } else {
-                boolean finalKeepAlive = keepAlive;
-                completableFuture.thenAccept((unused) -> {
-                    try {
-                        afterHandle(request, response, finalKeepAlive);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        response.close();
-                    }
-                });
+                afterAsyncHandle(request, response, completableFuture, keepAlive);
             }
-
-
         } catch (HttpException e) {
             e.printStackTrace();
             response.setHttpStatus(HttpStatus.valueOf(e.getHttpCode()));
@@ -95,7 +79,32 @@ class BaseHttpServerHandler extends HttpServerHandler {
             response.getOutputStream().write(e.fillInStackTrace().toString().getBytes());
             response.close();
         }
-        return completableFuture;
+    }
+
+    private void afterAsyncHandle(HttpRequest request, HttpResponse response, CompletableFuture<Object> completableFuture, boolean keepAlive) {
+        completableFuture.thenAccept((unused) -> {
+            try {
+                afterHandle(request, response, keepAlive);
+            } catch (HttpException e) {
+                e.printStackTrace();
+                response.setHttpStatus(HttpStatus.valueOf(e.getHttpCode()));
+                try {
+                    response.getOutputStream().write(e.getDesc().getBytes());
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+                response.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+                response.setHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+                try {
+                    response.getOutputStream().write(e.fillInStackTrace().toString().getBytes());
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+                response.close();
+            }
+        });
     }
 
     private void afterHandle(HttpRequest request, HttpResponse response, boolean keepAlive) throws IOException {

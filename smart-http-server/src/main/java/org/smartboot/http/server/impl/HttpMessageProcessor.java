@@ -75,8 +75,9 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
                     }
                 case FINISH: {
                     //消息处理
-                    CompletableFuture<Void> future = handler.asyncHandle(abstractRequest, response);
-                    if (future == HttpServerHandler.SYNC_HANDLE_COMPLETABLE_FUTURE) {
+                    CompletableFuture<Void> future = new CompletableFuture<>();
+                    handler.handle(abstractRequest, response, future);
+                    if (future.isDone()) {
                         whenFinish(abstractRequest, response);
                     } else {
                         session.awaitRead();

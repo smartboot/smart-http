@@ -30,18 +30,13 @@ public class AsyncHttpDemo {
         bootstrap.httpHandler(new HttpServerHandler() {
 
             @Override
-            public CompletableFuture<Void> asyncHandle(HttpRequest request, HttpResponse response) throws IOException {
-                CompletableFuture<Void> future = new CompletableFuture<>();
+            public void handle(HttpRequest request, HttpResponse response, CompletableFuture<Object> future) throws IOException {
                 response.write("hello smart-http<br/>".getBytes());
-                executorService.schedule(new Runnable() {
-                    @Override
-                    public void run() {
-                        future.complete(null);
-                        System.out.println("finish");
-                    }
-                }, 10, TimeUnit.SECONDS);
+                executorService.schedule(() -> {
+                    future.complete(null);
+                    System.out.println("finish");
+                }, 3, TimeUnit.SECONDS);
 
-                return future;
             }
         });
         bootstrap.configuration().debug(true);

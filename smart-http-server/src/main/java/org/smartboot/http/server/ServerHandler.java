@@ -19,7 +19,6 @@ import java.util.concurrent.CompletableFuture;
  * @version V1.0 , 2021/7/25
  */
 public interface ServerHandler<REQ, RSP> extends Handler<Request> {
-    CompletableFuture<Void> SYNC_HANDLE_COMPLETABLE_FUTURE = new CompletableFuture<>();
 
     /**
      * 执行当前处理器逻辑。
@@ -34,8 +33,11 @@ public interface ServerHandler<REQ, RSP> extends Handler<Request> {
     default void handle(REQ request, RSP response) throws IOException {
     }
 
-    default CompletableFuture<Void> asyncHandle(REQ request, RSP response) throws IOException {
-        handle(request, response);
-        return SYNC_HANDLE_COMPLETABLE_FUTURE;
+    default void handle(REQ request, RSP response, CompletableFuture<Object> completableFuture) throws IOException {
+        try {
+            handle(request, response);
+        } finally {
+            completableFuture.complete(null);
+        }
     }
 }
