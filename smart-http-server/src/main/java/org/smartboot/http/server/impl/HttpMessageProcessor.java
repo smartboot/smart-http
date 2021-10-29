@@ -75,7 +75,7 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
                     }
                 case FINISH: {
                     //消息处理
-                    CompletableFuture<Void> future = new CompletableFuture<>();
+                    CompletableFuture<Object> future = new CompletableFuture<>();
                     handler.handle(abstractRequest, response, future);
                     if (future.isDone()) {
                         whenFinish(abstractRequest, response);

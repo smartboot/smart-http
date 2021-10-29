@@ -70,7 +70,10 @@ public class StringUtils {
         for (HeaderValueEnum headerNameEnum : HeaderValueEnum.values()) {
             addCache(String_CACHE_COMMON, headerNameEnum.getName());
         }
-        addCache(String_CACHE_COMMON, HttpProtocolEnum.HTTP_11.getProtocol());
+        for (HttpProtocolEnum httpProtocolEnum : HttpProtocolEnum.values()) {
+            addCache(String_CACHE_COMMON, httpProtocolEnum.getProtocol());
+        }
+
     }
 
     public StringUtils() {

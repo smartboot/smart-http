@@ -25,21 +25,22 @@ import java.util.concurrent.TimeUnit;
  */
 public class AsyncHttpDemo {
     public static void main(String[] args) {
-        ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
+        ScheduledExecutorService executorService = Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors());
         HttpBootstrap bootstrap = new HttpBootstrap();
         bootstrap.httpHandler(new HttpServerHandler() {
 
             @Override
             public void handle(HttpRequest request, HttpResponse response, CompletableFuture<Object> future) throws IOException {
                 response.write("hello smart-http<br/>".getBytes());
+//                future.complete(this);
                 executorService.schedule(() -> {
-                    future.complete(null);
+                    future.complete(this);
                     System.out.println("finish");
                 }, 3, TimeUnit.SECONDS);
 
             }
         });
-        bootstrap.configuration().debug(true);
+        bootstrap.configuration().debug(false);
         bootstrap.setPort(8080).start();
     }
 }
