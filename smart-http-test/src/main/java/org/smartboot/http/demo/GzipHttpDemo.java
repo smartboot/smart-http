@@ -24,25 +24,26 @@ import java.io.IOException;
  */
 public class GzipHttpDemo {
     public static void main(String[] args) {
+        String text="Hello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello World";
         HttpRouteHandler routeHandle = new HttpRouteHandler();
         routeHandle.route("/a", new HttpServerHandler() {
             @Override
             public void handle(HttpRequest request, HttpResponse response) throws IOException {
-                byte[] data = "hello smart-http<br/>".getBytes();
+                byte[] data = text.getBytes();
                 response.setContentLength(data.length);
-                response.setHeader(HeaderNameEnum.CONTENT_ENCODING.getName(), HeaderValueEnum.GZIP.getName());
+//                response.setHeader(HeaderNameEnum.CONTENT_ENCODING.getName(), HeaderValueEnum.GZIP.getName());
                 response.write(data);
             }
         }).route("/b", new HttpServerHandler() {
             @Override
             public void handle(HttpRequest request, HttpResponse response) throws IOException {
                 response.setHeader(HeaderNameEnum.CONTENT_ENCODING.getName(), HeaderValueEnum.GZIP.getName());
-                response.write("hello smart-http<br/>".getBytes());
+                response.write(text.getBytes());
             }
         });
         HttpBootstrap bootstrap = new HttpBootstrap();
         bootstrap.httpHandler(routeHandle);
-        bootstrap.configuration().debug(true);
+        bootstrap.configuration().writeBufferSize(1024*1024).debug(true);
         bootstrap.setPort(8080).start();
     }
 }

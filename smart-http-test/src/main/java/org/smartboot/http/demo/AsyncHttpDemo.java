@@ -14,10 +14,10 @@ import org.smartboot.http.server.HttpResponse;
 import org.smartboot.http.server.HttpServerHandler;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author 三刀（zhengjunweimail@163.com）
@@ -25,22 +25,28 @@ import java.util.concurrent.TimeUnit;
  */
 public class AsyncHttpDemo {
     public static void main(String[] args) {
-        ScheduledExecutorService executorService = Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors());
+        ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         HttpBootstrap bootstrap = new HttpBootstrap();
         bootstrap.httpHandler(new HttpServerHandler() {
 
             @Override
             public void handle(HttpRequest request, HttpResponse response, CompletableFuture<Object> future) throws IOException {
-                response.write("hello smart-http<br/>".getBytes());
-//                future.complete(this);
-                executorService.schedule(() -> {
+                response.write((new Date() + " currentThread:" + Thread.currentThread()).getBytes());
+                response.getOutputStream().flush();
+                executorService.execute(() -> {
+                    try {
+                        //sleep 3秒模拟阻塞
+                        Thread.sleep(3000);
+                        response.write(("<br/>" + new Date() + " currentThread:" + Thread.currentThread()).getBytes());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     future.complete(this);
-                    System.out.println("finish");
-                }, 3, TimeUnit.SECONDS);
+                });
 
             }
         });
-        bootstrap.configuration().debug(false);
+        bootstrap.configuration().debug(true);
         bootstrap.setPort(8080).start();
     }
 }
