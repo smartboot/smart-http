@@ -81,9 +81,13 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
                         whenFinish(abstractRequest, response);
                     } else {
                         session.awaitRead();
+                        Thread thread = Thread.currentThread();
                         future.thenAccept(unused -> {
                             try {
                                 whenFinish(abstractRequest, response);
+                                if (thread != Thread.currentThread()) {
+                                    session.writeBuffer().flush();
+                                }
                             } catch (IOException e) {
                                 e.printStackTrace();
                                 response.close();
