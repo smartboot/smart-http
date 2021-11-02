@@ -178,6 +178,8 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
                         ex.printStackTrace();
                     }
                     response.close();
+                } finally {
+                    session.signalRead();
                 }
             });
         }
