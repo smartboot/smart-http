@@ -31,12 +31,12 @@ public class AsyncHttpDemo {
 
             @Override
             public void handle(HttpRequest request, HttpResponse response, CompletableFuture<Object> future) throws IOException {
-                response.write((new Date() + " currentThread:" + Thread.currentThread()).getBytes());
-                response.getOutputStream().flush();
+//                response.write((new Date() + " currentThread:" + Thread.currentThread()).getBytes());
+//                response.getOutputStream().flush();
                 executorService.execute(() -> {
                     try {
                         //sleep 3秒模拟阻塞
-                        Thread.sleep(3000);
+                        Thread.sleep(1000);
                         response.write(("<br/>" + new Date() + " currentThread:" + Thread.currentThread()).getBytes());
                     } catch (Exception e) {
                         e.printStackTrace();
