@@ -130,7 +130,7 @@ public class StringUtils {
         byte[] bytes = buffer.array();
         if (length >= cacheList.length) {
 //            System.out.println(new String(bytes, offset, length));
-            return new String(bytes, offset, length, StandardCharsets.US_ASCII);
+            return newAsciiString(bytes, offset, length);
         }
         List<StringCache> list = cacheList[length];
         for (int i = list.size() - 1; i > -1; i--) {
@@ -141,7 +141,7 @@ public class StringUtils {
         }
         if (readonly) {
 //            System.out.println(new String(bytes, offset, length));
-            return new String(bytes, offset, length, StandardCharsets.US_ASCII);
+            return newAsciiString(bytes, offset, length);
         }
         synchronized (list) {
             for (StringCache cache : list) {
@@ -149,7 +149,7 @@ public class StringUtils {
                     return cache.value;
                 }
             }
-            String str = new String(bytes, offset, length, StandardCharsets.US_ASCII);
+            String str = newAsciiString(bytes, offset, length);
             list.add(new StringCache(str.getBytes(), str));
             return str;
         }
@@ -164,11 +164,9 @@ public class StringUtils {
         return b0[0] == b1[offset];
     }
 
-
     public static boolean isEmpty(final CharSequence cs) {
         return cs == null || cs.length() == 0;
     }
-
 
     public static boolean isBlank(final CharSequence cs) {
         int strLen;
@@ -183,11 +181,9 @@ public class StringUtils {
         return true;
     }
 
-
     public static boolean isNotBlank(final CharSequence cs) {
         return !StringUtils.isBlank(cs);
     }
-
 
     public static boolean equals(final CharSequence cs1, final CharSequence cs2) {
         if (cs1 == cs2) {
@@ -201,7 +197,6 @@ public class StringUtils {
         }
         return regionMatches(cs1, false, 0, cs2, 0, Math.max(cs1.length(), cs2.length()));
     }
-
 
     private static boolean regionMatches(final CharSequence cs, final boolean ignoreCase, final int thisStart,
                                          final CharSequence substring, final int start, final int length) {
@@ -234,7 +229,6 @@ public class StringUtils {
             return true;
         }
     }
-
 
     public static String substring(final String str, int start) {
         if (str == null) {
@@ -285,7 +279,6 @@ public class StringUtils {
         return str.substring(start, end);
     }
 
-
     public static String substringBefore(final String str, final String separator) {
         if (isEmpty(str) || separator == null) {
             return str;
@@ -314,16 +307,13 @@ public class StringUtils {
         return str.substring(pos + separator.length());
     }
 
-
     public static String[] split(final String str, final String separatorChars) {
         return splitWorker(str, separatorChars, -1, false);
     }
 
-
     public static String[] splitPreserveAllTokens(final String str, final String separatorChars) {
         return splitWorker(str, separatorChars, -1, true);
     }
-
 
     private static String[] splitWorker(final String str, final String separatorChars, final int max, final boolean preserveAllTokens) {
 
@@ -407,7 +397,6 @@ public class StringUtils {
         return list.toArray(new String[list.size()]);
     }
 
-
     public static String[] tokenizeToStringArray(
             String str, String delimiters, boolean trimTokens, boolean ignoreEmptyTokens) {
 
@@ -439,11 +428,9 @@ public class StringUtils {
         return cs == null ? 0 : cs.length();
     }
 
-
     public static boolean startsWith(final CharSequence str, final CharSequence prefix) {
         return startsWith(str, prefix, false);
     }
-
 
     private static boolean startsWith(final CharSequence str, final CharSequence prefix, final boolean ignoreCase) {
         if (str == null || prefix == null) {
@@ -455,11 +442,9 @@ public class StringUtils {
         return regionMatches(str, ignoreCase, 0, prefix, 0, prefix.length());
     }
 
-
     public static boolean endsWith(final CharSequence str, final CharSequence suffix) {
         return endsWith(str, suffix, false);
     }
-
 
     private static boolean endsWith(final CharSequence str, final CharSequence suffix, final boolean ignoreCase) {
         if (str == null || suffix == null) {
@@ -524,6 +509,14 @@ public class StringUtils {
         }
         cache[bytes.length].add(new StringCache(bytes, str));
         return true;
+    }
+
+    private static String newAsciiString(byte[] bytes, int offset, int len) {
+        char[] chars = new char[len];
+        for (int i = 0; i < len; i++) {
+            chars[i] = (char) bytes[offset++];
+        }
+        return new String(chars);
     }
 
     static class StringCache {
