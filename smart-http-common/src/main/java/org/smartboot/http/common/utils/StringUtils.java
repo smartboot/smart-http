@@ -93,7 +93,7 @@ public class StringUtils {
         offset = buffer.arrayOffset() + offset;
         byte[] bytes = buffer.array();
         if (length >= cacheList.length) {
-            return Integer.parseInt(new String(bytes, offset, length));
+            return Integer.parseInt(new String(bytes, offset, length, StandardCharsets.US_ASCII));
         }
         List<IntegerCache> list = cacheList[length];
         for (int i = list.size() - 1; i > -1; i--) {
@@ -108,7 +108,7 @@ public class StringUtils {
                     return cache.value;
                 }
             }
-            String str = new String(bytes, offset, length);
+            String str = new String(bytes, offset, length, StandardCharsets.US_ASCII);
             list.add(new IntegerCache(str.getBytes(), Integer.parseInt(str)));
             return Integer.parseInt(str);
         }
