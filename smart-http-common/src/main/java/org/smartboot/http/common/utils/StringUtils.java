@@ -473,15 +473,13 @@ public class StringUtils {
     }
 
     public static int scanUntilAndTrim(ByteBuffer buffer, byte split) {
-        while (buffer.hasRemaining() && buffer.get(buffer.position()) == Constant.SP) {
-            buffer.position(buffer.position() + 1);
-        }
+        trimBuffer(buffer);
         int position = buffer.position() + buffer.arrayOffset();
         int limit = buffer.limit() + buffer.arrayOffset();
         byte[] data = buffer.array();
         while (position < limit) {
             if (data[position++] == split) {
-                int length = position - buffer.arrayOffset() - buffer.position()-1;
+                int length = position - buffer.arrayOffset() - buffer.position() - 1;
                 buffer.position(position - buffer.arrayOffset());
                 return length;
             }
@@ -490,9 +488,7 @@ public class StringUtils {
     }
 
     public static int scanCRLFAndTrim(ByteBuffer buffer) {
-        while (buffer.hasRemaining() && buffer.get(buffer.position()) == Constant.SP) {
-            buffer.position(buffer.position() + 1);
-        }
+        trimBuffer(buffer);
         int position = buffer.position() + buffer.arrayOffset();
         int limit = buffer.limit() + buffer.arrayOffset();
         byte[] data = buffer.array();
@@ -513,6 +509,12 @@ public class StringUtils {
             }
         }
         return -1;
+    }
+
+    public static void trimBuffer(ByteBuffer buffer) {
+        while (buffer.hasRemaining() && buffer.get(buffer.position()) == Constant.SP) {
+            buffer.position(buffer.position() + 1);
+        }
     }
 
     public static boolean addCache(List<StringCache>[] cache, String str) {

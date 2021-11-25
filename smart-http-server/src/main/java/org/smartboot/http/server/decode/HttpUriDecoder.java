@@ -50,17 +50,18 @@ class HttpUriDecoder extends AbstractDecoder {
     }
 
     private int scanURI(ByteBuffer buffer) {
-        while (buffer.get() == Constant.SP) ;
-        int i = 1;
-        int mark = buffer.position();
-        while (buffer.hasRemaining()) {
-            byte b = buffer.get();
+        StringUtils.trimBuffer(buffer);
+        int position = buffer.position() + buffer.arrayOffset();
+        int limit = buffer.limit() + buffer.arrayOffset();
+        byte[] data = buffer.array();
+        while (position < limit) {
+            byte b = data[position++];
             if (b == ' ' || b == '?') {
-                return i;
+                int length = position - buffer.arrayOffset() - buffer.position() - 1;
+                buffer.position(position - buffer.arrayOffset());
+                return length;
             }
-            i++;
         }
-        buffer.position(mark - 1);
         return -1;
     }
 }
