@@ -473,43 +473,45 @@ public class StringUtils {
     }
 
     public static int scanUntilAndTrim(ByteBuffer buffer, byte split) {
-        if (!buffer.hasRemaining()) {
-            return -1;
+        while (buffer.hasRemaining() && buffer.get(buffer.position()) == Constant.SP) {
+            buffer.position(buffer.position() + 1);
         }
-        while (buffer.get() == Constant.SP) ;
-        int i = 1;
-        int mark = buffer.position();
-        while (buffer.hasRemaining()) {
-            if (buffer.get() == split) {
-                return i;
+        int position = buffer.position() + buffer.arrayOffset();
+        int limit = buffer.limit() + buffer.arrayOffset();
+        byte[] data = buffer.array();
+        while (position < limit) {
+            if (data[position++] == split) {
+                int length = position - buffer.arrayOffset() - buffer.position()-1;
+                buffer.position(position - buffer.arrayOffset());
+                return length;
             }
-            i++;
         }
-        buffer.position(mark - 1);
         return -1;
     }
 
     public static int scanCRLFAndTrim(ByteBuffer buffer) {
-        int mark = buffer.position();
-        while (buffer.remaining() >= 2) {
-            byte b = buffer.get(buffer.position() + 1);
+        while (buffer.hasRemaining() && buffer.get(buffer.position()) == Constant.SP) {
+            buffer.position(buffer.position() + 1);
+        }
+        int position = buffer.position() + buffer.arrayOffset();
+        int limit = buffer.limit() + buffer.arrayOffset();
+        byte[] data = buffer.array();
+
+        while (limit - position >= 2) {
+            byte b = data[position + 1];
             if (b == Constant.LF) {
-                if (buffer.get(buffer.position()) == Constant.CR) {
-                    while (buffer.get(mark) == Constant.SP) {
-                        mark++;
-                    }
-                    int length = buffer.position() + 1 - mark;
-                    buffer.position(buffer.position() + 2);
+                if (data[position] == Constant.CR) {
+                    int length = position - buffer.arrayOffset() - buffer.position() + 1;
+                    buffer.position(position - buffer.arrayOffset() + 2);
                     return length;
                 }
                 throw new IllegalStateException();
             } else if (b == Constant.CR) {
-                buffer.position(buffer.position() + 1);
+                position += 1;
             } else {
-                buffer.position(buffer.position() + 2);
+                position += 2;
             }
         }
-        buffer.position(mark);
         return -1;
     }
 
