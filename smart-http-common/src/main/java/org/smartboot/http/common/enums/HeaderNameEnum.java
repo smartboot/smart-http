@@ -66,7 +66,8 @@ public enum HeaderNameEnum {
     Sec_WebSocket_Accept("Sec-WebSocket-Accept"),
     COOKIE("Cookie"),
     SET_COOKIE("Set-Cookie"),
-    Sec_WebSocket_Key("Sec-WebSocket-Key");
+    Sec_WebSocket_Key("Sec-WebSocket-Key"),
+    HTTP2_SETTINGS("HTTP2-Settings");
     public static final Map<String, HeaderNameEnum> HEADER_NAME_ENUM_MAP = new HashMap<>();
 
     static {

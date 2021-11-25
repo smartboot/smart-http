@@ -13,6 +13,7 @@ import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -129,7 +130,7 @@ public class StringUtils {
         byte[] bytes = buffer.array();
         if (length >= cacheList.length) {
 //            System.out.println(new String(bytes, offset, length));
-            return new String(bytes, offset, length);
+            return new String(bytes, offset, length, StandardCharsets.US_ASCII);
         }
         List<StringCache> list = cacheList[length];
         for (int i = list.size() - 1; i > -1; i--) {
@@ -140,7 +141,7 @@ public class StringUtils {
         }
         if (readonly) {
 //            System.out.println(new String(bytes, offset, length));
-            return new String(bytes, offset, length);
+            return new String(bytes, offset, length, StandardCharsets.US_ASCII);
         }
         synchronized (list) {
             for (StringCache cache : list) {
@@ -148,7 +149,7 @@ public class StringUtils {
                     return cache.value;
                 }
             }
-            String str = new String(bytes, offset, length);
+            String str = new String(bytes, offset, length, StandardCharsets.US_ASCII);
             list.add(new StringCache(str.getBytes(), str));
             return str;
         }

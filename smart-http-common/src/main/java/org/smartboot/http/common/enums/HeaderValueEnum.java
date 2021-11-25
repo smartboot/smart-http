@@ -22,7 +22,9 @@ public enum HeaderValueEnum {
     keepalive("keep-alive"),
     DEFAULT_CONTENT_TYPE("text/html; charset=utf-8"),
     CONTINUE("100-continue"),
-    GZIP("gzip");
+    GZIP("gzip"),
+    H2("h2"),
+    H2C("h2c");
 
     private final String name;
 

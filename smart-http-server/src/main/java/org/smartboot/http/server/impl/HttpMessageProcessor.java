@@ -14,6 +14,7 @@ import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpStatus;
+import org.smartboot.http.common.enums.HttpTypeEnum;
 import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
@@ -53,16 +54,22 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
     @Override
     public void process(AioSession session, Request request) {
         RequestAttachment attachment = session.getAttachment();
-        AbstractRequest abstractRequest;
-        ServerHandler handler;
-
-        if (request.isWebsocket()) {
-            abstractRequest = request.newWebsocketRequest();
-            handler = webSocketHandler;
-        } else {
-            abstractRequest = request.newHttpRequest();
-            handler = httpServerHandler;
+        AbstractRequest abstractRequest = null;
+        ServerHandler handler = null;
+        HttpTypeEnum requestType = request.getRequestType();
+        switch (requestType) {
+            case WEBSOCKET:
+                abstractRequest = request.newWebsocketRequest();
+                handler = webSocketHandler;
+                break;
+            case HTTP:
+                abstractRequest = request.newHttpRequest();
+                handler = httpServerHandler;
+                break;
+            case HTTP_2:
+                break;
         }
+
         AbstractResponse response = abstractRequest.getResponse();
 
         try {
@@ -79,10 +86,13 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
                     }
                 case FINISH: {
                     //消息处理
-                    if (handler == httpServerHandler) {
-                        handleHttpRequest(session, abstractRequest, handler);
-                    } else {
-                        handleWebSocketRequest(session, abstractRequest, handler);
+                    switch (requestType) {
+                        case WEBSOCKET:
+                            handleWebSocketRequest(session, abstractRequest, handler);
+                            break;
+                        case HTTP:
+                            handleHttpRequest(session, abstractRequest, handler);
+                            break;
                     }
                 }
             }
@@ -210,7 +220,7 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
     private void onHttpBody(Request request, ByteBuffer readBuffer, RequestAttachment attachment, ServerHandler<?, ?> handler) {
         if (handler.onBodyStream(readBuffer, request)) {
             request.setDecodePartEnum(DecodePartEnum.FINISH);
-            if (!request.isWebsocket()) {
+            if (request.getRequestType() == HttpTypeEnum.HTTP) {
                 attachment.setDecoder(null);
             }
         } else if (readBuffer.hasRemaining()) {
@@ -239,10 +249,13 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
                 break;
             case SESSION_CLOSED:
                 RequestAttachment att = session.getAttachment();
-                if (att.getRequest().isWebsocket()) {
-                    webSocketHandler.onClose(att.getRequest());
-                } else {
-                    httpServerHandler.onClose(att.getRequest());
+                switch (att.getRequest().getRequestType()) {
+                    case WEBSOCKET:
+                        webSocketHandler.onClose(att.getRequest());
+                        break;
+                    case HTTP:
+                        httpServerHandler.onClose(att.getRequest());
+                        break;
                 }
                 break;
             case DECODE_EXCEPTION:

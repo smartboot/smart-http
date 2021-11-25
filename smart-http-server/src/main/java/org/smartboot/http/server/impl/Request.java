@@ -183,17 +183,19 @@ public final class Request implements HttpRequest, Reset {
         headerSize++;
     }
 
-    public boolean isWebsocket() {
+    public HttpTypeEnum getRequestType() {
         if (type != null) {
-            return type == HttpTypeEnum.WEBSOCKET;
+            return type;
         }
-        if (HeaderValueEnum.WEBSOCKET.getName().equals(getHeader(HeaderNameEnum.UPGRADE.getName()))) {
+        String upgrade = getHeader(HeaderNameEnum.UPGRADE.getName());
+        if (HeaderValueEnum.WEBSOCKET.getName().equals(upgrade)) {
             type = HttpTypeEnum.WEBSOCKET;
-            return true;
+        } else if (HeaderValueEnum.H2C.getName().equals(upgrade) || HeaderValueEnum.H2.getName().equals(upgrade)) {
+            type = HttpTypeEnum.HTTP_2;
         } else {
             type = HttpTypeEnum.HTTP;
-            return false;
         }
+        return type;
     }
 
     @Override

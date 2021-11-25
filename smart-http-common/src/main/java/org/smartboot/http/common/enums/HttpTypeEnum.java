@@ -21,4 +21,8 @@ public enum HttpTypeEnum {
      * websocket消息
      */
     WEBSOCKET,
+    /**
+     * Http2.0消息
+     */
+    HTTP_2;
 }
