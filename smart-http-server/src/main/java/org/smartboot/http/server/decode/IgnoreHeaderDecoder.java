@@ -23,23 +23,30 @@ public class IgnoreHeaderDecoder implements Decoder {
 
     @Override
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request httpHeader) {
-        while (byteBuffer.remaining() >= 4) {
-            byte b = byteBuffer.get(byteBuffer.position() + 3);
+        int position = byteBuffer.position() + byteBuffer.arrayOffset();
+        int limit = byteBuffer.limit() + byteBuffer.arrayOffset();
+        byte[] data = byteBuffer.array();
+
+        while (limit - position >= 4) {
+            byte b = data[position + 3];
             if (b != Constant.CR && b != Constant.LF) {
+                position += 4;
                 byteBuffer.position(byteBuffer.position() + 4);
 //                System.out.println("skip");
                 continue;
             }
 //            System.out.println("read");
             int index = 0;
-            while (byteBuffer.get() == Constant.HEADER_END[index]) {
+            while (data[position++] == Constant.HEADER_END[index]) {
                 if (index == 3) {
+                    byteBuffer.position(position - byteBuffer.arrayOffset());
                     return HttpRequestProtocol.BODY_READY_DECODER;
                 } else {
                     index++;
                 }
             }
         }
+        byteBuffer.position(position - byteBuffer.arrayOffset());
         return this;
     }
 }
