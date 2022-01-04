@@ -8,6 +8,7 @@
 
 package org.smartboot.http.server.decode;
 
+import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.server.HttpServerConfiguration;
 
 /**
@@ -15,6 +16,10 @@ import org.smartboot.http.server.HttpServerConfiguration;
  * @version V1.0 , 2021/6/10
  */
 public abstract class AbstractDecoder implements Decoder {
+    protected static final byte[] SP = {Constant.SP};
+
+    protected static final byte[] URI = {' ', '?'};
+    protected static final byte[] CR = {Constant.CR};
     private final HttpServerConfiguration configuration;
 
     public AbstractDecoder(HttpServerConfiguration configuration) {

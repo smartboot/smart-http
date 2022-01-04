@@ -8,7 +8,6 @@
 
 package org.smartboot.http.server.decode;
 
-import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.impl.Request;
@@ -30,9 +29,8 @@ public class HttpMethodDecoder extends AbstractDecoder {
 
     @Override
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
-        int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.SP);
-        if (length > 0) {
-            String method = StringUtils.convertToString(byteBuffer, byteBuffer.position() - length - 1, length, StringUtils.String_CACHE_HTTP_METHOD);
+        String method = StringUtils.searchFromByteTree(byteBuffer, SP);
+        if (method != null) {
             request.setMethod(method);
             return decoder.decode(byteBuffer, aioSession, request);
         } else {

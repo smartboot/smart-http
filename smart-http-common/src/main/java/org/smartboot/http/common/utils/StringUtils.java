@@ -41,18 +41,21 @@ public class StringUtils {
     public static final int INDEX_NOT_FOUND = -1;
     public static final List<StringCache>[] String_CACHE_EMPTY = new List[0];
     public static final List<StringCache>[] String_CACHE_COMMON = new List[128];
-    public static final List<StringCache>[] String_CACHE_HTTP_METHOD = new List[8];
     public static final List<StringCache>[] String_CACHE_HEADER_NAME = new List[32];
     public static final List<StringCache>[] String_CACHE_URI = new List[64];
     public static final List<IntegerCache>[] INTEGER_CACHE_HTTP_STATUS_CODE = new List[8];
+    private static final int CHAR_CACHE_MAX_LENGTH = 1024;
+    private static final ThreadLocal<char[]> charsCacheThreadLocal = ThreadLocal.withInitial(() -> new char[CHAR_CACHE_MAX_LENGTH]);
+
+//    public static String convertToString(byte[] bytes, int length, List<StringCache>[] cacheList) {
+//        return convertToString(bytes, 0, length, cacheList);
+//    }
 
     static {
         for (int i = 0; i < INTEGER_CACHE_HTTP_STATUS_CODE.length; i++) {
             INTEGER_CACHE_HTTP_STATUS_CODE[i] = new ArrayList<>(8);
         }
-        for (int i = 0; i < String_CACHE_HTTP_METHOD.length; i++) {
-            String_CACHE_HTTP_METHOD[i] = new ArrayList<>(8);
-        }
+
         for (int i = 0; i < String_CACHE_COMMON.length; i++) {
             String_CACHE_COMMON[i] = new ArrayList<>(8);
         }
@@ -63,7 +66,7 @@ public class StringUtils {
             String_CACHE_URI[i] = new ArrayList<>(8);
         }
         for (HttpMethodEnum httpMethodEnum : HttpMethodEnum.values()) {
-            addCache(String_CACHE_HTTP_METHOD, httpMethodEnum.getMethod());
+            ByteTree.ROOT.addNode(httpMethodEnum.getMethod() + " ");
         }
         for (HeaderNameEnum headerNameEnum : HeaderNameEnum.values()) {
             addCache(String_CACHE_HEADER_NAME, headerNameEnum.getName());
@@ -72,18 +75,16 @@ public class StringUtils {
             addCache(String_CACHE_COMMON, headerNameEnum.getName());
         }
         for (HttpProtocolEnum httpProtocolEnum : HttpProtocolEnum.values()) {
-            addCache(String_CACHE_COMMON, httpProtocolEnum.getProtocol());
+            ByteTree.ROOT.addNode(httpProtocolEnum.getProtocol() + "\r\n");
         }
 
+        ByteTree.ROOT.addNode("/plaintext ");
+        ByteTree.ROOT.addNode("/json ");
     }
 
     public StringUtils() {
         super();
     }
-
-//    public static String convertToString(byte[] bytes, int length, List<StringCache>[] cacheList) {
-//        return convertToString(bytes, 0, length, cacheList);
-//    }
 
     public static String trim(final String str) {
         return str == null ? null : str.trim();
@@ -457,6 +458,19 @@ public class StringUtils {
         return regionMatches(str, ignoreCase, strOffset, suffix, 0, suffix.length());
     }
 
+    public static String searchFromByteTree(ByteBuffer buffer, byte[] split) {
+        trimBuffer(buffer);
+        int position = buffer.position() + buffer.arrayOffset();
+        int limit = buffer.limit() + buffer.arrayOffset();
+        byte[] data = buffer.array();
+        ByteTree byteTree = ByteTree.ROOT.search(data, position, limit, split, false);
+        if (byteTree == null) {
+            return null;
+        }
+        buffer.position(buffer.position() + byteTree.getDepth() + 1);
+        return byteTree.getStringValue();
+    }
+
     public static int scanUntilAndTrim(ByteBuffer buffer, byte split) {
         trimBuffer(buffer);
         int position = buffer.position() + buffer.arrayOffset();
@@ -512,11 +526,16 @@ public class StringUtils {
     }
 
     private static String newAsciiString(byte[] bytes, int offset, int len) {
-        char[] chars = new char[len];
+        char[] chars;
+        if (len <= CHAR_CACHE_MAX_LENGTH) {
+            chars = charsCacheThreadLocal.get();
+        } else {
+            chars = new char[len];
+        }
         for (int i = 0; i < len; i++) {
             chars[i] = (char) bytes[offset++];
         }
-        return new String(chars);
+        return new String(chars, 0, len);
     }
 
     static class StringCache {

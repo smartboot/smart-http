@@ -126,11 +126,11 @@ abstract class AbstractOutputStream extends BufferOutputStream {
             response.setContentLength(-1);
             return true;
         }
-        return (request.getMethod() == HttpMethodEnum.GET.getMethod()
-                || request.getMethod() == HttpMethodEnum.POST.getMethod()
-                || request.getMethod() == HttpMethodEnum.PUT.getMethod())
+        return (request.getMethod().equals(HttpMethodEnum.GET.getMethod())
+                || request.getMethod().equals(HttpMethodEnum.POST.getMethod())
+                || request.getMethod().equals(HttpMethodEnum.PUT.getMethod()))
                 && response.getHttpStatus() != HttpStatus.CONTINUE.value()
                 && response.getContentLength() < 0
-                && HttpProtocolEnum.HTTP_10.getProtocol() != request.getProtocol();
+                && !HttpProtocolEnum.HTTP_10.getProtocol().equals(request.getProtocol());
     }
 }

@@ -32,9 +32,8 @@ class HttpUriDecoder extends AbstractDecoder {
 
     @Override
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
-        int length = scanURI(byteBuffer);
-        if (length > 0) {
-            String uri = StringUtils.convertToString(byteBuffer, byteBuffer.position() - length - 1, length, StringUtils.String_CACHE_URI, true);
+        String uri = StringUtils.searchFromByteTree(byteBuffer, URI);
+        if (uri != null) {
             request.setUri(uri);
             switch (byteBuffer.get(byteBuffer.position() - 1)) {
                 case Constant.SP:
@@ -47,21 +46,5 @@ class HttpUriDecoder extends AbstractDecoder {
         } else {
             return this;
         }
-    }
-
-    private int scanURI(ByteBuffer buffer) {
-        StringUtils.trimBuffer(buffer);
-        int position = buffer.position() + buffer.arrayOffset();
-        int limit = buffer.limit() + buffer.arrayOffset();
-        byte[] data = buffer.array();
-        while (position < limit) {
-            byte b = data[position++];
-            if (b == ' ' || b == '?') {
-                int length = position - buffer.arrayOffset() - buffer.position() - 1;
-                buffer.position(position - buffer.arrayOffset());
-                return length;
-            }
-        }
-        return -1;
     }
 }

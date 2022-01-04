@@ -8,6 +8,9 @@
 
 package org.smartboot.http.server.decode;
 
+import org.smartboot.http.common.enums.HttpStatus;
+import org.smartboot.http.common.exception.HttpException;
+import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.impl.Request;
@@ -23,17 +26,29 @@ class HttpProtocolDecoder extends AbstractDecoder {
 
     private final HttpHeaderDecoder decoder = new HttpHeaderDecoder(getConfiguration());
 
+    private final AbstractDecoder lfDecoder = new AbstractDecoder(getConfiguration()) {
+        @Override
+        public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
+            if (byteBuffer.hasRemaining()) {
+                if (byteBuffer.get() != Constant.LF) {
+                    throw new HttpException(HttpStatus.BAD_REQUEST);
+                }
+                return decoder.decode(byteBuffer, aioSession, request);
+            } else
+                return this;
+        }
+    };
+
     public HttpProtocolDecoder(HttpServerConfiguration configuration) {
         super(configuration);
     }
 
     @Override
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
-        int length = StringUtils.scanCRLFAndTrim(byteBuffer);
-        if (length > 0) {
-            String protocol = StringUtils.convertToString(byteBuffer, byteBuffer.position() - length - 1, length - 1, StringUtils.String_CACHE_COMMON);
+        String protocol = StringUtils.searchFromByteTree(byteBuffer, CR);
+        if (protocol != null) {
             request.setProtocol(protocol);
-            return decoder.decode(byteBuffer, aioSession, request);
+            return lfDecoder.decode(byteBuffer, aioSession, request);
         } else {
             return this;
         }
