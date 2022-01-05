@@ -82,7 +82,6 @@ public class ByteTree {
             addNode(this, bytes, offset, limit);
             return search(bytes, offset, limit, ends, cache);
         } else {
-            System.out.println("aa");
             // 构建临时对象，用完由JVM回收
             ByteTree clone = clone(this);
             return clone.search(bytes, offset - depth, limit, ends, true);
