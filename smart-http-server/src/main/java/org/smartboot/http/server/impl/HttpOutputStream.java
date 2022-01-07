@@ -42,10 +42,6 @@ final class HttpOutputStream extends AbstractOutputStream {
         }
     };
 
-    /**
-     * Key：status+contentType
-     */
-    private static final Map<String, WriteCache> CACHE_CHUNKED_AND_LENGTH = new HashMap<>();
     private static long currentTime = System.currentTimeMillis();
     private static byte[] dateBytes;
     private static String date;
