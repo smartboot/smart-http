@@ -18,7 +18,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author 三刀
@@ -26,85 +27,73 @@ import java.util.concurrent.Semaphore;
  */
 final class HttpOutputStream extends AbstractOutputStream {
     private static final SimpleDateFormat sdf = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
+    private static final int CACHE_LIMIT = 512;
     /**
      * key:status+contentType
      */
-    private static final Map<String, CacheHeader>[] CACHE_CONTENT_TYPE_AND_LENGTH = new Map[512];
-    private static final CacheHeader[] LATEST_CACHE_CONTENT_TYPE_AND_LENGTH = new CacheHeader[512];
+    private static final ThreadLocal<Map<String, WriteCache>[]> CACHE_CONTENT_TYPE_AND_LENGTH = new ThreadLocal<Map<String, WriteCache>[]>() {
+        @Override
+        protected Map<String, WriteCache>[] initialValue() {
+            Map<String, WriteCache>[] mapArray = new Map[CACHE_LIMIT];
+            for (int i = 0; i < CACHE_LIMIT; i++) {
+                mapArray[i] = new HashMap<>();
+            }
+            return mapArray;
+        }
+    };
+
     /**
      * Key：status+contentType
      */
-    private static final Map<String, CacheHeader> CACHE_CHUNKED_AND_LENGTH = new HashMap<>();
-    private static final Date currentDate = new Date(0);
-    private static final Semaphore flushDateSemaphore = new Semaphore(1);
+    private static final Map<String, WriteCache> CACHE_CHUNKED_AND_LENGTH = new HashMap<>();
+    private static long currentTime = System.currentTimeMillis();
     private static byte[] dateBytes;
     private static String date;
 
-
     static {
-        flushDate();
+        Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(new Runnable() {
+            final Date currentDate = new Date(0);
+
+            @Override
+            public void run() {
+                currentTime = System.currentTimeMillis();
+                currentDate.setTime(currentTime);
+                date = sdf.format(currentDate);
+                dateBytes = date.getBytes();
+            }
+        }, 0, 1, TimeUnit.SECONDS);
     }
 
-    static {
-        for (int i = 0; i < CACHE_CONTENT_TYPE_AND_LENGTH.length; i++) {
-            CACHE_CONTENT_TYPE_AND_LENGTH[i] = new HashMap<>();
-        }
-    }
 
     public HttpOutputStream(HttpRequestImpl httpRequest, HttpResponseImpl response, Request request) {
         super(httpRequest, response, request);
     }
 
-    private static void flushDate() {
-        if ((System.currentTimeMillis() - currentDate.getTime() > 1000) && flushDateSemaphore.tryAcquire()) {
-            try {
-                currentDate.setTime(System.currentTimeMillis());
-                date = sdf.format(currentDate);
-                dateBytes = date.getBytes();
-            } finally {
-                flushDateSemaphore.release();
-            }
-        }
-    }
-
     @Override
     protected byte[] getHeadPart() {
-        flushDate();
         int httpStatus = response.getHttpStatus();
         String reasonPhrase = response.getReasonPhrase();
         int contentLength = response.getContentLength();
         String contentType = response.getContentType();
-        CacheHeader data = null;
+        WriteCache data;
+        writeCache = null;
         //成功消息优先从缓存中加载
-        boolean cache = httpStatus == HttpStatus.OK.value() && HttpStatus.OK.getReasonPhrase().equals(reasonPhrase);
+        boolean cache = httpStatus == HttpStatus.OK.value()
+                && HttpStatus.OK.getReasonPhrase().equals(reasonPhrase) && contentLength > 0
+                && contentLength < CACHE_LIMIT
+                && !hasHeader();
 
         if (cache) {
-            if (chunked) {
-                data = CACHE_CHUNKED_AND_LENGTH.get(contentType);
-            } else if (contentLength > 0 && contentLength < CACHE_CONTENT_TYPE_AND_LENGTH.length) {
-                data = LATEST_CACHE_CONTENT_TYPE_AND_LENGTH[contentLength];
-                if (data == null || !data.contentType.equals(contentType)) {
-                    data = CACHE_CONTENT_TYPE_AND_LENGTH[contentLength].get(contentType);
-                    LATEST_CACHE_CONTENT_TYPE_AND_LENGTH[contentLength] = data;
-                }
-            }
-
+            data = CACHE_CONTENT_TYPE_AND_LENGTH.get()[contentLength].get(contentType);
             if (data != null) {
-                if (hasHeader()) {
-                    if (currentDate.getTime() - data.cacheTime > 1000 && data.semaphore.tryAcquire()) {
-                        data.cacheTime = currentDate.getTime();
-                        System.arraycopy(dateBytes, 0, data.partialHeaderData, data.partialHeaderData.length - 2 - dateBytes.length, dateBytes.length);
-                        data.semaphore.release();
-                    }
-                    return data.partialHeaderData;
-                } else {
-                    if (currentDate.getTime() - data.cacheTime > 1000 && data.semaphore.tryAcquire()) {
-                        data.cacheTime = currentDate.getTime();
-                        System.arraycopy(dateBytes, 0, data.fullHeaderData, data.fullHeaderData.length - 4 - dateBytes.length, dateBytes.length);
-                        data.semaphore.release();
-                    }
-                    return data.fullHeaderData;
+                writeCache = data;
+                writeCache.setBodyPosition(writeCache.getBodyInitPosition());
+                if (currentTime - data.getCacheTime() > 1000) {
+                    data.setCacheTime(currentTime);
+                    System.arraycopy(dateBytes, 0, data.getCacheData(), data.getCacheData().length - contentLength - 4 - dateBytes.length, dateBytes.length);
                 }
+                //命中缓存，无需响应
+                return null;
             }
         }
 
@@ -126,30 +115,10 @@ final class HttpOutputStream extends AbstractOutputStream {
 
         //缓存响应头
         if (cache) {
-            if (chunked) {
-                CACHE_CHUNKED_AND_LENGTH.put(contentType, new CacheHeader(contentType, currentDate.getTime(), sb.toString().getBytes()));
-            } else if (contentLength >= 0 && contentLength < CACHE_CONTENT_TYPE_AND_LENGTH.length) {
-                CACHE_CONTENT_TYPE_AND_LENGTH[contentLength].put(contentType, new CacheHeader(contentType, currentDate.getTime(), sb.toString().getBytes()));
-            }
+            CACHE_CONTENT_TYPE_AND_LENGTH.get()[contentLength].put(contentType, new WriteCache(contentType, currentTime, sb.toString().getBytes(), contentLength));
         }
         return hasHeader() ? sb.toString().getBytes() : sb.append(Constant.CRLF).toString().getBytes();
     }
 
-    private static class CacheHeader {
-        final String contentType;
-        final Semaphore semaphore = new Semaphore(1);
-        long cacheTime;
-        byte[] partialHeaderData;
-        byte[] fullHeaderData;
 
-        public CacheHeader(String contentType, long cacheTime, byte[] data) {
-            this.contentType = contentType;
-            this.cacheTime = cacheTime;
-            this.partialHeaderData = data;
-            this.fullHeaderData = new byte[data.length + 2];
-            System.arraycopy(data, 0, fullHeaderData, 0, data.length);
-            this.fullHeaderData[fullHeaderData.length - 2] = Constant.CR;
-            this.fullHeaderData[fullHeaderData.length - 1] = Constant.LF;
-        }
-    }
 }

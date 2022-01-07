@@ -58,10 +58,12 @@ abstract class AbstractOutputStream extends BufferOutputStream {
         convertCookieToHeader();
 
         //输出http状态行、contentType,contentLength、Transfer-Encoding、server等信息
-        writeBuffer.write(getHeadPart());
-
-        //输出Header部分
-        writeHeader();
+        byte[] headBytes = getHeadPart();
+        if (writeCache == null) {
+            writeBuffer.write(headBytes);
+            //输出Header部分
+            writeHeader();
+        }
 
         committed = true;
     }
