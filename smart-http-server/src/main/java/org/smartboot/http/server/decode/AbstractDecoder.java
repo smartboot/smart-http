@@ -20,6 +20,7 @@ public abstract class AbstractDecoder implements Decoder {
 
     protected static final byte[] URI = {' ', '?'};
     protected static final byte[] CR = {Constant.CR};
+    protected static final byte[] COLON = {Constant.COLON};
     private final HttpServerConfiguration configuration;
 
     public AbstractDecoder(HttpServerConfiguration configuration) {

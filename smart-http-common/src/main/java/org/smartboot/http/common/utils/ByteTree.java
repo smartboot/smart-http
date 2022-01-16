@@ -8,9 +8,6 @@
 
 package org.smartboot.http.common.utils;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 /**
  * @author 三刀（zhengjunweimail@163.com）
  * @version V1.0 , 2022/1/2
@@ -19,8 +16,9 @@ public class ByteTree {
     public static final ByteTree ROOT = new ByteTree();
     private final byte value;
     private final int depth;
-    private final Map<Byte, ByteTree> nextNodes = new ConcurrentHashMap<>();
     private final ByteTree parent;
+    private int shift = -1;
+    private ByteTree[] nodes;
     private String stringValue;
 
     public ByteTree() {
@@ -49,7 +47,7 @@ public class ByteTree {
             tree = tree.parent;
         }
         ByteTree clone = new ByteTree(null, Byte.MAX_VALUE);
-        clone.addNode(clone, b, 0, b.length);
+        clone.addNode(b, 0, b.length);
         return clone;
     }
 
@@ -64,27 +62,39 @@ public class ByteTree {
      * @return
      */
     public ByteTree search(byte[] bytes, int offset, int limit, byte[] ends, boolean cache) {
-        for (byte end : ends) {
-            if (end == value) {
-                return this.parent;
+        ByteTree byteTree = this;
+        while (true) {
+            for (byte end : ends) {
+                if (end == byteTree.value) {
+                    return byteTree.parent;
+                }
+            }
+            if (offset == limit) {
+                return null;
+            }
+            int i = bytes[offset] - byteTree.shift;
+            if (byteTree.nodes == null || i >= byteTree.nodes.length || i < 0) {
+                break;
+            }
+            ByteTree b = byteTree.nodes[i];
+            if (b != null) {
+                byteTree = b;
+                offset++;
+//                return b.search(bytes, offset + 1, limit, ends, cache);
+            } else {
+                break;
             }
         }
-        if (offset == limit) {
-            return null;
-        }
-        ByteTree b = nextNodes.get(bytes[offset]);
-        if (b != null) {
-            return b.search(bytes, offset + 1, limit, ends, cache);
-        }
-
         if (cache) {
             //在当前节点上追加子节点
-            addNode(this, bytes, offset, limit);
-            return search(bytes, offset, limit, ends, cache);
+//            System.out.println("add");
+            byteTree.addNode(bytes, offset, limit);
+            return byteTree.search(bytes, offset, limit, ends, cache);
         } else {
+//            System.out.println("tmp");
             // 构建临时对象，用完由JVM回收
-            ByteTree clone = clone(this);
-            return clone.search(bytes, offset - depth, limit, ends, true);
+            ByteTree clone = clone(byteTree);
+            return clone.search(bytes, offset - byteTree.depth, limit, ends, true);
         }
     }
 
@@ -98,21 +108,47 @@ public class ByteTree {
         while (tree.depth > 0) {
             tree = tree.parent;
         }
-        addNode(tree, bytes, 0, bytes.length);
+        tree.addNode(bytes, 0, bytes.length);
     }
 
-    private void addNode(ByteTree tree, byte[] value, int offset, int limit) {
+    private void addNode(byte[] value, int offset, int limit) {
         if (offset == limit) {
             return;
         }
-        ByteTree nextTree = tree.nextNodes.get(value[offset]);
-        if (nextTree == null) {
-            nextTree = new ByteTree(tree, value[offset]);
-            tree.nextNodes.put(nextTree.value, nextTree);
+
+        byte b = value[offset];
+        if (shift == -1) {
+            shift = b;
         }
-        addNode(nextTree, value, offset + 1, limit);
+        if (b - shift < 0) {
+            increase(b - shift);
+        } else {
+            increase(b + 1 - shift);
+        }
+
+        ByteTree nextTree = nodes[b - shift];
+        if (nextTree == null) {
+            nextTree = nodes[b - shift] = new ByteTree(this, b);
+        }
+        nextTree.addNode(value, offset + 1, limit);
     }
 
+    private void increase(int size) {
+        if (size == 0)
+            size = -1;
+        if (nodes == null) {
+            nodes = new ByteTree[size];
+        } else if (size < 0) {
+            ByteTree[] temp = new ByteTree[nodes.length - size];
+            System.arraycopy(nodes, 0, temp, -size, nodes.length);
+            nodes = temp;
+            shift += size;
+        } else if (nodes.length < size) {
+            ByteTree[] temp = new ByteTree[size];
+            System.arraycopy(nodes, 0, temp, 0, nodes.length);
+            nodes = temp;
+        }
+    }
 
     public String getStringValue() {
         if (stringValue == null) {

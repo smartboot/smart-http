@@ -27,6 +27,7 @@ class HttpHeaderDecoder extends AbstractDecoder {
 
     private final HeaderValueDecoder headerValueDecoder = new HeaderValueDecoder();
     private final IgnoreHeaderDecoder ignoreHeaderDecoder = new IgnoreHeaderDecoder();
+    private final LfDecoder lfDecoder = new LfDecoder(this, getConfiguration());
 
     public HttpHeaderDecoder(HttpServerConfiguration configuration) {
         super(configuration);
@@ -50,12 +51,11 @@ class HttpHeaderDecoder extends AbstractDecoder {
             return HttpRequestProtocol.BODY_READY_DECODER;
         }
         //Header name解码
-        int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.COLON);
-        if (length < 0) {
+        String name = StringUtils.searchFromByteTree(byteBuffer, COLON);
+        if (name == null) {
             return this;
         }
-        String name = StringUtils.convertToString(byteBuffer, byteBuffer.position() - length - 1, length, StringUtils.String_CACHE_HEADER_NAME);
-//        System.out.println(name);
+//        System.out.println("headerName: " + name);
         request.setHeaderTemp(name);
         return headerValueDecoder.decode(byteBuffer, aioSession, request);
     }
@@ -66,12 +66,13 @@ class HttpHeaderDecoder extends AbstractDecoder {
     class HeaderValueDecoder implements Decoder {
         @Override
         public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
-            int length = StringUtils.scanCRLFAndTrim(byteBuffer);
-            if (length == -1) {
+            String value = StringUtils.searchFromByteTree(byteBuffer, CR);
+            if (value == null) {
                 return this;
             }
-            request.setHeadValue(StringUtils.convertToString(byteBuffer, byteBuffer.position() - 1 - length, length - 1, StringUtils.String_CACHE_COMMON, true));
-            return HttpHeaderDecoder.this.decode(byteBuffer, aioSession, request);
+//            System.out.println("value: " + value);
+            request.setHeadValue(value);
+            return lfDecoder.decode(byteBuffer, aioSession, request);
         }
     }
 }

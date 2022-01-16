@@ -8,9 +8,6 @@
 
 package org.smartboot.http.server.decode;
 
-import org.smartboot.http.common.enums.HttpStatus;
-import org.smartboot.http.common.exception.HttpException;
-import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.impl.Request;
@@ -26,18 +23,7 @@ class HttpProtocolDecoder extends AbstractDecoder {
 
     private final HttpHeaderDecoder decoder = new HttpHeaderDecoder(getConfiguration());
 
-    private final AbstractDecoder lfDecoder = new AbstractDecoder(getConfiguration()) {
-        @Override
-        public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
-            if (byteBuffer.hasRemaining()) {
-                if (byteBuffer.get() != Constant.LF) {
-                    throw new HttpException(HttpStatus.BAD_REQUEST);
-                }
-                return decoder.decode(byteBuffer, aioSession, request);
-            } else
-                return this;
-        }
-    };
+    private final LfDecoder lfDecoder = new LfDecoder(decoder, getConfiguration());
 
     public HttpProtocolDecoder(HttpServerConfiguration configuration) {
         super(configuration);
