@@ -18,8 +18,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Semaphore;
 
 /**
  * @author 三刀
@@ -41,24 +40,10 @@ final class HttpOutputStream extends AbstractOutputStream {
             return mapArray;
         }
     };
-
-    private static long currentTime = System.currentTimeMillis();
+    private static final Date currentDate = new Date(0);
+    private static final Semaphore flushDateSemaphore = new Semaphore(1);
     private static byte[] dateBytes;
     private static String date;
-
-    static {
-        Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(new Runnable() {
-            final Date currentDate = new Date(0);
-
-            @Override
-            public void run() {
-                currentTime = System.currentTimeMillis();
-                currentDate.setTime(currentTime);
-                date = sdf.format(currentDate);
-                dateBytes = date.getBytes();
-            }
-        }, 0, 1, TimeUnit.SECONDS);
-    }
 
 
     public HttpOutputStream(HttpRequestImpl httpRequest, HttpResponseImpl response, Request request) {
@@ -67,6 +52,7 @@ final class HttpOutputStream extends AbstractOutputStream {
 
     @Override
     protected byte[] getHeadPart() {
+        long currentTime = flushDate();
         int httpStatus = response.getHttpStatus();
         String reasonPhrase = response.getReasonPhrase();
         int contentLength = response.getContentLength();
@@ -116,5 +102,17 @@ final class HttpOutputStream extends AbstractOutputStream {
         return hasHeader() ? sb.toString().getBytes() : sb.append(Constant.CRLF).toString().getBytes();
     }
 
-
+    private long flushDate() {
+        long currentTime = System.currentTimeMillis();
+        if ((currentTime - currentDate.getTime() > 1000) && flushDateSemaphore.tryAcquire()) {
+            try {
+                currentDate.setTime(currentTime);
+                date = sdf.format(currentDate);
+                dateBytes = date.getBytes();
+            } finally {
+                flushDateSemaphore.release();
+            }
+        }
+        return currentTime;
+    }
 }
