@@ -107,9 +107,6 @@ abstract class AbstractOutputStream extends BufferOutputStream {
 
     @Override
     protected final void check() {
-        if (HttpMethodEnum.HEAD.getMethod().equals(request.getMethod())) {
-            throw new UnsupportedOperationException(request.getMethod() + " can not write http body");
-        }
         //识别是否采用 chunked 输出
         if (!committed) {
             chunked = supportChunked(request, response);
@@ -133,6 +130,6 @@ abstract class AbstractOutputStream extends BufferOutputStream {
                 || request.getMethod().equals(HttpMethodEnum.PUT.getMethod()))
                 && response.getHttpStatus() != HttpStatus.CONTINUE.value()
                 && response.getContentLength() < 0
-                && !HttpProtocolEnum.HTTP_10.getProtocol().equals(request.getProtocol());
+                && HttpProtocolEnum.HTTP_11.getProtocol().equals(request.getProtocol());
     }
 }
