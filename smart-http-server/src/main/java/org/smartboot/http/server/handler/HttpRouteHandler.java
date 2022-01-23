@@ -77,6 +77,9 @@ public final class HttpRouteHandler extends HttpServerHandler {
     }
 
     private HttpServerHandler matchHandler(String uri) {
+        if (uri == null) {
+            return defaultHandler;
+        }
         int len = uri.length();
         int index = len - 1;
         if (index < handlerCaches.length) {

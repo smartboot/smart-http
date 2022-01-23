@@ -62,7 +62,7 @@ public class StringUtils {
             String_CACHE_HEADER_NAME[i] = new ArrayList<>(8);
         }
         for (HttpMethodEnum httpMethodEnum : HttpMethodEnum.values()) {
-            ByteTree.ROOT.addNode(httpMethodEnum.getMethod() + " ");
+            ByteTree.ROOT.addNode(httpMethodEnum.getMethod());
         }
         for (HeaderNameEnum headerNameEnum : HeaderNameEnum.values()) {
             addCache(String_CACHE_HEADER_NAME, headerNameEnum.getName());
@@ -71,7 +71,7 @@ public class StringUtils {
             addCache(String_CACHE_COMMON, headerNameEnum.getName());
         }
         for (HttpProtocolEnum httpProtocolEnum : HttpProtocolEnum.values()) {
-            ByteTree.ROOT.addNode(httpProtocolEnum.getProtocol() + "\r\n");
+            ByteTree.ROOT.addNode(httpProtocolEnum.getProtocol());
         }
 
     }
