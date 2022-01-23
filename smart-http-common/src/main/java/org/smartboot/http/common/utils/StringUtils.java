@@ -42,7 +42,6 @@ public class StringUtils {
     public static final List<StringCache>[] String_CACHE_EMPTY = new List[0];
     public static final List<StringCache>[] String_CACHE_COMMON = new List[128];
     public static final List<StringCache>[] String_CACHE_HEADER_NAME = new List[32];
-    public static final List<StringCache>[] String_CACHE_URI = new List[64];
     public static final List<IntegerCache>[] INTEGER_CACHE_HTTP_STATUS_CODE = new List[8];
     private static final int CHAR_CACHE_MAX_LENGTH = 1024;
     private static final ThreadLocal<char[]> charsCacheThreadLocal = ThreadLocal.withInitial(() -> new char[CHAR_CACHE_MAX_LENGTH]);
@@ -62,9 +61,6 @@ public class StringUtils {
         for (int i = 0; i < String_CACHE_HEADER_NAME.length; i++) {
             String_CACHE_HEADER_NAME[i] = new ArrayList<>(8);
         }
-        for (int i = 0; i < String_CACHE_URI.length; i++) {
-            String_CACHE_URI[i] = new ArrayList<>(8);
-        }
         for (HttpMethodEnum httpMethodEnum : HttpMethodEnum.values()) {
             ByteTree.ROOT.addNode(httpMethodEnum.getMethod() + " ");
         }
@@ -78,8 +74,6 @@ public class StringUtils {
             ByteTree.ROOT.addNode(httpProtocolEnum.getProtocol() + "\r\n");
         }
 
-        ByteTree.ROOT.addNode("/plaintext ");
-        ByteTree.ROOT.addNode("/json ");
     }
 
     public StringUtils() {

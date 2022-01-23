@@ -10,7 +10,7 @@ package org.smartboot.http.server.handler;
 
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.utils.AntPathMatcher;
-import org.smartboot.http.common.utils.StringUtils;
+import org.smartboot.http.common.utils.ByteTree;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
 import org.smartboot.http.server.HttpServerHandler;
@@ -27,7 +27,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class HttpRouteHandler extends HttpServerHandler {
     private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
-    private final HandlerCache CACHE_DISABLED = new HandlerCache(null, null);
     /**
      * 默认404
      */
@@ -37,7 +36,7 @@ public final class HttpRouteHandler extends HttpServerHandler {
             response.setHttpStatus(HttpStatus.NOT_FOUND);
         }
     };
-    private final HandlerCache[] handlerCaches = new HandlerCache[StringUtils.String_CACHE_URI.length];
+    private final HandlerCache[] handlerCaches = new HandlerCache[64];
     private final Map<String, HttpServerHandler> handlerMap = new ConcurrentHashMap<>();
 
     @Override
@@ -69,7 +68,8 @@ public final class HttpRouteHandler extends HttpServerHandler {
      */
     public HttpRouteHandler route(String urlPattern, HttpServerHandler httpHandler) {
         //缓存精准路径
-        if (!urlPattern.contains("*") && StringUtils.addCache(StringUtils.String_CACHE_URI, urlPattern) && urlPattern.length() < handlerCaches.length) {
+        if (!urlPattern.contains("*") && urlPattern.length() < handlerCaches.length) {
+            ByteTree.ROOT.addNode(urlPattern);
             handlerCaches[urlPattern.length() - 1] = new HandlerCache(urlPattern, httpHandler);
         }
         handlerMap.put(urlPattern, httpHandler);
@@ -81,7 +81,7 @@ public final class HttpRouteHandler extends HttpServerHandler {
         int index = len - 1;
         if (index < handlerCaches.length) {
             HandlerCache handleCache = handlerCaches[index];
-            if (handleCache != null && handleCache.getUri() == uri) {
+            if (handleCache != null && handleCache.getUri().equals(uri)) {
                 return handleCache.handler;
             }
         }

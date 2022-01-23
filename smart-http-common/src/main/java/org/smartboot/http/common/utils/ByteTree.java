@@ -64,14 +64,15 @@ public class ByteTree {
     public ByteTree search(byte[] bytes, int offset, int limit, byte[] ends, boolean cache) {
         ByteTree byteTree = this;
         while (true) {
-            for (byte end : ends) {
-                if (end == byteTree.value) {
-                    return byteTree.parent;
-                }
-            }
-            if (offset == limit) {
+            if (offset >= limit) {
                 return null;
             }
+            for (byte end : ends) {
+                if (end == bytes[offset]) {
+                    return byteTree;
+                }
+            }
+
             int i = bytes[offset] - byteTree.shift;
             if (byteTree.nodes == null || i >= byteTree.nodes.length || i < 0) {
                 break;
@@ -108,12 +109,13 @@ public class ByteTree {
         while (tree.depth > 0) {
             tree = tree.parent;
         }
-        tree.addNode(bytes, 0, bytes.length);
+        ByteTree leafNode = tree.addNode(bytes, 0, bytes.length);
+        leafNode.stringValue = value;
     }
 
-    private void addNode(byte[] value, int offset, int limit) {
+    private ByteTree addNode(byte[] value, int offset, int limit) {
         if (offset == limit) {
-            return;
+            return this;
         }
 
         byte b = value[offset];
@@ -130,7 +132,7 @@ public class ByteTree {
         if (nextTree == null) {
             nextTree = nodes[b - shift] = new ByteTree(this, b);
         }
-        nextTree.addNode(value, offset + 1, limit);
+        return nextTree.addNode(value, offset + 1, limit);
     }
 
     private void increase(int size) {
