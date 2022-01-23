@@ -66,6 +66,11 @@ class AbstractResponse implements HttpResponse, Reset {
      */
     private boolean closed = false;
 
+    /**
+     * 是否启用压缩模式
+     */
+    private boolean gzip = false;
+
     private List<Cookie> cookies = Collections.emptyList();
 
     protected void init(AbstractRequest request, AbstractOutputStream outputStream) {
@@ -83,6 +88,7 @@ class AbstractResponse implements HttpResponse, Reset {
         characterEncoding = null;
         cookies = Collections.emptyList();
         this.closed = false;
+        gzip = false;
     }
 
 
@@ -165,6 +171,8 @@ class AbstractResponse implements HttpResponse, Reset {
         if (name.equalsIgnoreCase(HeaderNameEnum.CONTENT_TYPE.getName())) {
             setContentType(value);
             return true;
+        } else if (name.equalsIgnoreCase(HeaderNameEnum.CONTENT_ENCODING.getName())) {
+            gzip = HeaderValueEnum.GZIP.getName().equals(value);
         }
         return false;
     }
@@ -263,5 +271,9 @@ class AbstractResponse implements HttpResponse, Reset {
      */
     public final boolean isClosed() {
         return closed;
+    }
+
+    public boolean isGzip() {
+        return gzip;
     }
 }

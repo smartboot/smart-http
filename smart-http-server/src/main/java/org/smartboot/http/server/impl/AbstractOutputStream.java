@@ -12,7 +12,6 @@ import org.smartboot.http.common.BufferOutputStream;
 import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.enums.HeaderNameEnum;
-import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpStatus;
@@ -120,16 +119,16 @@ abstract class AbstractOutputStream extends BufferOutputStream {
      */
     private boolean supportChunked(HttpRequest request, AbstractResponse response) {
         //gzip采用chunked编码
-        gzip = HeaderValueEnum.GZIP.getName().equalsIgnoreCase(response.getHeader(HeaderNameEnum.CONTENT_ENCODING.getName()));
+        gzip = response.isGzip();
         if (gzip) {
             response.setContentLength(-1);
             return true;
         }
-        return (request.getMethod().equals(HttpMethodEnum.GET.getMethod())
+        return response.getContentLength() < 0
+                && (request.getMethod().equals(HttpMethodEnum.GET.getMethod())
                 || request.getMethod().equals(HttpMethodEnum.POST.getMethod())
                 || request.getMethod().equals(HttpMethodEnum.PUT.getMethod()))
                 && response.getHttpStatus() != HttpStatus.CONTINUE.value()
-                && response.getContentLength() < 0
                 && HttpProtocolEnum.HTTP_11.getProtocol().equals(request.getProtocol());
     }
 }
