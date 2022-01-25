@@ -55,8 +55,8 @@ public final class HttpRouteHandler extends HttpServerHandler {
     }
 
     @Override
-    public void handle(HttpRequest request, HttpResponse response) throws IOException {
-        matchHandler(request.getRequestURI()).handle(request, response);
+    public void handle(HttpRequest request, HttpResponse response, CompletableFuture<Object> completableFuture) throws IOException {
+        matchHandler(request.getRequestURI()).handle(request, response, completableFuture);
     }
 
     /**
