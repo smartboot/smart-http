@@ -48,7 +48,7 @@ public class HttpServerConfiguration {
     /**
      * 解析的header数量上限
      */
-    private int headerLimiter = 0;
+    private int headerLimiter = 100;
     /**
      * 启用 debug 模式后会打印码流
      */
