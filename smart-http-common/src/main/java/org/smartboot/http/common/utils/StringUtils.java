@@ -9,8 +9,6 @@ package org.smartboot.http.common.utils;
 
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
-import org.smartboot.http.common.enums.HttpMethodEnum;
-import org.smartboot.http.common.enums.HttpProtocolEnum;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -61,17 +59,11 @@ public class StringUtils {
         for (int i = 0; i < String_CACHE_HEADER_NAME.length; i++) {
             String_CACHE_HEADER_NAME[i] = new ArrayList<>(8);
         }
-        for (HttpMethodEnum httpMethodEnum : HttpMethodEnum.values()) {
-            ByteTree.ROOT.addNode(httpMethodEnum.getMethod());
-        }
         for (HeaderNameEnum headerNameEnum : HeaderNameEnum.values()) {
             addCache(String_CACHE_HEADER_NAME, headerNameEnum.getName());
         }
         for (HeaderValueEnum headerNameEnum : HeaderValueEnum.values()) {
             addCache(String_CACHE_COMMON, headerNameEnum.getName());
-        }
-        for (HttpProtocolEnum httpProtocolEnum : HttpProtocolEnum.values()) {
-            ByteTree.ROOT.addNode(httpProtocolEnum.getProtocol());
         }
 
     }

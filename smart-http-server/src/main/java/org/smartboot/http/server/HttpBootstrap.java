@@ -8,6 +8,10 @@
 
 package org.smartboot.http.server;
 
+import org.smartboot.http.common.enums.HeaderNameEnum;
+import org.smartboot.http.common.enums.HeaderValueEnum;
+import org.smartboot.http.common.enums.HttpMethodEnum;
+import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.server.impl.HttpMessageProcessor;
 import org.smartboot.http.server.impl.HttpRequestProtocol;
 import org.smartboot.http.server.impl.Request;
@@ -95,6 +99,7 @@ public class HttpBootstrap {
      * 启动HTTP服务
      */
     public void start() {
+        initByteCache();
         BufferPagePool readBufferPool = new BufferPagePool(configuration.getReadPageSize(), 1, false);
         server = new AioQuickServer(configuration.getHost(), port, new HttpRequestProtocol(configuration), getProcessor());
         server.setThreadNum(configuration.getThreadNum())
@@ -109,6 +114,21 @@ public class HttpBootstrap {
             server.start();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void initByteCache() {
+        for (HttpMethodEnum httpMethodEnum : HttpMethodEnum.values()) {
+            configuration.getByteCache().addNode(httpMethodEnum.getMethod());
+        }
+        for (HttpProtocolEnum httpProtocolEnum : HttpProtocolEnum.values()) {
+            configuration.getByteCache().addNode(httpProtocolEnum.getProtocol());
+        }
+        for (HeaderNameEnum headerNameEnum : HeaderNameEnum.values()) {
+            configuration.getByteCache().addNode(headerNameEnum.getName());
+        }
+        for (HeaderValueEnum headerValueEnum : HeaderValueEnum.values()) {
+            configuration.getByteCache().addNode(headerValueEnum.getName());
         }
     }
 
