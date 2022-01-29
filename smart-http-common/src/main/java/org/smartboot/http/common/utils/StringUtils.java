@@ -452,12 +452,12 @@ public class StringUtils {
         return regionMatches(str, ignoreCase, strOffset, suffix, 0, suffix.length());
     }
 
-    public static String searchFromByteTree(ByteBuffer buffer, byte[] split) {
+    public static String scanByteCache(ByteBuffer buffer, byte[] split, ByteTree cache) {
         trimBuffer(buffer);
         int position = buffer.position() + buffer.arrayOffset();
         int limit = buffer.limit() + buffer.arrayOffset();
         byte[] data = buffer.array();
-        ByteTree byteTree = ByteTree.ROOT.search(data, position, limit, split, true);
+        ByteTree byteTree = cache.search(data, position, limit, split, false);
         if (byteTree == null) {
             return null;
         }

@@ -32,7 +32,7 @@ class HttpUriDecoder extends AbstractDecoder {
 
     @Override
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
-        String uri = StringUtils.searchFromByteTree(byteBuffer, URI);
+        String uri = StringUtils.scanByteCache(byteBuffer, URI, getConfiguration().getByteCache());
         if (uri != null) {
             request.setUri(uri);
             switch (byteBuffer.get(byteBuffer.position() - 1)) {

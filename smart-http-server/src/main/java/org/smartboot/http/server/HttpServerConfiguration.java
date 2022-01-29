@@ -8,6 +8,7 @@
 
 package org.smartboot.http.server;
 
+import org.smartboot.http.common.utils.ByteTree;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.impl.Request;
 import org.smartboot.socket.MessageProcessor;
@@ -21,10 +22,13 @@ import java.util.function.Function;
 public class HttpServerConfiguration {
 
     /**
+     * 缓存
+     */
+    private final ByteTree byteCache = new ByteTree();
+    /**
      * 是否启用控制台banner
      */
     private boolean bannerEnabled = true;
-
     /**
      * read缓冲区大小
      */
@@ -33,26 +37,22 @@ public class HttpServerConfiguration {
      * write缓冲区大小
      */
     private int writeBufferSize = 1024;
-
     /**
      * 服务线程数
      */
     private int threadNum = Math.max(Runtime.getRuntime().availableProcessors(), 2);
     private int writePageSize = 1024 * 1024;
     private int writePageNum = threadNum;
-
     private String host;
     private int readPageSize = 1024 * 1024;
     /**
      * 解析的header数量上限
      */
-    private int headerLimiter = 100;
-
+    private int headerLimiter = 0;
     /**
      * 启用 debug 模式后会打印码流
      */
     private boolean debug;
-
     /**
      * 服务器名称
      */
@@ -177,5 +177,9 @@ public class HttpServerConfiguration {
             this.serverName = StringUtils.trim(server).replaceAll("\r", "").replaceAll("\n", "");
         }
         return this;
+    }
+
+    public ByteTree getByteCache() {
+        return byteCache;
     }
 }

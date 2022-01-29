@@ -51,7 +51,7 @@ class HttpHeaderDecoder extends AbstractDecoder {
             return HttpRequestProtocol.BODY_READY_DECODER;
         }
         //Header name解码
-        String name = StringUtils.searchFromByteTree(byteBuffer, COLON);
+        String name = StringUtils.scanByteCache(byteBuffer, COLON, getConfiguration().getByteCache());
         if (name == null) {
             return this;
         }
@@ -66,7 +66,7 @@ class HttpHeaderDecoder extends AbstractDecoder {
     class HeaderValueDecoder implements Decoder {
         @Override
         public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
-            String value = StringUtils.searchFromByteTree(byteBuffer, CR);
+            String value = StringUtils.scanByteCache(byteBuffer, CR, getConfiguration().getByteCache());
             if (value == null) {
                 return this;
             }

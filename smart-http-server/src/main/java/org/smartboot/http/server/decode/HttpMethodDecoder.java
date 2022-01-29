@@ -29,7 +29,7 @@ public class HttpMethodDecoder extends AbstractDecoder {
 
     @Override
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
-        String method = StringUtils.searchFromByteTree(byteBuffer, SP);
+        String method = StringUtils.scanByteCache(byteBuffer, SP, getConfiguration().getByteCache());
         if (method != null) {
             request.setMethod(method);
             return decoder.decode(byteBuffer, aioSession, request);
