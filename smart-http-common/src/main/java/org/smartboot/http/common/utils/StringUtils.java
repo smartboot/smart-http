@@ -449,7 +449,7 @@ public class StringUtils {
         int position = buffer.position() + buffer.arrayOffset();
         int limit = buffer.limit() + buffer.arrayOffset();
         byte[] data = buffer.array();
-        ByteTree byteTree = cache.search(data, position, limit, split, false);
+        ByteTree byteTree = cache.search(data, position, limit, split, true);
         if (byteTree == null) {
             return null;
         }
