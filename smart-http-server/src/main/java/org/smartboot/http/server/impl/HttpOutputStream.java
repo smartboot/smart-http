@@ -10,6 +10,7 @@ package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
+import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.utils.Constant;
 
@@ -45,9 +46,26 @@ final class HttpOutputStream extends AbstractOutputStream {
     private static byte[] dateBytes;
     private static String date;
 
+    static {
+        flushDate();
+    }
 
     public HttpOutputStream(HttpRequestImpl httpRequest, HttpResponseImpl response, Request request) {
         super(httpRequest, response, request);
+    }
+
+    private static long flushDate() {
+        long currentTime = System.currentTimeMillis();
+        if ((currentTime - currentDate.getTime() > 1000) && flushDateSemaphore.tryAcquire()) {
+            try {
+                currentDate.setTime(currentTime);
+                date = sdf.format(currentDate);
+                dateBytes = date.getBytes();
+            } finally {
+                flushDateSemaphore.release();
+            }
+        }
+        return currentTime;
     }
 
     @Override
@@ -59,11 +77,13 @@ final class HttpOutputStream extends AbstractOutputStream {
         String contentType = response.getContentType();
         WriteCache data;
         writeCache = null;
-        //成功消息优先从缓存中加载
+        //成功消息优先从缓存中加载。启用缓存的条件：Http_200, contentLength<512,未设置过Header,Http/1.1
         boolean cache = httpStatus == HttpStatus.OK.value()
-                && HttpStatus.OK.getReasonPhrase().equals(reasonPhrase) && contentLength > 0
+                && HttpStatus.OK.getReasonPhrase().equals(reasonPhrase)
+                && contentLength > 0
                 && contentLength < CACHE_LIMIT
-                && !hasHeader();
+                && !hasHeader()
+                && HttpProtocolEnum.HTTP_11.getProtocol().equals(request.getProtocol());
 
         if (cache) {
             data = CACHE_CONTENT_TYPE_AND_LENGTH.get()[contentLength].get(contentType);
@@ -97,22 +117,9 @@ final class HttpOutputStream extends AbstractOutputStream {
 
         //缓存响应头
         if (cache) {
+            sb.append(HeaderNameEnum.CONNECTION.getName()).append(Constant.COLON_CHAR).append(HeaderValueEnum.KEEPALIVE.getName()).append(Constant.CRLF);
             CACHE_CONTENT_TYPE_AND_LENGTH.get()[contentLength].put(contentType, new WriteCache(contentType, currentTime, sb.toString().getBytes(), contentLength));
         }
         return hasHeader() ? sb.toString().getBytes() : sb.append(Constant.CRLF).toString().getBytes();
-    }
-
-    private long flushDate() {
-        long currentTime = System.currentTimeMillis();
-        if ((currentTime - currentDate.getTime() > 1000) && flushDateSemaphore.tryAcquire()) {
-            try {
-                currentDate.setTime(currentTime);
-                date = sdf.format(currentDate);
-                dateBytes = date.getBytes();
-            } finally {
-                flushDateSemaphore.release();
-            }
-        }
-        return currentTime;
     }
 }
