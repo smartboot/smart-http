@@ -117,7 +117,6 @@ final class HttpOutputStream extends AbstractOutputStream {
 
         //缓存响应头
         if (cache) {
-            sb.append(HeaderNameEnum.CONNECTION.getName()).append(Constant.COLON_CHAR).append(HeaderValueEnum.KEEPALIVE.getName()).append(Constant.CRLF);
             CACHE_CONTENT_TYPE_AND_LENGTH.get()[contentLength].put(contentType, new WriteCache(contentType, currentTime, sb.toString().getBytes(), contentLength));
         }
         return hasHeader() ? sb.toString().getBytes() : sb.append(Constant.CRLF).toString().getBytes();
