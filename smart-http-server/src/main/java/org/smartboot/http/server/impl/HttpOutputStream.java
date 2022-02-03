@@ -10,7 +10,6 @@ package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
-import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.utils.Constant;
 
@@ -82,8 +81,7 @@ final class HttpOutputStream extends AbstractOutputStream {
                 && HttpStatus.OK.getReasonPhrase().equals(reasonPhrase)
                 && contentLength > 0
                 && contentLength < CACHE_LIMIT
-                && !hasHeader()
-                && HttpProtocolEnum.HTTP_11.getProtocol().equals(request.getProtocol());
+                && !hasHeader();
 
         if (cache) {
             data = CACHE_CONTENT_TYPE_AND_LENGTH.get()[contentLength].get(contentType);
