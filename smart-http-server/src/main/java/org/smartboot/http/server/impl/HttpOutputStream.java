@@ -12,6 +12,7 @@ import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.utils.Constant;
+import org.smartboot.http.common.utils.TimerUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -54,7 +55,7 @@ final class HttpOutputStream extends AbstractOutputStream {
     }
 
     private static long flushDate() {
-        long currentTime = System.currentTimeMillis();
+        long currentTime = TimerUtils.currentTimeMillis();
         if ((currentTime - currentDate.getTime() > 1000) && flushDateSemaphore.tryAcquire()) {
             try {
                 currentDate.setTime(currentTime);
