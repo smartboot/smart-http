@@ -18,12 +18,15 @@ import org.smartboot.http.server.impl.Request;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.buffer.BufferPagePool;
+import org.smartboot.socket.extension.plugins.Plugin;
 import org.smartboot.socket.extension.plugins.StreamMonitorPlugin;
 import org.smartboot.socket.extension.processor.AbstractMessageProcessor;
 import org.smartboot.socket.transport.AioQuickServer;
 import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class HttpBootstrap {
@@ -48,6 +51,7 @@ public class HttpBootstrap {
      * Http服务端口号
      */
     private int port = 8080;
+    private List<Plugin<Request>> plugins = new ArrayList<>();
 
     public HttpBootstrap() {
         this(new HttpMessageProcessor());
@@ -102,6 +106,8 @@ public class HttpBootstrap {
     public void start() {
         initByteCache();
         BufferPagePool readBufferPool = new BufferPagePool(configuration.getReadPageSize(), 1, false);
+        plugins.forEach(processor::addPlugin);
+
         server = new AioQuickServer(configuration.getHost(), port, new HttpRequestProtocol(configuration), getProcessor());
         server.setThreadNum(configuration.getThreadNum())
                 .setBannerEnabled(false)
@@ -179,6 +185,10 @@ public class HttpBootstrap {
         } else {
             return messageProcessor;
         }
+    }
+
+    public void addPlugin(Plugin<Request> plugin) {
+        plugins.add(plugin);
     }
 
     /**

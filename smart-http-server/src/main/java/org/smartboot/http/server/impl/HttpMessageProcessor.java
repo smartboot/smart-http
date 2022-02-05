@@ -23,8 +23,8 @@ import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.HttpServerHandler;
 import org.smartboot.http.server.WebSocketHandler;
-import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.StateMachineEnum;
+import org.smartboot.socket.extension.processor.AbstractMessageProcessor;
 import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
@@ -36,13 +36,13 @@ import java.util.concurrent.CompletableFuture;
  * @author 三刀
  * @version V1.0 , 2018/6/10
  */
-public class HttpMessageProcessor implements MessageProcessor<Request> {
+public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpMessageProcessor.class);
     private static final int MAX_LENGTH = 255 * 1024;
     private HttpServerConfiguration configuration;
 
     @Override
-    public void process(AioSession session, Request request) {
+    public void process0(AioSession session, Request request) {
         RequestAttachment attachment = session.getAttachment();
         AbstractRequest abstractRequest = request.newAbstractRequest();
         AbstractResponse response = abstractRequest.getResponse();
@@ -211,7 +211,7 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
     }
 
     @Override
-    public void stateEvent(AioSession session, StateMachineEnum stateMachineEnum, Throwable throwable) {
+    public void stateEvent0(AioSession session, StateMachineEnum stateMachineEnum, Throwable throwable) {
         switch (stateMachineEnum) {
             case NEW_SESSION:
                 RequestAttachment attachment = new RequestAttachment(new Request(configuration, session));
