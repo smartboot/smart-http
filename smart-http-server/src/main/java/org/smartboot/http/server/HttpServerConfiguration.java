@@ -12,9 +12,12 @@ import org.smartboot.http.common.utils.ByteTree;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.impl.Request;
 import org.smartboot.socket.MessageProcessor;
+import org.smartboot.socket.extension.plugins.Plugin;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 
 /**
@@ -33,6 +36,11 @@ public class HttpServerConfiguration {
     private final ByteTree<ServerHandler<?, ?>> uriByteTree = new ByteTree<>();
 
     private final ByteTree<Function<String, ServerHandler<?, ?>>> headerNameByteTree = new ByteTree<>();
+
+    /**
+     * smart-socket 插件
+     */
+    private final List<Plugin<Request>> plugins = new ArrayList<>();
 
     /**
      * 是否启用控制台banner
@@ -225,5 +233,17 @@ public class HttpServerConfiguration {
 
     public ByteTree<Function<String, ServerHandler<?, ?>>> getHeaderNameByteTree() {
         return headerNameByteTree;
+    }
+
+    public void addPlugin(Plugin<Request> plugin) {
+        plugins.add(plugin);
+    }
+
+    public void addPlugin(List<Plugin<Request>> plugins) {
+        this.plugins.addAll(plugins);
+    }
+
+    public List<Plugin<Request>> getPlugins() {
+        return plugins;
     }
 }
