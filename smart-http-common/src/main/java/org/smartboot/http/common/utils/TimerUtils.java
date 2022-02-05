@@ -21,7 +21,7 @@ public class TimerUtils {
     /**
      * 当前时间
      */
-    private static long currentTimeMillis;
+    private static long currentTimeMillis = System.currentTimeMillis();
 
     static {
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(r -> {
@@ -29,12 +29,7 @@ public class TimerUtils {
             thread.setDaemon(true);
             return thread;
         });
-        executor.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                currentTimeMillis = System.currentTimeMillis();
-            }
-        }, 0, 1, TimeUnit.SECONDS);
+        executor.scheduleAtFixedRate(() -> currentTimeMillis = System.currentTimeMillis(), 0, 1, TimeUnit.SECONDS);
     }
 
     public static long currentTimeMillis() {
