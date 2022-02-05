@@ -54,7 +54,7 @@ class HttpHeaderDecoder extends AbstractDecoder {
             return HttpRequestProtocol.BODY_READY_DECODER;
         }
         //Header name解码
-        ByteTree<Function<String, ServerHandler>> name = StringUtils.scanByteTree(byteBuffer, COLON, getConfiguration().getHeaderNameByteTree());
+        ByteTree<Function<String, ServerHandler<?, ?>>> name = StringUtils.scanByteTree(byteBuffer, COLON, getConfiguration().getHeaderNameByteTree());
         if (name == null) {
             return this;
         }

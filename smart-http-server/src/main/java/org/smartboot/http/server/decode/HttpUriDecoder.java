@@ -34,7 +34,7 @@ class HttpUriDecoder extends AbstractDecoder {
 
     @Override
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
-        ByteTree<ServerHandler> uriTreeNode = StringUtils.scanByteTree(byteBuffer, URI, getConfiguration().getUriByteTree());
+        ByteTree<ServerHandler<?, ?>> uriTreeNode = StringUtils.scanByteTree(byteBuffer, URI, getConfiguration().getUriByteTree());
         if (uriTreeNode != null) {
             request.setUri(uriTreeNode.getStringValue());
             if (uriTreeNode.getAttach() == null) {

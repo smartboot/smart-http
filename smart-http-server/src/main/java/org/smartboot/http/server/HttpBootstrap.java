@@ -24,6 +24,7 @@ import org.smartboot.socket.transport.AioQuickServer;
 import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 
 public class HttpBootstrap {
 
@@ -117,6 +118,31 @@ public class HttpBootstrap {
         }
     }
 
+    private void updateHeaderNameByteTree() {
+        configuration.getHeaderNameByteTree().addNode(HeaderNameEnum.UPGRADE.getName(), upgrade -> {
+            // WebSocket
+            if (HeaderValueEnum.WEBSOCKET.getName().equals(upgrade)) {
+                return configuration.getWebSocketHandler();
+            }
+            // HTTP/2.0
+            else if (HeaderValueEnum.H2C.getName().equals(upgrade) || HeaderValueEnum.H2.getName().equals(upgrade)) {
+                return new Http2ServerHandler() {
+                    @Override
+                    public void handle(HttpRequest request, HttpResponse response) throws IOException {
+                        configuration.getHttpServerHandler().handle(request, response);
+                    }
+
+                    @Override
+                    public void handle(HttpRequest request, HttpResponse response, CompletableFuture<Object> completableFuture) throws IOException {
+                        configuration.getHttpServerHandler().handle(request, response, completableFuture);
+                    }
+                };
+            } else {
+                return null;
+            }
+        });
+    }
+
     private void initByteCache() {
         for (HttpMethodEnum httpMethodEnum : HttpMethodEnum.values()) {
             configuration.getByteCache().addNode(httpMethodEnum.getMethod());
@@ -125,11 +151,13 @@ public class HttpBootstrap {
             configuration.getByteCache().addNode(httpProtocolEnum.getProtocol());
         }
         for (HeaderNameEnum headerNameEnum : HeaderNameEnum.values()) {
-            configuration.getByteCache().addNode(headerNameEnum.getName());
+            configuration.getHeaderNameByteTree().addNode(headerNameEnum.getName());
         }
         for (HeaderValueEnum headerValueEnum : HeaderValueEnum.values()) {
             configuration.getByteCache().addNode(headerValueEnum.getName());
         }
+
+        updateHeaderNameByteTree();
     }
 
     private MessageProcessor<Request> getProcessor() {

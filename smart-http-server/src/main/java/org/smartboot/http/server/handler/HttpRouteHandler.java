@@ -42,7 +42,9 @@ public final class HttpRouteHandler extends HttpServerHandler {
     @Override
     public void onHeaderComplete(Request request) throws IOException {
         ServerHandler httpServerHandler = matchHandler(request);
+        //注册 URI 与 Handler 的映射关系
         request.getConfiguration().getUriByteTree().addNode(request.getUri(), httpServerHandler);
+        //更新本次请求的实际 Handler
         request.setServerHandler(httpServerHandler);
         httpServerHandler.onHeaderComplete(request);
     }
