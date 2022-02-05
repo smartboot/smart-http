@@ -235,12 +235,14 @@ public class HttpServerConfiguration {
         return headerNameByteTree;
     }
 
-    public void addPlugin(Plugin<Request> plugin) {
+    public HttpServerConfiguration addPlugin(Plugin<Request> plugin) {
         plugins.add(plugin);
+        return this;
     }
 
-    public void addPlugin(List<Plugin<Request>> plugins) {
+    public HttpServerConfiguration addPlugin(List<Plugin<Request>> plugins) {
         this.plugins.addAll(plugins);
+        return this;
     }
 
     public List<Plugin<Request>> getPlugins() {
