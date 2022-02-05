@@ -17,10 +17,9 @@ import org.smartboot.http.common.utils.FixedLengthFrameDecoder;
 import org.smartboot.http.common.utils.SmartDecoder;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.impl.Request;
+import org.smartboot.http.server.impl.RequestAttachment;
 
 import java.nio.ByteBuffer;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Http消息处理器
@@ -29,7 +28,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version V1.0 , 2018/2/6
  */
 public abstract class HttpServerHandler implements ServerHandler<HttpRequest, HttpResponse> {
-    private final Map<Request, SmartDecoder> bodyDecoderMap = new ConcurrentHashMap<>();
 
     @Override
     public boolean onBodyStream(ByteBuffer buffer, Request request) {
@@ -45,11 +43,16 @@ public abstract class HttpServerHandler implements ServerHandler<HttpRequest, Ht
             } else if (postLength < 0) {
                 throw new HttpException(HttpStatus.LENGTH_REQUIRED);
             }
-            SmartDecoder smartDecoder = bodyDecoderMap.computeIfAbsent(request, req -> new FixedLengthFrameDecoder(req.getContentLength()));
+            RequestAttachment attachment = request.getAttachment();
+            SmartDecoder smartDecoder = attachment.getBodyDecoder();
+            if (smartDecoder == null) {
+                smartDecoder = new FixedLengthFrameDecoder(request.getContentLength());
+                attachment.setBodyDecoder(smartDecoder);
+            }
 
             if (smartDecoder.decode(buffer)) {
-                bodyDecoderMap.remove(request);
                 request.setFormUrlencoded(new String(smartDecoder.getBuffer().array()));
+                attachment.setBodyDecoder(null);
                 return true;
             } else {
                 return false;
@@ -57,15 +60,6 @@ public abstract class HttpServerHandler implements ServerHandler<HttpRequest, Ht
         } else {
             return true;
         }
-    }
-
-
-    /**
-     * 若子类重写 onClose 则必须调用 super.onClose();释放内存
-     */
-    @Override
-    public void onClose(Request request) {
-        bodyDecoderMap.remove(request);
     }
 
 }

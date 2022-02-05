@@ -8,6 +8,7 @@
 
 package org.smartboot.http.server.impl;
 
+import org.smartboot.http.common.utils.SmartDecoder;
 import org.smartboot.http.server.decode.Decoder;
 
 /**
@@ -26,6 +27,11 @@ public class RequestAttachment {
      */
     private Decoder decoder;
 
+    /**
+     * Http Body解码器
+     */
+    private SmartDecoder bodyDecoder;
+
     public RequestAttachment(Request request) {
         this.request = request;
     }
@@ -42,4 +48,11 @@ public class RequestAttachment {
         this.decoder = decoder;
     }
 
+    public SmartDecoder getBodyDecoder() {
+        return bodyDecoder;
+    }
+
+    public void setBodyDecoder(SmartDecoder bodyDecoder) {
+        this.bodyDecoder = bodyDecoder;
+    }
 }
