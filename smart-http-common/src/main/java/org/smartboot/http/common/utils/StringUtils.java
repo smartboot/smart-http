@@ -185,8 +185,7 @@ public class StringUtils {
         return regionMatches(cs1, false, 0, cs2, 0, Math.max(cs1.length(), cs2.length()));
     }
 
-    private static boolean regionMatches(final CharSequence cs, final boolean ignoreCase, final int thisStart,
-                                         final CharSequence substring, final int start, final int length) {
+    private static boolean regionMatches(final CharSequence cs, final boolean ignoreCase, final int thisStart, final CharSequence substring, final int start, final int length) {
         if (cs instanceof String && substring instanceof String) {
             return ((String) cs).regionMatches(ignoreCase, thisStart, (String) substring, start, length);
         } else {
@@ -207,8 +206,7 @@ public class StringUtils {
                 }
 
                 // The same check as in String.regionMatches():
-                if (Character.toUpperCase(c1) != Character.toUpperCase(c2)
-                        && Character.toLowerCase(c1) != Character.toLowerCase(c2)) {
+                if (Character.toUpperCase(c1) != Character.toUpperCase(c2) && Character.toLowerCase(c1) != Character.toLowerCase(c2)) {
                     return false;
                 }
             }
@@ -384,8 +382,7 @@ public class StringUtils {
         return list.toArray(new String[list.size()]);
     }
 
-    public static String[] tokenizeToStringArray(
-            String str, String delimiters, boolean trimTokens, boolean ignoreEmptyTokens) {
+    public static String[] tokenizeToStringArray(String str, String delimiters, boolean trimTokens, boolean ignoreEmptyTokens) {
 
         if (str == null) {
             return null;
@@ -457,16 +454,11 @@ public class StringUtils {
         return byteTree;
     }
 
-    public static String scanByteCache(ByteBuffer buffer, byte[] split, ByteTree cache) {
-        trimBuffer(buffer);
-        int position = buffer.position() + buffer.arrayOffset();
-        int limit = buffer.limit() + buffer.arrayOffset();
-        byte[] data = buffer.array();
-        ByteTree byteTree = cache.search(data, position, limit, split, true);
+    public static <T> String scanByteCache(ByteBuffer buffer, byte[] split, ByteTree<T> cache) {
+        ByteTree<T> byteTree = scanByteTree(buffer, split, cache);
         if (byteTree == null) {
             return null;
         }
-        buffer.position(buffer.position() + byteTree.getDepth() + 1);
         return byteTree.getStringValue();
     }
 
