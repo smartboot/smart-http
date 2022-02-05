@@ -10,10 +10,10 @@ package org.smartboot.http.server.handler;
 
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.utils.AntPathMatcher;
-import org.smartboot.http.common.utils.ByteTree;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
 import org.smartboot.http.server.HttpServerHandler;
+import org.smartboot.http.server.ServerHandler;
 import org.smartboot.http.server.impl.Request;
 
 import java.io.IOException;
@@ -37,27 +37,29 @@ public final class HttpRouteHandler extends HttpServerHandler {
             response.setHttpStatus(HttpStatus.NOT_FOUND);
         }
     };
-    private final HandlerCache[] handlerCaches = new HandlerCache[64];
     private final Map<String, HttpServerHandler> handlerMap = new ConcurrentHashMap<>();
 
     @Override
     public void onHeaderComplete(Request request) throws IOException {
-        matchHandler(request.getRequestURI()).onHeaderComplete(request);
+        ServerHandler httpServerHandler = matchHandler(request);
+        request.getConfiguration().getUriByteTree().addNode(request.getUri(), httpServerHandler);
+        request.setServerHandler(httpServerHandler);
+        httpServerHandler.onHeaderComplete(request);
     }
 
     @Override
     public boolean onBodyStream(ByteBuffer buffer, Request request) {
-        return matchHandler(request.getRequestURI()).onBodyStream(buffer, request);
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void onClose(Request request) {
-        matchHandler(request.getRequestURI()).onClose(request);
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void handle(HttpRequest request, HttpResponse response, CompletableFuture<Object> completableFuture) throws IOException {
-        matchHandler(request.getRequestURI()).handle(request, response, completableFuture);
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -68,26 +70,14 @@ public final class HttpRouteHandler extends HttpServerHandler {
      * @return
      */
     public HttpRouteHandler route(String urlPattern, HttpServerHandler httpHandler) {
-        //缓存精准路径
-        if (!urlPattern.contains("*") && urlPattern.length() < handlerCaches.length) {
-            ByteTree.ROOT.addNode(urlPattern);
-            handlerCaches[urlPattern.length() - 1] = new HandlerCache(urlPattern, httpHandler);
-        }
         handlerMap.put(urlPattern, httpHandler);
         return this;
     }
 
-    private HttpServerHandler matchHandler(String uri) {
+    private HttpServerHandler matchHandler(Request request) {
+        String uri = request.getRequestURI();
         if (uri == null) {
             return defaultHandler;
-        }
-        int len = uri.length();
-        int index = len - 1;
-        if (index < handlerCaches.length) {
-            HandlerCache handleCache = handlerCaches[index];
-            if (handleCache != null && handleCache.getUri().equals(uri)) {
-                return handleCache.handler;
-            }
         }
         HttpServerHandler httpHandler = handlerMap.get(uri);
         if (httpHandler == null) {
@@ -100,26 +90,7 @@ public final class HttpRouteHandler extends HttpServerHandler {
             if (httpHandler == null) {
                 httpHandler = defaultHandler;
             }
-            handlerMap.put(uri, httpHandler);
         }
         return httpHandler;
-    }
-
-    private static class HandlerCache {
-        private final String uri;
-        private final HttpServerHandler handler;
-
-        public HandlerCache(String uri, HttpServerHandler handler) {
-            this.uri = uri;
-            this.handler = handler;
-        }
-
-        public String getUri() {
-            return uri;
-        }
-
-        public HttpServerHandler getHandler() {
-            return handler;
-        }
     }
 }

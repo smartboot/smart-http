@@ -10,9 +10,11 @@ package org.smartboot.http.server.decode;
 
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.exception.HttpException;
+import org.smartboot.http.common.utils.ByteTree;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpServerConfiguration;
+import org.smartboot.http.server.ServerHandler;
 import org.smartboot.http.server.impl.Request;
 import org.smartboot.socket.transport.AioSession;
 
@@ -32,9 +34,15 @@ class HttpUriDecoder extends AbstractDecoder {
 
     @Override
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
-        String uri = StringUtils.scanByteCache(byteBuffer, URI, getConfiguration().getByteCache());
-        if (uri != null) {
-            request.setUri(uri);
+        ByteTree<ServerHandler> uriTreeNode = StringUtils.scanByteTree(byteBuffer, URI, getConfiguration().getUriByteTree());
+        if (uriTreeNode != null) {
+            request.setUri(uriTreeNode.getStringValue());
+            if (uriTreeNode.getAttach() == null) {
+                request.setServerHandler(request.getConfiguration().getHttpServerHandler());
+            } else {
+                request.setServerHandler(uriTreeNode.getAttach());
+            }
+
             switch (byteBuffer.get(byteBuffer.position() - 1)) {
                 case Constant.SP:
                     return protocolDecoder.decode(byteBuffer, aioSession, request);

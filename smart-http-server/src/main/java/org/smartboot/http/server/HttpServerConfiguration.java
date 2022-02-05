@@ -8,11 +8,16 @@
 
 package org.smartboot.http.server;
 
+import org.smartboot.http.common.enums.HeaderNameEnum;
+import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.utils.ByteTree;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.impl.Request;
 import org.smartboot.socket.MessageProcessor;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 /**
@@ -25,6 +30,13 @@ public class HttpServerConfiguration {
      * 缓存
      */
     private final ByteTree byteCache = new ByteTree();
+    /**
+     * URI缓存
+     */
+    private final ByteTree<ServerHandler> uriByteTree = new ByteTree<>();
+
+    private final ByteTree<Function<String, ServerHandler>> headerNameByteTree = new ByteTree<>();
+
     /**
      * 是否启用控制台banner
      */
@@ -48,7 +60,7 @@ public class HttpServerConfiguration {
     /**
      * 解析的header数量上限
      */
-    private int headerLimiter = 100;
+    private int headerLimiter = 0;
     /**
      * 启用 debug 模式后会打印码流
      */
@@ -57,6 +69,13 @@ public class HttpServerConfiguration {
      * 服务器名称
      */
     private String serverName = "smart-http";
+    private HttpServerHandler httpServerHandler = new HttpServerHandler() {
+        @Override
+        public void handle(HttpRequest request, HttpResponse response) throws IOException {
+            response.write("Hello smart-http".getBytes(StandardCharsets.UTF_8));
+        }
+    };
+    private WebSocketHandler webSocketHandler;
 
     private Function<MessageProcessor<Request>, MessageProcessor<Request>> processor = messageProcessor -> messageProcessor;
 
@@ -66,6 +85,28 @@ public class HttpServerConfiguration {
 
     public HttpServerConfiguration messageProcessor(Function<MessageProcessor<Request>, MessageProcessor<Request>> processor) {
         this.processor = processor;
+        this.getHeaderNameByteTree().addNode(HeaderNameEnum.UPGRADE.getName(), upgrade -> {
+            // WebSocket
+            if (HeaderValueEnum.WEBSOCKET.getName().equals(upgrade)) {
+                return webSocketHandler;
+            }
+            // HTTP/2.0
+            else if (HeaderValueEnum.H2C.getName().equals(upgrade) || HeaderValueEnum.H2.getName().equals(upgrade)) {
+                return new Http2ServerHandler() {
+                    @Override
+                    public void handle(HttpRequest request, HttpResponse response) throws IOException {
+                        httpServerHandler.handle(request, response);
+                    }
+
+                    @Override
+                    public void handle(HttpRequest request, HttpResponse response, CompletableFuture<Object> completableFuture) throws IOException {
+                        httpServerHandler.handle(request, response, completableFuture);
+                    }
+                };
+            } else {
+                return null;
+            }
+        });
         return this;
     }
 
@@ -179,11 +220,35 @@ public class HttpServerConfiguration {
         return this;
     }
 
+    public ByteTree<ServerHandler> getUriByteTree() {
+        return uriByteTree;
+    }
+
+    public HttpServerHandler getHttpServerHandler() {
+        return httpServerHandler;
+    }
+
+    public void setHttpServerHandler(HttpServerHandler httpServerHandler) {
+        this.httpServerHandler = httpServerHandler;
+    }
+
+    public WebSocketHandler getWebSocketHandler() {
+        return webSocketHandler;
+    }
+
+    public void setWebSocketHandler(WebSocketHandler webSocketHandler) {
+        this.webSocketHandler = webSocketHandler;
+    }
+
     /**
      * 将字符串缓存至 ByteTree 中，在Http报文解析过程中将获得更好的性能表现。
      * 适用反馈包括： URL、HeaderName、HeaderValue
      */
     public ByteTree getByteCache() {
         return byteCache;
+    }
+
+    public ByteTree<Function<String, ServerHandler>> getHeaderNameByteTree() {
+        return headerNameByteTree;
     }
 }

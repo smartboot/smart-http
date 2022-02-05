@@ -20,10 +20,8 @@ import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpRequest;
-import org.smartboot.http.server.HttpResponse;
 import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.HttpServerHandler;
-import org.smartboot.http.server.ServerHandler;
 import org.smartboot.http.server.WebSocketHandler;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.StateMachineEnum;
@@ -31,7 +29,6 @@ import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
@@ -42,56 +39,33 @@ import java.util.concurrent.CompletableFuture;
 public class HttpMessageProcessor implements MessageProcessor<Request> {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpMessageProcessor.class);
     private static final int MAX_LENGTH = 255 * 1024;
-    private HttpServerHandler httpServerHandler = new HttpServerHandler() {
-        @Override
-        public void handle(HttpRequest request, HttpResponse response) throws IOException {
-            response.write("Hello smart-http".getBytes(StandardCharsets.UTF_8));
-        }
-    };
-    private WebSocketHandler webSocketHandler;
     private HttpServerConfiguration configuration;
 
     @Override
     public void process(AioSession session, Request request) {
         RequestAttachment attachment = session.getAttachment();
-        AbstractRequest abstractRequest = null;
-        ServerHandler handler = null;
-        HttpTypeEnum requestType = request.getRequestType();
-        switch (requestType) {
-            case WEBSOCKET:
-                abstractRequest = request.newWebsocketRequest();
-                handler = webSocketHandler;
-                break;
-            case HTTP:
-                abstractRequest = request.newHttpRequest();
-                handler = httpServerHandler;
-                break;
-            case HTTP_2:
-                break;
-        }
-
+        AbstractRequest abstractRequest = request.newAbstractRequest();
         AbstractResponse response = abstractRequest.getResponse();
-
         try {
             switch (request.getDecodePartEnum()) {
                 case HEADER_FINISH:
-                    doHttpHeader(request, handler);
+                    doHttpHeader(request);
                     if (response.isClosed()) {
                         break;
                     }
                 case BODY:
-                    onHttpBody(request, session.readBuffer(), attachment, handler);
+                    onHttpBody(request, session.readBuffer(), attachment);
                     if (response.isClosed() || request.getDecodePartEnum() != DecodePartEnum.FINISH) {
                         break;
                     }
                 case FINISH: {
                     //消息处理
-                    switch (requestType) {
+                    switch (request.getRequestType()) {
                         case WEBSOCKET:
-                            handleWebSocketRequest(session, abstractRequest, handler);
+                            handleWebSocketRequest(session, request);
                             break;
                         case HTTP:
-                            handleHttpRequest(session, abstractRequest, handler);
+                            handleHttpRequest(session, request);
                             break;
                     }
                 }
@@ -101,9 +75,10 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
         }
     }
 
-    private void handleWebSocketRequest(AioSession session, AbstractRequest abstractRequest, ServerHandler handler) throws IOException {
+    private void handleWebSocketRequest(AioSession session, Request request) throws IOException {
+        AbstractRequest abstractRequest = request.newAbstractRequest();
         CompletableFuture<Object> future = new CompletableFuture<>();
-        handler.handle(abstractRequest, abstractRequest.getResponse(), future);
+        request.getServerHandler().handle(abstractRequest, abstractRequest.getResponse(), future);
         if (future.isDone()) {
             finishResponse(abstractRequest);
         } else {
@@ -125,7 +100,8 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
         }
     }
 
-    private void handleHttpRequest(AioSession session, AbstractRequest abstractRequest, ServerHandler handler) throws IOException {
+    private void handleHttpRequest(AioSession session, Request request) throws IOException {
+        AbstractRequest abstractRequest = request.newAbstractRequest();
         AbstractResponse response = abstractRequest.getResponse();
         CompletableFuture<Object> future = new CompletableFuture<>();
         boolean keepAlive = true;
@@ -137,7 +113,7 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
             }
         }
         try {
-            handler.handle(abstractRequest, response, future);
+            request.getServerHandler().handle(abstractRequest, response, future);
             finishHttpHandle(session, abstractRequest, keepAlive, future);
         } catch (HttpException e) {
             e.printStackTrace();
@@ -197,9 +173,7 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
 
     private boolean keepConnection(AbstractRequest request, boolean keepAlive) throws IOException {
         //非keepAlive或者 body部分未读取完毕,释放连接资源
-        if (!keepAlive || !HttpMethodEnum.GET.getMethod().equals(request.getMethod())
-                && request.getContentLength() > 0
-                && request.getInputStream().available() > 0) {
+        if (!keepAlive || !HttpMethodEnum.GET.getMethod().equals(request.getMethod()) && request.getContentLength() > 0 && request.getInputStream().available() > 0) {
             request.getResponse().close();
             return false;
         }
@@ -217,8 +191,8 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
     }
 
 
-    private void onHttpBody(Request request, ByteBuffer readBuffer, RequestAttachment attachment, ServerHandler<?, ?> handler) {
-        if (handler.onBodyStream(readBuffer, request)) {
+    private void onHttpBody(Request request, ByteBuffer readBuffer, RequestAttachment attachment) {
+        if (request.getServerHandler().onBodyStream(readBuffer, request)) {
             request.setDecodePartEnum(DecodePartEnum.FINISH);
             if (request.getRequestType() == HttpTypeEnum.HTTP) {
                 attachment.setDecoder(null);
@@ -229,10 +203,10 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
         }
     }
 
-    private void doHttpHeader(Request request, ServerHandler<?, ?> handler) throws IOException {
+    private void doHttpHeader(Request request) throws IOException {
         methodCheck(request);
         uriCheck(request);
-        handler.onHeaderComplete(request);
+        request.getServerHandler().onHeaderComplete(request);
         request.setDecodePartEnum(DecodePartEnum.BODY);
     }
 
@@ -249,13 +223,8 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
                 break;
             case SESSION_CLOSED:
                 RequestAttachment att = session.getAttachment();
-                switch (att.getRequest().getRequestType()) {
-                    case WEBSOCKET:
-                        webSocketHandler.onClose(att.getRequest());
-                        break;
-                    case HTTP:
-                        httpServerHandler.onClose(att.getRequest());
-                        break;
+                if (att.getRequest().getServerHandler() != null) {
+                    att.getRequest().getServerHandler().onClose(att.getRequest());
                 }
                 break;
             case DECODE_EXCEPTION:
@@ -265,11 +234,11 @@ public class HttpMessageProcessor implements MessageProcessor<Request> {
     }
 
     public void httpServerHandler(HttpServerHandler httpServerHandler) {
-        this.httpServerHandler = Objects.requireNonNull(httpServerHandler);
+        this.configuration.setHttpServerHandler(Objects.requireNonNull(httpServerHandler));
     }
 
     public void setWebSocketHandler(WebSocketHandler webSocketHandler) {
-        this.webSocketHandler = Objects.requireNonNull(webSocketHandler);
+        this.configuration.setWebSocketHandler(Objects.requireNonNull(webSocketHandler));
     }
 
     /**

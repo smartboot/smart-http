@@ -13,14 +13,17 @@ import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.Reset;
 import org.smartboot.http.common.enums.DecodePartEnum;
 import org.smartboot.http.common.enums.HeaderNameEnum;
-import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpTypeEnum;
+import org.smartboot.http.common.utils.ByteTree;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.HttpUtils;
 import org.smartboot.http.common.utils.NumberUtils;
 import org.smartboot.http.common.utils.StringUtils;
+import org.smartboot.http.server.Http2ServerHandler;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpServerConfiguration;
+import org.smartboot.http.server.ServerHandler;
+import org.smartboot.http.server.WebSocketHandler;
 import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
@@ -37,6 +40,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 /**
  * @author 三刀
@@ -52,7 +56,7 @@ public final class Request implements HttpRequest, Reset {
      */
     private final List<HeaderValue> headers = new ArrayList<>(8);
     private final HttpServerConfiguration configuration;
-    private String headerTemp;
+    private ByteTree<Function<String, ServerHandler>> headerTemp;
     /**
      * 请求参数
      */
@@ -101,6 +105,7 @@ public final class Request implements HttpRequest, Reset {
     private DecodePartEnum decodePartEnum = DecodePartEnum.HEADER_FINISH;
     private HttpRequestImpl httpRequest;
     private WebSocketRequestImpl webSocketRequest;
+    private ServerHandler serverHandler;
 
     Request(HttpServerConfiguration configuration, AioSession aioSession) {
         this.configuration = configuration;
@@ -169,7 +174,13 @@ public final class Request implements HttpRequest, Reset {
     }
 
     public final void setHeadValue(String value) {
-        setHeader(headerTemp, value);
+        if (headerTemp.getAttach() != null) {
+            ServerHandler replaceServerHandler = headerTemp.getAttach().apply(value);
+            if (replaceServerHandler != null) {
+                setServerHandler(replaceServerHandler);
+            }
+        }
+        setHeader(headerTemp.getStringValue(), value);
     }
 
     public final void setHeader(String headerName, String value) {
@@ -187,15 +198,22 @@ public final class Request implements HttpRequest, Reset {
         if (type != null) {
             return type;
         }
-        String upgrade = getHeader(HeaderNameEnum.UPGRADE.getName());
-        if (HeaderValueEnum.WEBSOCKET.getName().equals(upgrade)) {
+        if (serverHandler instanceof WebSocketHandler) {
             type = HttpTypeEnum.WEBSOCKET;
-        } else if (HeaderValueEnum.H2C.getName().equals(upgrade) || HeaderValueEnum.H2.getName().equals(upgrade)) {
+        } else if (serverHandler instanceof Http2ServerHandler) {
             type = HttpTypeEnum.HTTP_2;
         } else {
             type = HttpTypeEnum.HTTP;
         }
         return type;
+    }
+
+    public ServerHandler getServerHandler() {
+        return serverHandler;
+    }
+
+    public void setServerHandler(ServerHandler serverHandler) {
+        this.serverHandler = serverHandler;
     }
 
     @Override
@@ -232,7 +250,7 @@ public final class Request implements HttpRequest, Reset {
         this.uri = uri;
     }
 
-    public void setHeaderTemp(String headerTemp) {
+    public void setHeaderTemp(ByteTree headerTemp) {
         this.headerTemp = headerTemp;
     }
 
@@ -500,6 +518,18 @@ public final class Request implements HttpRequest, Reset {
      */
     public final <A> void setAttachment(A attachment) {
         this.attachment = attachment;
+    }
+
+
+    public AbstractRequest newAbstractRequest() {
+        switch (getRequestType()) {
+            case WEBSOCKET:
+                return newWebsocketRequest();
+            case HTTP:
+                return newHttpRequest();
+            default:
+                return null;
+        }
     }
 
     public HttpRequestImpl newHttpRequest() {

@@ -444,6 +444,19 @@ public class StringUtils {
         return regionMatches(str, ignoreCase, strOffset, suffix, 0, suffix.length());
     }
 
+    public static <T> ByteTree<T> scanByteTree(ByteBuffer buffer, byte[] split, ByteTree<T> cache) {
+        trimBuffer(buffer);
+        int position = buffer.position() + buffer.arrayOffset();
+        int limit = buffer.limit() + buffer.arrayOffset();
+        byte[] data = buffer.array();
+        ByteTree<T> byteTree = cache.search(data, position, limit, split, true);
+        if (byteTree == null) {
+            return null;
+        }
+        buffer.position(buffer.position() + byteTree.getDepth() + 1);
+        return byteTree;
+    }
+
     public static String scanByteCache(ByteBuffer buffer, byte[] split, ByteTree cache) {
         trimBuffer(buffer);
         int position = buffer.position() + buffer.arrayOffset();

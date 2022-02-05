@@ -10,14 +10,17 @@ package org.smartboot.http.server.decode;
 
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.exception.HttpException;
+import org.smartboot.http.common.utils.ByteTree;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpServerConfiguration;
+import org.smartboot.http.server.ServerHandler;
 import org.smartboot.http.server.impl.HttpRequestProtocol;
 import org.smartboot.http.server.impl.Request;
 import org.smartboot.socket.transport.AioSession;
 
 import java.nio.ByteBuffer;
+import java.util.function.Function;
 
 /**
  * @author 三刀
@@ -51,7 +54,7 @@ class HttpHeaderDecoder extends AbstractDecoder {
             return HttpRequestProtocol.BODY_READY_DECODER;
         }
         //Header name解码
-        String name = StringUtils.scanByteCache(byteBuffer, COLON, getConfiguration().getByteCache());
+        ByteTree<Function<String, ServerHandler>> name = StringUtils.scanByteTree(byteBuffer, COLON, getConfiguration().getHeaderNameByteTree());
         if (name == null) {
             return this;
         }
