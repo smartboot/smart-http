@@ -25,12 +25,8 @@ import org.smartboot.http.server.HttpBootstrap;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
 import org.smartboot.http.server.HttpServerHandler;
-import org.smartboot.http.server.impl.Request;
 import org.smartboot.http.test.BastTest;
-import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.extension.plugins.StreamMonitorPlugin;
-import org.smartboot.socket.extension.processor.AbstractMessageProcessor;
-import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -75,21 +71,7 @@ public class HttpServerTest extends BastTest {
                 response.getOutputStream().write(jsonObject.toJSONString().getBytes(StandardCharsets.UTF_8));
             }
         }).setPort(SERVER_PORT);
-        bootstrap.configuration().messageProcessor(requestMessageProcessor -> {
-            AbstractMessageProcessor<Request> processor = new AbstractMessageProcessor<Request>() {
-                @Override
-                public void process0(AioSession session, Request msg) {
-                    requestMessageProcessor.process(session, msg);
-                }
-
-                @Override
-                public void stateEvent0(AioSession session, StateMachineEnum stateMachineEnum, Throwable throwable) {
-                    requestMessageProcessor.stateEvent(session, stateMachineEnum, throwable);
-                }
-            };
-            processor.addPlugin(new StreamMonitorPlugin<>((asynchronousSocketChannel, bytes) -> System.out.println(new String(bytes)), (asynchronousSocketChannel, bytes) -> System.out.println(new String(bytes))));
-            return processor;
-        });
+        bootstrap.configuration().addPlugin(new StreamMonitorPlugin<>((asynchronousSocketChannel, bytes) -> System.out.println(new String(bytes)), (asynchronousSocketChannel, bytes) -> System.out.println(new String(bytes))));
         bootstrap.start();
 
         requestUnit = new RequestUnit();

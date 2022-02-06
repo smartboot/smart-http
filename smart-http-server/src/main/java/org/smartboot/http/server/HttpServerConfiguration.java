@@ -11,8 +11,8 @@ package org.smartboot.http.server;
 import org.smartboot.http.common.utils.ByteTree;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.impl.Request;
-import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.extension.plugins.Plugin;
+import org.smartboot.socket.extension.plugins.StreamMonitorPlugin;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -67,10 +67,6 @@ public class HttpServerConfiguration {
      */
     private int headerLimiter = 0;
     /**
-     * 启用 debug 模式后会打印码流
-     */
-    private boolean debug;
-    /**
      * 服务器名称
      */
     private String serverName = "smart-http";
@@ -81,17 +77,6 @@ public class HttpServerConfiguration {
         }
     };
     private WebSocketHandler webSocketHandler;
-
-    private Function<MessageProcessor<Request>, MessageProcessor<Request>> processor = messageProcessor -> messageProcessor;
-
-    Function<MessageProcessor<Request>, MessageProcessor<Request>> getProcessor() {
-        return processor;
-    }
-
-    public HttpServerConfiguration messageProcessor(Function<MessageProcessor<Request>, MessageProcessor<Request>> processor) {
-        this.processor = processor;
-        return this;
-    }
 
     public HttpServerConfiguration readMemoryPool(int totalBytes) {
         this.readPageSize = totalBytes;
@@ -181,12 +166,14 @@ public class HttpServerConfiguration {
         return this;
     }
 
-    boolean isDebug() {
-        return debug;
-    }
-
+    /**
+     * 启用 debug 模式后会打印码流
+     */
     public HttpServerConfiguration debug(boolean debug) {
-        this.debug = debug;
+        plugins.removeIf(plugin -> plugin instanceof StreamMonitorPlugin);
+        if (debug) {
+            addPlugin(new StreamMonitorPlugin<>(StreamMonitorPlugin.BLUE_TEXT_INPUT_STREAM, StreamMonitorPlugin.RED_TEXT_OUTPUT_STREAM));
+        }
         return this;
     }
 
