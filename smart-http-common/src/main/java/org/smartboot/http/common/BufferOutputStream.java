@@ -21,6 +21,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
 
 /**
  * @author 三刀
@@ -33,7 +34,7 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
     protected boolean committed = false;
     protected boolean chunked = false;
     protected boolean gzip = false;
-    protected WriteCache writeCache;
+//    protected WriteCache writeCache;
     /**
      * 当前流是否完结
      */
@@ -60,14 +61,7 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
     public final void write(byte b[], int off, int len) throws IOException {
         check();
         writeHead();
-        if (writeCache != null) {
-            System.arraycopy(b, off, writeCache.cacheData, writeCache.bodyPosition, len);
-            writeCache.bodyPosition += len;
-            if (writeCache.bodyPosition == writeCache.cacheData.length) {
-                writeBuffer.write(writeCache.cacheData, 0, writeCache.bodyPosition);
-                writeCache = null;
-            }
-        } else if (chunked) {
+        if (chunked) {
             if (gzip) {
                 b = GzipUtils.compress(b, off, len);
                 off = 0;
@@ -99,11 +93,7 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
 
     public final void write(VirtualBuffer virtualBuffer) throws IOException {
         check();
-        if (writeCache != null) {
-            flush();
-        } else {
-            writeHead();
-        }
+        writeHead();
         if (chunked) {
             byte[] start = getBytes(Integer.toHexString(virtualBuffer.buffer().remaining()) + "\r\n");
             writeBuffer.write(start);
@@ -117,10 +107,6 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
     @Override
     public final void flush() throws IOException {
         writeHead();
-        if (writeCache != null) {
-            writeBuffer.write(writeCache.cacheData, 0, writeCache.bodyPosition);
-            writeCache = null;
-        }
         writeBuffer.flush();
     }
 
@@ -130,10 +116,6 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
             throw new IOException("outputStream has already closed");
         }
         writeHead();
-        if (writeCache != null) {
-            writeBuffer.write(writeCache.cacheData, 0, writeCache.bodyPosition);
-            writeCache = null;
-        }
 
         if (chunked) {
             writeBuffer.write(Constant.CHUNKED_END_BYTES);
@@ -174,45 +156,14 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
     protected abstract void check();
 
     protected static class WriteCache {
-        private final String contentType;
-        private final int contentLength;
-        /**
-         * body的起始位置
-         */
-        private final int bodyInitPosition;
         private final byte[] cacheData;
-        /**
-         * body的当前输出位置
-         */
-        private int bodyPosition;
+        private final Semaphore semaphore = new Semaphore(1);
         private long cacheTime;
 
 
-        public WriteCache(String contentType, long cacheTime, byte[] data, int contentLength) {
-            this.contentType = contentType;
+        public WriteCache(long cacheTime, byte[] data) {
             this.cacheTime = cacheTime;
-            this.contentLength = contentLength;
-            this.cacheData = new byte[data.length + 2 + contentLength];
-            this.bodyInitPosition = data.length + 2;
-            System.arraycopy(data, 0, cacheData, 0, data.length);
-            this.cacheData[data.length] = Constant.CR;
-            this.cacheData[data.length + 1] = Constant.LF;
-        }
-
-        public String getContentType() {
-            return contentType;
-        }
-
-        public int getContentLength() {
-            return contentLength;
-        }
-
-        public int getBodyInitPosition() {
-            return bodyInitPosition;
-        }
-
-        public void setBodyPosition(int bodyPosition) {
-            this.bodyPosition = bodyPosition;
+            this.cacheData = data;
         }
 
         public long getCacheTime() {
@@ -221,6 +172,10 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
 
         public void setCacheTime(long cacheTime) {
             this.cacheTime = cacheTime;
+        }
+
+        public Semaphore getSemaphore() {
+            return semaphore;
         }
 
         public byte[] getCacheData() {

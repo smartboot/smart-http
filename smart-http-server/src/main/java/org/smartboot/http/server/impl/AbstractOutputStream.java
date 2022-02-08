@@ -58,11 +58,9 @@ abstract class AbstractOutputStream extends BufferOutputStream {
 
         //输出http状态行、contentType,contentLength、Transfer-Encoding、server等信息
         byte[] headBytes = getHeadPart();
-        if (writeCache == null) {
-            writeBuffer.write(headBytes);
-            //输出Header部分
-            writeHeader();
-        }
+        writeBuffer.write(headBytes);
+        //输出Header部分
+        writeHeader();
 
         committed = true;
     }

@@ -16,9 +16,9 @@ import org.smartboot.http.common.utils.TimerUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -31,16 +31,7 @@ final class HttpOutputStream extends AbstractOutputStream {
     /**
      * key:status+contentType
      */
-    private static final ThreadLocal<Map<String, WriteCache>[]> CACHE_CONTENT_TYPE_AND_LENGTH = new ThreadLocal<Map<String, WriteCache>[]>() {
-        @Override
-        protected Map<String, WriteCache>[] initialValue() {
-            Map<String, WriteCache>[] mapArray = new Map[CACHE_LIMIT];
-            for (int i = 0; i < CACHE_LIMIT; i++) {
-                mapArray[i] = new HashMap<>();
-            }
-            return mapArray;
-        }
-    };
+    private static final Map<String, WriteCache>[] CACHE_CONTENT_TYPE_AND_LENGTH = new Map[CACHE_LIMIT];
     private static final Date currentDate = new Date(0);
     private static final Semaphore flushDateSemaphore = new Semaphore(1);
     private static byte[] dateBytes;
@@ -48,6 +39,9 @@ final class HttpOutputStream extends AbstractOutputStream {
 
     static {
         flushDate();
+        for (int i = 0; i < CACHE_LIMIT; i++) {
+            CACHE_CONTENT_TYPE_AND_LENGTH[i] = new ConcurrentHashMap<>();
+        }
     }
 
     public HttpOutputStream(HttpRequestImpl httpRequest, HttpResponseImpl response, Request request) {
@@ -75,26 +69,21 @@ final class HttpOutputStream extends AbstractOutputStream {
         String reasonPhrase = response.getReasonPhrase();
         int contentLength = response.getContentLength();
         String contentType = response.getContentType();
-        WriteCache data;
-        writeCache = null;
         //成功消息优先从缓存中加载。启用缓存的条件：Http_200, contentLength<512,未设置过Header,Http/1.1
-        boolean cache = httpStatus == HttpStatus.OK.value()
-                && HttpStatus.OK.getReasonPhrase().equals(reasonPhrase)
-                && contentLength > 0
-                && contentLength < CACHE_LIMIT
-                && !hasHeader();
+        boolean cache = httpStatus == HttpStatus.OK.value() && HttpStatus.OK.getReasonPhrase().equals(reasonPhrase) && contentLength > 0 && contentLength < CACHE_LIMIT && !hasHeader();
 
         if (cache) {
-            data = CACHE_CONTENT_TYPE_AND_LENGTH.get()[contentLength].get(contentType);
+            WriteCache data = CACHE_CONTENT_TYPE_AND_LENGTH[contentLength].get(contentType);
             if (data != null) {
-                writeCache = data;
-                writeCache.setBodyPosition(writeCache.getBodyInitPosition());
-                if (currentTime - data.getCacheTime() > 1000) {
-                    data.setCacheTime(currentTime);
-                    System.arraycopy(dateBytes, 0, data.getCacheData(), data.getCacheData().length - contentLength - 4 - dateBytes.length, dateBytes.length);
+                if (currentTime - data.getCacheTime() > 1000 && data.getSemaphore().tryAcquire()) {
+                    try {
+                        data.setCacheTime(currentTime);
+                        System.arraycopy(dateBytes, 0, data.getCacheData(), data.getCacheData().length - 4 - dateBytes.length, dateBytes.length);
+                    } finally {
+                        data.getSemaphore().release();
+                    }
                 }
-                //命中缓存，无需响应
-                return null;
+                return data.getCacheData();
             }
         }
 
@@ -116,7 +105,10 @@ final class HttpOutputStream extends AbstractOutputStream {
 
         //缓存响应头
         if (cache) {
-            CACHE_CONTENT_TYPE_AND_LENGTH.get()[contentLength].put(contentType, new WriteCache(contentType, currentTime, sb.toString().getBytes(), contentLength));
+            sb.append(Constant.CRLF);
+            WriteCache writeCache = new WriteCache(currentTime, sb.toString().getBytes());
+            CACHE_CONTENT_TYPE_AND_LENGTH[contentLength].put(contentType, writeCache);
+            return writeCache.getCacheData();
         }
         return hasHeader() ? sb.toString().getBytes() : sb.append(Constant.CRLF).toString().getBytes();
     }

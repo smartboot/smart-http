@@ -43,7 +43,7 @@ public abstract class HttpServerHandler implements ServerHandler<HttpRequest, Ht
             } else if (postLength < 0) {
                 throw new HttpException(HttpStatus.LENGTH_REQUIRED);
             }
-            RequestAttachment attachment = request.getAttachment();
+            RequestAttachment attachment = request.getAioSession().getAttachment();
             SmartDecoder smartDecoder = attachment.getBodyDecoder();
             if (smartDecoder == null) {
                 smartDecoder = new FixedLengthFrameDecoder(request.getContentLength());
