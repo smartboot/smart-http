@@ -45,8 +45,29 @@ abstract class AbstractOutputStream extends BufferOutputStream {
         }
     }
 
+    /**
+     * 输出Http消息头
+     */
+    protected void writeHeader() throws IOException {
+        if (committed) {
+            return;
+        }
+        //转换Cookie
+        convertCookieToHeader();
 
-    protected void convertCookieToHeader() {
+        boolean hasHeader = hasHeader();
+        //输出http状态行、contentType,contentLength、Transfer-Encoding、server等信息
+        writeBuffer.write(getHeadPart(hasHeader));
+        if (hasHeader) {
+            //输出Header部分
+            writeHeaders();
+        }
+        committed = true;
+    }
+
+    protected abstract byte[] getHeadPart(boolean hasHeader);
+
+    private void convertCookieToHeader() {
         List<Cookie> cookies = response.getCookies();
         if (cookies.size() > 0) {
             cookies.forEach(cookie -> response.addHeader(HeaderNameEnum.SET_COOKIE.getName(), cookie.toString()));
@@ -57,7 +78,7 @@ abstract class AbstractOutputStream extends BufferOutputStream {
         return response.getHeaders().size() > 0;
     }
 
-    protected void writeHeaders() throws IOException {
+    private void writeHeaders() throws IOException {
         for (Map.Entry<String, HeaderValue> entry : response.getHeaders().entrySet()) {
             HeaderValue headerValue = entry.getValue();
             while (headerValue != null) {

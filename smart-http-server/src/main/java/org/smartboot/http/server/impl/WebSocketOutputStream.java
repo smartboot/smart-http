@@ -10,8 +10,6 @@ package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.enums.HeaderNameEnum;
 
-import java.io.IOException;
-
 /**
  * @author 三刀
  * @version V1.0 , 2018/2/3
@@ -23,24 +21,9 @@ final class WebSocketOutputStream extends AbstractOutputStream {
         super.chunked = false;
     }
 
-    /**
-     * 输出Http消息头
-     */
-    protected void writeHeader() throws IOException {
-        if (committed) {
-            return;
-        }
-        //转换Cookie
-        convertCookieToHeader();
-
-        //输出http状态行、contentType,contentLength、Transfer-Encoding、server等信息
-        byte[] headBytes = getBytes(request.getProtocol() + " " + response.getHttpStatus() + " " + response.getReasonPhrase() + "\r\n"
-                + HeaderNameEnum.CONTENT_TYPE.getName() + ":" + response.getContentType() + (hasHeader() ? "\r\n" : "\r\n\r\n"));
-        writeBuffer.write(headBytes);
-        //输出Header部分
-        writeHeaders();
-
-        committed = true;
+    protected byte[] getHeadPart(boolean hasHeader) {
+        return getBytes(request.getProtocol() + " " + response.getHttpStatus() + " " + response.getReasonPhrase() + "\r\n"
+                + HeaderNameEnum.CONTENT_TYPE.getName() + ":" + response.getContentType() + (hasHeader ? "\r\n" : "\r\n\r\n"));
     }
 
 }

@@ -14,7 +14,6 @@ import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.TimerUtils;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -63,27 +62,7 @@ final class HttpOutputStream extends AbstractOutputStream {
         return currentTime;
     }
 
-    /**
-     * 输出Http消息头
-     */
-    protected void writeHeader() throws IOException {
-        if (committed) {
-            return;
-        }
-        //转换Cookie
-        convertCookieToHeader();
-
-        boolean hasHeader = hasHeader();
-        //输出http状态行、contentType,contentLength、Transfer-Encoding、server等信息
-        writeBuffer.write(getHeadPart(hasHeader));
-        if (hasHeader) {
-            //输出Header部分
-            writeHeaders();
-        }
-        committed = true;
-    }
-
-    private byte[] getHeadPart(boolean hasHeader) {
+    protected byte[] getHeadPart(boolean hasHeader) {
         long currentTime = flushDate();
         int httpStatus = response.getHttpStatus();
         String reasonPhrase = response.getReasonPhrase();
