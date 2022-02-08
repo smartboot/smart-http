@@ -46,51 +46,28 @@ abstract class AbstractOutputStream extends BufferOutputStream {
     }
 
 
-    /**
-     * 输出Http消息头
-     */
-    protected final void writeHead() throws IOException {
-        if (committed) {
-            return;
-        }
-        //转换Cookie
-        convertCookieToHeader();
-
-        //输出http状态行、contentType,contentLength、Transfer-Encoding、server等信息
-        byte[] headBytes = getHeadPart();
-        writeBuffer.write(headBytes);
-        //输出Header部分
-        writeHeader();
-
-        committed = true;
-    }
-
-    private void convertCookieToHeader() {
+    protected void convertCookieToHeader() {
         List<Cookie> cookies = response.getCookies();
         if (cookies.size() > 0) {
             cookies.forEach(cookie -> response.addHeader(HeaderNameEnum.SET_COOKIE.getName(), cookie.toString()));
         }
     }
 
-    protected abstract byte[] getHeadPart();
-
     protected boolean hasHeader() {
         return response.getHeaders().size() > 0;
     }
 
-    private void writeHeader() throws IOException {
-        if (hasHeader()) {
-            for (Map.Entry<String, HeaderValue> entry : response.getHeaders().entrySet()) {
-                HeaderValue headerValue = entry.getValue();
-                while (headerValue != null) {
-                    writeBuffer.write(getHeaderNameBytes(entry.getKey()));
-                    writeBuffer.write(getBytes(headerValue.getValue()));
-                    writeBuffer.write(Constant.CRLF_BYTES);
-                    headerValue = headerValue.getNextValue();
-                }
+    protected void writeHeaders() throws IOException {
+        for (Map.Entry<String, HeaderValue> entry : response.getHeaders().entrySet()) {
+            HeaderValue headerValue = entry.getValue();
+            while (headerValue != null) {
+                writeBuffer.write(getHeaderNameBytes(entry.getKey()));
+                writeBuffer.write(getBytes(headerValue.getValue()));
+                writeBuffer.write(Constant.CRLF_BYTES);
+                headerValue = headerValue.getNextValue();
             }
-            writeBuffer.write(Constant.CRLF_BYTES);
         }
+        writeBuffer.write(Constant.CRLF_BYTES);
     }
 
     @Override

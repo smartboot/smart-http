@@ -38,7 +38,7 @@ abstract class AbstractOutputStream extends BufferOutputStream {
      *
      * @throws IOException
      */
-    protected final void writeHead() throws IOException {
+    protected final void writeHeader() throws IOException {
         if (committed) {
             return;
         }

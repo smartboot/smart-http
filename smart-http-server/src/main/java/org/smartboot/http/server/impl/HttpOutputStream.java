@@ -14,6 +14,7 @@ import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.TimerUtils;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -62,15 +63,34 @@ final class HttpOutputStream extends AbstractOutputStream {
         return currentTime;
     }
 
-    @Override
-    protected byte[] getHeadPart() {
+    /**
+     * 输出Http消息头
+     */
+    protected void writeHeader() throws IOException {
+        if (committed) {
+            return;
+        }
+        //转换Cookie
+        convertCookieToHeader();
+
+        boolean hasHeader = hasHeader();
+        //输出http状态行、contentType,contentLength、Transfer-Encoding、server等信息
+        writeBuffer.write(getHeadPart(hasHeader));
+        if (hasHeader) {
+            //输出Header部分
+            writeHeaders();
+        }
+        committed = true;
+    }
+
+    private byte[] getHeadPart(boolean hasHeader) {
         long currentTime = flushDate();
         int httpStatus = response.getHttpStatus();
         String reasonPhrase = response.getReasonPhrase();
         int contentLength = response.getContentLength();
         String contentType = response.getContentType();
         //成功消息优先从缓存中加载。启用缓存的条件：Http_200, contentLength<512,未设置过Header,Http/1.1
-        boolean cache = httpStatus == HttpStatus.OK.value() && HttpStatus.OK.getReasonPhrase().equals(reasonPhrase) && contentLength > 0 && contentLength < CACHE_LIMIT && !hasHeader();
+        boolean cache = httpStatus == HttpStatus.OK.value() && HttpStatus.OK.getReasonPhrase().equals(reasonPhrase) && contentLength > 0 && contentLength < CACHE_LIMIT && !hasHeader;
 
         if (cache) {
             WriteCache data = CACHE_CONTENT_TYPE_AND_LENGTH[contentLength].get(contentType);
@@ -110,6 +130,6 @@ final class HttpOutputStream extends AbstractOutputStream {
             CACHE_CONTENT_TYPE_AND_LENGTH[contentLength].put(contentType, writeCache);
             return writeCache.getCacheData();
         }
-        return hasHeader() ? sb.toString().getBytes() : sb.append(Constant.CRLF).toString().getBytes();
+        return hasHeader ? sb.toString().getBytes() : sb.append(Constant.CRLF).toString().getBytes();
     }
 }

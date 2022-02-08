@@ -60,7 +60,7 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
      */
     public final void write(byte b[], int off, int len) throws IOException {
         check();
-        writeHead();
+        writeHeader();
         if (chunked) {
             if (gzip) {
                 b = GzipUtils.compress(b, off, len);
@@ -93,7 +93,7 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
 
     public final void write(VirtualBuffer virtualBuffer) throws IOException {
         check();
-        writeHead();
+        writeHeader();
         if (chunked) {
             byte[] start = getBytes(Integer.toHexString(virtualBuffer.buffer().remaining()) + "\r\n");
             writeBuffer.write(start);
@@ -106,7 +106,7 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
 
     @Override
     public final void flush() throws IOException {
-        writeHead();
+        writeHeader();
         writeBuffer.flush();
     }
 
@@ -115,7 +115,7 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
         if (closed) {
             throw new IOException("outputStream has already closed");
         }
-        writeHead();
+        writeHeader();
 
         if (chunked) {
             writeBuffer.write(Constant.CHUNKED_END_BYTES);
@@ -151,7 +151,7 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
     }
 
 
-    protected abstract void writeHead() throws IOException;
+    protected abstract void writeHeader() throws IOException;
 
     protected abstract void check();
 
