@@ -66,7 +66,7 @@ public class HttpServerConfiguration {
     /**
      * 解析的header数量上限
      */
-    private int headerLimiter = 0;
+    private int headerLimiter = 100;
     /**
      * 服务器名称
      */
