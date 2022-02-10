@@ -12,7 +12,6 @@ import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.exception.HttpException;
-import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.FixedLengthFrameDecoder;
 import org.smartboot.http.common.utils.SmartDecoder;
 import org.smartboot.http.common.utils.StringUtils;
@@ -38,7 +37,7 @@ public abstract class HttpServerHandler implements ServerHandler<HttpRequest, Ht
         if (HttpMethodEnum.POST.getMethod().equals(request.getMethod())
                 && StringUtils.startsWith(request.getContentType(), HeaderValueEnum.X_WWW_FORM_URLENCODED.getName())) {
             int postLength = request.getContentLength();
-            if (postLength > Constant.maxPostSize) {
+            if (postLength > request.getConfiguration().getMaxFormContentSize()) {
                 throw new HttpException(HttpStatus.PAYLOAD_TOO_LARGE);
             } else if (postLength < 0) {
                 throw new HttpException(HttpStatus.LENGTH_REQUIRED);

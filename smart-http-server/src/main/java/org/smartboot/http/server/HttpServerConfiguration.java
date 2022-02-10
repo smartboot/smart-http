@@ -9,6 +9,7 @@
 package org.smartboot.http.server;
 
 import org.smartboot.http.common.utils.ByteTree;
+import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.impl.Request;
 import org.smartboot.socket.extension.plugins.Plugin;
@@ -65,11 +66,17 @@ public class HttpServerConfiguration {
     /**
      * 解析的header数量上限
      */
-    private int headerLimiter = 100;
+    private int headerLimiter = 0;
     /**
      * 服务器名称
      */
     private String serverName = "smart-http";
+
+    /**
+     * Form长度上限
+     */
+    private int maxFormContentSize = Constant.maxPostSize;
+
     private HttpServerHandler httpServerHandler = new HttpServerHandler() {
         @Override
         public void handle(HttpRequest request, HttpResponse response) throws IOException {
@@ -224,6 +231,15 @@ public class HttpServerConfiguration {
 
     public HttpServerConfiguration addPlugin(Plugin<Request> plugin) {
         plugins.add(plugin);
+        return this;
+    }
+
+    public int getMaxFormContentSize() {
+        return maxFormContentSize;
+    }
+
+    public HttpServerConfiguration setMaxFormContentSize(int maxFormContentSize) {
+        this.maxFormContentSize = maxFormContentSize <= 0 ? Integer.MAX_VALUE : maxFormContentSize;
         return this;
     }
 
