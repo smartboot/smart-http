@@ -33,11 +33,6 @@ class HttpUriDecoder extends AbstractDecoder {
         super(configuration);
     }
 
-    public static void main(String[] args) {
-        System.out.println(' ');
-        System.out.println('?');
-    }
-
     @Override
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
         ByteTree<ServerHandler<?, ?>> uriTreeNode = StringUtils.scanByteTree(byteBuffer, URI_END_MATCHER, getConfiguration().getUriByteTree());
