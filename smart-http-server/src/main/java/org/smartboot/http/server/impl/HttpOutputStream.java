@@ -75,9 +75,9 @@ final class HttpOutputStream extends AbstractOutputStream {
         if (cache) {
             WriteCache data = CACHE_CONTENT_TYPE_AND_LENGTH[contentLength].get(contentType);
             if (data != null) {
-                if (currentTime - data.getCacheTime() > 1000 && data.getSemaphore().tryAcquire()) {
+                if (currentTime > data.getExpireTime() && data.getSemaphore().tryAcquire()) {
                     try {
-                        data.setCacheTime(currentTime);
+                        data.setExpireTime(currentTime + 1000);
                         System.arraycopy(dateBytes, 0, data.getCacheData(), data.getCacheData().length - 4 - dateBytes.length, dateBytes.length);
                     } finally {
                         data.getSemaphore().release();
@@ -106,7 +106,7 @@ final class HttpOutputStream extends AbstractOutputStream {
         //缓存响应头
         if (cache) {
             sb.append(Constant.CRLF);
-            WriteCache writeCache = new WriteCache(currentTime, sb.toString().getBytes());
+            WriteCache writeCache = new WriteCache(currentTime + 1000, sb.toString().getBytes());
             CACHE_CONTENT_TYPE_AND_LENGTH[contentLength].put(contentType, writeCache);
             return writeCache.getCacheData();
         }

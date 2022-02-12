@@ -158,20 +158,20 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
     protected static class WriteCache {
         private final byte[] cacheData;
         private final Semaphore semaphore = new Semaphore(1);
-        private long cacheTime;
+        private long expireTime;
 
 
         public WriteCache(long cacheTime, byte[] data) {
-            this.cacheTime = cacheTime;
+            this.expireTime = cacheTime;
             this.cacheData = data;
         }
 
-        public long getCacheTime() {
-            return cacheTime;
+        public long getExpireTime() {
+            return expireTime;
         }
 
-        public void setCacheTime(long cacheTime) {
-            this.cacheTime = cacheTime;
+        public void setExpireTime(long expireTime) {
+            this.expireTime = expireTime;
         }
 
         public Semaphore getSemaphore() {
