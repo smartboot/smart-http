@@ -32,7 +32,7 @@ final class HttpOutputStream extends AbstractOutputStream {
      * key:status+contentType
      */
     private static final Map<String, WriteCache>[] CACHE_CONTENT_TYPE_AND_LENGTH = new Map[CACHE_LIMIT];
-    private static final Date currentDate = new Date(0);
+    private static final Date nextSecondDate = new Date(0);
     private static final Semaphore flushDateSemaphore = new Semaphore(1);
     private static byte[] dateBytes;
     private static String date;
@@ -50,11 +50,12 @@ final class HttpOutputStream extends AbstractOutputStream {
 
     private static long flushDate() {
         long currentTime = TimerUtils.currentTimeMillis();
-        if ((currentTime - currentDate.getTime() > 1000) && flushDateSemaphore.tryAcquire()) {
+        if (currentTime > nextSecondDate.getTime() && flushDateSemaphore.tryAcquire()) {
             try {
-                currentDate.setTime(currentTime);
-                date = sdf.format(currentDate);
+                nextSecondDate.setTime(currentTime);
+                date = sdf.format(nextSecondDate);
                 dateBytes = date.getBytes();
+                nextSecondDate.setTime(currentTime + 1000);
             } finally {
                 flushDateSemaphore.release();
             }
