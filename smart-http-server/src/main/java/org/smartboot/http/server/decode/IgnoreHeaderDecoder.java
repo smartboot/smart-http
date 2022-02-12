@@ -23,30 +23,27 @@ public class IgnoreHeaderDecoder implements Decoder {
 
     @Override
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request httpHeader) {
-        int position = byteBuffer.position() + byteBuffer.arrayOffset();
-        int limit = byteBuffer.limit() + byteBuffer.arrayOffset();
+        int position = byteBuffer.position();
+        int limit = byteBuffer.limit();
         byte[] data = byteBuffer.array();
 
         while (limit - position >= 4) {
-            byte b = data[position + 3];
+            byte b = data[position + 3 + byteBuffer.arrayOffset()];
+            // 第四位非CR或LF，则前4位必然不会是header结束符，可跳跃4位
             if (b > Constant.CR || (b != Constant.CR && b != Constant.LF)) {
                 position += 4;
-                byteBuffer.position(byteBuffer.position() + 4);
-//                System.out.println("skip");
                 continue;
             }
-//            System.out.println("read");
             int index = 0;
-            while (data[position++] == Constant.HEADER_END[index]) {
-                if (index == 3) {
-                    byteBuffer.position(position - byteBuffer.arrayOffset());
-                    return HttpRequestProtocol.BODY_READY_DECODER;
-                } else {
-                    index++;
-                }
+            while (data[byteBuffer.arrayOffset() + position++] == Constant.HEADER_END[index]) {
+                index++;
+            }
+            if (index == Constant.HEADER_END.length) {
+                byteBuffer.position(position);
+                return HttpRequestProtocol.BODY_READY_DECODER;
             }
         }
-        byteBuffer.position(position - byteBuffer.arrayOffset());
+        byteBuffer.position(position);
         return this;
     }
 }
