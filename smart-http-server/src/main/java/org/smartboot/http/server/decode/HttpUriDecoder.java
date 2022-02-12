@@ -25,12 +25,17 @@ import java.nio.ByteBuffer;
  * @version V1.0 , 2020/3/30
  */
 class HttpUriDecoder extends AbstractDecoder {
-    private static final ByteTree.EndMatcher URI_END_MATCHER = endByte -> endByte == ' ' || endByte == '?';
+    private static final ByteTree.EndMatcher URI_END_MATCHER = endByte -> endByte <= '?' && (endByte == ' ' || endByte == '?');
     private final HttpUriQueryDecoder uriQueryDecoder = new HttpUriQueryDecoder(getConfiguration());
     private final HttpProtocolDecoder protocolDecoder = new HttpProtocolDecoder(getConfiguration());
 
     public HttpUriDecoder(HttpServerConfiguration configuration) {
         super(configuration);
+    }
+
+    public static void main(String[] args) {
+        System.out.println(' ');
+        System.out.println('?');
     }
 
     @Override

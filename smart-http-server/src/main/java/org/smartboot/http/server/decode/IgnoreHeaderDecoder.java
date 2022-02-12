@@ -29,7 +29,7 @@ public class IgnoreHeaderDecoder implements Decoder {
 
         while (limit - position >= 4) {
             byte b = data[position + 3];
-            if (b != Constant.CR && b != Constant.LF) {
+            if (b > Constant.CR || (b != Constant.CR && b != Constant.LF)) {
                 position += 4;
                 byteBuffer.position(byteBuffer.position() + 4);
 //                System.out.println("skip");
