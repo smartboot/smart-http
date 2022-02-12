@@ -34,13 +34,16 @@ public class IgnoreHeaderDecoder implements Decoder {
                 continue;
             }
             int index = 0;
-            while (data[position++] == Constant.HEADER_END[index]) {
-                if (index == 3) {
-                    byteBuffer.position(position - byteBuffer.arrayOffset());
-                    return HttpRequestProtocol.BODY_READY_DECODER;
-                } else {
-                    index++;
+            // header 结束符匹配
+            while (index < Constant.HEADER_END.length) {
+                if (data[position++] != Constant.HEADER_END[index]) {
+                    break;
                 }
+                index++;
+            }
+            if (index == Constant.HEADER_END.length) {
+                byteBuffer.position(position - byteBuffer.arrayOffset());
+                return HttpRequestProtocol.BODY_READY_DECODER;
             }
         }
         byteBuffer.position(position - byteBuffer.arrayOffset());
