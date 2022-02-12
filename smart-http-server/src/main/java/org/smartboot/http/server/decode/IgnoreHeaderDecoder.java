@@ -31,7 +31,6 @@ public class IgnoreHeaderDecoder implements Decoder {
             byte b = data[position + 3];
             if (b > Constant.CR || (b != Constant.CR && b != Constant.LF)) {
                 position += 4;
-                byteBuffer.position(byteBuffer.position() + 4);
                 continue;
             }
             int index = 0;
