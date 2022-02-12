@@ -441,25 +441,17 @@ public class StringUtils {
         return regionMatches(str, ignoreCase, strOffset, suffix, 0, suffix.length());
     }
 
-    public static <T> ByteTree<T> scanByteTree(ByteBuffer buffer, byte[] split, ByteTree<T> cache) {
+    public static <T> ByteTree<T> scanByteTree(ByteBuffer buffer, ByteTree.EndMatcher endMatcher, ByteTree<T> cache) {
         trimBuffer(buffer);
         int position = buffer.position() + buffer.arrayOffset();
         int limit = buffer.limit() + buffer.arrayOffset();
         byte[] data = buffer.array();
-        ByteTree<T> byteTree = cache.search(data, position, limit, split, true);
+        ByteTree<T> byteTree = cache.search(data, position, limit, endMatcher, true);
         if (byteTree == null) {
             return null;
         }
         buffer.position(buffer.position() + byteTree.getDepth() + 1);
         return byteTree;
-    }
-
-    public static <T> String scanByteCache(ByteBuffer buffer, byte[] split, ByteTree<T> cache) {
-        ByteTree<T> byteTree = scanByteTree(buffer, split, cache);
-        if (byteTree == null) {
-            return null;
-        }
-        return byteTree.getStringValue();
     }
 
     public static int scanUntilAndTrim(ByteBuffer buffer, byte split) {
@@ -472,30 +464,6 @@ public class StringUtils {
                 int length = position - buffer.arrayOffset() - buffer.position() - 1;
                 buffer.position(position - buffer.arrayOffset());
                 return length;
-            }
-        }
-        return -1;
-    }
-
-    public static int scanCRLFAndTrim(ByteBuffer buffer) {
-        trimBuffer(buffer);
-        int position = buffer.position() + buffer.arrayOffset();
-        int limit = buffer.limit() + buffer.arrayOffset();
-        byte[] data = buffer.array();
-
-        while (limit - position >= 2) {
-            byte b = data[position + 1];
-            if (b == Constant.LF) {
-                if (data[position] == Constant.CR) {
-                    int length = position - buffer.arrayOffset() - buffer.position() + 1;
-                    buffer.position(position - buffer.arrayOffset() + 2);
-                    return length;
-                }
-                throw new IllegalStateException();
-            } else if (b == Constant.CR) {
-                position += 1;
-            } else {
-                position += 2;
             }
         }
         return -1;

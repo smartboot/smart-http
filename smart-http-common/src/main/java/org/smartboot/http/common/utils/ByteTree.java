@@ -38,8 +38,8 @@ public class ByteTree<T> {
         return depth;
     }
 
-    public ByteTree<T> search(byte[] bytes, int offset, int len, byte[] ends) {
-        return search(bytes, offset, len, ends, true);
+    public ByteTree<T> search(byte[] bytes, int offset, int len, EndMatcher endMatcher) {
+        return search(bytes, offset, len, endMatcher, true);
     }
 
     private ByteTree<T> clone(ByteTree<T> byteTree) {
@@ -57,23 +57,21 @@ public class ByteTree<T> {
     /**
      * 从给定的字节数组总匹配出特定结尾的区块
      *
-     * @param bytes  待匹配的字节数组
-     * @param offset 起始位置
-     * @param limit  截止位置
-     * @param ends   结束符
-     * @param cache  是否缓存新节点
+     * @param bytes    待匹配的字节数组
+     * @param offset   起始位置
+     * @param limit    截止位置
+     * @param matchEnd 匹配接口
+     * @param cache    是否缓存新节点
      * @return
      */
-    public ByteTree<T> search(byte[] bytes, int offset, int limit, byte[] ends, boolean cache) {
+    public ByteTree<T> search(byte[] bytes, int offset, int limit, EndMatcher matchEnd, boolean cache) {
         ByteTree<T> byteTree = this;
         while (true) {
             if (offset >= limit) {
                 return null;
             }
-            for (byte end : ends) {
-                if (end == bytes[offset]) {
-                    return byteTree;
-                }
+            if (matchEnd.match(bytes[offset])) {
+                return byteTree;
             }
 
             int i = bytes[offset] - byteTree.shift;
@@ -93,12 +91,12 @@ public class ByteTree<T> {
             //在当前节点上追加子节点
 //            System.out.println("add");
             byteTree.addNode(bytes, offset, limit);
-            return byteTree.search(bytes, offset, limit, ends, cache);
+            return byteTree.search(bytes, offset, limit, matchEnd, cache);
         } else {
 //            System.out.println("tmp");
             // 构建临时对象，用完由JVM回收
             ByteTree<T> clone = clone(byteTree);
-            return clone.search(bytes, offset - byteTree.depth, limit, ends, true);
+            return clone.search(bytes, offset - byteTree.depth, limit, matchEnd, true);
         }
     }
 
@@ -175,4 +173,9 @@ public class ByteTree<T> {
     public T getAttach() {
         return attach;
     }
+
+    public interface EndMatcher {
+        boolean match(byte endByte);
+    }
+
 }

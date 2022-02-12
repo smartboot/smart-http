@@ -8,6 +8,7 @@
 
 package org.smartboot.http.server.decode;
 
+import org.smartboot.http.common.utils.ByteTree;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.impl.Request;
@@ -31,9 +32,9 @@ class HttpProtocolDecoder extends AbstractDecoder {
 
     @Override
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
-        String protocol = StringUtils.scanByteCache(byteBuffer, CR, getConfiguration().getByteCache());
+        ByteTree<?> protocol = StringUtils.scanByteTree(byteBuffer, CR_END_MATCHER, getConfiguration().getByteCache());
         if (protocol != null) {
-            request.setProtocol(protocol);
+            request.setProtocol(protocol.getStringValue());
             return lfDecoder.decode(byteBuffer, aioSession, request);
         } else {
             return this;

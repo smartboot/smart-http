@@ -25,15 +25,15 @@ public class ByteTreeTest {
         byteTree.addNode("Hello1");
         byteTree.addNode("Hello2");
         byte[] bytes = {'H', 'e', 'l', 'l', 'o', '1'};
-        ByteTree searchTree = byteTree.search(bytes, 0, bytes.length, new byte[]{'1'}, false);
+        ByteTree searchTree = byteTree.search(bytes, 0, bytes.length, endByte -> endByte == '1', false);
         Assert.assertEquals(searchTree.getStringValue(), "Hello");
         System.out.println(searchTree.getStringValue());
 
-        searchTree = byteTree.search(bytes, 0, bytes.length, new byte[]{'l'}, false);
+        searchTree = byteTree.search(bytes, 0, bytes.length, endByte -> endByte == 'l', false);
         Assert.assertEquals(searchTree.getStringValue(), "He");
         System.out.println(searchTree.getStringValue());
 
-        searchTree = byteTree.search(bytes, 0, bytes.length, new byte[]{'o'}, false);
+        searchTree = byteTree.search(bytes, 0, bytes.length, endByte -> endByte == 'o', false);
         System.out.println(searchTree.getStringValue());
         Assert.assertEquals(searchTree.getStringValue(), "Hell");
     }
@@ -42,11 +42,11 @@ public class ByteTreeTest {
     public void test2() {
         ByteTree byteTree = new ByteTree(null, Byte.MAX_VALUE);
         byte[] bytes = "Hello Worldaa".getBytes();
-        ByteTree searchTree = byteTree.search(bytes, 0, bytes.length, new byte[]{'a'});
+        ByteTree searchTree = byteTree.search(bytes, 0, bytes.length, endByte -> endByte == 'a');
         Assert.assertEquals(searchTree.getStringValue(), "Hello World");
         System.out.println(searchTree.getStringValue());
 
-        searchTree = byteTree.search(bytes, 0, bytes.length, new byte[]{' '});
+        searchTree = byteTree.search(bytes, 0, bytes.length, endByte -> endByte == ' ');
         System.out.println(searchTree.getStringValue());
         Assert.assertEquals(searchTree.getStringValue(), "Hello");
 

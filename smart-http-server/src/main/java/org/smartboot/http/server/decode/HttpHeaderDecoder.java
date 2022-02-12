@@ -27,6 +27,7 @@ import java.util.function.Function;
  * @version V1.0 , 2020/3/30
  */
 class HttpHeaderDecoder extends AbstractDecoder {
+    private static final ByteTree.EndMatcher COLON_END_MATCHER = endByte -> endByte == Constant.COLON;
 
     private final HeaderValueDecoder headerValueDecoder = new HeaderValueDecoder();
     private final IgnoreHeaderDecoder ignoreHeaderDecoder = new IgnoreHeaderDecoder();
@@ -54,7 +55,7 @@ class HttpHeaderDecoder extends AbstractDecoder {
             return HttpRequestProtocol.BODY_READY_DECODER;
         }
         //Header name解码
-        ByteTree<Function<String, ServerHandler<?, ?>>> name = StringUtils.scanByteTree(byteBuffer, COLON, getConfiguration().getHeaderNameByteTree());
+        ByteTree<Function<String, ServerHandler<?, ?>>> name = StringUtils.scanByteTree(byteBuffer, COLON_END_MATCHER, getConfiguration().getHeaderNameByteTree());
         if (name == null) {
             return this;
         }
@@ -69,12 +70,12 @@ class HttpHeaderDecoder extends AbstractDecoder {
     class HeaderValueDecoder implements Decoder {
         @Override
         public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
-            String value = StringUtils.scanByteCache(byteBuffer, CR, getConfiguration().getByteCache());
+            ByteTree<?> value = StringUtils.scanByteTree(byteBuffer, CR_END_MATCHER, getConfiguration().getByteCache());
             if (value == null) {
                 return this;
             }
 //            System.out.println("value: " + value);
-            request.setHeadValue(value);
+            request.setHeadValue(value.getStringValue());
             return lfDecoder.decode(byteBuffer, aioSession, request);
         }
     }

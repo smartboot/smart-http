@@ -25,6 +25,7 @@ import java.nio.ByteBuffer;
  * @version V1.0 , 2020/3/30
  */
 class HttpUriDecoder extends AbstractDecoder {
+    private static final ByteTree.EndMatcher URI_END_MATCHER = endByte -> endByte == ' ' || endByte == '?';
     private final HttpUriQueryDecoder uriQueryDecoder = new HttpUriQueryDecoder(getConfiguration());
     private final HttpProtocolDecoder protocolDecoder = new HttpProtocolDecoder(getConfiguration());
 
@@ -34,7 +35,7 @@ class HttpUriDecoder extends AbstractDecoder {
 
     @Override
     public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
-        ByteTree<ServerHandler<?, ?>> uriTreeNode = StringUtils.scanByteTree(byteBuffer, URI, getConfiguration().getUriByteTree());
+        ByteTree<ServerHandler<?, ?>> uriTreeNode = StringUtils.scanByteTree(byteBuffer, URI_END_MATCHER, getConfiguration().getUriByteTree());
         if (uriTreeNode != null) {
             request.setUri(uriTreeNode.getStringValue());
             if (uriTreeNode.getAttach() == null) {
