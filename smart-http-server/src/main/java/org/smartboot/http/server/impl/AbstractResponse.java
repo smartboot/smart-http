@@ -49,6 +49,10 @@ class AbstractResponse implements HttpResponse, Reset {
      */
     private String reasonPhrase = HttpStatus.OK.getReasonPhrase();
     /**
+     * 是否默认响应
+     */
+    private boolean defaultStatus = true;
+    /**
      * 响应正文长度
      */
     private int contentLength = -1;
@@ -70,6 +74,7 @@ class AbstractResponse implements HttpResponse, Reset {
      * 是否启用压缩模式
      */
     private boolean gzip = false;
+
 
     private List<Cookie> cookies = Collections.emptyList();
 
@@ -113,6 +118,11 @@ class AbstractResponse implements HttpResponse, Reset {
     public final void setHttpStatus(int value, String reasonPhrase) {
         this.httpStatus = value;
         this.reasonPhrase = Objects.requireNonNull(reasonPhrase);
+        defaultStatus = httpStatus == HttpStatus.OK.value() && HttpStatus.OK.getReasonPhrase().equals(reasonPhrase);
+    }
+
+    public boolean isDefaultStatus() {
+        return defaultStatus;
     }
 
     @Override
@@ -133,8 +143,7 @@ class AbstractResponse implements HttpResponse, Reset {
     private void setHeader(String name, String value, boolean replace) {
         char cc = name.charAt(0);
         if (cc == 'C' || cc == 'c') {
-            if (checkSpecialHeader(name, value))
-                return;
+            if (checkSpecialHeader(name, value)) return;
         }
         Map<String, HeaderValue> emptyHeaders = Collections.emptyMap();
         if (headers == emptyHeaders) {

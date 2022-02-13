@@ -10,7 +10,6 @@ package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
-import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.TimerUtils;
 
@@ -32,8 +31,9 @@ final class HttpOutputStream extends AbstractOutputStream {
      * key:status+contentType
      */
     private static final Map<String, WriteCache>[] CACHE_CONTENT_TYPE_AND_LENGTH = new Map[CACHE_LIMIT];
-    private static final Date nextSecondDate = new Date(0);
+    private static final Date currentDate = new Date(0);
     private static final Semaphore flushDateSemaphore = new Semaphore(1);
+    private static long expireTime;
     private static byte[] dateBytes;
     private static String date;
 
@@ -50,12 +50,12 @@ final class HttpOutputStream extends AbstractOutputStream {
 
     private static long flushDate() {
         long currentTime = TimerUtils.currentTimeMillis();
-        if (currentTime > nextSecondDate.getTime() && flushDateSemaphore.tryAcquire()) {
+        if (currentTime > expireTime && flushDateSemaphore.tryAcquire()) {
             try {
-                nextSecondDate.setTime(currentTime);
-                date = sdf.format(nextSecondDate);
+                currentDate.setTime(currentTime);
+                date = sdf.format(currentDate);
                 dateBytes = date.getBytes();
-                nextSecondDate.setTime(currentTime + 1000);
+                expireTime = currentTime + 1000;
             } finally {
                 flushDateSemaphore.release();
             }
@@ -70,7 +70,7 @@ final class HttpOutputStream extends AbstractOutputStream {
         int contentLength = response.getContentLength();
         String contentType = response.getContentType();
         //成功消息优先从缓存中加载。启用缓存的条件：Http_200, contentLength<512,未设置过Header,Http/1.1
-        boolean cache = httpStatus == HttpStatus.OK.value() && HttpStatus.OK.getReasonPhrase().equals(reasonPhrase) && contentLength > 0 && contentLength < CACHE_LIMIT && !hasHeader;
+        boolean cache = response.isDefaultStatus() && contentLength > 0 && contentLength < CACHE_LIMIT && !hasHeader;
 
         if (cache) {
             WriteCache data = CACHE_CONTENT_TYPE_AND_LENGTH[contentLength].get(contentType);
