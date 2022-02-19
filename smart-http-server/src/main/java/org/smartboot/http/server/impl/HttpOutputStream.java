@@ -52,10 +52,10 @@ final class HttpOutputStream extends AbstractOutputStream {
         long currentTime = TimerUtils.currentTimeMillis();
         if (currentTime > expireTime && flushDateSemaphore.tryAcquire()) {
             try {
+                expireTime = currentTime + 1000;
                 currentDate.setTime(currentTime);
                 date = sdf.format(currentDate);
                 dateBytes = date.getBytes();
-                expireTime = currentTime + 1000;
             } finally {
                 flushDateSemaphore.release();
             }
@@ -65,8 +65,6 @@ final class HttpOutputStream extends AbstractOutputStream {
 
     protected byte[] getHeadPart(boolean hasHeader) {
         long currentTime = flushDate();
-        int httpStatus = response.getHttpStatus();
-        String reasonPhrase = response.getReasonPhrase();
         int contentLength = response.getContentLength();
         String contentType = response.getContentType();
         //成功消息优先从缓存中加载。启用缓存的条件：Http_200, contentLength<512,未设置过Header,Http/1.1
@@ -88,7 +86,7 @@ final class HttpOutputStream extends AbstractOutputStream {
         }
 
         StringBuilder sb = new StringBuilder(256);
-        sb.append(request.getProtocol()).append(Constant.SP_CHAR).append(httpStatus).append(Constant.SP_CHAR).append(reasonPhrase).append(Constant.CRLF);
+        sb.append(request.getProtocol()).append(Constant.SP_CHAR).append(response.getHttpStatus()).append(Constant.SP_CHAR).append(response.getReasonPhrase()).append(Constant.CRLF);
         if (contentType != null) {
             sb.append(HeaderNameEnum.CONTENT_TYPE.getName()).append(Constant.COLON_CHAR).append(contentType).append(Constant.CRLF);
         }
