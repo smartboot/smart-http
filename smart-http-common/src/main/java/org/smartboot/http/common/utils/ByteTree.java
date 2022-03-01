@@ -118,6 +118,9 @@ public class ByteTree<T> {
         if (offset == limit) {
             return this;
         }
+        if (this.depth >= MAX_DEPTH) {
+            return this;
+        }
 
         byte b = value[offset];
         if (endMatcher.match(b)) {
