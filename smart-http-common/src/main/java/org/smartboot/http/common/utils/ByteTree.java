@@ -14,6 +14,7 @@ package org.smartboot.http.common.utils;
  */
 public class ByteTree<T> {
     private static final int MAX_DEPTH = 128;
+    private static final EndMatcher NULL_END_MATCHER = endByte -> false;
     private final byte value;
     private final int depth;
     private final ByteTree<T> parent;
@@ -81,7 +82,7 @@ public class ByteTree<T> {
         }
         if (cache && byteTree.depth < MAX_DEPTH) {
             //在当前节点上追加子节点
-            byteTree.addNode(bytes, offset, limit);
+            byteTree.addNode(bytes, offset, limit, matchEnd);
             return byteTree.search(bytes, offset, limit, matchEnd, cache);
         } else {
             // 构建临时对象，用完由JVM回收
@@ -101,7 +102,7 @@ public class ByteTree<T> {
         while (tree.depth > 0) {
             tree = tree.parent;
         }
-        ByteTree<T> leafNode = tree.addNode(bytes, 0, bytes.length);
+        ByteTree<T> leafNode = tree.addNode(bytes, 0, bytes.length, NULL_END_MATCHER);
         leafNode.stringValue = value;
         leafNode.attach = attach;
     }
@@ -113,12 +114,15 @@ public class ByteTree<T> {
         addNode(value, null);
     }
 
-    private ByteTree<T> addNode(byte[] value, int offset, int limit) {
+    private ByteTree<T> addNode(byte[] value, int offset, int limit, EndMatcher endMatcher) {
         if (offset == limit) {
             return this;
         }
 
         byte b = value[offset];
+        if (endMatcher.match(b)) {
+            return this;
+        }
         if (shift == -1) {
             shift = b;
         }
@@ -132,7 +136,7 @@ public class ByteTree<T> {
         if (nextTree == null) {
             nextTree = nodes[b - shift] = new ByteTree<T>(this, b);
         }
-        return nextTree.addNode(value, offset + 1, limit);
+        return nextTree.addNode(value, offset + 1, limit, endMatcher);
     }
 
     private void increase(int size) {
