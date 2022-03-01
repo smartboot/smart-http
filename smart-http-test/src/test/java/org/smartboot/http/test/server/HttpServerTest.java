@@ -209,6 +209,38 @@ public class HttpServerTest extends BastTest {
         Assert.assertEquals(HttpMethodEnum.POST.getMethod(), jsonObject.get(KEY_METHOD));
     }
 
+    @Test
+    public void testPost2() throws ExecutionException, InterruptedException {
+        bootstrap.configuration().readBufferSize(2 * 1024 * 1024);
+        HttpClient httpClient = getHttpClient();
+        HttpPost httpPost = httpClient.post(requestUnit.getUri());
+        requestUnit.getHeaders().forEach(httpPost::addHeader);
+        for (int i = 0; i < 10000; i++) {
+            requestUnit.getParameters().put("author" + i, "三刀" + i);
+        }
+        httpPost.sendForm(requestUnit.getParameters());
+
+        JSONObject jsonObject = basicCheck(httpPost.send().get(), requestUnit);
+        Assert.assertEquals(HttpMethodEnum.POST.getMethod(), jsonObject.get(KEY_METHOD));
+    }
+
+    @Test
+    public void testPost3() throws ExecutionException, InterruptedException {
+        bootstrap.configuration().readBufferSize(2 * 1024 * 1024);
+        HttpClient httpClient = getHttpClient();
+        HttpPost httpPost = httpClient.post(requestUnit.getUri());
+        requestUnit.getHeaders().forEach(httpPost::addHeader);
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("author").append("=").append("三刀");
+        for (int i = 0; i < 10000; i++) {
+            stringBuilder.append("&").append("author").append(i).append("=").append("三刀").append(i);
+        }
+        httpPost.addHeader("longText", stringBuilder.toString());
+        httpPost.sendForm(requestUnit.getParameters());
+
+        JSONObject jsonObject = basicCheck(httpPost.send().get(), requestUnit);
+        Assert.assertEquals(HttpMethodEnum.POST.getMethod(), jsonObject.get(KEY_METHOD));
+    }
 
     private JSONObject basicCheck(org.smartboot.http.client.HttpResponse response, RequestUnit requestUnit) {
         JSONObject jsonObject = JSON.parseObject(response.body());

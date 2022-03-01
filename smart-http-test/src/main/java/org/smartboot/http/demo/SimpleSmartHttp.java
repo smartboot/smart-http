@@ -19,6 +19,7 @@ import java.io.IOException;
 public class SimpleSmartHttp {
     public static void main(String[] args) {
         HttpBootstrap bootstrap = new HttpBootstrap();
+        bootstrap.configuration().debug(true);
         bootstrap.httpHandler(new HttpServerHandler() {
             @Override
             public void handle(HttpRequest request, HttpResponse response) throws IOException {

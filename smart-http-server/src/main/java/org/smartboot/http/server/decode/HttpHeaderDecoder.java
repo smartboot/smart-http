@@ -72,6 +72,9 @@ class HttpHeaderDecoder extends AbstractDecoder {
         public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
             ByteTree<?> value = StringUtils.scanByteTree(byteBuffer, CR_END_MATCHER, getConfiguration().getByteCache());
             if (value == null) {
+                if (byteBuffer.remaining() == byteBuffer.capacity()) {
+                    throw new HttpException(HttpStatus.REQUEST_HEADER_FIELDS_TOO_LARGE);
+                }
                 return this;
             }
 //            System.out.println("value: " + value);

@@ -13,12 +13,13 @@ package org.smartboot.http.common.utils;
  * @version V1.0 , 2022/1/2
  */
 public class ByteTree<T> {
+    private static final int MAX_DEPTH = 128;
     private final byte value;
     private final int depth;
     private final ByteTree<T> parent;
+    protected String stringValue;
     private int shift = -1;
     private ByteTree<T>[] nodes;
-    private String stringValue;
     /**
      * 捆绑附件对象
      */
@@ -32,6 +33,9 @@ public class ByteTree<T> {
         this.parent = parent;
         this.value = value;
         this.depth = parent == null ? 0 : parent.depth + 1;
+        if (depth > MAX_DEPTH) {
+            throw new IllegalStateException("maxDepth is " + MAX_DEPTH + " , current is " + depth);
+        }
     }
 
     public int getDepth() {
@@ -40,18 +44,6 @@ public class ByteTree<T> {
 
     public ByteTree<T> search(byte[] bytes, int offset, int len, EndMatcher endMatcher) {
         return search(bytes, offset, len, endMatcher, true);
-    }
-
-    private ByteTree<T> clone(ByteTree<T> byteTree) {
-        byte[] b = new byte[byteTree.getDepth()];
-        ByteTree<T> tree = byteTree;
-        while (tree.depth != 0) {
-            b[tree.depth - 1] = tree.value;
-            tree = tree.parent;
-        }
-        ByteTree<T> clone = new ByteTree<T>(null, Byte.MAX_VALUE);
-        clone.addNode(b, 0, b.length);
-        return clone;
     }
 
     /**
@@ -87,16 +79,19 @@ public class ByteTree<T> {
                 break;
             }
         }
-        if (cache) {
+        if (cache && byteTree.depth < MAX_DEPTH) {
             //在当前节点上追加子节点
-//            System.out.println("add");
             byteTree.addNode(bytes, offset, limit);
             return byteTree.search(bytes, offset, limit, matchEnd, cache);
         } else {
-//            System.out.println("tmp");
             // 构建临时对象，用完由JVM回收
-            ByteTree<T> clone = clone(byteTree);
-            return clone.search(bytes, offset - byteTree.depth, limit, matchEnd, true);
+            for (int i = offset; i < limit; i++) {
+                if (matchEnd.match(bytes[i])) {
+                    int length = i - offset + byteTree.depth;
+                    return new VirtualByteTree(new String(bytes, offset - byteTree.depth, length), length);
+                }
+            }
+            return null;
         }
     }
 
@@ -178,4 +173,19 @@ public class ByteTree<T> {
         boolean match(byte endByte);
     }
 
+
+    private class VirtualByteTree extends ByteTree<T> {
+        private final int virtualDepth;
+
+        public VirtualByteTree(String value, int depth) {
+            super();
+            this.stringValue = value;
+            this.virtualDepth = depth;
+        }
+
+        @Override
+        public int getDepth() {
+            return virtualDepth;
+        }
+    }
 }
