@@ -53,17 +53,17 @@ public class ByteTree<T> {
      * @param bytes    待匹配的字节数组
      * @param offset   起始位置
      * @param limit    截止位置
-     * @param matchEnd 匹配接口
+     * @param endMatcher 匹配接口
      * @param cache    是否缓存新节点
      * @return
      */
-    public ByteTree<T> search(byte[] bytes, int offset, int limit, EndMatcher matchEnd, boolean cache) {
+    public ByteTree<T> search(byte[] bytes, int offset, int limit, EndMatcher endMatcher, boolean cache) {
         ByteTree<T> byteTree = this;
         while (true) {
             if (offset >= limit) {
                 return null;
             }
-            if (matchEnd.match(bytes[offset])) {
+            if (endMatcher.match(bytes[offset])) {
                 return byteTree;
             }
 
@@ -75,19 +75,18 @@ public class ByteTree<T> {
             if (b != null) {
                 byteTree = b;
                 offset++;
-//                return b.search(bytes, offset + 1, limit, ends, cache);
             } else {
                 break;
             }
         }
         if (cache && byteTree.depth < MAX_DEPTH) {
             //在当前节点上追加子节点
-            byteTree.addNode(bytes, offset, limit, matchEnd);
-            return byteTree.search(bytes, offset, limit, matchEnd, cache);
+            byteTree.addNode(bytes, offset, limit, endMatcher);
+            return byteTree.search(bytes, offset, limit, endMatcher, cache);
         } else {
             // 构建临时对象，用完由JVM回收
             for (int i = offset; i < limit; i++) {
-                if (matchEnd.match(bytes[i])) {
+                if (endMatcher.match(bytes[i])) {
                     int length = i - offset + byteTree.depth;
                     return new VirtualByteTree(new String(bytes, offset - byteTree.depth, length), length);
                 }
