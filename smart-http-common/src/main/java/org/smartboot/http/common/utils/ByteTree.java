@@ -50,11 +50,11 @@ public class ByteTree<T> {
     /**
      * 从给定的字节数组总匹配出特定结尾的区块
      *
-     * @param bytes    待匹配的字节数组
-     * @param offset   起始位置
-     * @param limit    截止位置
+     * @param bytes      待匹配的字节数组
+     * @param offset     起始位置
+     * @param limit      截止位置
      * @param endMatcher 匹配接口
-     * @param cache    是否缓存新节点
+     * @param cache      是否缓存新节点
      * @return
      */
     public ByteTree<T> search(byte[] bytes, int offset, int limit, EndMatcher endMatcher, boolean cache) {

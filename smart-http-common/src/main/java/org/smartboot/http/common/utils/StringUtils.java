@@ -442,15 +442,17 @@ public class StringUtils {
     }
 
     public static <T> ByteTree<T> scanByteTree(ByteBuffer buffer, ByteTree.EndMatcher endMatcher, ByteTree<T> cache) {
-        trimBuffer(buffer);
         int position = buffer.position() + buffer.arrayOffset();
         int limit = buffer.limit() + buffer.arrayOffset();
         byte[] data = buffer.array();
-        ByteTree<T> byteTree = cache.search(data, position, limit, endMatcher, false);
+        while (position < limit && data[position] == Constant.SP) {
+            position++;
+        }
+        ByteTree<T> byteTree = cache.search(data, position, limit, endMatcher, true);
         if (byteTree == null) {
             return null;
         }
-        buffer.position(buffer.position() + byteTree.getDepth() + 1);
+        buffer.position(position + byteTree.getDepth() - buffer.arrayOffset() + 1);
         return byteTree;
     }
 
