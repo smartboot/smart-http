@@ -20,7 +20,7 @@ public class ByteTree<T> {
     private final ByteTree<T> parent;
     protected String stringValue;
     private int shift = -1;
-    private ByteTree<T>[] nodes;
+    private ByteTree<T>[] nodes = new ByteTree[1];
     /**
      * 捆绑附件对象
      */
@@ -68,7 +68,7 @@ public class ByteTree<T> {
             }
 
             int i = bytes[offset] - byteTree.shift;
-            if (byteTree.nodes == null || i >= byteTree.nodes.length || i < 0) {
+            if (i >= byteTree.nodes.length || i < 0) {
                 break;
             }
             ByteTree<T> b = byteTree.nodes[i];
@@ -144,9 +144,7 @@ public class ByteTree<T> {
     private void increase(int size) {
         if (size == 0)
             size = -1;
-        if (nodes == null) {
-            nodes = new ByteTree[size];
-        } else if (size < 0) {
+       if (size < 0) {
             ByteTree<T>[] temp = new ByteTree[nodes.length - size];
             System.arraycopy(nodes, 0, temp, -size, nodes.length);
             nodes = temp;
