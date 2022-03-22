@@ -31,7 +31,7 @@ public class HttpBootstrap {
             "                                                       | |    \n" +
             "                                                       (_)   ";
 
-    private static final String VERSION = "1.1.12";
+    private static final String VERSION = "1.1.13";
     /**
      * http消息解码器
      */

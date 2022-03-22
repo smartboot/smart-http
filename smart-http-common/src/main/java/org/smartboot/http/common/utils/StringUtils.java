@@ -448,7 +448,7 @@ public class StringUtils {
         while (position < limit && data[position] == Constant.SP) {
             position++;
         }
-        ByteTree<T> byteTree = cache.search(data, position, limit, endMatcher, true);
+        ByteTree<T> byteTree = cache.search(data, position, limit, endMatcher, false);
         if (byteTree == null) {
             return null;
         }
