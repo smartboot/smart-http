@@ -11,6 +11,8 @@ package org.smartboot.http.server.impl;
 import org.smartboot.http.common.utils.SmartDecoder;
 import org.smartboot.http.server.decode.Decoder;
 
+import java.nio.ByteBuffer;
+
 /**
  * Http/Ws 请求解码附件对象
  *
@@ -31,6 +33,11 @@ public class RequestAttachment {
      * Http Body解码器
      */
     private SmartDecoder bodyDecoder;
+
+    /**
+     * 堆内镜像
+     */
+    private ByteBuffer heapByteBuffer;
 
     public RequestAttachment(Request request) {
         this.request = request;
@@ -54,5 +61,13 @@ public class RequestAttachment {
 
     public void setBodyDecoder(SmartDecoder bodyDecoder) {
         this.bodyDecoder = bodyDecoder;
+    }
+
+    public ByteBuffer getHeapByteBuffer() {
+        return heapByteBuffer;
+    }
+
+    public void setHeapByteBuffer(ByteBuffer heapByteBuffer) {
+        this.heapByteBuffer = heapByteBuffer;
     }
 }
