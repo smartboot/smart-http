@@ -14,6 +14,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.smartboot.http.client.HttpClient;
+import org.smartboot.http.client.HttpPost;
+import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpBootstrap;
@@ -21,8 +23,11 @@ import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
 import org.smartboot.http.server.HttpServerHandler;
 import org.smartboot.http.server.handler.HttpRouteHandler;
+import org.smartboot.http.server.impl.Request;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -48,6 +53,34 @@ public class HttpPostTest {
                     jsonObject.put(key, request.getParameter(key));
                 }
                 response.write(jsonObject.toString().getBytes());
+            }
+        });
+        routeHandle.route("/json", new HttpServerHandler() {
+            @Override
+            public boolean onBodyStream(ByteBuffer buffer, Request request) {
+                ByteBuffer bodyBuffer = request.getAttachment();
+                if (bodyBuffer == null) {
+                    bodyBuffer = ByteBuffer.allocate(request.getContentLength());
+                    request.setAttachment(bodyBuffer);
+                }
+                if (buffer.remaining() <= bodyBuffer.remaining()) {
+                    bodyBuffer.put(buffer);
+                } else {
+                    int limit = buffer.limit();
+                    buffer.limit(buffer.position() + bodyBuffer.remaining());
+                    bodyBuffer.put(buffer);
+                    buffer.limit(limit);
+                }
+                return !bodyBuffer.hasRemaining();
+            }
+
+            @Override
+            public void handle(HttpRequest request, HttpResponse response) throws IOException {
+                ByteBuffer buffer = request.getAttachment();
+                buffer.flip();
+                byte[] bytes=new byte[buffer.remaining()];
+                buffer.get(bytes);
+                System.out.println(new String(bytes));
             }
         });
         httpBootstrap.httpHandler(routeHandle).setPort(8080).start();
@@ -83,6 +116,19 @@ public class HttpPostTest {
                     future.complete(false);
                 }).sendForm(param);
         Assert.assertTrue(future.get());
+    }
+
+    @Test
+    public void testJson() throws InterruptedException {
+        HttpClient httpClient = new HttpClient("localhost", 8080);
+        httpClient.connect();
+        byte[] jsonBytes = "{\"a\":1,\"b\":\"123\"}".getBytes(StandardCharsets.UTF_8);
+        httpClient.post("/json")
+                .setContentType("application/json")
+                .addHeader(HeaderNameEnum.CONTENT_LENGTH.getName(), String.valueOf(jsonBytes.length))
+                .bodyStream()
+                .write(jsonBytes, 0, jsonBytes.length).flush();
+        Thread.sleep(100);
     }
 
     @After

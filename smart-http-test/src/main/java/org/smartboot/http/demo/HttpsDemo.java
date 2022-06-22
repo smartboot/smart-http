@@ -15,6 +15,7 @@ import org.smartboot.http.server.HttpServerHandler;
 import org.smartboot.socket.extension.plugins.SslPlugin;
 import org.smartboot.socket.extension.plugins.StreamMonitorPlugin;
 import org.smartboot.socket.extension.ssl.ClientAuth;
+import org.smartboot.socket.extension.ssl.factory.ServerSSLContextFactory;
 
 import java.io.IOException;
 
@@ -23,7 +24,7 @@ import java.io.IOException;
  * @version V1.0 , 2022/2/4
  */
 public class HttpsDemo {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         HttpBootstrap bootstrap = new HttpBootstrap();
         bootstrap.httpHandler(new HttpServerHandler() {
             @Override
@@ -31,8 +32,7 @@ public class HttpsDemo {
                 response.write("hello smart-http<br/>".getBytes());
             }
         });
-        SslPlugin sslPlugin=new SslPlugin();
-        sslPlugin.initForServer(HttpsDemo.class.getClassLoader().getResourceAsStream("server.keystore"), "123456", "123456", ClientAuth.NONE);
+        SslPlugin sslPlugin=new SslPlugin(new ServerSSLContextFactory(HttpsDemo.class.getClassLoader().getResourceAsStream("server.keystore"), "123456", "123456"),ClientAuth.NONE);
         bootstrap.configuration()
                 .addPlugin(sslPlugin)
                 .addPlugin(new StreamMonitorPlugin<>())
