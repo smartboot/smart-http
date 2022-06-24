@@ -34,11 +34,6 @@ public class RequestAttachment {
      */
     private SmartDecoder bodyDecoder;
 
-    /**
-     * 堆内镜像
-     */
-    private ByteBuffer heapByteBuffer;
-
     public RequestAttachment(Request request) {
         this.request = request;
     }
@@ -63,11 +58,4 @@ public class RequestAttachment {
         this.bodyDecoder = bodyDecoder;
     }
 
-    public ByteBuffer getHeapByteBuffer() {
-        return heapByteBuffer;
-    }
-
-    public void setHeapByteBuffer(ByteBuffer heapByteBuffer) {
-        this.heapByteBuffer = heapByteBuffer;
-    }
 }

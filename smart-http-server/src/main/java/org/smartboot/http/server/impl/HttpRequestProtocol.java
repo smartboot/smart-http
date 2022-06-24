@@ -38,28 +38,6 @@ public class HttpRequestProtocol implements Protocol<Request> {
             return null;
         }
         RequestAttachment attachment = session.getAttachment();
-        if (buffer.isDirect()) {
-            ByteBuffer heapBuffer = attachment.getHeapByteBuffer();
-            if (heapBuffer == null) {
-                heapBuffer = ByteBuffer.allocate(buffer.capacity());
-                heapBuffer.limit(0);
-                attachment.setHeapByteBuffer(heapBuffer);
-            }
-            int directBufferPosition = buffer.position();
-            //初始化
-            if (heapBuffer.remaining() == 0) {
-                heapBuffer.clear();
-                heapBuffer.put(buffer);
-                heapBuffer.flip();
-            }
-            int p = heapBuffer.position();
-            Request request = decode(heapBuffer, session);
-            buffer.position(directBufferPosition + heapBuffer.position() - p);
-            if (request == null) {
-                heapBuffer.position(heapBuffer.limit());
-            }
-            return request;
-        }
 
         Request request = attachment.getRequest();
         Decoder decodeChain = attachment.getDecoder();

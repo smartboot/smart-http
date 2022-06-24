@@ -96,7 +96,7 @@ public class HttpBootstrap {
      */
     public void start() {
         initByteCache();
-        BufferPagePool readBufferPool = new BufferPagePool(configuration.getReadPageSize(), 1, true);
+        BufferPagePool readBufferPool = new BufferPagePool(configuration.getReadPageSize(), 1, false);
         configuration.getPlugins().forEach(processor::addPlugin);
 
         server = new AioQuickServer(configuration.getHost(), port, new HttpRequestProtocol(configuration), processor);
