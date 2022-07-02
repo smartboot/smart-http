@@ -16,7 +16,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <properties>
-        <smarthttp.version>1.1.15</smarthttp.version>
+        <smarthttp.version>1.1.16-SNAPSHOT</smarthttp.version>
         <junit.version>4.13.1</junit.version>
         <json.version>1.2.62</json.version>
         <slf4j.version>1.7.30</slf4j.version>
@@ -25,7 +25,7 @@
     <dependencies>
         <dependency>
             <groupId>org.smartboot.http</groupId>
-            <artifactId>smart-http-server</artifactId>
+            <artifactId>smart-http-restful</artifactId>
             <version>${smarthttp.version}</version>
         </dependency>
         <dependency>

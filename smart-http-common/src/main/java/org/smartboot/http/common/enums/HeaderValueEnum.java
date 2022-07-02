@@ -16,6 +16,7 @@ public enum HeaderValueEnum {
     CHUNKED("chunked"),
     MULTIPART_FORM_DATA("multipart/form-data"),
     X_WWW_FORM_URLENCODED("application/x-www-form-urlencoded"),
+    APPLICATION_JSON("application/json"),
     UPGRADE("Upgrade"),
     WEBSOCKET("websocket"),
     KEEPALIVE("Keep-Alive"),
