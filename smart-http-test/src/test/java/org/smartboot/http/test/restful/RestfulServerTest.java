@@ -39,7 +39,7 @@ public class RestfulServerTest extends BastTest {
 
 
     @Before
-    public void init() {
+    public void init() throws Exception {
         bootstrap = RestfulBootstrap.controller(Demo1Controller.class, Demo2Controller.class);
         bootstrap.setPort(SERVER_PORT);
         bootstrap.configuration().addPlugin(new StreamMonitorPlugin<>((asynchronousSocketChannel, bytes) -> System.out.println(new String(bytes)), (asynchronousSocketChannel, bytes) -> System.out.println(new String(bytes))));
