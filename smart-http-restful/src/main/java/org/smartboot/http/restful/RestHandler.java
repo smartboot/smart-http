@@ -68,9 +68,9 @@ class RestHandler extends HttpServerHandler {
                         ByteBuffer buffer = request.getAttachment();
                         for (int i = 0; i < types.length; i++) {
                             Type type = types[i];
-                            if (type instanceof HttpRequest) {
+                            if (type == HttpRequest.class) {
                                 params[i] = request;
-                            } else if (type instanceof HttpResponse) {
+                            } else if (type == HttpResponse.class) {
                                 params[i] = response;
                             } else if (!type.getTypeName().startsWith("java")) {
                                 JSONObject jsonObject;
