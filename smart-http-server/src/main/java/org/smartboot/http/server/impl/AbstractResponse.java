@@ -256,19 +256,22 @@ class AbstractResponse implements HttpResponse, Reset {
         }
         cookies.add(cookie);
     }
-
+    @Override
     public int getContentLength() {
         return contentLength;
     }
 
+    @Override
     public void setContentLength(int contentLength) {
         this.contentLength = contentLength;
     }
 
+    @Override
     public final String getContentType() {
         return contentType;
     }
 
+    @Override
     public final void setContentType(String contentType) {
         this.contentType = Objects.requireNonNull(contentType);
     }
