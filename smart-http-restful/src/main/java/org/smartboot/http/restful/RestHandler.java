@@ -28,9 +28,10 @@ class RestHandler extends HttpServerHandler {
 
     public void addController(Object object) {
         Class<?> clazz = object.getClass();
-        Controller controller = clazz.getAnnotation(Controller.class);
+        Controller controller = clazz.getDeclaredAnnotation(Controller.class);
         String rootPath = controller.value();
-        for (Method method : clazz.getMethods()) {
+        System.out.println(object+ "method:"+clazz.getDeclaredMethods().length);
+        for (Method method : clazz.getDeclaredMethods()) {
             RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
             if (requestMapping == null) {
                 continue;
@@ -110,10 +111,15 @@ class RestHandler extends HttpServerHandler {
     }
 
     public void addController(Class<?> clazz) throws Exception {
-        Constructor constructor = clazz.getDeclaredConstructor();
-        constructor.setAccessible(true);
-        Object object = constructor.newInstance();
-        addController(object);
+        Constructor[] constructors = clazz.getDeclaredConstructors();
+        for (Constructor constructor : constructors) {
+            if (constructor.getParameters().length != 0) {
+                continue;
+            }
+            constructor.setAccessible(true);
+            Object object = constructor.newInstance();
+            addController(object);
+        }
     }
 
     private String getMappingUrl(String rootPath, RequestMapping requestMapping) {
