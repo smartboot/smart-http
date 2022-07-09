@@ -30,6 +30,10 @@ public class RestfulBootstrap {
         return new RestfulBootstrap();
     }
 
+    public static HttpBootstrap controller(Class<?>... controllers) throws Exception {
+        return controller(Arrays.asList(controllers));
+    }
+
     public RestfulBootstrap controller(Class<?> controllerClass) throws Exception {
         restHandler.addController(controllerClass);
         return this;
@@ -38,11 +42,6 @@ public class RestfulBootstrap {
     public RestfulBootstrap controller(Object controller) throws Exception {
         restHandler.addController(controller);
         return this;
-    }
-
-
-    public static HttpBootstrap controller(Class<?>... controllers) throws Exception {
-        return controller(Arrays.asList(controllers));
     }
 
     public HttpBootstrap bootstrap() {
