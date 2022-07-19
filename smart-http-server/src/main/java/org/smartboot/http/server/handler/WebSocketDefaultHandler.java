@@ -61,7 +61,7 @@ public class WebSocketDefaultHandler extends WebSocketHandler {
                     throw new UnsupportedOperationException();
             }
         } catch (Throwable throwable) {
-            onError(throwable);
+            onError(request,throwable);
             throw throwable;
         }
     }
@@ -111,9 +111,10 @@ public class WebSocketDefaultHandler extends WebSocketHandler {
     /**
      * 连接异常
      *
+     * @param request
      * @param throwable
      */
-    public void onError(Throwable throwable) {
+    public void onError(WebSocketRequest request,Throwable throwable) {
         throwable.printStackTrace();
     }
 }
