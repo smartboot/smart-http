@@ -28,6 +28,12 @@ public interface WebSocketResponse {
      * @param bytes
      */
     void sendBinaryMessage(byte[] bytes);
+    /**
+     * 发送二进制响应
+     *
+     * @param bytes
+     */
+    void sendBinaryMessage(byte[] bytes,int head, int tail);
 
     /**
      * 关闭ws通道
