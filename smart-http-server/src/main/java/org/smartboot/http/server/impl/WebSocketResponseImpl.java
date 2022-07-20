@@ -69,8 +69,7 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
         }
     }
 
-    private void send(byte opCode, byte[] bytes, int head, int tail) throws IOException {
-      int len = tail - head;
+    private void send(byte opCode, byte[] bytes, int offset, int len) throws IOException {
       int maxlength;
         if (len < Constant.WS_PLAY_LOAD_126) {
             maxlength = 2 + len;
@@ -80,7 +79,6 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
             maxlength = 4 + Constant.WS_DEFAULT_MAX_FRAME_SIZE;
         }
         byte[] writBytes = new byte[maxlength];
-        int offset = head;
 
         while (offset < len) {
             int length = len - offset;

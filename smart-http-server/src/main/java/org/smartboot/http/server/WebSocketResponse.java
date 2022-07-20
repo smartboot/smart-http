@@ -33,7 +33,7 @@ public interface WebSocketResponse {
      *
      * @param bytes
      */
-    void sendBinaryMessage(byte[] bytes,int head, int tail);
+    void sendBinaryMessage(byte[] bytes,int offset, int length);
 
     /**
      * 关闭ws通道
