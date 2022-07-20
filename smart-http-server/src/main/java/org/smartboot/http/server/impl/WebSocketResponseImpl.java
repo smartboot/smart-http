@@ -52,9 +52,9 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
     }
 
     @Override
-    public void sendBinaryMessage(byte[] bytes, int head, int tail) {
+    public void sendBinaryMessage(byte[] bytes, int offset, int length) {
       try {
-        send(WebSocketRequestImpl.OPCODE_BINARY, bytes, head, tail);
+        send(WebSocketRequestImpl.OPCODE_BINARY, bytes, offset, length);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
