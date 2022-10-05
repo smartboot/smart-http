@@ -29,21 +29,22 @@ public class IgnoreHeaderDecoder implements Decoder {
 
         while (limit - position >= 4) {
             byte b = data[position + 3];
-            if (b > Constant.CR || (b != Constant.CR && b != Constant.LF)) {
-                position += 4;
+            if (b == Constant.CR) {
+                position++;
+                continue;
+            } else if (b != Constant.LF) {
+                position += 7;
+                if (position >= limit || (data[position] == Constant.CR || data[position] == Constant.LF)) {
+                    position -= 3;
+                }
                 continue;
             }
-            int index = 0;
-            // header 结束符匹配
-            while (index < Constant.HEADER_END.length) {
-                if (data[position++] != Constant.HEADER_END[index]) {
-                    break;
-                }
-                index++;
-            }
-            if (index == Constant.HEADER_END.length) {
-                byteBuffer.position(position - byteBuffer.arrayOffset());
+            // header 结束符匹配，最后2字节已经是CR、LF,无需重复验证
+            if (data[position] == Constant.CR && data[position + 1] == Constant.LF) {
+                byteBuffer.position(position + 4 - byteBuffer.arrayOffset());
                 return HttpRequestProtocol.BODY_READY_DECODER;
+            } else {
+                position += 2;
             }
         }
         byteBuffer.position(position - byteBuffer.arrayOffset());
