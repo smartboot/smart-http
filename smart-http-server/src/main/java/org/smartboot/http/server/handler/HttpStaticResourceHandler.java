@@ -50,10 +50,10 @@ public class HttpStaticResourceHandler extends HttpServerHandler {
     public HttpStaticResourceHandler(String baseDir) {
         this.baseDir = new File(new File(baseDir).getAbsolutePath());
         if (!this.baseDir.isDirectory()) {
-
             throw new RuntimeException(baseDir + " is not a directory");
         }
-        LOGGER.info("dir is:{}", this.baseDir.getAbsolutePath());
+        if(LOGGER.isInfoEnabled())
+            LOGGER.info("dir is:{}", this.baseDir.getAbsolutePath());
     }
 
     @Override
@@ -63,7 +63,8 @@ public class HttpStaticResourceHandler extends HttpServerHandler {
         if (StringUtils.endsWith(fileName, "/")) {
             fileName += "index.html";
         }
-        LOGGER.info("请求URL: " + fileName);
+        if(LOGGER.isInfoEnabled())
+            LOGGER.info("请求URL: " + fileName);
         File file = new File(baseDir, URLDecoder.decode(fileName, "utf8"));
         //404
         if (!file.isFile()) {

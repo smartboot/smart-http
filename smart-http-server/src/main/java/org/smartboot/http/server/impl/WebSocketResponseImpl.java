@@ -30,10 +30,11 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
 
     @Override
     public void sendTextMessage(String text) {
-        LOGGER.info("发送字符串消息: " + text);
+        if(LOGGER.isInfoEnabled())
+            LOGGER.info("发送字符串消息: " + text);
         byte[] bytes = text.getBytes(StandardCharsets.UTF_8);
         try {
-            send(WebSocketRequestImpl.OPCODE_TEXT, bytes);
+            send(WebSocketRequestImpl.OPCODE_TEXT, bytes, 0, bytes.length);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -41,12 +42,22 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
 
     @Override
     public void sendBinaryMessage(byte[] bytes) {
-        LOGGER.info("发送二进制消息: " + Arrays.toString(bytes));
+        if(LOGGER.isInfoEnabled())
+            LOGGER.info("发送二进制消息: " + Arrays.toString(bytes));
         try {
-            send(WebSocketRequestImpl.OPCODE_BINARY, bytes);
+            send(WebSocketRequestImpl.OPCODE_BINARY, bytes,0, bytes.length);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public void sendBinaryMessage(byte[] bytes, int offset, int length) {
+      try {
+        send(WebSocketRequestImpl.OPCODE_BINARY, bytes, offset, length);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
     }
 
     @Override
@@ -58,24 +69,23 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
         }
     }
 
-    private void send(byte opCode, byte[] bytes) throws IOException {
-        int maxlength;
-        if (bytes.length < Constant.WS_PLAY_LOAD_126) {
-            maxlength = 2 + bytes.length;
-        } else if (bytes.length < Constant.WS_DEFAULT_MAX_FRAME_SIZE) {
-            maxlength = 4 + bytes.length;
+    private void send(byte opCode, byte[] bytes, int offset, int len) throws IOException {
+      int maxlength;
+        if (len < Constant.WS_PLAY_LOAD_126) {
+            maxlength = 2 + len;
+        } else if (len < Constant.WS_DEFAULT_MAX_FRAME_SIZE) {
+            maxlength = 4 + len;
         } else {
             maxlength = 4 + Constant.WS_DEFAULT_MAX_FRAME_SIZE;
         }
         byte[] writBytes = new byte[maxlength];
-        int offset = 0;
 
-        while (offset < bytes.length) {
-            int length = bytes.length - offset;
+        while (offset < len) {
+            int length = len - offset;
             if (length > Constant.WS_DEFAULT_MAX_FRAME_SIZE) {
                 length = Constant.WS_DEFAULT_MAX_FRAME_SIZE;
             }
-            byte firstByte = offset + length < bytes.length ? (byte) 0x00 : (byte) 0x80;
+            byte firstByte = offset + length < len ? (byte) 0x00 : (byte) 0x80;
             if (offset == 0) {
                 firstByte |= opCode;
             } else {
@@ -95,5 +105,4 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
             offset += length;
         }
     }
-
 }
