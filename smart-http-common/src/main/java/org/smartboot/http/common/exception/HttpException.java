@@ -20,6 +20,7 @@ public class HttpException extends RuntimeException {
     private String desc;
 
     public HttpException(HttpStatus httpStatus) {
+        super(httpStatus.getReasonPhrase());
         this.httpCode = httpStatus.value();
         this.desc = httpStatus.getReasonPhrase();
     }
