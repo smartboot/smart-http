@@ -21,6 +21,7 @@ import org.smartboot.http.client.HttpClient;
 import org.smartboot.http.client.HttpGet;
 import org.smartboot.http.client.HttpPost;
 import org.smartboot.http.common.enums.HttpMethodEnum;
+import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.server.HttpBootstrap;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
@@ -71,7 +72,7 @@ public class HttpServerTest extends BastTest {
                 response.getOutputStream().write(jsonObject.toJSONString().getBytes(StandardCharsets.UTF_8));
             }
         }).setPort(SERVER_PORT);
-        bootstrap.configuration().addPlugin(new StreamMonitorPlugin<>((asynchronousSocketChannel, bytes) -> System.out.println(new String(bytes)), (asynchronousSocketChannel, bytes) -> System.out.println(new String(bytes))));
+        bootstrap.configuration().addPlugin(new StreamMonitorPlugin<>(StreamMonitorPlugin.BLUE_TEXT_INPUT_STREAM, StreamMonitorPlugin.RED_TEXT_OUTPUT_STREAM));
         bootstrap.start();
 
         requestUnit = new RequestUnit();
@@ -258,6 +259,41 @@ public class HttpServerTest extends BastTest {
             Assert.assertEquals(value, parameters.get(key));
         });
         return jsonObject;
+    }
+
+    /**
+     * 缓冲区溢出
+     *
+     * @throws ExecutionException
+     * @throws InterruptedException
+     */
+    @Test
+    public void testHeaderValueOverflow() throws ExecutionException, InterruptedException {
+        bootstrap.configuration().readBufferSize(16);
+        HttpClient httpClient = getHttpClient();
+        HttpPost httpPost = httpClient.post(requestUnit.getUri());
+        requestUnit.getHeaders().forEach(httpPost::addHeader);
+        httpPost.addHeader("overfLow", "1234567890abcdefghi");
+
+        org.smartboot.http.client.HttpResponse response = httpPost.send().get();
+        Assert.assertEquals(response.getStatus(), HttpStatus.REQUEST_HEADER_FIELDS_TOO_LARGE.value());
+    }
+
+    /**
+     * 缓冲区溢出
+     *
+     * @throws ExecutionException
+     * @throws InterruptedException
+     */
+    @Test
+    public void testHeaderNameOverflow2() throws ExecutionException, InterruptedException {
+        bootstrap.configuration().readBufferSize(16);
+        HttpClient httpClient = getHttpClient();
+        HttpPost httpPost = httpClient.post(requestUnit.getUri());
+        httpPost.addHeader("1234567890abcdefghi", "1234567890abcdefghi");
+
+        org.smartboot.http.client.HttpResponse response = httpPost.send().get();
+        Assert.assertEquals(response.getStatus(), HttpStatus.INTERNAL_SERVER_ERROR.value());
     }
 
     @After

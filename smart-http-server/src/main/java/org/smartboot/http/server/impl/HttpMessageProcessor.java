@@ -117,13 +117,20 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
             finishHttpHandle(session, abstractRequest, keepAlive, future);
         } catch (HttpException e) {
             e.printStackTrace();
-            response.setHttpStatus(HttpStatus.valueOf(e.getHttpCode()));
-            response.getOutputStream().write(e.getDesc().getBytes());
-            response.close();
+            responseError(response, HttpStatus.valueOf(e.getHttpCode()), e.getDesc());
         } catch (Exception e) {
             e.printStackTrace();
-            response.setHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR);
-            response.getOutputStream().write(e.fillInStackTrace().toString().getBytes());
+            responseError(response, HttpStatus.INTERNAL_SERVER_ERROR, e.fillInStackTrace().toString());
+        }
+    }
+
+    private static void responseError(AbstractResponse response, HttpStatus httpStatus, String desc) {
+        try {
+            response.setHttpStatus(httpStatus);
+            response.getOutputStream().write(desc.getBytes());
+        } catch (IOException e) {
+            LOGGER.warn("HttpError response exception", e);
+        } finally {
             response.close();
         }
     }
@@ -147,23 +154,10 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
                     }
                 } catch (HttpException e) {
                     e.printStackTrace();
-
-                    response.setHttpStatus(HttpStatus.valueOf(e.getHttpCode()));
-                    try {
-                        response.write(e.getDesc().getBytes());
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
-                    response.close();
+                    responseError(response, HttpStatus.valueOf(e.getHttpCode()), e.getDesc());
                 } catch (Exception e) {
                     e.printStackTrace();
-                    response.setHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR);
-                    try {
-                        response.getOutputStream().write(e.fillInStackTrace().toString().getBytes());
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
-                    response.close();
+                    responseError(response, HttpStatus.INTERNAL_SERVER_ERROR, e.fillInStackTrace().toString());
                 } finally {
                     session.signalRead();
                 }
@@ -213,23 +207,34 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
     @Override
     public void stateEvent0(AioSession session, StateMachineEnum stateMachineEnum, Throwable throwable) {
         switch (stateMachineEnum) {
-            case NEW_SESSION:
+            case NEW_SESSION: {
                 RequestAttachment attachment = new RequestAttachment(new Request(configuration, session));
                 session.setAttachment(attachment);
                 break;
+            }
             case PROCESS_EXCEPTION:
                 LOGGER.error("process exception", throwable);
                 session.close();
                 break;
-            case SESSION_CLOSED:
+            case SESSION_CLOSED: {
                 RequestAttachment att = session.getAttachment();
                 if (att.getRequest().getServerHandler() != null) {
                     att.getRequest().getServerHandler().onClose(att.getRequest());
                 }
                 break;
-            case DECODE_EXCEPTION:
-                throwable.printStackTrace();
+            }
+            case DECODE_EXCEPTION: {
+                LOGGER.warn("http decode exception,", throwable);
+                RequestAttachment attachment = session.getAttachment();
+                AbstractRequest abstractRequest = attachment.getRequest().newAbstractRequest();
+                AbstractResponse response = abstractRequest.getResponse();
+                if (throwable instanceof HttpException) {
+                    responseError(response, HttpStatus.valueOf(((HttpException) throwable).getHttpCode()), ((HttpException) throwable).getDesc());
+                } else {
+                    responseError(response, HttpStatus.INTERNAL_SERVER_ERROR, throwable.fillInStackTrace().toString());
+                }
                 break;
+            }
         }
     }
 
