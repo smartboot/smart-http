@@ -120,10 +120,9 @@ abstract class AbstractOutputStream extends BufferOutputStream {
             response.setContentLength(-1);
             return true;
         }
+
+        //去掉method的限制 by noear 2022/10/18
         return response.getContentLength() < 0
-                && (request.getMethod().equals(HttpMethodEnum.GET.getMethod())
-                || request.getMethod().equals(HttpMethodEnum.POST.getMethod())
-                || request.getMethod().equals(HttpMethodEnum.PUT.getMethod()))
                 && response.getHttpStatus() != HttpStatus.CONTINUE.value()
                 && HttpProtocolEnum.HTTP_11.getProtocol().equals(request.getProtocol());
     }
