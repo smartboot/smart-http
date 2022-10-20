@@ -286,7 +286,7 @@ public class HttpServerTest extends BastTest {
      * @throws InterruptedException
      */
     @Test
-    public void testHeaderNameOverflow2() throws ExecutionException, InterruptedException {
+    public void testHeaderValueOverflow2() throws ExecutionException, InterruptedException {
         bootstrap.configuration().readBufferSize(16);
         HttpClient httpClient = getHttpClient();
         HttpPost httpPost = httpClient.post(requestUnit.getUri());
