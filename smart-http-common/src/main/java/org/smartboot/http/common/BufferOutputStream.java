@@ -61,6 +61,11 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
     public final void write(byte b[], int off, int len) throws IOException {
         check();
         writeHeader();
+
+        if (len == 0) {
+            return;
+        }
+
         if (chunked) {
             if (gzip) {
                 b = GzipUtils.compress(b, off, len);
@@ -84,6 +89,10 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
      * @param len
      */
     public final void directWrite(byte[] b, int off, int len) throws IOException {
+        if (len == 0) {
+            return;
+        }
+
         writeBuffer.write(b, off, len);
     }
 
