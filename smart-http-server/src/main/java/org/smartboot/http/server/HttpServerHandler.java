@@ -41,7 +41,10 @@ public abstract class HttpServerHandler implements ServerHandler<HttpRequest, Ht
                 throw new HttpException(HttpStatus.PAYLOAD_TOO_LARGE);
             } else if (postLength < 0) {
                 throw new HttpException(HttpStatus.LENGTH_REQUIRED);
+            } else if (postLength == 0) {
+                return true;
             }
+
             RequestAttachment attachment = request.getAioSession().getAttachment();
             SmartDecoder smartDecoder = attachment.getBodyDecoder();
             if (smartDecoder == null) {
