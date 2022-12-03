@@ -111,6 +111,8 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
             if (keepAlive) {
                 response.setHeader(HeaderNameEnum.CONNECTION.getName(), HeaderValueEnum.KEEPALIVE.getName());
             }
+        } else if (HttpProtocolEnum.HTTP_11.getProtocol() == abstractRequest.getProtocol()) {
+            keepAlive = !HeaderValueEnum.CLOSE.getName().equalsIgnoreCase(abstractRequest.getHeader(HeaderNameEnum.CONNECTION.getName()));
         }
         try {
             request.getServerHandler().handle(abstractRequest, response, future);
