@@ -62,10 +62,10 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
                     //消息处理
                     switch (request.getRequestType()) {
                         case WEBSOCKET:
-                            handleWebSocketRequest(session, request);
+                            handleWebSocketRequest(request.newWebsocketRequest());
                             break;
                         case HTTP:
-                            handleHttpRequest(session, request);
+                            handleHttpRequest(request.newHttpRequest());
                             break;
                     }
                 }
@@ -75,14 +75,14 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
         }
     }
 
-    private void handleWebSocketRequest(AioSession session, Request request) throws IOException {
-        AbstractRequest abstractRequest = request.newAbstractRequest();
+    private void handleWebSocketRequest(WebSocketRequestImpl abstractRequest) throws IOException {
         CompletableFuture<Object> future = new CompletableFuture<>();
-        request.getServerHandler().handle(abstractRequest, abstractRequest.getResponse(), future);
+        abstractRequest.request.getServerHandler().handle(abstractRequest, abstractRequest.getResponse(), future);
         if (future.isDone()) {
             finishResponse(abstractRequest);
         } else {
             Thread thread = Thread.currentThread();
+            AioSession session = abstractRequest.request.getAioSession();
             session.awaitRead();
             future.thenRun(() -> {
                 try {
@@ -100,23 +100,14 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
         }
     }
 
-    private void handleHttpRequest(AioSession session, Request request) throws IOException {
-        AbstractRequest abstractRequest = request.newAbstractRequest();
+    private void handleHttpRequest(HttpRequestImpl abstractRequest) {
         AbstractResponse response = abstractRequest.getResponse();
         CompletableFuture<Object> future = new CompletableFuture<>();
-        boolean keepAlive = true;
-        // http/1.0兼容长连接。此处用 == 性能更高
-        if (HttpProtocolEnum.HTTP_10.getProtocol() == abstractRequest.getProtocol()) {
-            keepAlive = HeaderValueEnum.KEEPALIVE.getName().equalsIgnoreCase(abstractRequest.getHeader(HeaderNameEnum.CONNECTION.getName()));
-            if (keepAlive) {
-                response.setHeader(HeaderNameEnum.CONNECTION.getName(), HeaderValueEnum.KEEPALIVE.getName());
-            }
-        } else if (HttpProtocolEnum.HTTP_11.getProtocol() == abstractRequest.getProtocol()) {
-            keepAlive = !HeaderValueEnum.CLOSE.getName().equalsIgnoreCase(abstractRequest.getHeader(HeaderNameEnum.CONNECTION.getName()));
-        }
+        boolean keepAlive = isKeepAlive(abstractRequest, response);
+        abstractRequest.setKeepAlive(keepAlive);
         try {
-            request.getServerHandler().handle(abstractRequest, response, future);
-            finishHttpHandle(session, abstractRequest, keepAlive, future);
+            abstractRequest.request.getServerHandler().handle(abstractRequest, response, future);
+            finishHttpHandle(abstractRequest, future);
         } catch (HttpException e) {
             e.printStackTrace();
             responseError(response, HttpStatus.valueOf(e.getHttpCode()), e.getDesc());
@@ -124,6 +115,23 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
             e.printStackTrace();
             responseError(response, HttpStatus.INTERNAL_SERVER_ERROR, e.fillInStackTrace().toString());
         }
+    }
+
+    private boolean isKeepAlive(AbstractRequest abstractRequest, AbstractResponse response) {
+        boolean keepAlive = true;
+        // http/1.0默认短连接，http/1.1默认长连接。此处用 == 性能更高
+        if (HttpProtocolEnum.HTTP_10.getProtocol() == abstractRequest.getProtocol()) {
+            keepAlive = HeaderValueEnum.KEEPALIVE.getName().equalsIgnoreCase(abstractRequest.getHeader(HeaderNameEnum.CONNECTION.getName()));
+            if (keepAlive) {
+                response.setHeader(HeaderNameEnum.CONNECTION.getName(), HeaderValueEnum.KEEPALIVE.getName());
+            }
+        } else if (HttpProtocolEnum.HTTP_11.getProtocol() == abstractRequest.getProtocol()) {
+            keepAlive = !HeaderValueEnum.CLOSE.getName().equalsIgnoreCase(abstractRequest.getHeader(HeaderNameEnum.CONNECTION.getName()));
+            if (keepAlive) {
+                response.setHeader(HeaderNameEnum.CONNECTION.getName(), HeaderValueEnum.CLOSE.getName());
+            }
+        }
+        return keepAlive;
     }
 
     private static void responseError(AbstractResponse response, HttpStatus httpStatus, String desc) {
@@ -137,18 +145,19 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
         }
     }
 
-    private void finishHttpHandle(AioSession session, AbstractRequest abstractRequest, boolean keepAlive, CompletableFuture<Object> future) throws IOException {
+    private void finishHttpHandle(HttpRequestImpl abstractRequest, CompletableFuture<Object> future) throws IOException {
         if (future.isDone()) {
-            if (keepConnection(abstractRequest, keepAlive)) {
+            if (keepConnection(abstractRequest)) {
                 finishResponse(abstractRequest);
             }
         } else {
+            AioSession session = abstractRequest.request.getAioSession();
             session.awaitRead();
             Thread thread = Thread.currentThread();
             AbstractResponse response = abstractRequest.getResponse();
             future.thenRun(() -> {
                 try {
-                    if (keepConnection(abstractRequest, keepAlive)) {
+                    if (keepConnection(abstractRequest)) {
                         finishResponse(abstractRequest);
                         if (thread != Thread.currentThread()) {
                             session.writeBuffer().flush();
@@ -167,9 +176,9 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
         }
     }
 
-    private boolean keepConnection(AbstractRequest request, boolean keepAlive) throws IOException {
+    private boolean keepConnection(HttpRequestImpl request) throws IOException {
         //非keepAlive或者 body部分未读取完毕,释放连接资源
-        if (!keepAlive || !HttpMethodEnum.GET.getMethod().equals(request.getMethod()) && request.getContentLength() > 0 && request.getInputStream().available() > 0) {
+        if (!request.isKeepAlive() || !HttpMethodEnum.GET.getMethod().equals(request.getMethod()) && request.getContentLength() > 0 && request.getInputStream().available() > 0) {
             request.getResponse().close();
             return false;
         }

@@ -19,6 +19,10 @@ import java.io.InputStream;
  */
 public class HttpRequestImpl extends AbstractRequest {
     /**
+     * 释放维持长连接
+     */
+    private boolean keepAlive;
+    /**
      * 空流
      */
     protected static final InputStream EMPTY_INPUT_STREAM = new InputStream() {
@@ -37,6 +41,14 @@ public class HttpRequestImpl extends AbstractRequest {
 
     public final HttpResponseImpl getResponse() {
         return response;
+    }
+
+    public boolean isKeepAlive() {
+        return keepAlive;
+    }
+
+    public void setKeepAlive(boolean keepAlive) {
+        this.keepAlive = keepAlive;
     }
 
     @Override
