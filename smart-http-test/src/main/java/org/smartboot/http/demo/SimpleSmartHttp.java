@@ -14,6 +14,7 @@ import org.smartboot.http.server.HttpResponse;
 import org.smartboot.http.server.HttpServerHandler;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 
 public class SimpleSmartHttp {
@@ -23,6 +24,12 @@ public class SimpleSmartHttp {
         bootstrap.httpHandler(new HttpServerHandler() {
             @Override
             public void handle(HttpRequest request, HttpResponse response) throws IOException {
+                InputStream in = request.getInputStream();
+                byte[] b = new byte[1024];
+                int i;
+                while ((i = in.read(b)) > 0) {
+                    System.out.println(new String(b, 0, i));
+                }
                 response.write("hello smart-http<br/>".getBytes());
             }
         }).setPort(8080).start();

@@ -6,7 +6,7 @@
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
-package org.smartboot.http.common.utils;
+package org.smartboot.http.common.io;
 
 import java.io.IOException;
 import java.io.InputStream;
