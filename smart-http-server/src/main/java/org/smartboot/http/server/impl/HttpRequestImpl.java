@@ -12,7 +12,6 @@ import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.io.ChunkedInputStream;
 import org.smartboot.http.common.io.PostInputStream;
-import org.smartboot.http.common.utils.StringUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,7 +62,7 @@ public class HttpRequestImpl extends AbstractRequest {
         int contentLength = getContentLength();
         if (contentLength > 0 && request.getFormUrlencoded() == null) {
             inputStream = new PostInputStream(request.getAioSession().getInputStream(contentLength), contentLength);
-        } else if (StringUtils.equals(request.getHeader(HeaderNameEnum.TRANSFER_ENCODING.getName()), HeaderValueEnum.CHUNKED.getName())) {
+        } else if (HeaderValueEnum.CHUNKED.getName().equalsIgnoreCase(request.getHeader(HeaderNameEnum.TRANSFER_ENCODING.getName()))) {
             inputStream = new ChunkedInputStream(request.getAioSession());
         } else {
             inputStream = EMPTY_INPUT_STREAM;
