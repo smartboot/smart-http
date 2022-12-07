@@ -54,9 +54,7 @@ public class ChunkedInputStream extends InputStream {
         while (readFlag) {
             inputStream = session.getInputStream();
             int b = inputStream.read();
-            if (b == Constant.CR) {
-                continue;
-            } else if (b == Constant.LF) {
+            if (b == Constant.LF) {
                 int length = Integer.parseInt(buffer.toString(), 16);
                 if (length == 0) {
                     eof = true;
@@ -65,7 +63,7 @@ public class ChunkedInputStream extends InputStream {
                 inputStream.close();
                 inputStream = session.getInputStream(length);
                 readFlag = false;
-            } else {
+            } else if (b != Constant.CR) {
                 buffer.write(b);
             }
         }
