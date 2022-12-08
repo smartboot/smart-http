@@ -1,5 +1,7 @@
 package org.smartboot.http.common.io;
 
+import org.smartboot.http.common.enums.HttpStatus;
+import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.socket.transport.AioSession;
 
@@ -12,7 +14,7 @@ import java.io.InputStream;
  * @version V1.0 , 2022/12/6
  */
 public class ChunkedInputStream extends InputStream {
-    private ByteArrayOutputStream buffer = new ByteArrayOutputStream(1024);
+    private final ByteArrayOutputStream buffer = new ByteArrayOutputStream(8);
     private boolean readFlag = true;
     private final AioSession session;
     private InputStream inputStream;
@@ -23,17 +25,21 @@ public class ChunkedInputStream extends InputStream {
     }
 
     @Override
-    public int read() throws IOException {
-        readChunkedLength();
-        if (eof) {
-            return -1;
-        }
-        int b = inputStream.read();
-        if (b == -1) {
-            inputStream.close();
-            readFlag = true;
-        }
-        return b;
+    public int read() {
+        throw new UnsupportedOperationException("unsafe operation");
+//        readChunkedLength();
+//        if (eof) {
+//            return -1;
+//        }
+//        int b = inputStream.read();
+//        if (b == -1) {
+//            inputStream.close();
+//            inputStream = session.getInputStream();
+//            readCrlf();
+//            readFlag = true;
+//            return read();
+//        }
+//        return b;
     }
 
     @Override
@@ -45,7 +51,10 @@ public class ChunkedInputStream extends InputStream {
         int i = inputStream.read(data, off, len);
         if (i == -1) {
             inputStream.close();
+            inputStream = session.getInputStream();
+            readCrlf();
             readFlag = true;
+            return read(data, off, len);
         }
         return i;
     }
@@ -56,8 +65,10 @@ public class ChunkedInputStream extends InputStream {
             int b = inputStream.read();
             if (b == Constant.LF) {
                 int length = Integer.parseInt(buffer.toString(), 16);
+                buffer.reset();
                 if (length == 0) {
                     eof = true;
+                    readCrlf();
                     break;
                 }
                 inputStream.close();
@@ -66,6 +77,15 @@ public class ChunkedInputStream extends InputStream {
             } else if (b != Constant.CR) {
                 buffer.write(b);
             }
+        }
+    }
+
+    private void readCrlf() throws IOException {
+        if (inputStream.read() != Constant.CR) {
+            throw new HttpException(HttpStatus.BAD_REQUEST);
+        }
+        if (inputStream.read() != Constant.LF) {
+            throw new HttpException(HttpStatus.BAD_REQUEST);
         }
     }
 }
