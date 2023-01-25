@@ -6,6 +6,9 @@ import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.restful.annotation.Controller;
 import org.smartboot.http.restful.annotation.RequestMapping;
+import org.smartboot.http.restful.intercept.MethodInterceptor;
+import org.smartboot.http.restful.intercept.MethodInvocation;
+import org.smartboot.http.restful.intercept.MethodInvocationImpl;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
 import org.smartboot.http.server.HttpServerHandler;
@@ -14,10 +17,10 @@ import org.smartboot.http.server.impl.Request;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
+import java.util.function.BiConsumer;
 
 /**
  * @author 三刀（zhengjunweimail@163.com）
@@ -25,12 +28,15 @@ import java.nio.ByteBuffer;
  */
 class RestHandler extends HttpServerHandler {
     private final HttpRouteHandler httpRouteHandler = new HttpRouteHandler();
+    private BiConsumer<HttpRequest, HttpResponse> inspect = (httpRequest, response) -> {
+    };
+    private MethodInterceptor interceptor = MethodInvocation::proceed;
 
     public void addController(Object object) {
         Class<?> clazz = object.getClass();
         Controller controller = clazz.getDeclaredAnnotation(Controller.class);
         String rootPath = controller.value();
-        System.out.println(object+ "method:"+clazz.getDeclaredMethods().length);
+        System.out.println(object + "method:" + clazz.getDeclaredMethods().length);
         for (Method method : clazz.getDeclaredMethods()) {
             RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
             if (requestMapping == null) {
@@ -89,7 +95,10 @@ class RestHandler extends HttpServerHandler {
                             }
                         }
                         method.setAccessible(true);
-                        Object rsp = method.invoke(object, params);
+                        MethodInvocation invocation = new MethodInvocationImpl(method, params, object);
+                        inspect.accept(request, response);
+                        Object rsp = interceptor.invoke(invocation);
+//                        Object rsp = method.invoke(object, params);
                         if (rsp != null) {
                             byte[] bytes;
                             if (rsp instanceof String) {
@@ -102,7 +111,7 @@ class RestHandler extends HttpServerHandler {
                             response.setContentLength(bytes.length);
                             response.write(bytes);
                         }
-                    } catch (IllegalAccessException | InvocationTargetException e) {
+                    } catch (Throwable e) {
                         throw new RuntimeException(e);
                     }
                 }
@@ -152,5 +161,9 @@ class RestHandler extends HttpServerHandler {
     @Override
     public void onHeaderComplete(Request request) throws IOException {
         httpRouteHandler.onHeaderComplete(request);
+    }
+
+    public void setInspect(BiConsumer<HttpRequest, HttpResponse> inspect) {
+        this.inspect = inspect;
     }
 }

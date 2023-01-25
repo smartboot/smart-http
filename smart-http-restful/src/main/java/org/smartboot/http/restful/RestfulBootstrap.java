@@ -1,9 +1,12 @@
 package org.smartboot.http.restful;
 
 import org.smartboot.http.server.HttpBootstrap;
+import org.smartboot.http.server.HttpRequest;
+import org.smartboot.http.server.HttpResponse;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 /**
  * @author 三刀（zhengjunweimail@163.com）
@@ -41,6 +44,11 @@ public class RestfulBootstrap {
 
     public RestfulBootstrap controller(Object controller) throws Exception {
         restHandler.addController(controller);
+        return this;
+    }
+
+    public RestfulBootstrap inspect(BiConsumer<HttpRequest, HttpResponse> consumer) {
+        restHandler.setInspect(consumer);
         return this;
     }
 
