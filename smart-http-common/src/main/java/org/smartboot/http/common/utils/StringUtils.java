@@ -471,7 +471,7 @@ public class StringUtils {
         return -1;
     }
 
-    public static void trimBuffer(ByteBuffer buffer) {
+    private static void trimBuffer(ByteBuffer buffer) {
         while (buffer.hasRemaining() && buffer.get(buffer.position()) == Constant.SP) {
             buffer.position(buffer.position() + 1);
         }

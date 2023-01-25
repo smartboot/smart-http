@@ -66,7 +66,7 @@ class RestHandler extends HttpServerHandler {
                     try {
                         Type[] types = method.getGenericParameterTypes();
                         Object[] params = new Object[types.length];
-                        ByteBuffer buffer = request.getAttachment();
+                        ByteBuffer bodyBuffer = request.getAttachment();
                         for (int i = 0; i < types.length; i++) {
                             Type type = types[i];
                             if (type == HttpRequest.class) {
@@ -75,8 +75,8 @@ class RestHandler extends HttpServerHandler {
                                 params[i] = response;
                             } else if (!type.getTypeName().startsWith("java")) {
                                 JSONObject jsonObject;
-                                if (buffer != null) {
-                                    jsonObject = JSON.parseObject(buffer.array());
+                                if (bodyBuffer != null) {
+                                    jsonObject = JSON.parseObject(bodyBuffer.array());
                                 } else {
                                     jsonObject = new JSONObject();
                                     request.getParameters().keySet().forEach(param -> {
