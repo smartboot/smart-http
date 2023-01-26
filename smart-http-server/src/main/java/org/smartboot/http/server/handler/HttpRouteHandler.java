@@ -31,13 +31,21 @@ public final class HttpRouteHandler extends HttpServerHandler {
     /**
      * 默认404
      */
-    private final HttpServerHandler defaultHandler = new HttpServerHandler() {
-        @Override
-        public void handle(HttpRequest request, HttpResponse response) throws IOException {
-            response.setHttpStatus(HttpStatus.NOT_FOUND);
-        }
-    };
+    private final HttpServerHandler defaultHandler;
     private final Map<String, HttpServerHandler> handlerMap = new ConcurrentHashMap<>();
+
+    public HttpRouteHandler() {
+        this(new HttpServerHandler() {
+            @Override
+            public void handle(HttpRequest request, HttpResponse response) throws IOException {
+                response.setHttpStatus(HttpStatus.NOT_FOUND);
+            }
+        });
+    }
+
+    public HttpRouteHandler(HttpServerHandler defaultHandler) {
+        this.defaultHandler = defaultHandler;
+    }
 
     @Override
     public void onHeaderComplete(Request request) throws IOException {
