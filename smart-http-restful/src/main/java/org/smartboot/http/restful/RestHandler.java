@@ -27,10 +27,14 @@ import java.util.function.BiConsumer;
  * @version V1.0 , 2022/7/2
  */
 class RestHandler extends HttpServerHandler {
-    private final HttpRouteHandler httpRouteHandler = new HttpRouteHandler();
+    private final HttpRouteHandler httpRouteHandler;
     private BiConsumer<HttpRequest, HttpResponse> inspect = (httpRequest, response) -> {
     };
-    private MethodInterceptor interceptor = MethodInvocation::proceed;
+    private final MethodInterceptor interceptor = MethodInvocation::proceed;
+
+    public RestHandler(HttpServerHandler defaultHandler) {
+        this.httpRouteHandler = defaultHandler != null ? new HttpRouteHandler(defaultHandler) : new HttpRouteHandler();
+    }
 
     public void addController(Object object) {
         Class<?> clazz = object.getClass();
@@ -166,4 +170,6 @@ class RestHandler extends HttpServerHandler {
     public void setInspect(BiConsumer<HttpRequest, HttpResponse> inspect) {
         this.inspect = inspect;
     }
+
+
 }
