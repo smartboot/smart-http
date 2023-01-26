@@ -5,6 +5,7 @@ import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
 import org.smartboot.http.server.HttpServerHandler;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -17,9 +18,11 @@ public class RestfulBootstrap {
     private final HttpBootstrap httpBootstrap = new HttpBootstrap();
     private final RestHandler restHandler;
 
-    private RestfulBootstrap(HttpServerHandler defaultHandler) throws Exception {
+    private RestfulBootstrap(HttpServerHandler defaultHandler) {
+        if (defaultHandler == null) {
+            throw new NullPointerException();
+        }
         this.restHandler = new RestHandler(defaultHandler);
-        restHandler.addController(DefaultController.class);
         httpBootstrap.httpHandler(restHandler);
     }
 
@@ -32,7 +35,14 @@ public class RestfulBootstrap {
     }
 
     public static RestfulBootstrap getInstance() throws Exception {
-        return getInstance(null);
+        return getInstance(new HttpServerHandler() {
+            byte[] bytes = "hello smart-http-rest".getBytes();
+
+            @Override
+            public void handle(HttpRequest request, HttpResponse response) throws IOException {
+                response.getOutputStream().write(bytes);
+            }
+        });
     }
 
     public static RestfulBootstrap getInstance(HttpServerHandler defaultHandler) throws Exception {
