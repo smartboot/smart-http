@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.utils.Mimetypes;
+import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
 import org.smartboot.http.server.HttpServerHandler;
@@ -22,6 +23,10 @@ public class StaticResourceHandler extends HttpServerHandler {
     @Override
     public void handle(HttpRequest request, HttpResponse response) throws IOException {
         String fileName = request.getRequestURI();
+
+        if (StringUtils.endsWith(fileName, "/")) {
+            fileName += "index.html";
+        }
 
         InputStream inputStream = StaticResourceHandler.class.getClassLoader().getResourceAsStream("static" + fileName);
         if (inputStream == null) {
