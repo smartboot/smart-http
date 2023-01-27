@@ -17,6 +17,14 @@ import java.util.function.BiConsumer;
 public class RestfulBootstrap {
     private final HttpBootstrap httpBootstrap = new HttpBootstrap();
     private final RestHandler restHandler;
+    private static final HttpServerHandler DEFAULT_HANDLER = new HttpServerHandler() {
+        private final byte[] BYTES = "hello smart-http-rest".getBytes();
+
+        @Override
+        public void handle(HttpRequest request, HttpResponse response) throws IOException {
+            response.getOutputStream().write(BYTES);
+        }
+    };
 
     private RestfulBootstrap(HttpServerHandler defaultHandler) {
         if (defaultHandler == null) {
@@ -35,14 +43,7 @@ public class RestfulBootstrap {
     }
 
     public static RestfulBootstrap getInstance() throws Exception {
-        return getInstance(new HttpServerHandler() {
-            byte[] bytes = "hello smart-http-rest".getBytes();
-
-            @Override
-            public void handle(HttpRequest request, HttpResponse response) throws IOException {
-                response.getOutputStream().write(bytes);
-            }
-        });
+        return getInstance(DEFAULT_HANDLER);
     }
 
     public static RestfulBootstrap getInstance(HttpServerHandler defaultHandler) throws Exception {
