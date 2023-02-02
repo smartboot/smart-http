@@ -52,7 +52,7 @@ public class HttpStaticResourceHandler extends HttpServerHandler {
         if (!this.baseDir.isDirectory()) {
             throw new RuntimeException(baseDir + " is not a directory");
         }
-        if(LOGGER.isInfoEnabled())
+        if (LOGGER.isInfoEnabled())
             LOGGER.info("dir is:{}", this.baseDir.getAbsolutePath());
     }
 
@@ -63,7 +63,7 @@ public class HttpStaticResourceHandler extends HttpServerHandler {
         if (StringUtils.endsWith(fileName, "/")) {
             fileName += "index.html";
         }
-        if(LOGGER.isInfoEnabled())
+        if (LOGGER.isInfoEnabled())
             LOGGER.info("请求URL: " + fileName);
         File file = new File(baseDir, URLDecoder.decode(fileName, "utf8"));
         //404
@@ -78,7 +78,7 @@ public class HttpStaticResourceHandler extends HttpServerHandler {
             return;
         }
         //304
-        Date lastModifyDate = new Date(file.lastModified());
+        Date lastModifyDate = new Date(file.lastModified() / 1000 * 1000);
         try {
             String requestModified = request.getHeader(HeaderNameEnum.IF_MODIFIED_SINCE.getName());
             if (StringUtils.isNotBlank(requestModified) && lastModifyDate.getTime() <= DateUtils.parseLastModified(requestModified).getTime()) {
