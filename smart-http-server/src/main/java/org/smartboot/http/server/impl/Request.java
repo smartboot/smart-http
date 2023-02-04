@@ -563,6 +563,7 @@ public final class Request implements HttpRequest, Reset {
         cookies = null;
         httpRequest = null;
         webSocketRequest = null;
+        type = null;
         decodePartEnum = DecodePartEnum.HEADER_FINISH;
     }
 }
