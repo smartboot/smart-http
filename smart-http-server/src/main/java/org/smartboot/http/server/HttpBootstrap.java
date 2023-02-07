@@ -93,6 +93,7 @@ public class HttpBootstrap {
 
     /**
      * 启动HTTP服务
+     * @throws RuntimeException
      */
     public void start() {
         initByteCache();
@@ -111,7 +112,7 @@ public class HttpBootstrap {
             }
             server.start();
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException("server start error.", e);
         }
     }
 
