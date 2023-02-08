@@ -93,8 +93,9 @@ public class HttpBootstrap {
 
     /**
      * 启动HTTP服务
+     * @throws RuntimeException
      */
-    public void start() throws IOException {
+    public void start() {
         initByteCache();
         BufferPagePool readBufferPool = new BufferPagePool(configuration.getReadPageSize(), 1, false);
         configuration.getPlugins().forEach(processor::addPlugin);
@@ -105,10 +106,14 @@ public class HttpBootstrap {
                 .setBufferFactory(() -> new BufferPagePool(configuration.getWritePageSize(), configuration.getWritePageNum(), true))
                 .setReadBufferFactory(bufferPage -> readBufferPool.allocateBufferPage().allocate(configuration.getReadBufferSize()))
                 .setWriteBuffer(configuration.getWriteBufferSize(), 16);
-        if (configuration.isBannerEnabled()) {
-            System.out.println(BANNER + "\r\n :: smart-http :: (" + VERSION + ")");
+        try {
+            if (configuration.isBannerEnabled()) {
+                System.out.println(BANNER + "\r\n :: smart-http :: (" + VERSION + ")");
+            }
+            server.start();
+        } catch (IOException e) {
+            throw new RuntimeException("server start error.", e);
         }
-        server.start();
     }
 
     private void updateHeaderNameByteTree() {
