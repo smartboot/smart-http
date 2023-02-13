@@ -3,6 +3,7 @@ package org.smartboot.http.client;
 import org.smartboot.http.client.impl.Response;
 import org.smartboot.socket.buffer.BufferPagePool;
 import org.smartboot.socket.extension.plugins.Plugin;
+import org.smartboot.socket.extension.plugins.StreamMonitorPlugin;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,11 +24,6 @@ public class HttpClientConfiguration {
      * 连接超时时间
      */
     private int connectTimeout;
-
-    /**
-     * 是否启用SSL
-     */
-    private boolean ssl;
 
     /**
      * 远程地址
@@ -70,15 +66,6 @@ public class HttpClientConfiguration {
      */
     public HttpClientConfiguration connectTimeout(int connectTimeout) {
         this.connectTimeout = connectTimeout;
-        return this;
-    }
-
-    public boolean isSsl() {
-        return ssl;
-    }
-
-    public HttpClientConfiguration ssl() {
-        this.ssl = true;
         return this;
     }
 
@@ -142,5 +129,25 @@ public class HttpClientConfiguration {
 
     BufferPagePool getReadBufferPool() {
         return readBufferPool;
+    }
+
+    /**
+     * 启用 debug 模式后会打印码流
+     */
+    public HttpClientConfiguration debug(boolean debug) {
+        plugins.removeIf(plugin -> plugin instanceof StreamMonitorPlugin);
+        if (debug) {
+            addPlugin(new StreamMonitorPlugin<>(StreamMonitorPlugin.BLUE_TEXT_INPUT_STREAM, StreamMonitorPlugin.RED_TEXT_OUTPUT_STREAM));
+        }
+        return this;
+    }
+
+    public HttpClientConfiguration addPlugin(Plugin<Response> plugin) {
+        plugins.add(plugin);
+        return this;
+    }
+
+    public List<Plugin<Response>> getPlugins() {
+        return plugins;
     }
 }

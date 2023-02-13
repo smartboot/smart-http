@@ -12,8 +12,8 @@ import org.smartboot.http.client.ResponseHandler;
 import org.smartboot.http.common.enums.DecodePartEnum;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
-import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.StateMachineEnum;
+import org.smartboot.socket.extension.processor.AbstractMessageProcessor;
 import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
@@ -28,7 +28,7 @@ import java.util.concurrent.ExecutorService;
  * @author 三刀
  * @version V1.0 , 2018/6/10
  */
-public class HttpMessageProcessor implements MessageProcessor<Response> {
+public class HttpMessageProcessor extends AbstractMessageProcessor<Response> {
     private final ExecutorService executorService;
     private final Map<AioSession, AbstractQueue<QueueUnit>> map = new ConcurrentHashMap<>();
 
@@ -41,7 +41,7 @@ public class HttpMessageProcessor implements MessageProcessor<Response> {
     }
 
     @Override
-    public void process(AioSession session, Response response) {
+    public void process0(AioSession session, Response response) {
         ResponseAttachment responseAttachment = session.getAttachment();
         AbstractQueue<QueueUnit> queue = map.get(session);
         QueueUnit queueUnit = queue.peek();
@@ -103,7 +103,7 @@ public class HttpMessageProcessor implements MessageProcessor<Response> {
     }
 
     @Override
-    public void stateEvent(AioSession session, StateMachineEnum stateMachineEnum, Throwable throwable) {
+    public void stateEvent0(AioSession session, StateMachineEnum stateMachineEnum, Throwable throwable) {
         if (throwable != null) {
             AbstractQueue<QueueUnit> queue = map.get(session);
             if (queue != null) {

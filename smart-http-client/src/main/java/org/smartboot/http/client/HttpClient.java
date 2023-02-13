@@ -13,16 +13,10 @@ import org.smartboot.http.client.impl.HttpResponseProtocol;
 import org.smartboot.http.client.impl.Response;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.utils.StringUtils;
-import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.Protocol;
-import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.buffer.BufferPagePool;
 import org.smartboot.socket.buffer.VirtualBuffer;
-import org.smartboot.socket.extension.plugins.SslPlugin;
-import org.smartboot.socket.extension.processor.AbstractMessageProcessor;
-import org.smartboot.socket.extension.ssl.factory.ClientSSLContextFactory;
 import org.smartboot.socket.transport.AioQuickClient;
-import org.smartboot.socket.transport.AioSession;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousChannelGroup;
@@ -110,28 +104,7 @@ public final class HttpClient {
         }
         connected = true;
         try {
-            MessageProcessor<Response> processor = this.processor;
-            if (configuration.isSsl()) {
-                processor = new AbstractMessageProcessor<Response>() {
-                    {
-//                        addPlugin(new StreamMonitorPlugin<>(StreamMonitorPlugin.BLUE_TEXT_INPUT_STREAM,StreamMonitorPlugin.RED_TEXT_OUTPUT_STREAM));
-                        addPlugin(new SslPlugin<>(new ClientSSLContextFactory()));
-//                        addPlugin(new StreamMonitorPlugin<>(StreamMonitorPlugin.BLUE_TEXT_INPUT_STREAM,StreamMonitorPlugin.RED_TEXT_OUTPUT_STREAM));
-//                        addPlugin(new StreamMonitorPlugin<>());
-                    }
-
-                    @Override
-                    public void process0(AioSession aioSession, Response response) {
-                        HttpClient.this.processor.process(aioSession, response);
-                    }
-
-                    @Override
-                    public void stateEvent0(AioSession aioSession, StateMachineEnum stateMachineEnum, Throwable throwable) {
-                        HttpClient.this.processor.stateEvent(aioSession, stateMachineEnum, throwable);
-                    }
-                };
-            }
-
+            configuration.getPlugins().forEach(processor::addPlugin);
             client = configuration.getProxy() == null ? new AioQuickClient(configuration.getHost(), configuration.getPort(), protocol, processor) : new AioQuickClient(configuration.getProxy().getProxyHost(), configuration.getProxy().getProxyPort(), protocol, processor);
             BufferPagePool readPool = configuration.getReadBufferPool();
             client.setBufferPagePool(configuration.getWriteBufferPool()).setReadBufferFactory(bufferPage -> readPool == null ? VirtualBuffer.wrap(ByteBuffer.allocate(configuration.readBufferSize())) : readPool.allocateBufferPage().allocate(configuration.readBufferSize()));
