@@ -28,9 +28,7 @@ public class BastTest {
     private static final String CONTENT_PATH = "/demo";
 
     protected HttpClient getHttpClient() {
-        HttpClient httpClient = new HttpClient("127.0.0.1", SERVER_PORT);
-        httpClient.connect();
-        return httpClient;
+        return new HttpClient("127.0.0.1", SERVER_PORT);
     }
 
 
