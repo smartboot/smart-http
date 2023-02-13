@@ -35,10 +35,10 @@ public class BastTest {
     protected void checkPath(String path, HttpClient smartClient, HttpClient tomcatClient) {
         Future<HttpResponse> smartFuture = smartClient.get(CONTENT_PATH + path).onSuccess(resp -> {
             LOGGER.info("smart-servlet response: {}", resp.body());
-        }).send();
+        }).done();
         Future<HttpResponse> tomcatFuture = tomcatClient.get(CONTENT_PATH + path).onSuccess(resp -> {
             LOGGER.info("tomcat response: {}", resp.body());
-        }).send();
+        }).done();
         try {
             checkResponse(smartFuture.get(), tomcatFuture.get());
         } catch (InterruptedException | ExecutionException e) {

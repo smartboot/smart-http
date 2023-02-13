@@ -22,7 +22,6 @@ import java.util.AbstractQueue;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
@@ -42,7 +41,7 @@ public class HttpRest {
     /**
      * http body 解码器
      */
-    private ResponseHandler responseHandler = new DefaultHttpResponseHandler();
+    private final ResponseHandler responseHandler = new DefaultHttpResponseHandler();
 
     HttpRest(String uri, String host, AioSession session, AbstractQueue<QueueUnit> queue) {
         this.request = new HttpRequestImpl(session);
@@ -136,7 +135,7 @@ public class HttpRest {
         return body;
     }
 
-    public final Future<HttpResponse> send() {
+    public final Future<HttpResponse> done() {
         try {
             willSendRequest();
             request.getOutputStream().flush();
@@ -201,11 +200,11 @@ public class HttpRest {
         return this;
     }
 
-    /**
-     * Http 响应事件
-     */
-    public HttpRest onResponse(ResponseHandler responseHandler) {
-        this.responseHandler = Objects.requireNonNull(responseHandler);
-        return this;
-    }
+//    /**
+//     * Http 响应事件
+//     */
+//    public HttpRest onResponse(ResponseHandler responseHandler) {
+//        this.responseHandler = Objects.requireNonNull(responseHandler);
+//        return this;
+//    }
 }

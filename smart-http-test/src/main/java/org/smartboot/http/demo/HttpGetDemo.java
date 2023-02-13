@@ -16,6 +16,6 @@ public class HttpGetDemo {
         httpClient.get("/").header().keepalive(false).done()
                 .onSuccess(response -> System.out.println(response.body()))
                 .onFailure(Throwable::printStackTrace)
-                .send();
+                .done();
     }
 }

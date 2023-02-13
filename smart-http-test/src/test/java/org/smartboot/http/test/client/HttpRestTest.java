@@ -62,7 +62,7 @@ public class HttpRestTest {
                     throwable.printStackTrace();
                     httpClient.close();
                 })
-                .send();
+                .done();
         System.out.println(future.get().body());
     }
 

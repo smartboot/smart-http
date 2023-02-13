@@ -7,7 +7,7 @@ import java.util.Map;
  * @version V1.0 , 2023/2/13
  */
 public abstract class PostBody extends CommonBody<HttpPost> {
-    public PostBody(Body<? extends HttpRest> body, HttpPost rest) {
+    PostBody(Body<? extends HttpRest> body, HttpPost rest) {
         super(body, rest);
     }
 

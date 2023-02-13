@@ -42,7 +42,7 @@ public final class HttpPost extends HttpRest {
             @Override
             public HttpPost formUrlencoded(Map<String, String> params) {
                 if (params == null || params.isEmpty()) {
-                    send();
+                    HttpPost.this.done();
                     return HttpPost.this;
                 }
                 try {
