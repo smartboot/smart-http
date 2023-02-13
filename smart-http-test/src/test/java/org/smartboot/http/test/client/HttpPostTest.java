@@ -91,28 +91,24 @@ public class HttpPostTest {
         Map<String, String> param = new HashMap<>();
         param.put("name", "zhouyu");
         param.put("age", "18");
-        httpClient.post("/post_param")
-                .header().setContentType(HeaderValueEnum.X_WWW_FORM_URLENCODED.getName())
-                .done()
-                .onSuccess(response -> {
-                    System.out.println(response.body());
-                    JSONObject jsonObject = JSONObject.parseObject(response.body());
-                    boolean suc = false;
-                    for (String key : param.keySet()) {
-                        suc = StringUtils.equals(param.get(key), jsonObject.getString(key));
-                        if (!suc) {
-                            break;
-                        }
-                    }
-                    httpClient.close();
-                    future.complete(suc);
-                })
-                .onFailure(throwable -> {
-                    System.out.println("异常A: " + throwable.getMessage());
-                    throwable.printStackTrace();
-                    Assert.fail();
-                    future.complete(false);
-                }).sendForm(param);
+        httpClient.post("/post_param").header().setContentType(HeaderValueEnum.X_WWW_FORM_URLENCODED.getName()).done().onSuccess(response -> {
+            System.out.println(response.body());
+            JSONObject jsonObject = JSONObject.parseObject(response.body());
+            boolean suc = false;
+            for (String key : param.keySet()) {
+                suc = StringUtils.equals(param.get(key), jsonObject.getString(key));
+                if (!suc) {
+                    break;
+                }
+            }
+            httpClient.close();
+            future.complete(suc);
+        }).onFailure(throwable -> {
+            System.out.println("异常A: " + throwable.getMessage());
+            throwable.printStackTrace();
+            Assert.fail();
+            future.complete(false);
+        }).body().formUrlencoded(param);
         Assert.assertTrue(future.get());
     }
 
@@ -120,14 +116,7 @@ public class HttpPostTest {
     public void testJson() throws InterruptedException {
         HttpClient httpClient = new HttpClient("localhost", 8080);
         byte[] jsonBytes = "{\"a\":1,\"b\":\"123\"}".getBytes(StandardCharsets.UTF_8);
-        httpClient.post("/json")
-                .header()
-                .setContentLength(jsonBytes.length)
-                .setContentType("application/json")
-                .done()
-                .body()
-                .write(jsonBytes).flush()
-                .done();
+        httpClient.post("/json").header().setContentLength(jsonBytes.length).setContentType("application/json").done().body().write(jsonBytes).flush().done();
         Thread.sleep(100);
     }
 

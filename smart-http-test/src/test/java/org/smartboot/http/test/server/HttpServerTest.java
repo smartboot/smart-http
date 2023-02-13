@@ -192,7 +192,7 @@ public class HttpServerTest extends BastTest {
         HttpClient httpClient = getHttpClient();
         HttpPost httpPost = httpClient.post(requestUnit.getUri());
         requestUnit.getHeaders().forEach((name, value) -> httpPost.header().add(name, value));
-        httpPost.sendForm(requestUnit.getParameters());
+        httpPost.body().formUrlencoded(requestUnit.getParameters());
 
         JSONObject jsonObject = basicCheck(httpPost.send().get(), requestUnit);
         Assert.assertEquals(HttpMethodEnum.POST.getMethod(), jsonObject.get(KEY_METHOD));
@@ -204,7 +204,7 @@ public class HttpServerTest extends BastTest {
         HttpPost httpPost = httpClient.post(requestUnit.getUri());
         requestUnit.getHeaders().forEach((name, value) -> httpPost.header().add(name, value));
         requestUnit.getParameters().put("author", "三刀");
-        httpPost.sendForm(requestUnit.getParameters());
+        httpPost.body().formUrlencoded(requestUnit.getParameters());
 
         JSONObject jsonObject = basicCheck(httpPost.send().get(), requestUnit);
         Assert.assertEquals(HttpMethodEnum.POST.getMethod(), jsonObject.get(KEY_METHOD));
@@ -219,7 +219,7 @@ public class HttpServerTest extends BastTest {
         for (int i = 0; i < 10000; i++) {
             requestUnit.getParameters().put("author" + i, "三刀" + i);
         }
-        httpPost.sendForm(requestUnit.getParameters());
+        httpPost.body().formUrlencoded(requestUnit.getParameters());
 
         JSONObject jsonObject = basicCheck(httpPost.send().get(), requestUnit);
         Assert.assertEquals(HttpMethodEnum.POST.getMethod(), jsonObject.get(KEY_METHOD));
@@ -237,7 +237,7 @@ public class HttpServerTest extends BastTest {
             stringBuilder.append("&").append("author").append(i).append("=").append("三刀").append(i);
         }
         httpPost.header().add("longText", stringBuilder.toString());
-        httpPost.sendForm(requestUnit.getParameters());
+        httpPost.body().formUrlencoded(requestUnit.getParameters());
 
         JSONObject jsonObject = basicCheck(httpPost.send().get(), requestUnit);
         Assert.assertEquals(HttpMethodEnum.POST.getMethod(), jsonObject.get(KEY_METHOD));
