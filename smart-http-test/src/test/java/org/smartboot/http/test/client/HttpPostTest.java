@@ -121,10 +121,13 @@ public class HttpPostTest {
         HttpClient httpClient = new HttpClient("localhost", 8080);
         byte[] jsonBytes = "{\"a\":1,\"b\":\"123\"}".getBytes(StandardCharsets.UTF_8);
         httpClient.post("/json")
-                .header().setContentLength(jsonBytes.length).setContentType("application/json")
+                .header()
+                .setContentLength(jsonBytes.length)
+                .setContentType("application/json")
                 .done()
-                .bodyStream()
-                .write(jsonBytes).finish();
+                .body()
+                .write(jsonBytes).flush()
+                .done();
         Thread.sleep(100);
     }
 

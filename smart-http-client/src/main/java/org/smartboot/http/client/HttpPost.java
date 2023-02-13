@@ -66,24 +66,24 @@ public final class HttpPost extends HttpRest {
     }
 
     @Override
-    public BodyStream<HttpPost> bodyStream() {
-        BodyStream<? extends HttpRest> superBodyStream = super.bodyStream();
-        return new BodyStream<HttpPost>() {
+    public Body<HttpPost> body() {
+        Body<? extends HttpRest> superBody = super.body();
+        return new Body<HttpPost>() {
             @Override
-            public BodyStream<HttpPost> write(byte[] bytes, int offset, int len) {
-                superBodyStream.write(bytes, offset, len);
+            public Body<HttpPost> write(byte[] bytes, int offset, int len) {
+                superBody.write(bytes, offset, len);
                 return this;
             }
 
             @Override
-            public BodyStream<HttpPost> flush() {
-                superBodyStream.flush();
+            public Body<HttpPost> flush() {
+                superBody.flush();
                 return this;
             }
 
             @Override
-            public HttpPost finish() {
-                superBodyStream.flush();
+            public HttpPost done() {
+                superBody.flush();
                 return HttpPost.this;
             }
         };

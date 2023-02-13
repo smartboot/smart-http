@@ -38,7 +38,7 @@ public class HttpRest {
     private final AbstractQueue<QueueUnit> queue;
     private Map<String, String> queryParams = null;
     private boolean commit = false;
-    private BodyStream<HttpRest> bodyStream;
+    private Body<HttpRest> body;
     /**
      * http body 解码器
      */
@@ -93,13 +93,13 @@ public class HttpRest {
         request.setUri(stringBuilder.toString());
     }
 
-    public BodyStream<? extends HttpRest> bodyStream() {
-        if (bodyStream == null) {
-            bodyStream = new BodyStream<HttpRest>() {
+    public Body<? extends HttpRest> body() {
+        if (body == null) {
+            body = new Body<HttpRest>() {
                 boolean flushHeader = false;
 
                 @Override
-                public BodyStream<HttpRest> write(byte[] bytes, int offset, int len) {
+                public Body<HttpRest> write(byte[] bytes, int offset, int len) {
                     try {
                         willSendRequest();
                         if (!flushHeader) {
@@ -114,7 +114,7 @@ public class HttpRest {
                 }
 
                 @Override
-                public BodyStream<HttpRest> flush() {
+                public Body<HttpRest> flush() {
                     try {
                         request.getOutputStream().flush();
                         flushHeader = true;
@@ -127,13 +127,13 @@ public class HttpRest {
                 }
 
                 @Override
-                public HttpRest finish() {
+                public HttpRest done() {
                     flush();
                     return HttpRest.this;
                 }
             };
         }
-        return bodyStream;
+        return body;
     }
 
     public final Future<HttpResponse> send() {
