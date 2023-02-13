@@ -12,7 +12,6 @@ import org.smartboot.http.client.impl.DefaultHttpResponseHandler;
 import org.smartboot.http.client.impl.HttpRequestImpl;
 import org.smartboot.http.client.impl.QueueUnit;
 import org.smartboot.http.common.enums.HeaderNameEnum;
-import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.socket.transport.AioSession;
 
@@ -39,7 +38,7 @@ public class HttpRest {
     private final AbstractQueue<QueueUnit> queue;
     private Map<String, String> queryParams = null;
     private boolean commit = false;
-    private BodyStream bodyStream;
+    private BodyStream<HttpRest> bodyStream;
     /**
      * http body 解码器
      */
@@ -50,7 +49,7 @@ public class HttpRest {
         this.queue = queue;
         this.request.setUri(uri);
         this.request.setProtocol(HttpProtocolEnum.HTTP_11.getProtocol());
-        this.addHeader(HeaderNameEnum.HOST.getName(), host);
+        request.addHeader(HeaderNameEnum.HOST.getName(), host);
     }
 
     protected final void willSendRequest() {
@@ -60,11 +59,8 @@ public class HttpRest {
         commit = true;
         resetUri();
         Collection<String> headers = request.getHeaderNames();
-        if (!headers.contains(HeaderNameEnum.CONNECTION.getName())) {
-            keepalive(true);
-        }
         if (!headers.contains(HeaderNameEnum.USER_AGENT.getName())) {
-            addHeader(HeaderNameEnum.USER_AGENT.getName(), DEFAULT_USER_AGENT);
+            request.addHeader(HeaderNameEnum.USER_AGENT.getName(), DEFAULT_USER_AGENT);
         }
         queue.offer(new QueueUnit(completableFuture, responseHandler));
     }
@@ -97,13 +93,13 @@ public class HttpRest {
         request.setUri(stringBuilder.toString());
     }
 
-    public final BodyStream bodyStream() {
+    public BodyStream<? extends HttpRest> bodyStream() {
         if (bodyStream == null) {
-            bodyStream = new BodyStream() {
+            bodyStream = new BodyStream<HttpRest>() {
                 boolean flushHeader = false;
 
                 @Override
-                public BodyStream write(byte[] bytes, int offset, int len) {
+                public BodyStream<HttpRest> write(byte[] bytes, int offset, int len) {
                     try {
                         willSendRequest();
                         if (!flushHeader) {
@@ -118,7 +114,7 @@ public class HttpRest {
                 }
 
                 @Override
-                public BodyStream flush() {
+                public BodyStream<HttpRest> flush() {
                     try {
                         request.getOutputStream().flush();
                         flushHeader = true;
@@ -128,6 +124,12 @@ public class HttpRest {
                         completableFuture.completeExceptionally(e);
                     }
                     return this;
+                }
+
+                @Override
+                public HttpRest finish() {
+                    flush();
+                    return HttpRest.this;
                 }
             };
         }
@@ -158,24 +160,31 @@ public class HttpRest {
         return this;
     }
 
-    public HttpRest setHeader(String headerName, String headerValue) {
-        this.request.setHeader(headerName, headerValue);
-        return this;
-    }
-
-    public HttpRest addHeader(String headerName, String headerValue) {
-        this.request.addHeader(headerName, headerValue);
-        return this;
-    }
-
     public HttpRest setMethod(String method) {
         request.setMethod(method);
         return this;
     }
 
-    public HttpRest keepalive(boolean flag) {
-        request.setHeader(HeaderNameEnum.CONNECTION.getName(), flag ? HeaderValueEnum.KEEPALIVE.getName() : null);
-        return this;
+
+    public Header<? extends HttpRest> header() {
+        return new Header<HttpRest>() {
+            @Override
+            public Header<HttpRest> add(String headerName, String headerValue) {
+                request.addHeader(headerName, headerValue);
+                return this;
+            }
+
+            @Override
+            public Header<HttpRest> set(String headerName, String headerValue) {
+                request.setHeader(headerName, headerValue);
+                return this;
+            }
+
+            @Override
+            public HttpRest done() {
+                return HttpRest.this;
+            }
+        };
     }
 
     /**

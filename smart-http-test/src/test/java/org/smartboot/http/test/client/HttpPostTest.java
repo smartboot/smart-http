@@ -14,8 +14,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.smartboot.http.client.HttpClient;
-import org.smartboot.http.client.HttpPost;
-import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpBootstrap;
@@ -78,7 +76,7 @@ public class HttpPostTest {
             public void handle(HttpRequest request, HttpResponse response) throws IOException {
                 ByteBuffer buffer = request.getAttachment();
                 buffer.flip();
-                byte[] bytes=new byte[buffer.remaining()];
+                byte[] bytes = new byte[buffer.remaining()];
                 buffer.get(bytes);
                 System.out.println(new String(bytes));
             }
@@ -90,12 +88,12 @@ public class HttpPostTest {
     public void testPost() throws ExecutionException, InterruptedException {
         CompletableFuture<Boolean> future = new CompletableFuture<>();
         HttpClient httpClient = new HttpClient("localhost", 8080);
-        httpClient.connect();
         Map<String, String> param = new HashMap<>();
         param.put("name", "zhouyu");
         param.put("age", "18");
         httpClient.post("/post_param")
-                .setContentType(HeaderValueEnum.X_WWW_FORM_URLENCODED.getName())
+                .header().setContentType(HeaderValueEnum.X_WWW_FORM_URLENCODED.getName())
+                .done()
                 .onSuccess(response -> {
                     System.out.println(response.body());
                     JSONObject jsonObject = JSONObject.parseObject(response.body());
@@ -121,13 +119,12 @@ public class HttpPostTest {
     @Test
     public void testJson() throws InterruptedException {
         HttpClient httpClient = new HttpClient("localhost", 8080);
-        httpClient.connect();
         byte[] jsonBytes = "{\"a\":1,\"b\":\"123\"}".getBytes(StandardCharsets.UTF_8);
         httpClient.post("/json")
-                .setContentType("application/json")
-                .addHeader(HeaderNameEnum.CONTENT_LENGTH.getName(), String.valueOf(jsonBytes.length))
+                .header().setContentLength(jsonBytes.length).setContentType("application/json")
+                .done()
                 .bodyStream()
-                .write(jsonBytes, 0, jsonBytes.length).flush();
+                .write(jsonBytes).finish();
         Thread.sleep(100);
     }
 

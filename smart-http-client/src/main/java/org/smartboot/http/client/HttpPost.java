@@ -54,8 +54,8 @@ public final class HttpPost extends HttpRest {
             }
             byte[] bytes = sb.toString().getBytes();
             // 设置 Header
-            addHeader(HeaderNameEnum.CONTENT_LENGTH.getName(), String.valueOf(bytes.length));
-            addHeader(HeaderNameEnum.CONTENT_TYPE.getName(), HeaderValueEnum.X_WWW_FORM_URLENCODED.getName());
+            request.addHeader(HeaderNameEnum.CONTENT_LENGTH.getName(), String.valueOf(bytes.length));
+            request.addHeader(HeaderNameEnum.CONTENT_TYPE.getName(), HeaderValueEnum.X_WWW_FORM_URLENCODED.getName());
             //输出数据
             request.write(bytes);
             request.getOutputStream().flush();
@@ -66,9 +66,27 @@ public final class HttpPost extends HttpRest {
     }
 
     @Override
-    public HttpPost addHeader(String headerName, String headerValue) {
-        super.addHeader(headerName, headerValue);
-        return this;
+    public BodyStream<HttpPost> bodyStream() {
+        BodyStream<? extends HttpRest> superBodyStream = super.bodyStream();
+        return new BodyStream<HttpPost>() {
+            @Override
+            public BodyStream<HttpPost> write(byte[] bytes, int offset, int len) {
+                superBodyStream.write(bytes, offset, len);
+                return this;
+            }
+
+            @Override
+            public BodyStream<HttpPost> flush() {
+                superBodyStream.flush();
+                return this;
+            }
+
+            @Override
+            public HttpPost finish() {
+                superBodyStream.flush();
+                return HttpPost.this;
+            }
+        };
     }
 
     @Override
@@ -83,8 +101,8 @@ public final class HttpPost extends HttpRest {
         return this;
     }
 
-    public HttpPost setContentType(String contentType) {
-        request.setContentType(contentType);
-        return this;
+    @Override
+    public Header<HttpPost> header() {
+        return new HeaderWrapper<>(this, super.header());
     }
 }

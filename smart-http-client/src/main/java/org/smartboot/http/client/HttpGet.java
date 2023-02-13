@@ -42,4 +42,9 @@ public class HttpGet extends HttpRest {
         super.onFailure(consumer);
         return this;
     }
+
+    @Override
+    public Header<HttpGet> header() {
+        return new HeaderWrapper<>(this, super.header());
+    }
 }
