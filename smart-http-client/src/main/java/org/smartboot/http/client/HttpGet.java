@@ -27,7 +27,7 @@ public class HttpGet extends HttpRest {
     }
 
     @Override
-    public HttpGet setMethod(String method) {
+    public HttpGet setMethod(String method) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
 

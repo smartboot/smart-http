@@ -32,7 +32,7 @@ public final class HttpPost extends HttpRest {
     }
 
     @Override
-    public HttpRest setMethod(String method) {
+    public HttpRest setMethod(String method) throws UnsupportedOperationException{
         throw new UnsupportedOperationException();
     }
 
