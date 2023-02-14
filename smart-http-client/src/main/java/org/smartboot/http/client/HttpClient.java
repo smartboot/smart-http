@@ -12,6 +12,8 @@ import org.smartboot.http.client.impl.HttpMessageProcessor;
 import org.smartboot.http.client.impl.HttpResponseProtocol;
 import org.smartboot.http.client.impl.Response;
 import org.smartboot.http.common.enums.HeaderNameEnum;
+import org.smartboot.http.common.enums.HeaderValueEnum;
+import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.socket.Protocol;
 import org.smartboot.socket.buffer.BufferPagePool;
@@ -68,29 +70,45 @@ public final class HttpClient {
 
     public HttpGet get(String uri) {
         connect();
-        HttpGet httpGet = new HttpGet(uri, hostHeader, client.getSession(), processor.getQueue(client.getSession()));
-        setProxyAuthorization(httpGet);
+        HttpGet httpGet = new HttpGet(client.getSession(), processor.getQueue(client.getSession()));
+        initRest(httpGet, uri);
         return httpGet;
     }
 
     public HttpRest rest(String uri) {
         connect();
-        HttpRest httpRest = new HttpRest(uri, hostHeader, client.getSession(), processor.getQueue(client.getSession()));
-        setProxyAuthorization(httpRest);
+        HttpRest httpRest = new HttpRest(client.getSession(), processor.getQueue(client.getSession()));
+        initRest(httpRest, uri);
         return httpRest;
     }
 
     public HttpPost post(String uri) {
         connect();
-        HttpPost httpRest = new HttpPost(uri, hostHeader, client.getSession(), processor.getQueue(client.getSession()));
-        setProxyAuthorization(httpRest);
+        HttpPost httpRest = new HttpPost(client.getSession(), processor.getQueue(client.getSession()));
+        initRest(httpRest, uri);
         return httpRest;
     }
 
-    private void setProxyAuthorization(HttpRest httpRest) {
+    private void initRest(HttpRest httpRest, String uri) {
         if (configuration.getProxy() != null && StringUtils.isNotBlank(configuration.getProxy().getProxyUserName())) {
             httpRest.request.addHeader(HeaderNameEnum.PROXY_AUTHORIZATION.getName(), "Basic " + Base64.getEncoder().encodeToString((configuration.getProxy().getProxyUserName() + ":" + configuration.getProxy().getProxyPassword()).getBytes()));
         }
+        httpRest.request.setUri(uri);
+        httpRest.request.addHeader(HeaderNameEnum.HOST.getName(), hostHeader);
+        httpRest.request.setProtocol(HttpProtocolEnum.HTTP_11.getProtocol());
+
+        httpRest.completableFuture.thenAccept(httpResponse -> {
+            //非keep-alive,主动断开连接
+            if (!HeaderValueEnum.KEEPALIVE.getName().equalsIgnoreCase(httpResponse.getHeader(HeaderNameEnum.CONNECTION.getName()))) {
+                close();
+            } else if (!HeaderValueEnum.KEEPALIVE.getName().equalsIgnoreCase(httpRest.request.getHeader(HeaderNameEnum.CONNECTION.getName()))) {
+                close();
+            }
+        });
+        httpRest.completableFuture.exceptionally(throwable -> {
+            close();
+            return null;
+        });
     }
 
 

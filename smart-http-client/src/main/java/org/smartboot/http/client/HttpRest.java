@@ -12,7 +12,6 @@ import org.smartboot.http.client.impl.DefaultHttpResponseHandler;
 import org.smartboot.http.client.impl.HttpRequestImpl;
 import org.smartboot.http.client.impl.QueueUnit;
 import org.smartboot.http.common.enums.HeaderNameEnum;
-import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
@@ -43,12 +42,9 @@ public class HttpRest {
      */
     private final ResponseHandler responseHandler = new DefaultHttpResponseHandler();
 
-    HttpRest(String uri, String host, AioSession session, AbstractQueue<QueueUnit> queue) {
+    HttpRest(AioSession session, AbstractQueue<QueueUnit> queue) {
         this.request = new HttpRequestImpl(session);
         this.queue = queue;
-        this.request.setUri(uri);
-        this.request.setProtocol(HttpProtocolEnum.HTTP_11.getProtocol());
-        request.addHeader(HeaderNameEnum.HOST.getName(), host);
     }
 
     protected final void willSendRequest() {
@@ -139,8 +135,7 @@ public class HttpRest {
         try {
             willSendRequest();
             request.getOutputStream().flush();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Throwable e) {
             completableFuture.completeExceptionally(e);
         }
         return completableFuture;

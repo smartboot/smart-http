@@ -26,8 +26,8 @@ import java.util.function.Consumer;
  */
 public final class HttpPost extends HttpRest {
 
-    HttpPost(String uri, String host, AioSession session, AbstractQueue<QueueUnit> queue) {
-        super(uri, host, session, queue);
+    HttpPost(AioSession session, AbstractQueue<QueueUnit> queue) {
+        super(session, queue);
         request.setMethod(HttpMethodEnum.POST.getMethod());
     }
 
