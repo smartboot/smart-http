@@ -15,6 +15,8 @@ import org.smartboot.http.server.WebSocketHandler;
 import org.smartboot.http.server.WebSocketRequest;
 import org.smartboot.http.server.WebSocketResponse;
 import org.smartboot.http.server.impl.Request;
+import org.smartboot.http.server.impl.WebSocketRequestImpl;
+import org.smartboot.http.server.impl.WebSocketResponseImpl;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -45,7 +47,7 @@ public final class WebSocketRouteHandler extends WebSocketHandler {
     }
 
     @Override
-    public void onHeaderComplete(Request request) throws IOException {
+    public void willHeaderComplete(WebSocketRequestImpl request, WebSocketResponseImpl response) {
         String uri = request.getRequestURI();
         WebSocketHandler httpHandler = handlerMap.get(uri);
         if (httpHandler == null) {
@@ -60,7 +62,6 @@ public final class WebSocketRouteHandler extends WebSocketHandler {
             }
             handlerMap.put(uri, httpHandler);
         }
-        httpHandler.onHeaderComplete(request);
     }
 
     @Override
@@ -70,8 +71,7 @@ public final class WebSocketRouteHandler extends WebSocketHandler {
 
     @Override
     public void handle(WebSocketRequest request, WebSocketResponse response) throws IOException {
-        String uri = request.getRequestURI();
-        WebSocketHandler httpHandler = handlerMap.get(uri);
+        WebSocketHandler httpHandler = handlerMap.get(request.getRequestURI());
         httpHandler.handle(request, response);
     }
 

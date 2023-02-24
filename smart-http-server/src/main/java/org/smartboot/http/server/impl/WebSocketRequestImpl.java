@@ -20,7 +20,7 @@ import java.io.InputStream;
  * @version V1.0 , 2018/8/31
  */
 public class WebSocketRequestImpl extends AbstractRequest implements WebSocketRequest {
-    public static final byte OPCODE_CONT = 0x0;
+    public static final byte OPCODE_CONTINUE = 0x0;
     public static final byte OPCODE_TEXT = 0x1;
     public static final byte OPCODE_BINARY = 0x2;
     public static final byte OPCODE_CLOSE = 0x8;
@@ -32,6 +32,13 @@ public class WebSocketRequestImpl extends AbstractRequest implements WebSocketRe
     private boolean frameMasked;
     private int frameRsv;
     private int frameOpcode;
+
+    /**
+     * payload长度
+     */
+    private long payloadLength;
+
+    private byte[] maskingKey;
 
     public WebSocketRequestImpl(Request baseHttpRequest) {
         init(baseHttpRequest);
@@ -87,6 +94,22 @@ public class WebSocketRequestImpl extends AbstractRequest implements WebSocketRe
 
     public byte[] getPayload() {
         return payload.toByteArray();
+    }
+
+    public long getPayloadLength() {
+        return payloadLength;
+    }
+
+    public void setPayloadLength(long payloadLength) {
+        this.payloadLength = payloadLength;
+    }
+
+    public byte[] getMaskingKey() {
+        return maskingKey;
+    }
+
+    public void setMaskingKey(byte[] maskingKey) {
+        this.maskingKey = maskingKey;
     }
 
     public void setPayload(byte[] payload) {

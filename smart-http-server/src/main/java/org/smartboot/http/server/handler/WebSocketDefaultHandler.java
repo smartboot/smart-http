@@ -13,8 +13,8 @@ import org.smartboot.http.common.logging.LoggerFactory;
 import org.smartboot.http.server.WebSocketHandler;
 import org.smartboot.http.server.WebSocketRequest;
 import org.smartboot.http.server.WebSocketResponse;
-import org.smartboot.http.server.impl.Request;
 import org.smartboot.http.server.impl.WebSocketRequestImpl;
+import org.smartboot.http.server.impl.WebSocketResponseImpl;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -28,10 +28,8 @@ public class WebSocketDefaultHandler extends WebSocketHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketDefaultHandler.class);
 
     @Override
-    public void onHeaderComplete(Request request) throws IOException {
-        super.onHeaderComplete(request);
-        WebSocketRequestImpl webSocketRequest = request.newWebsocketRequest();
-        onHandShake(webSocketRequest, webSocketRequest.getResponse());
+    public void whenHeaderComplete(WebSocketRequestImpl request, WebSocketResponseImpl response) {
+        onHandShake(request, response);
     }
 
     @Override
@@ -57,11 +55,15 @@ public class WebSocketDefaultHandler extends WebSocketHandler {
                 case WebSocketRequestImpl.OPCODE_PONG:
 //                            LOGGER.warn("unSupport pong now");
                     break;
+                case WebSocketRequestImpl.OPCODE_CONTINUE:
+                    System.err.println("继续帧");
+                    System.out.println(new String(request.getPayload()));
+                    break;
                 default:
                     throw new UnsupportedOperationException();
             }
         } catch (Throwable throwable) {
-            onError(request,throwable);
+            onError(request, throwable);
             throw throwable;
         }
     }
@@ -114,7 +116,7 @@ public class WebSocketDefaultHandler extends WebSocketHandler {
      * @param request
      * @param throwable
      */
-    public void onError(WebSocketRequest request,Throwable throwable) {
+    public void onError(WebSocketRequest request, Throwable throwable) {
         throwable.printStackTrace();
     }
 }

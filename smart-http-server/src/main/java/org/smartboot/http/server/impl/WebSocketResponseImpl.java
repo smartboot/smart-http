@@ -89,7 +89,7 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
             if (offset == 0) {
                 firstByte |= opCode;
             } else {
-                firstByte |= WebSocketRequestImpl.OPCODE_CONT;
+                firstByte |= WebSocketRequestImpl.OPCODE_CONTINUE;
             }
             byte secondByte = length < Constant.WS_PLAY_LOAD_126 ? (byte) length : Constant.WS_PLAY_LOAD_126;
             writBytes[0] = firstByte;
