@@ -11,7 +11,7 @@ package org.smartboot.http.common.utils;
 import java.nio.charset.StandardCharsets;
 
 public interface Constant {
-    int WS_DEFAULT_MAX_FRAME_SIZE = (2 << 16) - 1;
+    int WS_DEFAULT_MAX_FRAME_SIZE = (1 << 15) - 1;
     int WS_PLAY_LOAD_126 = 126;
     int WS_PLAY_LOAD_127 = 127;
 
