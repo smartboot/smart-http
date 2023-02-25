@@ -57,7 +57,9 @@ public class WebSocketRequestImpl extends AbstractRequest implements WebSocketRe
     @Override
     public void reset() {
         request.setDecodePartEnum(DecodePartEnum.BODY);
-        payload.reset();
+        if (frameOpcode != WebSocketRequestImpl.OPCODE_CONTINUE) {
+            payload.reset();
+        }
     }
 
     public boolean isFrameFinalFlag() {

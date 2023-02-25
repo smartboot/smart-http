@@ -56,7 +56,6 @@ public class WebSocketDefaultHandler extends WebSocketHandler {
 //                            LOGGER.warn("unSupport pong now");
                     break;
                 case WebSocketRequestImpl.OPCODE_CONTINUE:
-                    System.err.println("继续帧");
                     System.out.println(new String(request.getPayload()));
                     break;
                 default:
