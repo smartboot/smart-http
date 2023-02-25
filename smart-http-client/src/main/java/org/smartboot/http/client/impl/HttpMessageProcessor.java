@@ -57,29 +57,30 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Response> {
                 }
             case FINISH:
                 queue.poll();
+                responseAttachment.setDecoder(null);
                 if (executorService == null) {
-                    try {
-                        queueUnit.getFuture().complete(response);
-                    } finally {
-                        if (!HeaderValueEnum.KEEPALIVE.getName().equals(response.getHeader(HeaderNameEnum.CONNECTION.getName()))) {
-                            session.close(false);
-                        }
-                    }
+                    responseCallback(session, response, queueUnit);
                 } else {
                     session.awaitRead();
                     executorService.execute(() -> {
-                        try {
-                            queueUnit.getFuture().complete(response);
-                        } finally {
-                            if (!HeaderValueEnum.KEEPALIVE.getName().equals(response.getHeader(HeaderNameEnum.CONNECTION.getName()))) {
-                                session.close(false);
-                            }
-                        }
+                        responseCallback(session, response, queueUnit);
                         session.signalRead();
                     });
                 }
                 break;
             default:
+        }
+    }
+
+    private void responseCallback(AioSession session, Response response, QueueUnit queueUnit) {
+        try {
+            queueUnit.getFuture().complete(response);
+        } finally {
+            if (!HeaderValueEnum.KEEPALIVE.getName().equalsIgnoreCase(response.getHeader(HeaderNameEnum.CONNECTION.getName()))) {
+                session.close(false);
+            } else {
+                response.reset();
+            }
         }
     }
 
