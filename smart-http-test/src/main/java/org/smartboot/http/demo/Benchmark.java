@@ -18,8 +18,6 @@ import java.io.IOException;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -48,15 +46,13 @@ public class Benchmark {
             }
         });
         BufferPagePool bufferPagePool = new BufferPagePool(10 * 1024 * 1024, threadNum, true);
-        ExecutorService executorService = Executors.newFixedThreadPool(threadNum);
         final HttpResponseProtocol protocol = new HttpResponseProtocol();
         final HttpMessageProcessor processor = new HttpMessageProcessor();
         List<HttpClient> httpClients = new ArrayList<>();
         for (int i = 0; i < connectCount; i++) {
             HttpClient httpClient = new HttpClient("127.0.0.1", 8080, protocol, processor);
             httpClient.setAsynchronousChannelGroup(asynchronousChannelGroup);
-            httpClient.setWriteBufferPool(bufferPagePool);
-            httpClient.connect();
+            httpClient.configuration().writeBufferPool(bufferPagePool);
             httpClients.add(httpClient);
         }
         System.out.println(httpClients.size() + " clients connect success");
@@ -75,7 +71,7 @@ public class Benchmark {
                     success.incrementAndGet();
 //                    System.out.println(response.body());
                     if (running.get()) {
-                        httpClient.get("/plaintext").onSuccess(this).onFailure(failure).send();
+                        httpClient.get("/plaintext").onSuccess(this).onFailure(failure).done();
                     } else {
                         httpClient.close();
                     }
@@ -85,7 +81,7 @@ public class Benchmark {
                 httpClient.get("/plaintext")
                         .onSuccess(consumer)
                         .onFailure(failure)
-                        .send();
+                        .done();
             }
         }
         System.out.println("all client started,cost:" + (System.currentTimeMillis() - startTime));

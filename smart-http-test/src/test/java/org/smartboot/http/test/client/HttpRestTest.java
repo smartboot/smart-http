@@ -13,6 +13,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.smartboot.http.client.HttpClient;
+import org.smartboot.http.common.enums.HeaderNameEnum;
+import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.server.HttpBootstrap;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
@@ -20,6 +22,9 @@ import org.smartboot.http.server.HttpServerHandler;
 import org.smartboot.http.server.handler.HttpRouteHandler;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -39,6 +44,7 @@ public class HttpRestTest {
         routeHandler.route("/post", new HttpServerHandler() {
             @Override
             public void handle(HttpRequest request, HttpResponse response) throws IOException {
+                response.setHeader(HeaderNameEnum.CONNECTION.getName(), HeaderValueEnum.keepalive.getName());
                 JSONObject jsonObject = new JSONObject();
                 for (String key : request.getParameters().keySet()) {
                     jsonObject.put(key, request.getParameter(key));
@@ -52,7 +58,6 @@ public class HttpRestTest {
     @Test
     public void testPost() throws ExecutionException, InterruptedException {
         HttpClient httpClient = new HttpClient("localhost", 8080);
-        httpClient.connect();
         Future<org.smartboot.http.client.HttpResponse> future = httpClient.rest("/post")
                 .setMethod("post")
                 .onSuccess(response -> {
@@ -63,8 +68,32 @@ public class HttpRestTest {
                     throwable.printStackTrace();
                     httpClient.close();
                 })
-                .send();
+                .done();
         System.out.println(future.get().body());
+    }
+
+    @Test
+    public void testKeepalive() throws InterruptedException {
+        HttpClient httpClient = new HttpClient("localhost", 8080);
+        httpClient.configuration().debug(false);
+        Map<String, String> form = new HashMap<>();
+        int count = 100;
+        CountDownLatch countDownLatch = new CountDownLatch(count);
+        for (int i = 0; i < count; i++) {
+            form.put("name" + i, "value" + i);
+            httpClient.post("/post").header().keepalive(true).done()
+                    .body().formUrlencoded(form)
+                    .onSuccess(httpResponse -> {
+                        countDownLatch.countDown();
+                        System.out.println(httpResponse.body());
+                    })
+                    .onFailure(throwable -> {
+                        countDownLatch.countDown();
+                        throwable.printStackTrace();
+                    }).done();
+        }
+        countDownLatch.await();
+        System.out.println("finish...");
     }
 
     @After

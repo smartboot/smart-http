@@ -182,6 +182,9 @@ class AbstractResponse implements HttpResponse, Reset {
             return true;
         } else if (name.equalsIgnoreCase(HeaderNameEnum.CONTENT_ENCODING.getName())) {
             gzip = HeaderValueEnum.GZIP.getName().equals(value);
+        } else if (name.equalsIgnoreCase(HeaderNameEnum.CONTENT_LENGTH.getName())) {
+            setContentLength(Integer.parseInt(value));
+            return true;
         }
         return false;
     }
@@ -256,6 +259,7 @@ class AbstractResponse implements HttpResponse, Reset {
         }
         cookies.add(cookie);
     }
+
     @Override
     public int getContentLength() {
         return contentLength;

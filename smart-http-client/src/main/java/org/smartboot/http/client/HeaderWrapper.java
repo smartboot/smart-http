@@ -1,0 +1,33 @@
+package org.smartboot.http.client;
+
+/**
+ * @author 三刀（zhengjunweimail@163.com）
+ * @version V1.0 , 2023/2/13
+ */
+class HeaderWrapper<T extends HttpRest> implements Header<T> {
+    private final T rest;
+
+    private final Header<? extends HttpRest> header;
+
+    public HeaderWrapper(T rest, Header<? extends HttpRest> header) {
+        this.rest = rest;
+        this.header = header;
+    }
+
+    @Override
+    public Header<T> add(String headerName, String headerValue) {
+        header.add(headerName, headerValue);
+        return this;
+    }
+
+    @Override
+    public Header<T> set(String headerName, String headerValue) {
+        header.set(headerName, headerValue);
+        return this;
+    }
+
+    @Override
+    public T done() {
+        return rest;
+    }
+}

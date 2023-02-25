@@ -14,8 +14,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.smartboot.http.client.HttpClient;
-import org.smartboot.http.client.HttpPost;
-import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpBootstrap;
@@ -78,7 +76,7 @@ public class HttpPostTest {
             public void handle(HttpRequest request, HttpResponse response) throws IOException {
                 ByteBuffer buffer = request.getAttachment();
                 buffer.flip();
-                byte[] bytes=new byte[buffer.remaining()];
+                byte[] bytes = new byte[buffer.remaining()];
                 buffer.get(bytes);
                 System.out.println(new String(bytes));
             }
@@ -90,44 +88,35 @@ public class HttpPostTest {
     public void testPost() throws ExecutionException, InterruptedException {
         CompletableFuture<Boolean> future = new CompletableFuture<>();
         HttpClient httpClient = new HttpClient("localhost", 8080);
-        httpClient.connect();
         Map<String, String> param = new HashMap<>();
         param.put("name", "zhouyu");
         param.put("age", "18");
-        httpClient.post("/post_param")
-                .setContentType(HeaderValueEnum.X_WWW_FORM_URLENCODED.getName())
-                .onSuccess(response -> {
-                    System.out.println(response.body());
-                    JSONObject jsonObject = JSONObject.parseObject(response.body());
-                    boolean suc = false;
-                    for (String key : param.keySet()) {
-                        suc = StringUtils.equals(param.get(key), jsonObject.getString(key));
-                        if (!suc) {
-                            break;
-                        }
-                    }
-                    httpClient.close();
-                    future.complete(suc);
-                })
-                .onFailure(throwable -> {
-                    System.out.println("异常A: " + throwable.getMessage());
-                    throwable.printStackTrace();
-                    Assert.fail();
-                    future.complete(false);
-                }).sendForm(param);
+        httpClient.post("/post_param").header().setContentType(HeaderValueEnum.X_WWW_FORM_URLENCODED.getName()).done().onSuccess(response -> {
+            System.out.println(response.body());
+            JSONObject jsonObject = JSONObject.parseObject(response.body());
+            boolean suc = false;
+            for (String key : param.keySet()) {
+                suc = StringUtils.equals(param.get(key), jsonObject.getString(key));
+                if (!suc) {
+                    break;
+                }
+            }
+            httpClient.close();
+            future.complete(suc);
+        }).onFailure(throwable -> {
+            System.out.println("异常A: " + throwable.getMessage());
+            throwable.printStackTrace();
+            Assert.fail();
+            future.complete(false);
+        }).body().formUrlencoded(param);
         Assert.assertTrue(future.get());
     }
 
     @Test
     public void testJson() throws InterruptedException {
         HttpClient httpClient = new HttpClient("localhost", 8080);
-        httpClient.connect();
         byte[] jsonBytes = "{\"a\":1,\"b\":\"123\"}".getBytes(StandardCharsets.UTF_8);
-        httpClient.post("/json")
-                .setContentType("application/json")
-                .addHeader(HeaderNameEnum.CONTENT_LENGTH.getName(), String.valueOf(jsonBytes.length))
-                .bodyStream()
-                .write(jsonBytes, 0, jsonBytes.length).flush();
+        httpClient.post("/json").header().setContentLength(jsonBytes.length).setContentType("application/json").done().body().write(jsonBytes).flush().done();
         Thread.sleep(100);
     }
 

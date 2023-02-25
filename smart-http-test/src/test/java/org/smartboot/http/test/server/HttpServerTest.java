@@ -96,9 +96,9 @@ public class HttpServerTest extends BastTest {
         StringBuilder uriStr = new StringBuilder(requestUnit.getUri()).append("?");
         requestUnit.getParameters().forEach((key, value) -> uriStr.append(key).append('=').append(value).append('&'));
         HttpGet httpGet = httpClient.get(uriStr.toString());
-        requestUnit.getHeaders().forEach(httpGet::addHeader);
+        requestUnit.getHeaders().forEach((name, value) -> httpGet.header().add(name, value));
 
-        JSONObject jsonObject = basicCheck(httpGet.send().get(), requestUnit);
+        JSONObject jsonObject = basicCheck(httpGet.done().get(), requestUnit);
         Assert.assertEquals(HttpMethodEnum.GET.getMethod(), jsonObject.get(KEY_METHOD));
     }
 
@@ -108,16 +108,16 @@ public class HttpServerTest extends BastTest {
         requestUnit.getParameters().put("author", "三刀");
         HttpGet httpGet = httpClient.get(requestUnit.getUri());
         requestUnit.getParameters().forEach(httpGet::addQueryParam);
-        requestUnit.getHeaders().forEach(httpGet::addHeader);
+        requestUnit.getHeaders().forEach((name, value) -> httpGet.header().add(name, value));
 
-        JSONObject jsonObject = basicCheck(httpGet.send().get(), requestUnit);
+        JSONObject jsonObject = basicCheck(httpGet.done().get(), requestUnit);
         Assert.assertEquals(HttpMethodEnum.GET.getMethod(), jsonObject.get(KEY_METHOD));
     }
 
     @Test
     public void testGet2() throws ExecutionException, InterruptedException {
         HttpClient httpClient = getHttpClient();
-        org.smartboot.http.client.HttpResponse response = httpClient.get("/hello?").addQueryParam("author", "三刀").addQueryParam("abc", "123").send().get();
+        org.smartboot.http.client.HttpResponse response = httpClient.get("/hello?").addQueryParam("author", "三刀").addQueryParam("abc", "123").done().get();
 
         JSONObject jsonObject = JSON.parseObject(response.body());
         JSONObject parameters = jsonObject.getJSONObject(KEY_PARAMETERS);
@@ -129,7 +129,7 @@ public class HttpServerTest extends BastTest {
     @Test
     public void testGet3() throws ExecutionException, InterruptedException {
         HttpClient httpClient = getHttpClient();
-        org.smartboot.http.client.HttpResponse response = httpClient.get("/hello").addQueryParam("author", "三刀").addQueryParam("abc", "123").send().get();
+        org.smartboot.http.client.HttpResponse response = httpClient.get("/hello").addQueryParam("author", "三刀").addQueryParam("abc", "123").done().get();
 
         JSONObject jsonObject = JSON.parseObject(response.body());
         JSONObject parameters = jsonObject.getJSONObject(KEY_PARAMETERS);
@@ -141,7 +141,7 @@ public class HttpServerTest extends BastTest {
     @Test
     public void testGet4() throws ExecutionException, InterruptedException {
         HttpClient httpClient = getHttpClient();
-        org.smartboot.http.client.HttpResponse response = httpClient.get("/hello#").addQueryParam("author", "三刀").addQueryParam("abc", "123").send().get();
+        org.smartboot.http.client.HttpResponse response = httpClient.get("/hello#").addQueryParam("author", "三刀").addQueryParam("abc", "123").done().get();
 
         JSONObject jsonObject = JSON.parseObject(response.body());
         JSONObject parameters = jsonObject.getJSONObject(KEY_PARAMETERS);
@@ -153,7 +153,7 @@ public class HttpServerTest extends BastTest {
     @Test
     public void testGet5() throws ExecutionException, InterruptedException {
         HttpClient httpClient = getHttpClient();
-        org.smartboot.http.client.HttpResponse response = httpClient.get("/hello#abca=sdf").addQueryParam("author", "三刀").addQueryParam("abc", "123").send().get();
+        org.smartboot.http.client.HttpResponse response = httpClient.get("/hello#abca=sdf").addQueryParam("author", "三刀").addQueryParam("abc", "123").done().get();
 
         JSONObject jsonObject = JSON.parseObject(response.body());
         JSONObject parameters = jsonObject.getJSONObject(KEY_PARAMETERS);
@@ -165,7 +165,7 @@ public class HttpServerTest extends BastTest {
     @Test
     public void testGet6() throws ExecutionException, InterruptedException {
         HttpClient httpClient = getHttpClient();
-        org.smartboot.http.client.HttpResponse response = httpClient.get("/hello?a=b#abca=sdf").addQueryParam("author", "三刀").addQueryParam("abc", "123").send().get();
+        org.smartboot.http.client.HttpResponse response = httpClient.get("/hello?a=b#abca=sdf").addQueryParam("author", "三刀").addQueryParam("abc", "123").done().get();
 
         JSONObject jsonObject = JSON.parseObject(response.body());
         JSONObject parameters = jsonObject.getJSONObject(KEY_PARAMETERS);
@@ -178,7 +178,7 @@ public class HttpServerTest extends BastTest {
     @Test
     public void testGet7() throws ExecutionException, InterruptedException {
         HttpClient httpClient = getHttpClient();
-        org.smartboot.http.client.HttpResponse response = httpClient.get("/hello?#abca=sdf").addQueryParam("author", "三刀").addQueryParam("abc", "123").send().get();
+        org.smartboot.http.client.HttpResponse response = httpClient.get("/hello?#abca=sdf").addQueryParam("author", "三刀").addQueryParam("abc", "123").done().get();
 
         JSONObject jsonObject = JSON.parseObject(response.body());
         JSONObject parameters = jsonObject.getJSONObject(KEY_PARAMETERS);
@@ -191,10 +191,10 @@ public class HttpServerTest extends BastTest {
     public void testPost() throws ExecutionException, InterruptedException {
         HttpClient httpClient = getHttpClient();
         HttpPost httpPost = httpClient.post(requestUnit.getUri());
-        requestUnit.getHeaders().forEach(httpPost::addHeader);
-        httpPost.sendForm(requestUnit.getParameters());
+        requestUnit.getHeaders().forEach((name, value) -> httpPost.header().add(name, value));
+        httpPost.body().formUrlencoded(requestUnit.getParameters());
 
-        JSONObject jsonObject = basicCheck(httpPost.send().get(), requestUnit);
+        JSONObject jsonObject = basicCheck(httpPost.done().get(), requestUnit);
         Assert.assertEquals(HttpMethodEnum.POST.getMethod(), jsonObject.get(KEY_METHOD));
     }
 
@@ -202,11 +202,11 @@ public class HttpServerTest extends BastTest {
     public void testPost1() throws ExecutionException, InterruptedException {
         HttpClient httpClient = getHttpClient();
         HttpPost httpPost = httpClient.post(requestUnit.getUri());
-        requestUnit.getHeaders().forEach(httpPost::addHeader);
+        requestUnit.getHeaders().forEach((name, value) -> httpPost.header().add(name, value));
         requestUnit.getParameters().put("author", "三刀");
-        httpPost.sendForm(requestUnit.getParameters());
+        httpPost.body().formUrlencoded(requestUnit.getParameters());
 
-        JSONObject jsonObject = basicCheck(httpPost.send().get(), requestUnit);
+        JSONObject jsonObject = basicCheck(httpPost.done().get(), requestUnit);
         Assert.assertEquals(HttpMethodEnum.POST.getMethod(), jsonObject.get(KEY_METHOD));
     }
 
@@ -215,13 +215,13 @@ public class HttpServerTest extends BastTest {
         bootstrap.configuration().readBufferSize(2 * 1024 * 1024);
         HttpClient httpClient = getHttpClient();
         HttpPost httpPost = httpClient.post(requestUnit.getUri());
-        requestUnit.getHeaders().forEach(httpPost::addHeader);
+        requestUnit.getHeaders().forEach((name, value) -> httpPost.header().add(name, value));
         for (int i = 0; i < 10000; i++) {
             requestUnit.getParameters().put("author" + i, "三刀" + i);
         }
-        httpPost.sendForm(requestUnit.getParameters());
+        httpPost.body().formUrlencoded(requestUnit.getParameters());
 
-        JSONObject jsonObject = basicCheck(httpPost.send().get(), requestUnit);
+        JSONObject jsonObject = basicCheck(httpPost.done().get(), requestUnit);
         Assert.assertEquals(HttpMethodEnum.POST.getMethod(), jsonObject.get(KEY_METHOD));
     }
 
@@ -230,16 +230,16 @@ public class HttpServerTest extends BastTest {
         bootstrap.configuration().readBufferSize(2 * 1024 * 1024);
         HttpClient httpClient = getHttpClient();
         HttpPost httpPost = httpClient.post(requestUnit.getUri());
-        requestUnit.getHeaders().forEach(httpPost::addHeader);
+        requestUnit.getHeaders().forEach((name, value) -> httpPost.header().add(name, value));
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("author").append("=").append("三刀");
         for (int i = 0; i < 10000; i++) {
             stringBuilder.append("&").append("author").append(i).append("=").append("三刀").append(i);
         }
-        httpPost.addHeader("longText", stringBuilder.toString());
-        httpPost.sendForm(requestUnit.getParameters());
+        httpPost.header().add("longText", stringBuilder.toString());
+        httpPost.body().formUrlencoded(requestUnit.getParameters());
 
-        JSONObject jsonObject = basicCheck(httpPost.send().get(), requestUnit);
+        JSONObject jsonObject = basicCheck(httpPost.done().get(), requestUnit);
         Assert.assertEquals(HttpMethodEnum.POST.getMethod(), jsonObject.get(KEY_METHOD));
     }
 
@@ -272,10 +272,10 @@ public class HttpServerTest extends BastTest {
         bootstrap.configuration().readBufferSize(16);
         HttpClient httpClient = getHttpClient();
         HttpPost httpPost = httpClient.post(requestUnit.getUri());
-        requestUnit.getHeaders().forEach(httpPost::addHeader);
-        httpPost.addHeader("overfLow", "1234567890abcdefghi");
+        requestUnit.getHeaders().forEach((name, value) -> httpPost.header().add(name, value));
+        httpPost.header().add("overfLow", "1234567890abcdefghi");
 
-        org.smartboot.http.client.HttpResponse response = httpPost.send().get();
+        org.smartboot.http.client.HttpResponse response = httpPost.done().get();
         Assert.assertEquals(response.getStatus(), HttpStatus.REQUEST_HEADER_FIELDS_TOO_LARGE.value());
     }
 
@@ -290,9 +290,9 @@ public class HttpServerTest extends BastTest {
         bootstrap.configuration().readBufferSize(16);
         HttpClient httpClient = getHttpClient();
         HttpPost httpPost = httpClient.post(requestUnit.getUri());
-        httpPost.addHeader("1234567890abcdefghi", "1234567890abcdefghi");
+        httpPost.header().add("1234567890abcdefghi", "1234567890abcdefghi");
 
-        org.smartboot.http.client.HttpResponse response = httpPost.send().get();
+        org.smartboot.http.client.HttpResponse response = httpPost.done().get();
         Assert.assertEquals(response.getStatus(), HttpStatus.INTERNAL_SERVER_ERROR.value());
     }
 

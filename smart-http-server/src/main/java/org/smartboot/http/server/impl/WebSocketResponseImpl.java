@@ -30,7 +30,7 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
 
     @Override
     public void sendTextMessage(String text) {
-        if(LOGGER.isInfoEnabled())
+        if (LOGGER.isInfoEnabled())
             LOGGER.info("发送字符串消息: " + text);
         byte[] bytes = text.getBytes(StandardCharsets.UTF_8);
         try {
@@ -42,10 +42,10 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
 
     @Override
     public void sendBinaryMessage(byte[] bytes) {
-        if(LOGGER.isInfoEnabled())
+        if (LOGGER.isInfoEnabled())
             LOGGER.info("发送二进制消息: " + Arrays.toString(bytes));
         try {
-            send(WebSocketRequestImpl.OPCODE_BINARY, bytes,0, bytes.length);
+            send(WebSocketRequestImpl.OPCODE_BINARY, bytes, 0, bytes.length);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -53,11 +53,11 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
 
     @Override
     public void sendBinaryMessage(byte[] bytes, int offset, int length) {
-      try {
-        send(WebSocketRequestImpl.OPCODE_BINARY, bytes, offset, length);
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
+        try {
+            send(WebSocketRequestImpl.OPCODE_BINARY, bytes, offset, length);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -70,11 +70,9 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
     }
 
     private void send(byte opCode, byte[] bytes, int offset, int len) throws IOException {
-      int maxlength;
+        int maxlength;
         if (len < Constant.WS_PLAY_LOAD_126) {
             maxlength = 2 + len;
-        } else if (len < Constant.WS_DEFAULT_MAX_FRAME_SIZE) {
-            maxlength = 4 + len;
         } else {
             maxlength = 4 + Constant.WS_DEFAULT_MAX_FRAME_SIZE;
         }
@@ -89,7 +87,7 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
             if (offset == 0) {
                 firstByte |= opCode;
             } else {
-                firstByte |= WebSocketRequestImpl.OPCODE_CONT;
+                firstByte |= WebSocketRequestImpl.OPCODE_CONTINUE;
             }
             byte secondByte = length < Constant.WS_PLAY_LOAD_126 ? (byte) length : Constant.WS_PLAY_LOAD_126;
             writBytes[0] = firstByte;

@@ -55,9 +55,9 @@ class RestHandler extends HttpServerHandler {
                     if (bodyBuffer != null || request.getContentLength() > 0 && request.getContentType().startsWith("application/json")) {
                         if (bodyBuffer == null) {
                             bodyBuffer = ByteBuffer.allocate(request.getContentLength());
-                            request.setAttachment(buffer);
+                            request.setAttachment(bodyBuffer);
                         }
-                        if (buffer.remaining() < bodyBuffer.remaining()) {
+                        if (buffer.remaining() <= bodyBuffer.remaining()) {
                             bodyBuffer.put(buffer);
                         } else {
                             int limit = buffer.limit();

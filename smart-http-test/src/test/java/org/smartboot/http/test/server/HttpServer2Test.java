@@ -61,7 +61,7 @@ public class HttpServer2Test extends BastTest {
                 response.write("Hello World".getBytes(StandardCharsets.UTF_8));
             }
         }).setPort(SERVER_PORT);
-        org.smartboot.http.client.HttpResponse httpResponse = httpClient.get("/").send().get();
+        org.smartboot.http.client.HttpResponse httpResponse = httpClient.get("/").done().get();
         Assert.assertEquals(httpResponse.getContentType(), "test");
         Assert.assertEquals(httpResponse.getHeader(HeaderNameEnum.TRANSFER_ENCODING.getName()), HeaderValueEnum.CHUNKED.getName());
     }
@@ -74,7 +74,7 @@ public class HttpServer2Test extends BastTest {
                 response.write("Hello World".getBytes(StandardCharsets.UTF_8));
             }
         }).setPort(SERVER_PORT);
-        org.smartboot.http.client.HttpResponse httpResponse = httpClient.get("/").send().get();
+        org.smartboot.http.client.HttpResponse httpResponse = httpClient.get("/").done().get();
         Assert.assertEquals(httpResponse.getProtocol(), HttpProtocolEnum.HTTP_11.getProtocol());
         Assert.assertEquals(httpResponse.getHeader(HeaderNameEnum.TRANSFER_ENCODING.getName()), HeaderValueEnum.CHUNKED.getName());
     }
@@ -87,7 +87,7 @@ public class HttpServer2Test extends BastTest {
                 response.write("Hello World".getBytes(StandardCharsets.UTF_8));
             }
         }).setPort(SERVER_PORT);
-        org.smartboot.http.client.HttpResponse httpResponse = httpClient.rest("/").setMethod(HttpMethodEnum.PUT.getMethod()).send().get();
+        org.smartboot.http.client.HttpResponse httpResponse = httpClient.rest("/").setMethod(HttpMethodEnum.PUT.getMethod()).done().get();
         Assert.assertEquals(httpResponse.getProtocol(), HttpProtocolEnum.HTTP_11.getProtocol());
         Assert.assertEquals(httpResponse.getStatus(), HttpStatus.OK.value());
     }

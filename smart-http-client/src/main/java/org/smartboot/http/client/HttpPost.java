@@ -26,49 +26,50 @@ import java.util.function.Consumer;
  */
 public final class HttpPost extends HttpRest {
 
-    HttpPost(String uri, String host, AioSession session, AbstractQueue<QueueUnit> queue) {
-        super(uri, host, session, queue);
+    HttpPost(AioSession session, AbstractQueue<QueueUnit> queue) {
+        super(session, queue);
         request.setMethod(HttpMethodEnum.POST.getMethod());
     }
 
     @Override
-    public HttpRest setMethod(String method) {
+    public HttpRest setMethod(String method) throws UnsupportedOperationException{
         throw new UnsupportedOperationException();
     }
 
-    public void sendForm(Map<String, String> params) {
-        if (params == null || params.isEmpty()) {
-            super.send();
-            return;
-        }
-        try {
-            willSendRequest();
-            //编码Post表单
-            Iterator<Map.Entry<String, String>> iterator = params.entrySet().iterator();
-            Map.Entry<String, String> entry = iterator.next();
-            StringBuilder sb = new StringBuilder();
-            sb.append(URLEncoder.encode(entry.getKey(), "utf8")).append("=").append(URLEncoder.encode(entry.getValue(), "utf8"));
-            while (iterator.hasNext()) {
-                entry = iterator.next();
-                sb.append("&").append(URLEncoder.encode(entry.getKey(), "utf8")).append("=").append(URLEncoder.encode(entry.getValue(), "utf8"));
-            }
-            byte[] bytes = sb.toString().getBytes();
-            // 设置 Header
-            addHeader(HeaderNameEnum.CONTENT_LENGTH.getName(), String.valueOf(bytes.length));
-            addHeader(HeaderNameEnum.CONTENT_TYPE.getName(), HeaderValueEnum.X_WWW_FORM_URLENCODED.getName());
-            //输出数据
-            request.write(bytes);
-            request.getOutputStream().flush();
-        } catch (Exception e) {
-            e.printStackTrace();
-            completableFuture.completeExceptionally(e);
-        }
-    }
-
     @Override
-    public HttpPost addHeader(String headerName, String headerValue) {
-        super.addHeader(headerName, headerValue);
-        return this;
+    public PostBody body() {
+        return new PostBody(super.body(), this) {
+            @Override
+            public HttpPost formUrlencoded(Map<String, String> params) {
+                if (params == null || params.isEmpty()) {
+                    HttpPost.this.done();
+                    return HttpPost.this;
+                }
+                try {
+                    willSendRequest();
+                    //编码Post表单
+                    Iterator<Map.Entry<String, String>> iterator = params.entrySet().iterator();
+                    Map.Entry<String, String> entry = iterator.next();
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(URLEncoder.encode(entry.getKey(), "utf8")).append("=").append(URLEncoder.encode(entry.getValue(), "utf8"));
+                    while (iterator.hasNext()) {
+                        entry = iterator.next();
+                        sb.append("&").append(URLEncoder.encode(entry.getKey(), "utf8")).append("=").append(URLEncoder.encode(entry.getValue(), "utf8"));
+                    }
+                    byte[] bytes = sb.toString().getBytes();
+                    // 设置 Header
+                    request.addHeader(HeaderNameEnum.CONTENT_LENGTH.getName(), String.valueOf(bytes.length));
+                    request.addHeader(HeaderNameEnum.CONTENT_TYPE.getName(), HeaderValueEnum.X_WWW_FORM_URLENCODED.getName());
+                    //输出数据
+                    request.write(bytes);
+                    request.getOutputStream().flush();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    completableFuture.completeExceptionally(e);
+                }
+                return HttpPost.this;
+            }
+        };
     }
 
     @Override
@@ -83,8 +84,8 @@ public final class HttpPost extends HttpRest {
         return this;
     }
 
-    public HttpPost setContentType(String contentType) {
-        request.setContentType(contentType);
-        return this;
+    @Override
+    public Header<HttpPost> header() {
+        return new HeaderWrapper<>(this, super.header());
     }
 }

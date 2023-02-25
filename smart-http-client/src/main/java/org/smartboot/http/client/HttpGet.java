@@ -21,13 +21,13 @@ import java.util.function.Consumer;
  */
 public class HttpGet extends HttpRest {
 
-    HttpGet(String uri, String host, AioSession session, AbstractQueue<QueueUnit> queue) {
-        super(uri, host, session, queue);
+    HttpGet(AioSession session, AbstractQueue<QueueUnit> queue) {
+        super(session, queue);
         request.setMethod(HttpMethodEnum.GET.getMethod());
     }
 
     @Override
-    public HttpGet setMethod(String method) {
+    public HttpGet setMethod(String method) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
 
@@ -41,5 +41,10 @@ public class HttpGet extends HttpRest {
     public HttpGet onFailure(Consumer<Throwable> consumer) {
         super.onFailure(consumer);
         return this;
+    }
+
+    @Override
+    public Header<HttpGet> header() {
+        return new HeaderWrapper<>(this, super.header());
     }
 }
