@@ -16,6 +16,7 @@ import org.smartboot.socket.extension.plugins.Plugin;
 import org.smartboot.socket.extension.plugins.StreamMonitorPlugin;
 
 import java.io.IOException;
+import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -76,6 +77,8 @@ public class HttpServerConfiguration {
      * Form长度上限
      */
     private int maxFormContentSize = Constant.maxPostSize;
+
+    private AsynchronousChannelGroup group;
 
     private HttpServerHandler httpServerHandler = new HttpServerHandler() {
         @Override
@@ -250,5 +253,14 @@ public class HttpServerConfiguration {
 
     public List<Plugin<Request>> getPlugins() {
         return plugins;
+    }
+
+    public AsynchronousChannelGroup group() {
+        return group;
+    }
+
+    public HttpServerConfiguration group(AsynchronousChannelGroup group) {
+        this.group = group;
+        return this;
     }
 }

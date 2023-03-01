@@ -22,11 +22,14 @@ import org.smartboot.http.server.HttpServerHandler;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URLDecoder;
-import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 静态资源加载Handle
@@ -37,23 +40,18 @@ import java.util.Date;
 public class HttpStaticResourceHandler extends HttpServerHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpStaticResourceHandler.class);
     private static final int READ_BUFFER = 1024 * 1024;
-    private static final String URL_404 =
-            "<html>" +
-                    "<head>" +
-                    "<title>smart-http 404</title>" +
-                    "</head>" +
-                    "<body><h1>smart-http 找不到你所请求的地址资源，404</h1></body>" +
-                    "</html>";
+    private static final String URL_404 = "<html>" + "<head>" + "<title>smart-http 404</title>" + "</head>" + "<body><h1>smart-http 找不到你所请求的地址资源，404</h1></body>" + "</html>";
 
     private final File baseDir;
+
+    private Map<String, FileChannel> channelMap = new ConcurrentHashMap<>();
 
     public HttpStaticResourceHandler(String baseDir) {
         this.baseDir = new File(new File(baseDir).getAbsolutePath());
         if (!this.baseDir.isDirectory()) {
             throw new RuntimeException(baseDir + " is not a directory");
         }
-        if (LOGGER.isInfoEnabled())
-            LOGGER.info("dir is:{}", this.baseDir.getAbsolutePath());
+        if (LOGGER.isInfoEnabled()) LOGGER.info("dir is:{}", this.baseDir.getAbsolutePath());
     }
 
     @Override
@@ -63,9 +61,10 @@ public class HttpStaticResourceHandler extends HttpServerHandler {
         if (StringUtils.endsWith(fileName, "/")) {
             fileName += "index.html";
         }
-        if (LOGGER.isInfoEnabled())
+        if (LOGGER.isInfoEnabled()) {
             LOGGER.info("请求URL: " + fileName);
-        File file = new File(baseDir, URLDecoder.decode(fileName, "utf8"));
+        }
+        File file = new File(baseDir, URLDecoder.decode(fileName, StandardCharsets.UTF_8));
         //404
         if (!file.isFile()) {
             LOGGER.warn("file: {} not found!", request.getRequestURI());
@@ -93,6 +92,7 @@ public class HttpStaticResourceHandler extends HttpServerHandler {
 
         String contentType = Mimetypes.getInstance().getMimetype(file);
         response.setHeader(HeaderNameEnum.CONTENT_TYPE.getName(), contentType + "; charset=utf-8");
+        response.setContentLength((int) file.length());
         //HEAD不输出内容
         if (HttpMethodEnum.HEAD.getMethod().equals(method)) {
             return;
@@ -103,18 +103,26 @@ public class HttpStaticResourceHandler extends HttpServerHandler {
         }
 
 
-        FileInputStream fis = new FileInputStream(file);
-        FileChannel fileChannel = fis.getChannel();
-        long fileSize = fileChannel.size();
+        FileChannel fileChannel = channelMap.computeIfAbsent(file.getName(), s -> {
+            FileInputStream fis = null;
+            try {
+                fis = new FileInputStream(file);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                throw new RuntimeException(e);
+            }
+            return fis.getChannel();
+        });
+        long fileSize = response.getContentLength();
         long readPos = 0;
         while (readPos < fileSize) {
-            MappedByteBuffer mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, readPos, fileSize - readPos > READ_BUFFER ? READ_BUFFER : fileSize - readPos);
-            readPos += mappedByteBuffer.remaining();
-            byte[] data = new byte[mappedByteBuffer.remaining()];
-            mappedByteBuffer.get(data);
-            response.write(data);
+            long length = (fileSize - readPos) > READ_BUFFER ? READ_BUFFER : (fileSize - readPos);
+            fileChannel.transferTo(readPos, length, response.getOutputStream());
+//            MappedByteBuffer mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, readPos, fileSize - readPos > READ_BUFFER ? READ_BUFFER : fileSize - readPos);
+            readPos += length;
+//            byte[] data = new byte[mappedByteBuffer.remaining()];
+//            mappedByteBuffer.get(data);
+//            response.write(data);
         }
-        fileChannel.close();
-        fis.close();
     }
 }

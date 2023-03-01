@@ -93,6 +93,7 @@ public class HttpBootstrap {
 
     /**
      * 启动HTTP服务
+     *
      * @throws RuntimeException
      */
     public void start() {
@@ -110,7 +111,12 @@ public class HttpBootstrap {
             if (configuration.isBannerEnabled()) {
                 System.out.println(BANNER + "\r\n :: smart-http :: (" + VERSION + ")");
             }
-            server.start();
+            if (configuration.group() == null) {
+                server.start();
+            } else {
+                server.start(configuration.group());
+            }
+
         } catch (IOException e) {
             throw new RuntimeException("server start error.", e);
         }
