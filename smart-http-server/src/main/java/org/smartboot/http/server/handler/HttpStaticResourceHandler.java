@@ -92,15 +92,12 @@ public class HttpStaticResourceHandler extends HttpServerHandler {
 
         String contentType = Mimetypes.getInstance().getMimetype(file);
         response.setHeader(HeaderNameEnum.CONTENT_TYPE.getName(), contentType + "; charset=utf-8");
-        response.setContentLength((int) file.length());
         //HEAD不输出内容
         if (HttpMethodEnum.HEAD.getMethod().equals(method)) {
             return;
         }
 
-        if (!file.getName().endsWith("html") && !file.getName().endsWith("htm")) {
-            response.setContentLength((int) file.length());
-        }
+        response.setContentLength((int) file.length());
 
 
         FileChannel fileChannel = channelMap.computeIfAbsent(file.getName(), s -> {
@@ -118,11 +115,7 @@ public class HttpStaticResourceHandler extends HttpServerHandler {
         while (readPos < fileSize) {
             long length = (fileSize - readPos) > READ_BUFFER ? READ_BUFFER : (fileSize - readPos);
             fileChannel.transferTo(readPos, length, response.getOutputStream());
-//            MappedByteBuffer mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, readPos, fileSize - readPos > READ_BUFFER ? READ_BUFFER : fileSize - readPos);
             readPos += length;
-//            byte[] data = new byte[mappedByteBuffer.remaining()];
-//            mappedByteBuffer.get(data);
-//            response.write(data);
         }
     }
 }
