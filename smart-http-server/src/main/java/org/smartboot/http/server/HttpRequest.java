@@ -9,6 +9,7 @@
 package org.smartboot.http.server;
 
 import org.smartboot.http.common.Cookie;
+import org.smartboot.socket.util.Attachment;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -119,13 +120,12 @@ public interface HttpRequest {
      * @param <A> 附件对象类型
      * @return 附件
      */
-    <A> A getAttachment();
+    Attachment getAttachment();
 
     /**
      * 存放附件，支持任意类型
      *
-     * @param <A>        附件对象类型
      * @param attachment 附件对象
      */
-    <A> void setAttachment(A attachment);
+    void setAttachment(Attachment attachment);
 }

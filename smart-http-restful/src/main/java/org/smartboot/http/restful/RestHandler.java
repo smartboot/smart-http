@@ -14,6 +14,8 @@ import org.smartboot.http.server.HttpResponse;
 import org.smartboot.http.server.HttpServerHandler;
 import org.smartboot.http.server.handler.HttpRouteHandler;
 import org.smartboot.http.server.impl.Request;
+import org.smartboot.socket.util.AttachKey;
+import org.smartboot.socket.util.Attachment;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -28,6 +30,7 @@ import java.util.function.BiConsumer;
  */
 class RestHandler extends HttpServerHandler {
     private final HttpRouteHandler httpRouteHandler;
+    private AttachKey<ByteBuffer> bodyBufferKey = AttachKey.valueOf("bodyBuffer");
     private BiConsumer<HttpRequest, HttpResponse> inspect = (httpRequest, response) -> {
     };
     private final MethodInterceptor interceptor = MethodInvocation::proceed;
@@ -51,11 +54,19 @@ class RestHandler extends HttpServerHandler {
             httpRouteHandler.route(mappingUrl, new HttpServerHandler() {
                 @Override
                 public boolean onBodyStream(ByteBuffer buffer, Request request) {
-                    ByteBuffer bodyBuffer = request.getAttachment();
+                    Attachment attachment = request.getAttachment();
+                    ByteBuffer bodyBuffer = null;
+                    if (attachment != null) {
+                        bodyBuffer = attachment.get(bodyBufferKey);
+                    }
                     if (bodyBuffer != null || request.getContentLength() > 0 && request.getContentType().startsWith("application/json")) {
                         if (bodyBuffer == null) {
                             bodyBuffer = ByteBuffer.allocate(request.getContentLength());
-                            request.setAttachment(bodyBuffer);
+                            if (attachment == null) {
+                                attachment = new Attachment();
+                                request.setAttachment(attachment);
+                            }
+                            attachment.put(bodyBufferKey, bodyBuffer);
                         }
                         if (buffer.remaining() <= bodyBuffer.remaining()) {
                             bodyBuffer.put(buffer);
@@ -76,7 +87,12 @@ class RestHandler extends HttpServerHandler {
                     try {
                         Type[] types = method.getGenericParameterTypes();
                         Object[] params = new Object[types.length];
-                        ByteBuffer bodyBuffer = request.getAttachment();
+                        Attachment attachment = request.getAttachment();
+                        ByteBuffer bodyBuffer = null;
+                        if (attachment != null) {
+                            bodyBuffer = attachment.get(bodyBufferKey);
+                        }
+
                         for (int i = 0; i < types.length; i++) {
                             Type type = types[i];
                             if (type == HttpRequest.class) {

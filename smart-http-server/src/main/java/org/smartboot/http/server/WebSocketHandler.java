@@ -13,11 +13,12 @@ import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.utils.SHA1;
 import org.smartboot.http.server.decode.websocket.BasicFrameDecoder;
-import org.smartboot.http.server.decode.websocket.BodyAttachment;
 import org.smartboot.http.server.decode.websocket.Decoder;
 import org.smartboot.http.server.impl.Request;
 import org.smartboot.http.server.impl.WebSocketRequestImpl;
 import org.smartboot.http.server.impl.WebSocketResponseImpl;
+import org.smartboot.socket.util.AttachKey;
+import org.smartboot.socket.util.Attachment;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -32,6 +33,9 @@ import java.util.Base64;
  */
 public abstract class WebSocketHandler implements ServerHandler<WebSocketRequest, WebSocketResponse> {
     public static final String WEBSOCKET_13_ACCEPT_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+
+    private static final AttachKey<Decoder> FRAME_DECODER_KEY = AttachKey.valueOf("ws_frame_decoder");
+
     private final Decoder basicFrameDecoder = new BasicFrameDecoder();
 
     public static final Decoder PAYLOAD_FINISH = new Decoder() {
@@ -61,8 +65,8 @@ public abstract class WebSocketHandler implements ServerHandler<WebSocketRequest
         OutputStream outputStream = response.getOutputStream();
         outputStream.flush();
 
-        BodyAttachment attachment = new BodyAttachment();
-        attachment.setDecoder(basicFrameDecoder);
+        Attachment attachment = new Attachment();
+        attachment.put(FRAME_DECODER_KEY, basicFrameDecoder);
         webSocketRequest.setAttachment(attachment);
         whenHeaderComplete(webSocketRequest, response);
     }
@@ -73,13 +77,13 @@ public abstract class WebSocketHandler implements ServerHandler<WebSocketRequest
 
     @Override
     public boolean onBodyStream(ByteBuffer byteBuffer, Request request) {
-        BodyAttachment attachment = request.newWebsocketRequest().getAttachment();
-        Decoder decoder = attachment.getDecoder().decode(byteBuffer, request.newWebsocketRequest());
+        Attachment attachment = request.newWebsocketRequest().getAttachment();
+        Decoder decoder = attachment.get(FRAME_DECODER_KEY).decode(byteBuffer, request.newWebsocketRequest());
         if (decoder == PAYLOAD_FINISH) {
-            attachment.setDecoder(basicFrameDecoder);
+            attachment.put(FRAME_DECODER_KEY, basicFrameDecoder);
             return true;
         } else {
-            attachment.setDecoder(decoder);
+            attachment.put(FRAME_DECODER_KEY, decoder);
             return false;
         }
     }
