@@ -65,7 +65,11 @@ public abstract class WebSocketHandler implements ServerHandler<WebSocketRequest
         OutputStream outputStream = response.getOutputStream();
         outputStream.flush();
 
-        Attachment attachment = new Attachment();
+        Attachment attachment = webSocketRequest.getAttachment();
+        if (attachment == null) {
+            attachment = new Attachment();
+            webSocketRequest.setAttachment(attachment);
+        }
         attachment.put(FRAME_DECODER_KEY, basicFrameDecoder);
         webSocketRequest.setAttachment(attachment);
         whenHeaderComplete(webSocketRequest, response);
