@@ -11,6 +11,7 @@ package org.smartboot.http.server.impl;
 import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.Reset;
 import org.smartboot.http.server.HttpRequest;
+import org.smartboot.socket.util.Attachment;
 
 import java.net.InetSocketAddress;
 import java.util.Collection;
@@ -147,12 +148,12 @@ abstract class AbstractRequest implements HttpRequest, Reset {
     }
 
     @Override
-    public <A> A getAttachment() {
+    public Attachment getAttachment() {
         return request.getAttachment();
     }
 
     @Override
-    public <A> void setAttachment(A attachment) {
+    public void setAttachment(Attachment attachment) {
         request.setAttachment(attachment);
     }
 

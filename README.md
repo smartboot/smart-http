@@ -18,7 +18,7 @@ smart-http 是一款可编程的 Http 应用微内核，方便用户根据自身
     <dependency>
         <groupId>org.smartboot.http</groupId>
         <artifactId>smart-http-server</artifactId>
-        <version>1.1.21</version>
+        <version>1.1.22</version>
     </dependency>
     ```
 2. 拷贝以下代码并启动。
@@ -52,23 +52,20 @@ smart-http 是一款可编程的 Http 应用微内核，方便用户根据自身
     <dependency>
         <groupId>org.smartboot.http</groupId>
         <artifactId>smart-http-client</artifactId>
-        <version>1.1.21</version>
+        <version>1.1.22</version>
     </dependency>
     ```
 2. 拷贝以下代码并启动。
     ```java
-    public class HttpGetDemo {
-        public static void main(String[] args) {
-            HttpClient httpClient = new HttpClient("www.baidu.com", 80);
-            httpClient.connect();
-            httpClient.get("/")
-                    .onSuccess(response -> {
-                        System.out.println(response.body());
-                    })
-                    .onFailure(throwable -> throwable.printStackTrace())
-                    .send();
-        }
-    }
+   public class HttpGetDemo {
+       public static void main(String[] args) {
+           HttpClient httpClient = new HttpClient("www.baidu.com", 80);
+           httpClient.get("/").header().keepalive(false).done()
+                   .onSuccess(response -> System.out.println(response.body()))
+                   .onFailure(Throwable::printStackTrace)
+                   .done();
+       }
+   }
     ```
 
 

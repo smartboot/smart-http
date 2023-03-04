@@ -18,6 +18,7 @@ import org.smartboot.socket.transport.WriteBuffer;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.nio.channels.WritableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,7 +28,7 @@ import java.util.concurrent.Semaphore;
  * @author 三刀
  * @version V1.0 , 2020/12/7
  */
-public abstract class BufferOutputStream extends OutputStream implements Reset {
+public abstract class BufferOutputStream extends OutputStream implements Reset, WritableByteChannel {
     private static final Map<String, byte[]> HEADER_NAME_EXT_MAP = new ConcurrentHashMap<>();
     protected final AioSession session;
     protected final WriteBuffer writeBuffer;
@@ -96,8 +97,15 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
         writeBuffer.write(b, off, len);
     }
 
-    public final void write(ByteBuffer buffer) throws IOException {
+    public final int write(ByteBuffer buffer) throws IOException {
+        int length = buffer.remaining();
         write(VirtualBuffer.wrap(buffer));
+        return length;
+    }
+
+    @Override
+    public boolean isOpen() {
+        return !closed;
     }
 
     public final void write(VirtualBuffer virtualBuffer) throws IOException {

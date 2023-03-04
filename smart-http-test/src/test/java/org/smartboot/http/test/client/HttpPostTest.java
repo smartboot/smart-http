@@ -22,6 +22,8 @@ import org.smartboot.http.server.HttpResponse;
 import org.smartboot.http.server.HttpServerHandler;
 import org.smartboot.http.server.handler.HttpRouteHandler;
 import org.smartboot.http.server.impl.Request;
+import org.smartboot.socket.util.AttachKey;
+import org.smartboot.socket.util.Attachment;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -54,12 +56,22 @@ public class HttpPostTest {
             }
         });
         routeHandle.route("/json", new HttpServerHandler() {
+            private AttachKey<ByteBuffer> bodyKey = AttachKey.valueOf("bodyKey");
+
             @Override
             public boolean onBodyStream(ByteBuffer buffer, Request request) {
-                ByteBuffer bodyBuffer = request.getAttachment();
+                Attachment attachment = request.getAttachment();
+                ByteBuffer bodyBuffer = null;
+                if (attachment != null) {
+                    bodyBuffer = attachment.get(bodyKey);
+                }
                 if (bodyBuffer == null) {
                     bodyBuffer = ByteBuffer.allocate(request.getContentLength());
-                    request.setAttachment(bodyBuffer);
+                    if (attachment == null) {
+                        attachment = new Attachment();
+                        request.setAttachment(attachment);
+                    }
+                    attachment.put(bodyKey, bodyBuffer);
                 }
                 if (buffer.remaining() <= bodyBuffer.remaining()) {
                     bodyBuffer.put(buffer);
@@ -74,7 +86,7 @@ public class HttpPostTest {
 
             @Override
             public void handle(HttpRequest request, HttpResponse response) throws IOException {
-                ByteBuffer buffer = request.getAttachment();
+                ByteBuffer buffer = request.getAttachment().get(bodyKey);
                 buffer.flip();
                 byte[] bytes = new byte[buffer.remaining()];
                 buffer.get(bytes);

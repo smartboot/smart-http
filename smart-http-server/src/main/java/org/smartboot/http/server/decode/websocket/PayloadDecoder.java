@@ -4,6 +4,8 @@ import org.smartboot.http.common.utils.FixedLengthFrameDecoder;
 import org.smartboot.http.common.utils.SmartDecoder;
 import org.smartboot.http.server.WebSocketHandler;
 import org.smartboot.http.server.impl.WebSocketRequestImpl;
+import org.smartboot.socket.util.AttachKey;
+import org.smartboot.socket.util.Attachment;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -13,22 +15,23 @@ import java.nio.ByteOrder;
  * @version V1.0 , 2023/2/24
  */
 class PayloadDecoder implements Decoder {
+    private static final AttachKey<SmartDecoder> PAYLOAD_DECODER_KEY = AttachKey.valueOf("ws_payload_decoder");
 
     @Override
     public Decoder decode(ByteBuffer byteBuffer, WebSocketRequestImpl request) {
-        BodyAttachment attachment = request.getAttachment();
-        SmartDecoder smartDecoder = attachment.getBodyDecoder();
+        Attachment attachment = request.getAttachment();
+        SmartDecoder smartDecoder = attachment.get(PAYLOAD_DECODER_KEY);
         if (smartDecoder != null) {
             if (smartDecoder.decode(byteBuffer)) {
                 finishPayloadDecoder(smartDecoder.getBuffer(), request);
-                attachment.setBodyDecoder(null);
+                attachment.remove(PAYLOAD_DECODER_KEY);
                 return WebSocketHandler.PAYLOAD_FINISH;
             } else {
                 return this;
             }
         }
         if (request.getPayloadLength() > byteBuffer.capacity()) {
-            attachment.setBodyDecoder(new FixedLengthFrameDecoder((int) request.getPayloadLength()));
+            attachment.put(PAYLOAD_DECODER_KEY, new FixedLengthFrameDecoder((int) request.getPayloadLength()));
             return decode(byteBuffer, request);
         }
         if (byteBuffer.remaining() < request.getPayloadLength()) {

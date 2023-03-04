@@ -25,6 +25,7 @@ import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.ServerHandler;
 import org.smartboot.http.server.WebSocketHandler;
 import org.smartboot.socket.transport.AioSession;
+import org.smartboot.socket.util.Attachment;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -101,7 +102,7 @@ public final class Request implements HttpRequest, Reset {
     /**
      * 附件对象
      */
-    private Object attachment;
+    private Attachment attachment;
     private DecodePartEnum decodePartEnum = DecodePartEnum.HEADER_FINISH;
     private HttpRequestImpl httpRequest;
     private WebSocketRequestImpl webSocketRequest;
@@ -506,8 +507,8 @@ public final class Request implements HttpRequest, Reset {
      * @param <A> 附件对象类型
      * @return 附件
      */
-    public final <A> A getAttachment() {
-        return (A) attachment;
+    public Attachment getAttachment() {
+        return attachment;
     }
 
     /**
@@ -516,7 +517,7 @@ public final class Request implements HttpRequest, Reset {
      * @param <A>        附件对象类型
      * @param attachment 附件对象
      */
-    public final <A> void setAttachment(A attachment) {
+    public void setAttachment(Attachment attachment) {
         this.attachment = attachment;
     }
 
