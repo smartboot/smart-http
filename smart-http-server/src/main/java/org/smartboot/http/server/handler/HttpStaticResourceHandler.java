@@ -96,8 +96,7 @@ public class HttpStaticResourceHandler extends HttpServerHandler {
 
         response.setContentLength((int) file.length());
 
-        try (FileInputStream fis = new FileInputStream(file)) {
-            FileChannel fileChannel = fis.getChannel();
+        try (FileInputStream fis = new FileInputStream(file); FileChannel fileChannel = fis.getChannel()) {
             long fileSize = response.getContentLength();
             long readPos = 0;
             while (readPos < fileSize) {
