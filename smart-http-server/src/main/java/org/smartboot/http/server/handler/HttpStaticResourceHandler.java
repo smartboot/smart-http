@@ -27,8 +27,6 @@ import java.net.URLDecoder;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 静态资源加载Handle
@@ -43,14 +41,14 @@ public class HttpStaticResourceHandler extends HttpServerHandler {
 
     private final File baseDir;
 
-    private Map<String, FileChannel> channelMap = new ConcurrentHashMap<>();
-
     public HttpStaticResourceHandler(String baseDir) {
         this.baseDir = new File(new File(baseDir).getAbsolutePath());
         if (!this.baseDir.isDirectory()) {
             throw new RuntimeException(baseDir + " is not a directory");
         }
-        if (LOGGER.isInfoEnabled()) LOGGER.info("dir is:{}", this.baseDir.getAbsolutePath());
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("dir is:{}", this.baseDir.getAbsolutePath());
+        }
     }
 
     @Override
