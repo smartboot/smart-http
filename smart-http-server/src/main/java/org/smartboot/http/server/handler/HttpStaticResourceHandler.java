@@ -22,7 +22,6 @@ import org.smartboot.http.server.HttpServerHandler;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.channels.FileChannel;
@@ -99,23 +98,15 @@ public class HttpStaticResourceHandler extends HttpServerHandler {
 
         response.setContentLength((int) file.length());
 
-
-        FileChannel fileChannel = channelMap.computeIfAbsent(file.getName(), s -> {
-            FileInputStream fis = null;
-            try {
-                fis = new FileInputStream(file);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-                throw new RuntimeException(e);
+        try (FileInputStream fis = new FileInputStream(file)) {
+            FileChannel fileChannel = fis.getChannel();
+            long fileSize = response.getContentLength();
+            long readPos = 0;
+            while (readPos < fileSize) {
+                long length = (fileSize - readPos) > READ_BUFFER ? READ_BUFFER : (fileSize - readPos);
+                fileChannel.transferTo(readPos, length, response.getOutputStream());
+                readPos += length;
             }
-            return fis.getChannel();
-        });
-        long fileSize = response.getContentLength();
-        long readPos = 0;
-        while (readPos < fileSize) {
-            long length = (fileSize - readPos) > READ_BUFFER ? READ_BUFFER : (fileSize - readPos);
-            fileChannel.transferTo(readPos, length, response.getOutputStream());
-            readPos += length;
         }
     }
 }
