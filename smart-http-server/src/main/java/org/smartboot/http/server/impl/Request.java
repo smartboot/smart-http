@@ -111,6 +111,7 @@ public final class Request implements HttpRequest, Reset {
     Request(HttpServerConfiguration configuration, AioSession aioSession) {
         this.configuration = configuration;
         this.aioSession = aioSession;
+        this.scheme = configuration.isSecure() ? Constant.SCHEMA_HTTPS : Constant.SCHEMA_HTTP;
     }
 
     public DecodePartEnum getDecodePartEnum() {
@@ -541,9 +542,6 @@ public final class Request implements HttpRequest, Reset {
     public HttpRequestImpl newHttpRequest() {
         if (httpRequest == null) {
             httpRequest = new HttpRequestImpl(this);
-            if (scheme == null) {
-                scheme = isSecure() ? Constant.SCHEMA_HTTPS : Constant.SCHEMA_HTTP;
-            }
         }
         return httpRequest;
     }
@@ -551,9 +549,6 @@ public final class Request implements HttpRequest, Reset {
     public WebSocketRequestImpl newWebsocketRequest() {
         if (webSocketRequest == null) {
             webSocketRequest = new WebSocketRequestImpl(this);
-            if (scheme == null) {
-                scheme = isSecure() ? Constant.SCHEMA_WSS : Constant.SCHEMA_WS;
-            }
         }
         return webSocketRequest;
     }
