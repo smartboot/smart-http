@@ -85,7 +85,7 @@ public final class Request implements HttpRequest, Reset {
     /**
      * 协议
      */
-    private String scheme = Constant.SCHEMA_HTTP;
+    private String scheme;
     private int contentLength = INIT_CONTENT_LENGTH;
     private String remoteAddr;
     private String remoteHost;
@@ -237,6 +237,11 @@ public final class Request implements HttpRequest, Reset {
 
     public final String getMethod() {
         return method;
+    }
+
+    @Override
+    public boolean isSecure() {
+        return configuration.isSecure();
     }
 
     public final void setMethod(String method) {
@@ -536,6 +541,9 @@ public final class Request implements HttpRequest, Reset {
     public HttpRequestImpl newHttpRequest() {
         if (httpRequest == null) {
             httpRequest = new HttpRequestImpl(this);
+            if (scheme == null) {
+                scheme = isSecure() ? Constant.SCHEMA_HTTPS : Constant.SCHEMA_HTTP;
+            }
         }
         return httpRequest;
     }
@@ -543,6 +551,9 @@ public final class Request implements HttpRequest, Reset {
     public WebSocketRequestImpl newWebsocketRequest() {
         if (webSocketRequest == null) {
             webSocketRequest = new WebSocketRequestImpl(this);
+            if (scheme == null) {
+                scheme = isSecure() ? Constant.SCHEMA_WSS : Constant.SCHEMA_WS;
+            }
         }
         return webSocketRequest;
     }
@@ -566,5 +577,6 @@ public final class Request implements HttpRequest, Reset {
         webSocketRequest = null;
         type = null;
         decodePartEnum = DecodePartEnum.HEADER_FINISH;
+        scheme = null;
     }
 }

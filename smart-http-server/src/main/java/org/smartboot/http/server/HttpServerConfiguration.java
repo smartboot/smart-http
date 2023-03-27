@@ -13,6 +13,7 @@ import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.impl.Request;
 import org.smartboot.socket.extension.plugins.Plugin;
+import org.smartboot.socket.extension.plugins.SslPlugin;
 import org.smartboot.socket.extension.plugins.StreamMonitorPlugin;
 
 import java.io.IOException;
@@ -73,6 +74,10 @@ public class HttpServerConfiguration {
      */
     private String serverName = "smart-http";
 
+    /**
+     * 是否加密通信
+     */
+    private boolean secure;
     /**
      * Form长度上限
      */
@@ -234,7 +239,14 @@ public class HttpServerConfiguration {
 
     public HttpServerConfiguration addPlugin(Plugin<Request> plugin) {
         plugins.add(plugin);
+        if (plugin instanceof SslPlugin) {
+            secure = true;
+        }
         return this;
+    }
+
+    public boolean isSecure() {
+        return secure;
     }
 
     public int getMaxFormContentSize() {
