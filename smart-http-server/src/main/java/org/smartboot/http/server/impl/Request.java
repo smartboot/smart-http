@@ -111,7 +111,6 @@ public final class Request implements HttpRequest, Reset {
     Request(HttpServerConfiguration configuration, AioSession aioSession) {
         this.configuration = configuration;
         this.aioSession = aioSession;
-        this.scheme = configuration.isSecure() ? Constant.SCHEMA_HTTPS : Constant.SCHEMA_HTTP;
     }
 
     public DecodePartEnum getDecodePartEnum() {
@@ -275,6 +274,9 @@ public final class Request implements HttpRequest, Reset {
     }
 
     public final String getScheme() {
+        if (scheme == null) {
+            return configuration.isSecure() ? Constant.SCHEMA_HTTPS : Constant.SCHEMA_HTTP;
+        }
         return scheme;
     }
 
