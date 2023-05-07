@@ -18,31 +18,23 @@ smart-http 是一款可编程的 Http 应用微内核，方便用户根据自身
     <dependency>
         <groupId>org.smartboot.http</groupId>
         <artifactId>smart-http-server</artifactId>
-        <version>1.2.0-SNAPSHOT</version>
+        <version>1.2.0</version>
     </dependency>
     ```
 2. 拷贝以下代码并启动。
     ```java
-    public class SimpleSmartHttp {
-        public static void main(String[] args) {
-            HttpBootstrap bootstrap = new HttpBootstrap();
-            // 普通http请求
-            bootstrap.pipeline().next(new HttpServerHandle() {
-                @Override
-                public void doHandle(HttpRequest request, HttpResponse response) throws IOException {
-                    response.write("hello world<br/>".getBytes());
-                }
-            });
-            // websocket请求
-            bootstrap.wsPipeline().next(new WebSocketDefaultHandle() {
-                @Override
-                public void handleTextMessage(WebSocketRequest request, WebSocketResponse response, String data) {
-                    response.sendTextMessage("Hello World");
-                }
-            });
-            bootstrap.setPort(8080).start();
-        }
-    }
+   public class SimpleSmartHttp {
+       public static void main(String[] args) {
+           HttpBootstrap bootstrap = new HttpBootstrap();
+           bootstrap.configuration().debug(true);
+           bootstrap.httpHandler(new HttpServerHandler() {
+               @Override
+               public void handle(HttpRequest request, HttpResponse response) throws IOException {
+                   response.write("hello smart-http<br/>".getBytes());
+               }
+           }).setPort(8080).start();
+       }
+   }
     ```
 3. 浏览器访问:`http://localhost:8080/`，亦或采用websocket请求`ws://127.0.0.1:8080/`
 
@@ -52,7 +44,7 @@ smart-http 是一款可编程的 Http 应用微内核，方便用户根据自身
     <dependency>
         <groupId>org.smartboot.http</groupId>
         <artifactId>smart-http-client</artifactId>
-        <version>1.2.0-SNAPSHOT</version>
+        <version>1.2.0</version>
     </dependency>
     ```
 2. 拷贝以下代码并启动。
