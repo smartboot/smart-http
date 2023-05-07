@@ -16,7 +16,6 @@ import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.ServerHandler;
 import org.smartboot.http.server.impl.Request;
-import org.smartboot.socket.transport.AioSession;
 
 import java.nio.ByteBuffer;
 
@@ -34,7 +33,7 @@ class HttpUriDecoder extends AbstractDecoder {
     }
 
     @Override
-    public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
+    public Decoder decode(ByteBuffer byteBuffer, Request request) {
         ByteTree<ServerHandler<?, ?>> uriTreeNode = StringUtils.scanByteTree(byteBuffer, URI_END_MATCHER, getConfiguration().getUriByteTree());
         if (uriTreeNode != null) {
             request.setUri(uriTreeNode.getStringValue());
@@ -46,9 +45,9 @@ class HttpUriDecoder extends AbstractDecoder {
 
             switch (byteBuffer.get(byteBuffer.position() - 1)) {
                 case Constant.SP:
-                    return protocolDecoder.decode(byteBuffer, aioSession, request);
+                    return protocolDecoder.decode(byteBuffer, request);
                 case '?':
-                    return uriQueryDecoder.decode(byteBuffer, aioSession, request);
+                    return uriQueryDecoder.decode(byteBuffer, request);
                 default:
                     throw new HttpException(HttpStatus.BAD_REQUEST);
             }
@@ -56,4 +55,19 @@ class HttpUriDecoder extends AbstractDecoder {
             return this;
         }
     }
+
+//    @Override
+//    public Decoder decode(ByteBuffer buffer, Request request) {
+//        String uri = HttpUtils.getString(buffer, URI_END_MATCHER);
+//        if (uri == null) {
+//            return this;
+//        }
+//        request.setUri(uri);
+//        request.setServerHandler(request.getConfiguration().getHttpServerHandler());
+//        if (buffer.get(buffer.position() - 1) == '?') {
+//            return uriQueryDecoder.decode(buffer, request);
+//        } else {
+//            return protocolDecoder.decode(buffer, request);
+//        }
+//    }
 }

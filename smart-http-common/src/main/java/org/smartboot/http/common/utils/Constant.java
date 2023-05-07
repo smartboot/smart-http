@@ -21,6 +21,10 @@ public interface Constant {
     int maxPostSize = 2 * 1024 * 1024;
 
     String SCHEMA_HTTP = "http";
+    String SCHEMA_HTTPS = "https";
+
+    String SCHEMA_WS = "ws";
+    String SCHEMA_WSS = "wss";
     /**
      * Horizontal space
      */

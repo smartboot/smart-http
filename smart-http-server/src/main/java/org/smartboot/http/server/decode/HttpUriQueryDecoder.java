@@ -12,7 +12,6 @@ import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.impl.Request;
-import org.smartboot.socket.transport.AioSession;
 
 import java.nio.ByteBuffer;
 
@@ -29,12 +28,12 @@ class HttpUriQueryDecoder extends AbstractDecoder {
     }
 
     @Override
-    public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
+    public Decoder decode(ByteBuffer byteBuffer, Request request) {
         int length = scanUriQuery(byteBuffer);
         if (length >= 0) {
             String query = StringUtils.convertToString(byteBuffer, byteBuffer.position() - 1 - length, length);
             request.setQueryString(query);
-            return decoder.decode(byteBuffer, aioSession, request);
+            return decoder.decode(byteBuffer, request);
         } else {
             return this;
         }

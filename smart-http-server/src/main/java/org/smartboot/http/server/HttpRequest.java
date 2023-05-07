@@ -58,6 +58,11 @@ public interface HttpRequest {
      */
     String getMethod();
 
+    /**
+     * 是否启动安全通信
+     */
+    boolean isSecure();
+
     String getScheme();
 
     String getRequestURL();

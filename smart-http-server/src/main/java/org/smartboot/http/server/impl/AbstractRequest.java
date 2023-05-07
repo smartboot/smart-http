@@ -158,4 +158,9 @@ abstract class AbstractRequest implements HttpRequest, Reset {
     }
 
     public abstract AbstractResponse getResponse();
+
+    @Override
+    public final boolean isSecure() {
+        return request.isSecure();
+    }
 }
