@@ -11,7 +11,6 @@ package org.smartboot.http.server.decode;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.server.impl.HttpRequestProtocol;
 import org.smartboot.http.server.impl.Request;
-import org.smartboot.socket.transport.AioSession;
 
 import java.nio.ByteBuffer;
 
@@ -22,7 +21,7 @@ import java.nio.ByteBuffer;
 public class IgnoreHeaderDecoder implements Decoder {
 
     @Override
-    public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request httpHeader) {
+    public Decoder decode(ByteBuffer byteBuffer, Request httpHeader) {
         int position = byteBuffer.position() + byteBuffer.arrayOffset();
         int limit = byteBuffer.limit() + byteBuffer.arrayOffset();
         byte[] data = byteBuffer.array();

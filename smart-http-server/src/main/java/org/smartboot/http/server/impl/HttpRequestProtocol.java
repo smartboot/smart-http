@@ -13,6 +13,7 @@ import org.smartboot.http.server.decode.Decoder;
 import org.smartboot.http.server.decode.HttpMethodDecoder;
 import org.smartboot.socket.Protocol;
 import org.smartboot.socket.transport.AioSession;
+import org.smartboot.socket.util.DecoderException;
 
 import java.nio.ByteBuffer;
 
@@ -21,8 +22,8 @@ import java.nio.ByteBuffer;
  * @version V1.0 , 2018/8/31
  */
 public class HttpRequestProtocol implements Protocol<Request> {
-    public static final Decoder BODY_READY_DECODER = (byteBuffer, aioSession, response) -> null;
-    public static final Decoder BODY_CONTINUE_DECODER = (byteBuffer, aioSession, response) -> null;
+    public static final Decoder BODY_READY_DECODER = (byteBuffer, response) -> null;
+    public static final Decoder BODY_CONTINUE_DECODER = (byteBuffer, response) -> null;
     /**
      * websocket负载数据读取成功
      */
@@ -52,13 +53,13 @@ public class HttpRequestProtocol implements Protocol<Request> {
             return request;
         }
 
-        decodeChain = decodeChain.decode(buffer, session, request);
+        decodeChain = decodeChain.decode(buffer, request);
         attachment.setDecoder(decodeChain);
         if (decodeChain == BODY_READY_DECODER) {
             return request;
         }
         if (buffer.remaining() == buffer.capacity()) {
-            throw new RuntimeException("buffer is too small when decode " + decodeChain.getClass().getName() + " ," + request);
+            throw new DecoderException("buffer is too small when decode " + decodeChain.getClass().getName() + " ," + request);
         }
         return null;
     }

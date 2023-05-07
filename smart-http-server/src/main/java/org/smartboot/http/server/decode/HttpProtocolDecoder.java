@@ -12,7 +12,6 @@ import org.smartboot.http.common.utils.ByteTree;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.impl.Request;
-import org.smartboot.socket.transport.AioSession;
 
 import java.nio.ByteBuffer;
 
@@ -30,12 +29,24 @@ class HttpProtocolDecoder extends AbstractDecoder {
         super(configuration);
     }
 
+//    @Override
+//    public Decoder decode(ByteBuffer byteBuffer, Request request) {
+//        String protocol = HttpUtils.getString(byteBuffer, CR_END_MATCHER);
+//        if (protocol != null) {
+//            request.setProtocol(protocol);
+//            return lfDecoder.decode(byteBuffer, request);
+//        } else {
+//            return this;
+//        }
+//
+//    }
+
     @Override
-    public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
+    public Decoder decode(ByteBuffer byteBuffer, Request request) {
         ByteTree<?> protocol = StringUtils.scanByteTree(byteBuffer, CR_END_MATCHER, getConfiguration().getByteCache());
         if (protocol != null) {
             request.setProtocol(protocol.getStringValue());
-            return lfDecoder.decode(byteBuffer, aioSession, request);
+            return lfDecoder.decode(byteBuffer, request);
         } else {
             return this;
         }

@@ -13,7 +13,6 @@ import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.impl.Request;
-import org.smartboot.socket.transport.AioSession;
 
 import java.nio.ByteBuffer;
 
@@ -30,12 +29,12 @@ class LfDecoder extends AbstractDecoder {
     }
 
     @Override
-    public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
+    public Decoder decode(ByteBuffer byteBuffer, Request request) {
         if (byteBuffer.hasRemaining()) {
             if (byteBuffer.get() != Constant.LF) {
                 throw new HttpException(HttpStatus.BAD_REQUEST);
             }
-            return nextDecoder.decode(byteBuffer, aioSession, request);
+            return nextDecoder.decode(byteBuffer, request);
         }
         return this;
     }

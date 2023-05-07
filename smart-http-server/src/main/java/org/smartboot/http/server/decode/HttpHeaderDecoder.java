@@ -17,7 +17,6 @@ import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.ServerHandler;
 import org.smartboot.http.server.impl.HttpRequestProtocol;
 import org.smartboot.http.server.impl.Request;
-import org.smartboot.socket.transport.AioSession;
 
 import java.nio.ByteBuffer;
 import java.util.function.Function;
@@ -38,9 +37,9 @@ class HttpHeaderDecoder extends AbstractDecoder {
     }
 
     @Override
-    public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
+    public Decoder decode(ByteBuffer byteBuffer, Request request) {
         if (request.getHeaderSize() >= 0 && request.getHeaderSize() >= getConfiguration().getHeaderLimiter()) {
-            return ignoreHeaderDecoder.decode(byteBuffer, aioSession, request);
+            return ignoreHeaderDecoder.decode(byteBuffer, request);
         }
         if (byteBuffer.remaining() < 2) {
             return this;
@@ -61,7 +60,7 @@ class HttpHeaderDecoder extends AbstractDecoder {
         }
 //        System.out.println("headerName: " + name);
         request.setHeaderTemp(name);
-        return headerValueDecoder.decode(byteBuffer, aioSession, request);
+        return headerValueDecoder.decode(byteBuffer, request);
     }
 
     /**
@@ -69,7 +68,7 @@ class HttpHeaderDecoder extends AbstractDecoder {
      */
     class HeaderValueDecoder implements Decoder {
         @Override
-        public Decoder decode(ByteBuffer byteBuffer, AioSession aioSession, Request request) {
+        public Decoder decode(ByteBuffer byteBuffer, Request request) {
             ByteTree<?> value = StringUtils.scanByteTree(byteBuffer, CR_END_MATCHER, getConfiguration().getByteCache());
             if (value == null) {
                 if (byteBuffer.remaining() == byteBuffer.capacity()) {
@@ -79,7 +78,7 @@ class HttpHeaderDecoder extends AbstractDecoder {
             }
 //            System.out.println("value: " + value);
             request.setHeadValue(value.getStringValue());
-            return lfDecoder.decode(byteBuffer, aioSession, request);
+            return lfDecoder.decode(byteBuffer, request);
         }
     }
 }
