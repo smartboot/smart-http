@@ -64,7 +64,6 @@ class AbstractResponse implements HttpResponse, Reset {
 
     private AbstractRequest request;
 
-    private String characterEncoding;
     /**
      * 是否关闭Socket连接通道
      */
@@ -90,7 +89,6 @@ class AbstractResponse implements HttpResponse, Reset {
         setHttpStatus(HttpStatus.OK);
         contentType = HeaderValueEnum.DEFAULT_CONTENT_TYPE.getName();
         contentLength = -1;
-        characterEncoding = null;
         cookies = Collections.emptyList();
         this.closed = false;
         gzip = false;
@@ -218,16 +216,6 @@ class AbstractResponse implements HttpResponse, Reset {
 
     public final void write(byte[] buffer) throws IOException {
         outputStream.write(buffer);
-    }
-
-    @Override
-    public final String getCharacterEncoding() {
-        return characterEncoding == null ? request.getCharacterEncoding() : characterEncoding;
-    }
-
-    @Override
-    public final void setCharacterEncoding(String charset) {
-        this.characterEncoding = charset;
     }
 
     @Override

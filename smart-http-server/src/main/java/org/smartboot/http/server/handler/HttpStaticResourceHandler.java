@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URLDecoder;
-import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
@@ -96,13 +95,18 @@ public class HttpStaticResourceHandler extends HttpServerHandler {
 
         response.setContentLength((int) file.length());
 
-        try (FileInputStream fis = new FileInputStream(file); FileChannel fileChannel = fis.getChannel()) {
+        try (FileInputStream fis = new FileInputStream(file)) {
             long fileSize = response.getContentLength();
             long readPos = 0;
+            byte[] bytes = new byte[1024 * 1024];
+            int len;
             while (readPos < fileSize) {
-                long length = (fileSize - readPos) > READ_BUFFER ? READ_BUFFER : (fileSize - readPos);
-                fileChannel.transferTo(readPos, length, response.getOutputStream());
-                readPos += length;
+                len = fis.read(bytes);
+                if (len == -1) {
+                    throw new RuntimeException("EOF reached");
+                }
+                response.getOutputStream().write(bytes, 0, len);
+                readPos += len;
             }
         }
     }
