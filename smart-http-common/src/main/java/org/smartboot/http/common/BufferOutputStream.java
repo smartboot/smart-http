@@ -11,14 +11,11 @@ package org.smartboot.http.common;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.GzipUtils;
-import org.smartboot.socket.buffer.VirtualBuffer;
 import org.smartboot.socket.transport.AioSession;
 import org.smartboot.socket.transport.WriteBuffer;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
-import java.nio.channels.WritableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,14 +25,13 @@ import java.util.concurrent.Semaphore;
  * @author 三刀
  * @version V1.0 , 2020/12/7
  */
-public abstract class BufferOutputStream extends OutputStream implements Reset, WritableByteChannel {
+public abstract class BufferOutputStream extends OutputStream implements Reset {
     private static final Map<String, byte[]> HEADER_NAME_EXT_MAP = new ConcurrentHashMap<>();
     protected final AioSession session;
     protected final WriteBuffer writeBuffer;
     protected boolean committed = false;
     protected boolean chunked = false;
     protected boolean gzip = false;
-//    protected WriteCache writeCache;
     /**
      * 当前流是否完结
      */
@@ -97,29 +93,6 @@ public abstract class BufferOutputStream extends OutputStream implements Reset, 
         writeBuffer.write(b, off, len);
     }
 
-    public final int write(ByteBuffer buffer) throws IOException {
-        int length = buffer.remaining();
-        write(VirtualBuffer.wrap(buffer));
-        return length;
-    }
-
-    @Override
-    public boolean isOpen() {
-        return !closed;
-    }
-
-    public final void write(VirtualBuffer virtualBuffer) throws IOException {
-        check();
-        writeHeader();
-        if (chunked) {
-            byte[] start = getBytes(Integer.toHexString(virtualBuffer.buffer().remaining()) + "\r\n");
-            writeBuffer.write(start);
-            writeBuffer.write(virtualBuffer);
-            writeBuffer.write(Constant.CRLF_BYTES);
-        } else {
-            writeBuffer.write(virtualBuffer);
-        }
-    }
 
     @Override
     public final void flush() throws IOException {

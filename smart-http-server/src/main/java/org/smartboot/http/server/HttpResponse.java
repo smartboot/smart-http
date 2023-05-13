@@ -108,17 +108,13 @@ public interface HttpResponse {
 
     void setContentLength(int contentLength);
 
-    int  getContentLength();
+    int getContentLength();
 
     void setContentType(String contentType);
 
     String getContentType();
 
     void write(byte[] data) throws IOException;
-
-    public String getCharacterEncoding();
-
-    public void setCharacterEncoding(String charset);
 
     public void close();
 
