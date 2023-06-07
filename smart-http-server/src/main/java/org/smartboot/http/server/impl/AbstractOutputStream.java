@@ -51,6 +51,7 @@ abstract class AbstractOutputStream extends BufferOutputStream {
         if (committed) {
             return;
         }
+        chunked = supportChunked(request, response);
         //转换Cookie
         convertCookieToHeader();
 
@@ -88,23 +89,6 @@ abstract class AbstractOutputStream extends BufferOutputStream {
             }
         }
         writeBuffer.write(Constant.CRLF_BYTES);
-    }
-
-    @Override
-    public void close() throws IOException {
-        //识别是否采用 chunked 输出
-        if (!committed) {
-            chunked = supportChunked(request, response);
-        }
-        super.close();
-    }
-
-    @Override
-    protected final void check() {
-        //识别是否采用 chunked 输出
-        if (!committed) {
-            chunked = supportChunked(request, response);
-        }
     }
 
     /**

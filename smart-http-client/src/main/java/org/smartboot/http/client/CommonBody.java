@@ -21,14 +21,13 @@ class CommonBody<T extends HttpRest> implements Body<T> {
     }
 
     @Override
-    public Body<T> flush() {
+    public final Body<T> flush() {
         body.flush();
         return this;
     }
 
     @Override
-    public T done() {
-        body.flush();
+    public final T done() {
         return rest;
     }
 }

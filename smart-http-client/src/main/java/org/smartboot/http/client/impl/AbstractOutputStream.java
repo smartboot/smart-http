@@ -12,6 +12,8 @@ import org.smartboot.http.common.BufferOutputStream;
 import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.enums.HeaderNameEnum;
+import org.smartboot.http.common.enums.HeaderValueEnum;
+import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.socket.transport.AioSession;
 
@@ -42,12 +44,18 @@ abstract class AbstractOutputStream extends BufferOutputStream {
         if (committed) {
             return;
         }
-        this.chunked = false;
+        chunked = supportChunked(request);
+
         //输出http状态行、contentType,contentLength、Transfer-Encoding、server等信息
         String headLine = request.getMethod() + " " + request.getUri() + " " + request.getProtocol() + "\r\n";
         writeBuffer.write(getBytes(headLine));
         //转换Cookie
         convertCookieToHeader(request);
+        if (request.getContentLength() >= 0) {
+            request.addHeader(HeaderNameEnum.CONTENT_LENGTH.getName(), String.valueOf(request.getContentLength()));
+        } else if (chunked) {
+            request.addHeader(HeaderNameEnum.TRANSFER_ENCODING.getName(), HeaderValueEnum.CHUNKED.getName());
+        }
 
         //输出Header部分
         if (request.getHeaders() != null) {
@@ -65,9 +73,14 @@ abstract class AbstractOutputStream extends BufferOutputStream {
         committed = true;
     }
 
-    @Override
-    protected final void check() {
-
+    /**
+     * 是否支持chunked输出
+     *
+     * @return
+     */
+    private boolean supportChunked(AbstractRequest request) {
+        return request.getContentLength() < 0
+                && HttpProtocolEnum.HTTP_11.getProtocol().equals(request.getProtocol());
     }
 
     private void convertCookieToHeader(AbstractRequest request) {

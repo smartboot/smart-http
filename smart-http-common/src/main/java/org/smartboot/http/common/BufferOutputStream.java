@@ -56,7 +56,6 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
      * @throws IOException
      */
     public final void write(byte b[], int off, int len) throws IOException {
-        check();
         writeHeader();
 
         if (len == 0) {
@@ -101,7 +100,7 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
     }
 
     @Override
-    public void close() throws IOException {
+    public final void close() throws IOException {
         if (closed) {
             throw new IOException("outputStream has already closed");
         }
@@ -142,8 +141,6 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
 
 
     protected abstract void writeHeader() throws IOException;
-
-    protected abstract void check();
 
     protected static class WriteCache {
         private final byte[] cacheData;

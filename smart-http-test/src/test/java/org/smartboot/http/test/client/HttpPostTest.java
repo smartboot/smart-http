@@ -31,6 +31,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -93,13 +94,43 @@ public class HttpPostTest {
                 System.out.println(new String(bytes));
             }
         });
+        routeHandle.route("/other/abc", new HttpServerHandler() {
+            @Override
+            public void handle(HttpRequest request, HttpResponse response) throws IOException {
+                System.out.println("--");
+                response.write("success".getBytes());
+            }
+        });
         httpBootstrap.httpHandler(routeHandle).setPort(8080).start();
+    }
+
+    @Test
+    public void testP() throws InterruptedException {
+        HttpClient client = new HttpClient("127.0.0.1", 8080);
+        byte[] bytes = "test a body string".getBytes(StandardCharsets.UTF_8);
+        CountDownLatch latch = new CountDownLatch(1);
+        client.configuration().debug(true);
+        client.post("/other/abc")
+                .body()
+                .write(bytes)
+                .done()
+                .onSuccess(response -> {
+                    System.out.println(response.body());
+                    System.out.println("1111");
+                    latch.countDown();
+                })
+                .onFailure(t -> {
+                    System.out.println(t.getMessage());
+                    latch.countDown();
+                }).done();
+        latch.await();
     }
 
     @Test
     public void testPost() throws ExecutionException, InterruptedException {
         CompletableFuture<Boolean> future = new CompletableFuture<>();
         HttpClient httpClient = new HttpClient("localhost", 8080);
+        httpClient.configuration().debug(true);
         Map<String, String> param = new HashMap<>();
         param.put("name", "zhouyu");
         param.put("age", "18");

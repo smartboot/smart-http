@@ -92,16 +92,12 @@ public class HttpRest {
     public Body<? extends HttpRest> body() {
         if (body == null) {
             body = new Body<HttpRest>() {
-                boolean flushHeader = false;
 
                 @Override
                 public Body<HttpRest> write(byte[] bytes, int offset, int len) {
                     try {
                         willSendRequest();
-                        if (!flushHeader) {
-                            flush();
-                        }
-                        request.getOutputStream().directWrite(bytes, offset, len);
+                        request.getOutputStream().write(bytes, offset, len);
                     } catch (IOException e) {
                         System.out.println("body stream write error! " + e.getMessage());
                         completableFuture.completeExceptionally(e);
@@ -113,7 +109,6 @@ public class HttpRest {
                 public Body<HttpRest> flush() {
                     try {
                         request.getOutputStream().flush();
-                        flushHeader = true;
                     } catch (IOException e) {
                         System.out.println("body stream flush error! " + e.getMessage());
                         e.printStackTrace();
@@ -124,7 +119,6 @@ public class HttpRest {
 
                 @Override
                 public HttpRest done() {
-                    flush();
                     return HttpRest.this;
                 }
             };
@@ -135,6 +129,7 @@ public class HttpRest {
     public final Future<HttpResponse> done() {
         try {
             willSendRequest();
+            request.getOutputStream().close();
             request.getOutputStream().flush();
         } catch (Throwable e) {
             completableFuture.completeExceptionally(e);

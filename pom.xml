@@ -9,7 +9,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <smartsocket.version>1.5.28</smartsocket.version>
+        <smartsocket.version>1.5.29</smartsocket.version>
         <smarthttp.version>1.2.1</smarthttp.version>
     </properties>
 

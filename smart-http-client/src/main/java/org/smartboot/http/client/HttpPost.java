@@ -32,7 +32,7 @@ public final class HttpPost extends HttpRest {
     }
 
     @Override
-    public HttpRest setMethod(String method) throws UnsupportedOperationException{
+    public HttpRest setMethod(String method) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
 
@@ -58,7 +58,7 @@ public final class HttpPost extends HttpRest {
                     }
                     byte[] bytes = sb.toString().getBytes();
                     // 设置 Header
-                    request.addHeader(HeaderNameEnum.CONTENT_LENGTH.getName(), String.valueOf(bytes.length));
+                    request.setContentLength(bytes.length);
                     request.addHeader(HeaderNameEnum.CONTENT_TYPE.getName(), HeaderValueEnum.X_WWW_FORM_URLENCODED.getName());
                     //输出数据
                     request.write(bytes);
