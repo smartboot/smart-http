@@ -26,13 +26,14 @@ import org.smartboot.socket.util.AttachKey;
 import org.smartboot.socket.util.Attachment;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * @author huqiang
@@ -98,32 +99,34 @@ public class HttpPostTest {
             @Override
             public void handle(HttpRequest request, HttpResponse response) throws IOException {
                 System.out.println("--");
-                response.write("success".getBytes());
+                InputStream inputStream = request.getInputStream();
+                byte[] bytes = new byte[1024];
+                int size;
+                while ((size = inputStream.read(bytes)) != -1) {
+                    response.getOutputStream().write(bytes, 0, size);
+                }
             }
         });
         httpBootstrap.httpHandler(routeHandle).setPort(8080).start();
     }
 
     @Test
-    public void testP() throws InterruptedException {
+    public void testChunked() throws InterruptedException, ExecutionException {
         HttpClient client = new HttpClient("127.0.0.1", 8080);
-        byte[] bytes = "test a body string".getBytes(StandardCharsets.UTF_8);
-        CountDownLatch latch = new CountDownLatch(1);
+        String body = "test a body string";
         client.configuration().debug(true);
-        client.post("/other/abc")
+        Future<org.smartboot.http.client.HttpResponse> future = client.post("/other/abc")
                 .body()
-                .write(bytes)
+                .write(body.getBytes())
                 .done()
                 .onSuccess(response -> {
                     System.out.println(response.body());
                     System.out.println("1111");
-                    latch.countDown();
                 })
                 .onFailure(t -> {
                     System.out.println(t.getMessage());
-                    latch.countDown();
                 }).done();
-        latch.await();
+        Assert.assertEquals(body, future.get().body());
     }
 
     @Test
