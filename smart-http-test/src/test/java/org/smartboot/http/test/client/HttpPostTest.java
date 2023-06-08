@@ -14,6 +14,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.smartboot.http.client.HttpClient;
+import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpBootstrap;
@@ -95,6 +96,17 @@ public class HttpPostTest {
                 System.out.println(new String(bytes));
             }
         });
+        routeHandle.route("/header", new HttpServerHandler() {
+            @Override
+            public void handle(HttpRequest request, HttpResponse response) throws IOException {
+                JSONObject jsonObject = new JSONObject();
+                for (String header : request.getHeaderNames()) {
+                    jsonObject.put(header, request.getHeader(header));
+                }
+                response.write(jsonObject.toJSONString().getBytes());
+            }
+        });
+
         routeHandle.route("/other/abc", new HttpServerHandler() {
             @Override
             public void handle(HttpRequest request, HttpResponse response) throws IOException {
@@ -107,7 +119,29 @@ public class HttpPostTest {
                 }
             }
         });
+
         httpBootstrap.httpHandler(routeHandle).setPort(8080).start();
+    }
+
+    @Test
+    public void testCheckHeader() throws InterruptedException, ExecutionException {
+        HttpClient client = new HttpClient("127.0.0.1", 8080);
+        String body = "test a body string";
+        client.configuration().debug(true);
+        Future<org.smartboot.http.client.HttpResponse> future = client.post("/header")
+                .header().keepalive(true).setContentLength(body.getBytes().length).done()
+                .body()
+                .write(body.getBytes())
+                .done()
+                .onSuccess(response -> {
+                    System.out.println(response.body());
+                })
+                .onFailure(t -> {
+                    System.out.println(t.getMessage());
+                }).done();
+        JSONObject jsonObject = JSONObject.parseObject(future.get().body());
+        Assert.assertNull(jsonObject.getString(HeaderNameEnum.TRANSFER_ENCODING.getName()));
+        Assert.assertEquals(jsonObject.getString(HeaderNameEnum.CONTENT_LENGTH.getName()), String.valueOf(body.getBytes().length));
     }
 
     @Test
