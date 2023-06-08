@@ -12,6 +12,7 @@ import org.smartboot.http.client.HttpRequest;
 import org.smartboot.http.common.BufferOutputStream;
 import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
+import org.smartboot.http.common.enums.HeaderNameEnum;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -82,7 +83,10 @@ class AbstractRequest implements HttpRequest {
     private void setHeader(String name, String value, boolean replace) {
         char cc = name.charAt(0);
         if (cc == 'C' || cc == 'c') {
-            checkSpecialHeader(name, value);
+            if (checkSpecialHeader(name, value)) {
+                return;
+            }
+
         }
 
         if (headers == null) {
@@ -115,10 +119,15 @@ class AbstractRequest implements HttpRequest {
     /**
      * 部分header需要特殊处理
      */
-    private void checkSpecialHeader(String name, String value) {
-        if (name.equalsIgnoreCase("Content-Type")) {
+    private boolean checkSpecialHeader(String name, String value) {
+        if (name.equalsIgnoreCase(HeaderNameEnum.CONTENT_TYPE.getName())) {
             setContentType(value);
+            return true;
+        } else if (name.equalsIgnoreCase(HeaderNameEnum.CONTENT_LENGTH.getName())) {
+            setContentLength(Integer.parseInt(value));
+            return true;
         }
+        return false;
     }
 
     @Override

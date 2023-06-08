@@ -27,6 +27,18 @@ class HeaderWrapper<T extends HttpRest> implements Header<T> {
     }
 
     @Override
+    public Header<T> setContentType(String contentType) {
+        header.setContentType(contentType);
+        return this;
+    }
+
+    @Override
+    public Header<T> setContentLength(int contentLength) {
+        header.setContentLength(contentLength);
+        return this;
+    }
+
+    @Override
     public T done() {
         return rest;
     }

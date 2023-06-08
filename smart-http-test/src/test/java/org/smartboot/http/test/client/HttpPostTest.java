@@ -117,7 +117,7 @@ public class HttpPostTest {
         String body2 = "test a body2 string";
         client.configuration().debug(true);
         Future<org.smartboot.http.client.HttpResponse> future1 = client.post("/other/abc")
-                .header().keepalive(true).done()
+                .header().keepalive(true).setContentLength(body.getBytes().length).done()
                 .body()
                 .write(body.getBytes())
                 .done()
@@ -130,7 +130,7 @@ public class HttpPostTest {
                 }).done();
 
         Future<org.smartboot.http.client.HttpResponse> future2 = client.post("/other/abc")
-//                .header().keepalive(true).done()
+                .header().keepalive(true).done()
                 .body()
                 .write(body2.getBytes())
                 .done()

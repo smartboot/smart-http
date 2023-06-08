@@ -171,6 +171,18 @@ public class HttpRest {
             }
 
             @Override
+            public Header<HttpRest> setContentType(String contentType) {
+                request.setContentType(contentType);
+                return this;
+            }
+
+            @Override
+            public Header<HttpRest> setContentLength(int contentLength) {
+                request.setContentLength(contentLength);
+                return this;
+            }
+
+            @Override
             public HttpRest done() {
                 return HttpRest.this;
             }

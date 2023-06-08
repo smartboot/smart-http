@@ -50,13 +50,9 @@ public interface Header<T> {
         return this;
     }
 
-    default Header<T> setContentType(String contentType) {
-        return set(HeaderNameEnum.CONTENT_TYPE.getName(), contentType);
-    }
+    Header<T> setContentType(String contentType);
 
-    default Header<T> setContentLength(long contentLength) {
-        return set(HeaderNameEnum.CONTENT_LENGTH.getName(), String.valueOf(contentLength));
-    }
+    Header<T> setContentLength(int contentLength);
 
     default Header<T> keepalive(boolean flag) {
         return keepalive(flag ? HeaderValueEnum.KEEPALIVE.getName() : HeaderValueEnum.CLOSE.getName());
