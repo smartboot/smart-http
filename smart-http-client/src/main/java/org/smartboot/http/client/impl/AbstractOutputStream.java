@@ -54,10 +54,10 @@ abstract class AbstractOutputStream extends BufferOutputStream {
 
         if (request.getContentType() != null) {
             writeBuffer.write(getHeaderNameBytes(HeaderNameEnum.CONTENT_TYPE.getName()));
-            writeBuffer.write(getBytes(String.valueOf(request.getContentLength())));
+            writeBuffer.write(getBytes(String.valueOf(request.getContentType())));
             writeBuffer.write(Constant.CRLF_BYTES);
         }
-        
+
         if (request.getContentLength() >= 0) {
             writeBuffer.write(getHeaderNameBytes(HeaderNameEnum.CONTENT_LENGTH.getName()));
             writeBuffer.write(getBytes(String.valueOf(request.getContentLength())));

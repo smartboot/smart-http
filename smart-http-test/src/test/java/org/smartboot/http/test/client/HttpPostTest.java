@@ -130,7 +130,7 @@ public class HttpPostTest {
                 }).done();
 
         Future<org.smartboot.http.client.HttpResponse> future2 = client.post("/other/abc")
-                .header().keepalive(true).done()
+                .header().keepalive(true).setContentLength(body2.getBytes().length).done()
                 .body()
                 .write(body2.getBytes())
                 .done()
