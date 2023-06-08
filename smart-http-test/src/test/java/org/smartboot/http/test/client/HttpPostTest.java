@@ -114,8 +114,10 @@ public class HttpPostTest {
     public void testChunked() throws InterruptedException, ExecutionException {
         HttpClient client = new HttpClient("127.0.0.1", 8080);
         String body = "test a body string";
+        String body2 = "test a body2 string";
         client.configuration().debug(true);
-        Future<org.smartboot.http.client.HttpResponse> future = client.post("/other/abc")
+        Future<org.smartboot.http.client.HttpResponse> future1 = client.post("/other/abc")
+                .header().keepalive(true).done()
                 .body()
                 .write(body.getBytes())
                 .done()
@@ -126,7 +128,21 @@ public class HttpPostTest {
                 .onFailure(t -> {
                     System.out.println(t.getMessage());
                 }).done();
-        Assert.assertEquals(body, future.get().body());
+
+        Future<org.smartboot.http.client.HttpResponse> future2 = client.post("/other/abc")
+//                .header().keepalive(true).done()
+                .body()
+                .write(body2.getBytes())
+                .done()
+                .onSuccess(response -> {
+                    System.out.println(response.body());
+                    System.out.println("222");
+                })
+                .onFailure(t -> {
+                    System.out.println(t.getMessage());
+                }).done();
+        Assert.assertEquals(body, future1.get().body());
+        Assert.assertEquals(body2, future2.get().body());
     }
 
     @Test

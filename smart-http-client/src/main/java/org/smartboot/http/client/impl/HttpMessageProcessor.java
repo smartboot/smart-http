@@ -10,8 +10,6 @@ package org.smartboot.http.client.impl;
 
 import org.smartboot.http.client.ResponseHandler;
 import org.smartboot.http.common.enums.DecodePartEnum;
-import org.smartboot.http.common.enums.HeaderNameEnum;
-import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.extension.processor.AbstractMessageProcessor;
 import org.smartboot.socket.transport.AioSession;
@@ -58,12 +56,13 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Response> {
             case FINISH:
                 queue.poll();
                 responseAttachment.setDecoder(null);
+                responseAttachment.setResponse(null);
                 if (executorService == null) {
-                    responseCallback(session, response, queueUnit);
+                    responseCallback(response, queueUnit);
                 } else {
                     session.awaitRead();
                     executorService.execute(() -> {
-                        responseCallback(session, response, queueUnit);
+                        responseCallback(response, queueUnit);
                         session.signalRead();
                     });
                 }
@@ -72,16 +71,8 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Response> {
         }
     }
 
-    private void responseCallback(AioSession session, Response response, QueueUnit queueUnit) {
-        try {
-            queueUnit.getFuture().complete(response);
-        } finally {
-            if (!HeaderValueEnum.KEEPALIVE.getName().equalsIgnoreCase(response.getHeader(HeaderNameEnum.CONNECTION.getName()))) {
-                session.close(false);
-            } else {
-                response.reset();
-            }
-        }
+    private void responseCallback(Response response, QueueUnit queueUnit) {
+        queueUnit.getFuture().complete(response);
     }
 
     private void doHttpBody(Response response, ByteBuffer readBuffer, ResponseAttachment responseAttachment, ResponseHandler responseHandler) {
@@ -117,7 +108,7 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Response> {
         switch (stateMachineEnum) {
             case NEW_SESSION:
                 map.put(session, new ConcurrentLinkedQueue<>());
-                ResponseAttachment attachment = new ResponseAttachment(new Response(session));
+                ResponseAttachment attachment = new ResponseAttachment();
                 session.setAttachment(attachment);
                 break;
             case PROCESS_EXCEPTION:

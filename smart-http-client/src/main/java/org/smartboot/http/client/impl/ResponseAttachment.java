@@ -15,16 +15,17 @@ import org.smartboot.http.client.decode.HeaderDecoder;
  * @version V1.0 , 2021/5/26
  */
 public class ResponseAttachment {
-    private final Response response;
+    private Response response;
 
     private HeaderDecoder decoder;
 
-    public ResponseAttachment(Response response) {
-        this.response = response;
-    }
 
     public Response getResponse() {
         return response;
+    }
+
+    public void setResponse(Response response) {
+        this.response = response;
     }
 
     public HeaderDecoder getDecoder() {

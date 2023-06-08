@@ -98,6 +98,10 @@ public final class HttpClient {
         httpRest.request.setProtocol(HttpProtocolEnum.HTTP_11.getProtocol());
 
         httpRest.completableFuture.thenAccept(httpResponse -> {
+            //request标注为keep-alive，response不包含该header,默认保持连接.
+            if (HeaderValueEnum.KEEPALIVE.getName().equalsIgnoreCase(httpRest.request.getHeader(HeaderNameEnum.CONNECTION.getName())) && httpResponse.getHeader(HeaderNameEnum.CONNECTION.getName()) == null) {
+                return;
+            }
             //非keep-alive,主动断开连接
             if (!HeaderValueEnum.KEEPALIVE.getName().equalsIgnoreCase(httpResponse.getHeader(HeaderNameEnum.CONNECTION.getName()))) {
                 close();

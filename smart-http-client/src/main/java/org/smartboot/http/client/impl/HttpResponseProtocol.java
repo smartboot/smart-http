@@ -29,11 +29,12 @@ public class HttpResponseProtocol implements Protocol<Response> {
     @Override
     public Response decode(ByteBuffer buffer, AioSession session) {
         ResponseAttachment attachment = session.getAttachment();
-        Response response = attachment.getResponse();
         HeaderDecoder decodeChain = attachment.getDecoder();
         if (decodeChain == null) {
+            attachment.setResponse(new Response(session));
             decodeChain = httpMethodDecoder;
         }
+        Response response = attachment.getResponse();
 
         // 数据还未就绪，继续读
         if (decodeChain == BODY_CONTINUE_DECODER) {

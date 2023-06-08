@@ -10,7 +10,6 @@ package org.smartboot.http.client.impl;
 
 import org.smartboot.http.client.HttpResponse;
 import org.smartboot.http.common.HeaderValue;
-import org.smartboot.http.common.Reset;
 import org.smartboot.http.common.enums.DecodePartEnum;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.utils.NumberUtils;
@@ -28,7 +27,7 @@ import java.util.Set;
  * @author 三刀（zhengjunweimail@163.com）
  * @version V1.0 , 2021/2/2
  */
-public class Response implements HttpResponse, Reset {
+public class Response implements HttpResponse {
     private static final int INIT_CONTENT_LENGTH = -2;
     private static final int NONE_CONTENT_LENGTH = -1;
     /**
@@ -193,17 +192,4 @@ public class Response implements HttpResponse, Reset {
         this.reasonPhrase = reasonPhrase;
     }
 
-    @Override
-    public void reset() {
-        headers.clear();
-        headerSize = 0;
-        protocol = null;
-        contentType = null;
-        contentLength = INIT_CONTENT_LENGTH;
-        body = null;
-        status = 0;
-        reasonPhrase = null;
-        encoding = null;
-        decodePartEnum = DecodePartEnum.HEADER_FINISH;
-    }
 }
