@@ -102,6 +102,10 @@ public final class HttpClient {
             if (HeaderValueEnum.KEEPALIVE.getName().equalsIgnoreCase(httpRest.request.getHeader(HeaderNameEnum.CONNECTION.getName())) && httpResponse.getHeader(HeaderNameEnum.CONNECTION.getName()) == null) {
                 return;
             }
+            //存在链路复用情况
+            if (!processor.getQueue(client.getSession()).isEmpty()) {
+                return;
+            }
             //非keep-alive,主动断开连接
             if (!HeaderValueEnum.KEEPALIVE.getName().equalsIgnoreCase(httpResponse.getHeader(HeaderNameEnum.CONNECTION.getName()))) {
                 close();
@@ -149,6 +153,7 @@ public final class HttpClient {
     }
 
     public void close() {
+        connected = false;
         client.shutdownNow();
     }
 
