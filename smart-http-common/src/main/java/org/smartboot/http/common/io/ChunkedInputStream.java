@@ -63,6 +63,9 @@ public class ChunkedInputStream extends InputStream {
         while (readFlag) {
             inputStream = session.getInputStream();
             int b = inputStream.read();
+            if (b == -1) {
+                throw new IOException("inputStream is closed");
+            }
             if (b == Constant.LF) {
                 int length = Integer.parseInt(buffer.toString(), 16);
                 buffer.reset();
@@ -86,6 +89,14 @@ public class ChunkedInputStream extends InputStream {
         }
         if (inputStream.read() != Constant.LF) {
             throw new HttpException(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (inputStream != null) {
+            inputStream.close();
+            inputStream = null;
         }
     }
 }
