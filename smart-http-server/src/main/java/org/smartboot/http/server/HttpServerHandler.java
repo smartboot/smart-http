@@ -26,10 +26,13 @@ import java.nio.ByteBuffer;
  * @author 三刀
  * @version V1.0 , 2018/2/6
  */
-public abstract class HttpServerHandler implements ServerHandler<HttpRequest, HttpResponse> {
+@FunctionalInterface
+public interface HttpServerHandler extends ServerHandler<HttpRequest, HttpResponse> {
+    @Override
+    void handle(HttpRequest request, HttpResponse response);
 
     @Override
-    public boolean onBodyStream(ByteBuffer buffer, Request request) {
+    default boolean onBodyStream(ByteBuffer buffer, Request request) {
         if (HttpMethodEnum.GET.getMethod().equals(request.getMethod())) {
             return true;
         }
