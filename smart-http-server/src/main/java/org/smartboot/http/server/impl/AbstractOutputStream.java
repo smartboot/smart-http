@@ -17,6 +17,7 @@ import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpServerConfiguration;
+import org.smartboot.http.server.WebSocketRequest;
 
 import java.io.IOException;
 import java.util.List;
@@ -97,6 +98,9 @@ abstract class AbstractOutputStream extends BufferOutputStream {
      * @return
      */
     private boolean supportChunked(HttpRequest request, AbstractResponse response) {
+        if (request instanceof WebSocketRequest) {
+            return false;
+        }
         //gzip采用chunked编码
         gzip = response.isGzip();
         if (gzip) {

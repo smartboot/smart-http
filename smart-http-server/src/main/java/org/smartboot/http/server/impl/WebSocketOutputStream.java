@@ -18,7 +18,6 @@ final class WebSocketOutputStream extends AbstractOutputStream {
 
     public WebSocketOutputStream(WebSocketRequestImpl webSocketRequest, WebSocketResponseImpl response, Request request) {
         super(webSocketRequest, response, request);
-        super.chunked = false;
     }
 
     protected byte[] getHeadPart(boolean hasHeader) {
