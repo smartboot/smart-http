@@ -22,6 +22,7 @@ import org.smartboot.http.server.impl.Request;
 import org.smartboot.socket.util.AttachKey;
 import org.smartboot.socket.util.Attachment;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -194,7 +195,6 @@ class RestHandler extends HttpServerHandler {
 
     public void dependencyInversion() throws Exception {
         for (Map.Entry<String, Object> entry : namedBeans.entrySet()) {
-            String name = entry.getKey();
             Object object = entry.getValue();
             for (Field field : object.getClass().getDeclaredFields()) {
                 Autowired autowired = field.getAnnotation(Autowired.class);
@@ -209,6 +209,12 @@ class RestHandler extends HttpServerHandler {
                     } else {
                         throw new IllegalStateException();
                     }
+                }
+            }
+            for (Method method : object.getClass().getDeclaredMethods()) {
+                PostConstruct postConstruct = method.getAnnotation(PostConstruct.class);
+                if (postConstruct != null) {
+                    method.invoke(object);
                 }
             }
         }

@@ -64,7 +64,9 @@ public class RestfulBootstrap {
                 controller(clazz);
             }
         }
+        //依赖注入
         restHandler.dependencyInversion();
+
         return this;
     }
 
