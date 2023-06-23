@@ -1,4 +1,4 @@
-package org.smartboot.http.restful;
+package org.smartboot.http.restful.context;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,14 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ClassScanner {
-
-    public static void main(String[] args) throws ClassNotFoundException, IOException {
-//        List<Class<?>> classes = findClassesWithAnnotation(MyAnnotation.class, "com.example.package");
-//        for (Class<?> clazz : classes) {
-//            System.out.println(clazz.getName());
-//        }
-    }
+class ClassScanner {
 
     public static Map<Class<? extends Annotation>, List<Class<?>>> findClassesWithAnnotation(List<Class<? extends Annotation>> annotations, String packageName) throws ClassNotFoundException, IOException {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -32,6 +25,12 @@ public class ClassScanner {
         for (File directory : dirs) {
             classes.addAll(findClasses(directory, packageName));
         }
+//        if (classes.isEmpty()) {
+//            URL url = classLoader.getResource(path + ".class");
+//            if (url != null) {
+//                classes.add(Class.forName(packageName));
+//            }
+//        }
         Map<Class<? extends Annotation>, List<Class<?>>> annotatedClasses = new HashMap<>();
         for (Class<?> clazz : classes) {
             annotations.forEach(annotation -> {

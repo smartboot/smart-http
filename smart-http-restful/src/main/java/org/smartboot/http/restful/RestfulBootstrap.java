@@ -1,17 +1,13 @@
 package org.smartboot.http.restful;
 
-import org.smartboot.http.restful.annotation.Bean;
-import org.smartboot.http.restful.annotation.Controller;
+import org.smartboot.http.restful.context.ApplicationContext;
 import org.smartboot.http.server.HttpBootstrap;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
 import org.smartboot.http.server.HttpServerHandler;
 
 import java.io.IOException;
-import java.lang.annotation.Annotation;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 import java.util.function.BiConsumer;
 
 /**
@@ -21,6 +17,7 @@ import java.util.function.BiConsumer;
 public class RestfulBootstrap {
     private final HttpBootstrap httpBootstrap = new HttpBootstrap();
     private final RestHandler restHandler;
+    private final ApplicationContext applicationContext = new ApplicationContext();
     private static final HttpServerHandler DEFAULT_HANDLER = new HttpServerHandler() {
         private final byte[] BYTES = "hello smart-http-rest".getBytes();
 
@@ -39,43 +36,28 @@ public class RestfulBootstrap {
     }
 
     public RestfulBootstrap addBean(String name, Object object) throws Exception {
-        restHandler.addBean(name, object);
+        applicationContext.addBean(name, object);
         return this;
     }
 
     public RestfulBootstrap addBean(Object object) throws Exception {
-        restHandler.addBean(object.getClass().getSimpleName().substring(0, 1).toLowerCase() + object.getClass().getSimpleName().substring(1), object);
+        applicationContext.addBean(object.getClass().getSimpleName().substring(0, 1).toLowerCase() + object.getClass().getSimpleName().substring(1), object);
         return this;
     }
 
-    public RestfulBootstrap scan(String packageName) throws Exception {
-        Map<Class<? extends Annotation>, List<Class<?>>> map = ClassScanner.findClassesWithAnnotation(Arrays.asList(Controller.class, Bean.class), packageName);
-        //注册Bean
-        if (map.containsKey(Bean.class)) {
-            for (Class<?> clazz : map.get(Bean.class)) {
-                restHandler.addBean(clazz);
-            }
-        }
-
-
-        //注册Controller
-        if (map.containsKey(Controller.class)) {
-            for (Class<?> clazz : map.get(Controller.class)) {
-                controller(clazz);
-            }
-        }
-        //依赖注入
-        restHandler.dependencyInversion();
-
+    public RestfulBootstrap scan(String... packageName) throws Exception {
+        applicationContext.scan(Arrays.asList(packageName));
+        applicationContext.getControllers().forEach(restHandler::addController);
         return this;
     }
 
-    public static HttpBootstrap controller(List<Class<?>> controllers) throws Exception {
-        RestfulBootstrap restfulBootstrap = getInstance();
-        for (Class<?> controller : controllers) {
-            restfulBootstrap.controller(controller);
+    public RestfulBootstrap controller(Class<?>... classes) throws Exception {
+        for (Class<?> clazz : classes) {
+            Object o = applicationContext.addController(clazz);
+            applicationContext.initialBean(o);
+            restHandler.addController(o);
         }
-        return restfulBootstrap.httpBootstrap;
+        return this;
     }
 
     public static RestfulBootstrap getInstance() throws Exception {
@@ -86,19 +68,6 @@ public class RestfulBootstrap {
         return new RestfulBootstrap(defaultHandler);
     }
 
-    public static HttpBootstrap controller(Class<?>... controllers) throws Exception {
-        return controller(Arrays.asList(controllers));
-    }
-
-    public RestfulBootstrap controller(Class<?> controllerClass) throws Exception {
-        restHandler.addController(controllerClass);
-        return this;
-    }
-
-    public RestfulBootstrap controller(Object controller) throws Exception {
-        restHandler.addController(controller);
-        return this;
-    }
 
     public RestfulBootstrap inspect(BiConsumer<HttpRequest, HttpResponse> consumer) {
         restHandler.setInspect(consumer);
