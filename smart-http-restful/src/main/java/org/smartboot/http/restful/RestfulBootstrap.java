@@ -1,13 +1,17 @@
 package org.smartboot.http.restful;
 
+import org.smartboot.http.restful.annotation.Bean;
+import org.smartboot.http.restful.annotation.Controller;
 import org.smartboot.http.server.HttpBootstrap;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
 import org.smartboot.http.server.HttpServerHandler;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 
 /**
@@ -32,6 +36,36 @@ public class RestfulBootstrap {
         }
         this.restHandler = new RestHandler(defaultHandler);
         httpBootstrap.httpHandler(restHandler);
+    }
+
+    public RestfulBootstrap addBean(String name, Object object) throws Exception {
+        restHandler.addBean(name, object);
+        return this;
+    }
+
+    public RestfulBootstrap addBean(Object object) throws Exception {
+        restHandler.addBean(object.getClass().getSimpleName().substring(0, 1).toLowerCase() + object.getClass().getSimpleName().substring(1), object);
+        return this;
+    }
+
+    public RestfulBootstrap scan(String packageName) throws Exception {
+        Map<Class<? extends Annotation>, List<Class<?>>> map = ClassScanner.findClassesWithAnnotation(Arrays.asList(Controller.class, Bean.class), packageName);
+        //注册Bean
+        if (map.containsKey(Bean.class)) {
+            for (Class<?> clazz : map.get(Bean.class)) {
+                restHandler.addBean(clazz);
+            }
+        }
+
+
+        //注册Controller
+        if (map.containsKey(Controller.class)) {
+            for (Class<?> clazz : map.get(Controller.class)) {
+                controller(clazz);
+            }
+        }
+        restHandler.dependencyInversion();
+        return this;
     }
 
     public static HttpBootstrap controller(List<Class<?>> controllers) throws Exception {
