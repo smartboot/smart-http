@@ -3,28 +3,40 @@ package org.smartboot.http.restful.context;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 class ClassScanner {
 
-    public static Map<Class<? extends Annotation>, List<Class<?>>> findClassesWithAnnotation(List<Class<? extends Annotation>> annotations, String packageName) throws ClassNotFoundException, IOException {
+    public static Map<Class<? extends Annotation>, List<Class<?>>> findClassesWithAnnotation(List<Class<? extends Annotation>> annotations, String packageName) throws Exception {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         String path = packageName.replace('.', '/');
         Enumeration<URL> resources = classLoader.getResources(path);
-        List<File> dirs = new ArrayList<>();
+        List<Class<?>> classes = new ArrayList<>();
         while (resources.hasMoreElements()) {
             URL resource = resources.nextElement();
-            dirs.add(new File(resource.getFile()));
+            if ("file".equals(resource.getProtocol())) {
+                classes.addAll(findClasses(new File(resource.getFile()), packageName));
+            } else if ("jar".equals(resource.getProtocol())) {
+                classes.addAll(scanClassesInJar(resource, path));
+            } else {
+                System.out.println(resource.getProtocol());
+            }
+
         }
-        List<Class<?>> classes = new ArrayList<>();
-        for (File directory : dirs) {
-            classes.addAll(findClasses(directory, packageName));
-        }
+
 //        if (classes.isEmpty()) {
 //            URL url = classLoader.getResource(path + ".class");
 //            if (url != null) {
@@ -42,6 +54,39 @@ class ClassScanner {
 
         }
         return annotatedClasses;
+    }
+
+    /**
+     * 扫描指定jar包中的子目录
+     */
+    private static List<Class<?>> scanClassesInJar(URL url, String packagePath) throws IOException, URISyntaxException {
+        List<Class<?>> classNames = new ArrayList<>();
+
+        URI uri = url.toURI();
+        try (FileSystem fileSystem = FileSystems.newFileSystem(uri, Collections.emptyMap())) {
+            Path basePath = fileSystem.getPath(packagePath);
+            if (!Files.exists(basePath)) {
+                return classNames;
+            }
+
+            try (Stream<Path> walk = Files.walk(basePath)) {
+                walk.filter(Files::isRegularFile)
+                        .filter(path -> path.toString().endsWith(".class"))
+                        .forEach(path -> {
+                            String className = path.toString()
+                                    .substring(1)
+                                    .replace("/", ".")
+                                    .replace(".class", "");
+                            try {
+                                classNames.add(Class.forName(className));
+                            } catch (ClassNotFoundException e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+            }
+        }
+
+        return classNames;
     }
 
     private static List<Class<?>> findClasses(File directory, String packageName) throws ClassNotFoundException {

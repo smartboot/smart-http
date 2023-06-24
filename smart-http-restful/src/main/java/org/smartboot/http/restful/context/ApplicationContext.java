@@ -106,7 +106,7 @@ public class ApplicationContext {
             }
             constructor.setAccessible(true);
             Object object = constructor.newInstance();
-            addBean(clazz.getSimpleName().substring(0, 1).toLowerCase() + clazz.getSimpleName().substring(1), object);
+            addBean(clazz.getName(), object);
             controllers.add(object);
             suc = true;
         }
