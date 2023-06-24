@@ -59,6 +59,7 @@ public class ApplicationContext {
         if (namedBeans.containsKey(name)) {
             throw new IllegalStateException("duplicated name[" + name + "] for " + object.getClass().getName());
         }
+        LOGGER.info("add bean:{} for class:{}", name, object);
         namedBeans.put(name, object);
         for (Method method : object.getClass().getDeclaredMethods()) {
             Bean bean = method.getAnnotation(Bean.class);
@@ -105,7 +106,7 @@ public class ApplicationContext {
             }
             constructor.setAccessible(true);
             Object object = constructor.newInstance();
-            addBean(clazz.getSimpleName(), object);
+            addBean(clazz.getSimpleName().substring(0, 1).toLowerCase() + clazz.getSimpleName().substring(1), object);
             controllers.add(object);
             suc = true;
         }

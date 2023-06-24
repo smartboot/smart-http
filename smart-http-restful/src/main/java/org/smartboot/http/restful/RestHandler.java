@@ -46,14 +46,13 @@ class RestHandler extends HttpServerHandler {
         Class<?> clazz = object.getClass();
         Controller controller = clazz.getDeclaredAnnotation(Controller.class);
         String rootPath = controller.value();
-        System.out.println(object + "method:" + clazz.getDeclaredMethods().length);
         for (Method method : clazz.getDeclaredMethods()) {
             RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
             if (requestMapping == null) {
                 continue;
             }
             String mappingUrl = getMappingUrl(rootPath, requestMapping);
-
+            LOGGER.info("restful mapping: {} -> {}", mappingUrl, clazz.getName() + "." + method.getName());
             httpRouteHandler.route(mappingUrl, new HttpServerHandler() {
                 @Override
                 public boolean onBodyStream(ByteBuffer buffer, Request request) {
