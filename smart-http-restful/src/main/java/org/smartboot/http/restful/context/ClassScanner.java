@@ -37,12 +37,6 @@ class ClassScanner {
 
         }
 
-//        if (classes.isEmpty()) {
-//            URL url = classLoader.getResource(path + ".class");
-//            if (url != null) {
-//                classes.add(Class.forName(packageName));
-//            }
-//        }
         Map<Class<? extends Annotation>, List<Class<?>>> annotatedClasses = new HashMap<>();
         for (Class<?> clazz : classes) {
             annotations.forEach(annotation -> {
