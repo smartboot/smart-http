@@ -15,9 +15,22 @@ import java.util.function.BiConsumer;
  * @version V1.0 , 2022/7/2
  */
 public class RestfulBootstrap {
-    private final HttpBootstrap httpBootstrap = new HttpBootstrap();
-    private final RestHandler restHandler;
     private final ApplicationContext applicationContext = new ApplicationContext();
+    private final HttpBootstrap httpBootstrap = new HttpBootstrap() {
+        @Override
+        public void start() {
+            try {
+                applicationContext.start();
+                applicationContext.getControllers().forEach(restHandler::addController);
+            } catch (Exception e) {
+                throw new IllegalStateException("start application exception", e);
+            }
+
+            super.start();
+        }
+    };
+    private final RestHandler restHandler;
+
     private static final HttpServerHandler DEFAULT_HANDLER = new HttpServerHandler() {
         private final byte[] BYTES = "hello smart-http-rest".getBytes();
 
@@ -47,15 +60,12 @@ public class RestfulBootstrap {
 
     public RestfulBootstrap scan(String... packageName) throws Exception {
         applicationContext.scan(Arrays.asList(packageName));
-        applicationContext.getControllers().forEach(restHandler::addController);
         return this;
     }
 
     public RestfulBootstrap controller(Class<?>... classes) throws Exception {
         for (Class<?> clazz : classes) {
-            Object o = applicationContext.addController(clazz);
-            applicationContext.initialBean(o);
-            restHandler.addController(o);
+            applicationContext.addController(clazz);
         }
         return this;
     }

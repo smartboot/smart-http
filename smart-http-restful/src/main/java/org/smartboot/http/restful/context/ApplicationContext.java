@@ -29,6 +29,12 @@ public class ApplicationContext {
 
     private final List<Object> controllers = new ArrayList<>();
 
+    public void start() throws Exception {
+        //依赖注入
+        for (Map.Entry<String, Object> entry : namedBeans.entrySet()) {
+            initialBean(entry.getValue());
+        }
+    }
 
     public void scan(List<String> packages) throws Exception {
         for (String p : packages) {
@@ -47,9 +53,6 @@ public class ApplicationContext {
                 }
             }
         }
-
-        //依赖注入
-        dependencyInversion();
     }
 
     public void addBean(String name, Object object) throws Exception {
@@ -93,16 +96,15 @@ public class ApplicationContext {
         }
     }
 
-    public Object addController(Class<?> clazz) throws Exception {
+    public void addController(Class<?> clazz) throws Exception {
         Constructor<?>[] constructors = clazz.getDeclaredConstructors();
         boolean suc = false;
-        Object object = null;
         for (Constructor<?> constructor : constructors) {
             if (constructor.getParameters().length != 0) {
                 continue;
             }
             constructor.setAccessible(true);
-            object = constructor.newInstance();
+            Object object = constructor.newInstance();
             addBean(clazz.getSimpleName(), object);
             controllers.add(object);
             suc = true;
@@ -110,20 +112,13 @@ public class ApplicationContext {
         if (!suc) {
             LOGGER.warn("no public no-args constructor found for controllerClass: {}", clazz.getName());
         }
-        return object;
     }
 
     public List<Object> getControllers() {
         return controllers;
     }
 
-    public void dependencyInversion() throws Exception {
-        for (Map.Entry<String, Object> entry : namedBeans.entrySet()) {
-            initialBean(entry.getValue());
-        }
-    }
-
-    public void initialBean(Object object) throws IllegalAccessException, InvocationTargetException {
+    private void initialBean(Object object) throws IllegalAccessException, InvocationTargetException {
         for (Field field : object.getClass().getDeclaredFields()) {
             Autowired autowired = field.getAnnotation(Autowired.class);
             if (autowired != null) {
