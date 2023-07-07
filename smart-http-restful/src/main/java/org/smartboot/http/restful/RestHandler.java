@@ -7,10 +7,14 @@ import org.slf4j.LoggerFactory;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.restful.annotation.Controller;
+import org.smartboot.http.restful.annotation.Param;
 import org.smartboot.http.restful.annotation.RequestMapping;
 import org.smartboot.http.restful.intercept.MethodInterceptor;
 import org.smartboot.http.restful.intercept.MethodInvocation;
 import org.smartboot.http.restful.intercept.MethodInvocationImpl;
+import org.smartboot.http.restful.parameter.DefaultParameterResolver;
+import org.smartboot.http.restful.parameter.ParameterMetadata;
+import org.smartboot.http.restful.parameter.ParameterResolver;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
 import org.smartboot.http.server.HttpServerHandler;
@@ -21,6 +25,7 @@ import org.smartboot.socket.util.Attachment;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.util.function.BiConsumer;
@@ -54,6 +59,30 @@ class RestHandler extends HttpServerHandler {
             String mappingUrl = getMappingUrl(rootPath, requestMapping);
             LOGGER.info("restful mapping: {} -> {}", mappingUrl, clazz.getName() + "." + method.getName());
             httpRouteHandler.route(mappingUrl, new HttpServerHandler() {
+
+                private final ParameterResolver parameterResolver = new DefaultParameterResolver();
+                private ParameterMetadata[] paramMetadataArray;
+
+                {
+                    Parameter[] parameters = method.getParameters();
+                    paramMetadataArray = new ParameterMetadata[parameters.length];
+                    for (int i = 0; i < parameters.length; i++) {
+                        Parameter parameter = parameters[i];
+                        ParameterMetadata metadata = new ParameterMetadata();
+                        paramMetadataArray[i] = metadata;
+                        metadata.setType(parameter.getType());
+                        metadata.setMethod(method);
+                        metadata.setParameterizedType(parameter.getParameterizedType());
+
+                        Param annotation = parameter.getAnnotation(Param.class);
+                        if (annotation != null) {
+                            metadata.setName(annotation.value());
+                            metadata.setScope(annotation.scope());
+                        }
+
+                    }
+                }
+
                 @Override
                 public boolean onBodyStream(ByteBuffer buffer, Request request) {
                     Attachment attachment = request.getAttachment();
@@ -95,27 +124,31 @@ class RestHandler extends HttpServerHandler {
                             bodyBuffer = attachment.get(bodyBufferKey);
                         }
 
-                        for (int i = 0; i < types.length; i++) {
-                            Type type = types[i];
-                            if (type == HttpRequest.class) {
-                                params[i] = request;
-                            } else if (type == HttpResponse.class) {
-                                params[i] = response;
-                            } else if (!type.getTypeName().startsWith("java")) {
-                                JSONObject jsonObject;
-                                if (bodyBuffer != null) {
-                                    jsonObject = JSON.parseObject(bodyBuffer.array());
-                                } else {
-                                    jsonObject = new JSONObject();
-                                    request.getParameters().keySet().forEach(param -> {
-                                        jsonObject.put(param, request.getParameter(param));
-                                    });
-                                }
-                                params[i] = jsonObject.to(type);
-                            } else {
-                                System.out.println("aaaaaa......");
-                            }
+                        for (int i = 0; i < paramMetadataArray.length; i++) {
+                            params[i] = parameterResolver.resolve(paramMetadataArray[i], request, response);
                         }
+
+//                        for (int i = 0; i < types.length; i++) {
+//                            Type type = types[i];
+//                            if (type == HttpRequest.class) {
+//                                params[i] = request;
+//                            } else if (type == HttpResponse.class) {
+//                                params[i] = response;
+//                            } else if (!type.getTypeName().startsWith("java")) {
+//                                JSONObject jsonObject;
+//                                if (bodyBuffer != null) {
+//                                    jsonObject = JSON.parseObject(bodyBuffer.array());
+//                                } else {
+//                                    jsonObject = new JSONObject();
+//                                    request.getParameters().keySet().forEach(param -> {
+//                                        jsonObject.put(param, request.getParameter(param));
+//                                    });
+//                                }
+//                                params[i] = jsonObject.to(type);
+//                            } else {
+//                                System.out.println("aaaaaa......");
+//                            }
+//                        }
                         method.setAccessible(true);
                         MethodInvocation invocation = new MethodInvocationImpl(method, params, object);
                         inspect.accept(request, response);
