@@ -65,6 +65,12 @@ public final class WebSocketRouteHandler extends WebSocketHandler {
     }
 
     @Override
+    public void whenHeaderComplete(WebSocketRequestImpl request, WebSocketResponseImpl response) {
+        WebSocketHandler httpHandler = handlerMap.get(request.getRequestURI());
+        httpHandler.whenHeaderComplete(request,response);
+    }
+
+    @Override
     public boolean onBodyStream(ByteBuffer byteBuffer, Request request) {
         return handlerMap.get(request.getRequestURI()).onBodyStream(byteBuffer, request);
     }
