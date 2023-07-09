@@ -7,10 +7,13 @@ import org.slf4j.LoggerFactory;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.restful.annotation.Controller;
+import org.smartboot.http.restful.annotation.Param;
 import org.smartboot.http.restful.annotation.RequestMapping;
 import org.smartboot.http.restful.intercept.MethodInterceptor;
 import org.smartboot.http.restful.intercept.MethodInvocation;
 import org.smartboot.http.restful.intercept.MethodInvocationImpl;
+import org.smartboot.http.restful.parameter.Invoker;
+import org.smartboot.http.restful.parameter.InvokerContext;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
 import org.smartboot.http.server.HttpServerHandler;
@@ -21,6 +24,7 @@ import org.smartboot.socket.util.Attachment;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.util.function.BiConsumer;
@@ -32,7 +36,7 @@ import java.util.function.BiConsumer;
 class RestHandler extends HttpServerHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(RestHandler.class);
     private final HttpRouteHandler httpRouteHandler;
-    private AttachKey<ByteBuffer> bodyBufferKey = AttachKey.valueOf("bodyBuffer");
+    private final AttachKey<ByteBuffer> jsonBodyBufferKey = AttachKey.valueOf("bodyBuffer");
     private BiConsumer<HttpRequest, HttpResponse> inspect = (httpRequest, response) -> {
     };
     private final MethodInterceptor interceptor = MethodInvocation::proceed;
@@ -54,12 +58,45 @@ class RestHandler extends HttpServerHandler {
             String mappingUrl = getMappingUrl(rootPath, requestMapping);
             LOGGER.info("restful mapping: {} -> {}", mappingUrl, clazz.getName() + "." + method.getName());
             httpRouteHandler.route(mappingUrl, new HttpServerHandler() {
+
+                final Invoker[] invokers;
+                boolean needContext;
+
+                {
+                    Parameter[] parameters = method.getParameters();
+                    invokers = new Invoker[parameters.length];
+                    for (int i = 0; i < parameters.length; i++) {
+                        Parameter parameter = parameters[i];
+                        Type type = parameter.getType();
+
+                        if (type == HttpRequest.class) {
+                            invokers[i] = Invoker.HttpRequestHttpRequest;
+                            continue;
+                        }
+                        if (type == HttpResponse.class) {
+                            invokers[i] = Invoker.HttpResponseHttpRequest;
+                            continue;
+                        }
+                        Param param = parameter.getAnnotation(Param.class);
+                        //param为null，说明是对象转换
+                        if (param == null) {
+                            if (type.getTypeName().startsWith("java")) {
+                                throw new IllegalArgumentException();
+                            }
+                            invokers[i] = (request, response, context) -> context.getJsonObject().to(type);
+                        } else {
+                            invokers[i] = (request, response, context) -> context.getJsonObject().getObject(param.value(), type);
+                        }
+                        needContext = true;
+                    }
+                }
+
                 @Override
                 public boolean onBodyStream(ByteBuffer buffer, Request request) {
                     Attachment attachment = request.getAttachment();
                     ByteBuffer bodyBuffer = null;
                     if (attachment != null) {
-                        bodyBuffer = attachment.get(bodyBufferKey);
+                        bodyBuffer = attachment.get(jsonBodyBufferKey);
                     }
                     if (bodyBuffer != null || request.getContentLength() > 0 && request.getContentType().startsWith("application/json")) {
                         if (bodyBuffer == null) {
@@ -68,7 +105,7 @@ class RestHandler extends HttpServerHandler {
                                 attachment = new Attachment();
                                 request.setAttachment(attachment);
                             }
-                            attachment.put(bodyBufferKey, bodyBuffer);
+                            attachment.put(jsonBodyBufferKey, bodyBuffer);
                         }
                         if (buffer.remaining() <= bodyBuffer.remaining()) {
                             bodyBuffer.put(buffer);
@@ -87,34 +124,29 @@ class RestHandler extends HttpServerHandler {
                 @Override
                 public void handle(HttpRequest request, HttpResponse response) throws IOException {
                     try {
-                        Type[] types = method.getGenericParameterTypes();
-                        Object[] params = new Object[types.length];
+                        Object[] params = new Object[invokers.length];
                         Attachment attachment = request.getAttachment();
                         ByteBuffer bodyBuffer = null;
                         if (attachment != null) {
-                            bodyBuffer = attachment.get(bodyBufferKey);
+                            bodyBuffer = attachment.get(jsonBodyBufferKey);
                         }
 
-                        for (int i = 0; i < types.length; i++) {
-                            Type type = types[i];
-                            if (type == HttpRequest.class) {
-                                params[i] = request;
-                            } else if (type == HttpResponse.class) {
-                                params[i] = response;
-                            } else if (!type.getTypeName().startsWith("java")) {
-                                JSONObject jsonObject;
-                                if (bodyBuffer != null) {
-                                    jsonObject = JSON.parseObject(bodyBuffer.array());
-                                } else {
-                                    jsonObject = new JSONObject();
-                                    request.getParameters().keySet().forEach(param -> {
-                                        jsonObject.put(param, request.getParameter(param));
-                                    });
-                                }
-                                params[i] = jsonObject.to(type);
+                        InvokerContext context = null;
+                        if (needContext) {
+                            JSONObject jsonObject;
+                            if (bodyBuffer != null) {
+                                jsonObject = JSON.parseObject(bodyBuffer.array());
                             } else {
-                                System.out.println("aaaaaa......");
+                                jsonObject = new JSONObject();
+                                request.getParameters().keySet().forEach(param -> {
+                                    jsonObject.put(param, request.getParameter(param));
+                                });
                             }
+                            context = new InvokerContext();
+                            context.setJsonObject(jsonObject);
+                        }
+                        for (int i = 0; i < params.length; i++) {
+                            params[i] = invokers[i].invoker(request, response, context);
                         }
                         method.setAccessible(true);
                         MethodInvocation invocation = new MethodInvocationImpl(method, params, object);
