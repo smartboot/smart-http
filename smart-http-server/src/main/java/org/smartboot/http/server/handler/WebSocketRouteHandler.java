@@ -67,7 +67,7 @@ public final class WebSocketRouteHandler extends WebSocketHandler {
     @Override
     public void whenHeaderComplete(WebSocketRequestImpl request, WebSocketResponseImpl response) {
         WebSocketHandler httpHandler = handlerMap.get(request.getRequestURI());
-        httpHandler.whenHeaderComplete(request,response);
+        httpHandler.whenHeaderComplete(request, response);
     }
 
     @Override
@@ -76,7 +76,7 @@ public final class WebSocketRouteHandler extends WebSocketHandler {
     }
 
     @Override
-    public void handle(WebSocketRequest request, WebSocketResponse response) throws IOException {
+    public void handle(WebSocketRequest request, WebSocketResponse response) throws Throwable {
         WebSocketHandler httpHandler = handlerMap.get(request.getRequestURI());
         httpHandler.handle(request, response);
     }

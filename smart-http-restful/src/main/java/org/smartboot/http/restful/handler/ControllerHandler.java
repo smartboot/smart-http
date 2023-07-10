@@ -62,28 +62,24 @@ class ControllerHandler extends HttpServerHandler {
     }
 
     @Override
-    public void handle(HttpRequest request, HttpResponse response) throws IOException {
-        try {
-            Object[] params = getParams(request, response);
-            method.setAccessible(true);
-            MethodInvocation invocation = new MethodInvocationImpl(method, params, controller);
-            inspect.accept(request, response);
-            Object rsp = interceptor.invoke(invocation);
+    public void handle(HttpRequest request, HttpResponse response) throws Throwable {
+        Object[] params = getParams(request, response);
+        method.setAccessible(true);
+        MethodInvocation invocation = new MethodInvocationImpl(method, params, controller);
+        inspect.accept(request, response);
+        Object rsp = interceptor.invoke(invocation);
 //            Object rsp = method.invoke(controller, params);
-            if (rsp != null) {
-                byte[] bytes;
-                if (rsp instanceof String) {
-                    bytes = ((String) rsp).getBytes();
-                } else {
-                    response.setHeader(HeaderNameEnum.CONTENT_TYPE.getName(), HeaderValueEnum.APPLICATION_JSON.getName());
-                    bytes = JSON.toJSONBytes(rsp);
-                }
-                //如果在controller中已经触发过write，此处的contentLength将不准，且不会生效
-                response.setContentLength(bytes.length);
-                response.write(bytes);
+        if (rsp != null) {
+            byte[] bytes;
+            if (rsp instanceof String) {
+                bytes = ((String) rsp).getBytes();
+            } else {
+                response.setHeader(HeaderNameEnum.CONTENT_TYPE.getName(), HeaderValueEnum.APPLICATION_JSON.getName());
+                bytes = JSON.toJSONBytes(rsp);
             }
-        } catch (Throwable e) {
-            throw new RuntimeException(e);
+            //如果在controller中已经触发过write，此处的contentLength将不准，且不会生效
+            response.setContentLength(bytes.length);
+            response.write(bytes);
         }
     }
 
@@ -93,7 +89,7 @@ class ControllerHandler extends HttpServerHandler {
         InvokerContext context = null;
         if (needContext) {
             JSONObject jsonObject;
-            if (request.getContentType().startsWith("application/json")) {
+            if (request.getContentType() != null && request.getContentType().startsWith("application/json")) {
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 byte[] bytes = new byte[1024];
                 int len = 0;

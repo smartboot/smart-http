@@ -70,12 +70,12 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
                     }
                 }
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void handleWebSocketRequest(WebSocketRequestImpl abstractRequest) throws IOException {
+    private void handleWebSocketRequest(WebSocketRequestImpl abstractRequest) throws Throwable {
         CompletableFuture<Object> future = new CompletableFuture<>();
         abstractRequest.request.getServerHandler().handle(abstractRequest, abstractRequest.getResponse(), future);
         if (future.isDone()) {
@@ -111,7 +111,7 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
         } catch (HttpException e) {
             e.printStackTrace();
             responseError(response, HttpStatus.valueOf(e.getHttpCode()), e.getDesc());
-        } catch (Exception e) {
+        } catch (Throwable e) {
             e.printStackTrace();
             responseError(response, HttpStatus.INTERNAL_SERVER_ERROR, e.fillInStackTrace().toString());
         }

@@ -26,5 +26,13 @@ class Demo2Controller {
         return "hello " + param.getParam1() + " " + param.getParam2();
     }
 
+    @RequestMapping("/param4")
+    public String test5(@Param("param") TestParam param) {
+        return "hello param is " + param;
+    }
 
+    @RequestMapping("/param5")
+    public String test6(@Param("param1") TestParam param) {
+        return "hello param is " + param.getParam1();
+    }
 }

@@ -104,6 +104,24 @@ public class RestfulServer2Test extends BastTest {
         Assert.assertEquals(httpClient.post("/demo2/param3").header().setContentType(HeaderValueEnum.APPLICATION_JSON.getName()).done().body().write(jsonObject.toJSONString().getBytes()).done().done().get().body(), "hello paramPost1 paramPost2");
     }
 
+    @Test
+    public void testPostJson1() throws ExecutionException, InterruptedException {
+        HttpClient httpClient = getHttpClient();
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("param1", "paramPost1");
+        jsonObject.put("param2", "paramPost2");
+        Assert.assertEquals(httpClient.post("/demo2/param4").header().setContentType(HeaderValueEnum.APPLICATION_JSON.getName()).done().body().write(jsonObject.toJSONString().getBytes()).done().done().get().body(), "hello param is null");
+    }
+
+    @Test
+    public void testPostJson2() throws ExecutionException, InterruptedException {
+        HttpClient httpClient = getHttpClient();
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("param1", "paramPost1");
+        jsonObject.put("param2", "paramPost2");
+        Assert.assertEquals(httpClient.post("/demo2/param5").header().setContentType(HeaderValueEnum.APPLICATION_JSON.getName()).done().body().write(jsonObject.toJSONString().getBytes()).done().done().get().body(), "hello param is null");
+    }
+
     @After
     public void destroy() {
         bootstrap.shutdown();

@@ -30,10 +30,10 @@ public interface ServerHandler<REQ, RSP> extends Handler<Request> {
      * @param response
      * @throws IOException
      */
-    default void handle(REQ request, RSP response) throws IOException {
+    default void handle(REQ request, RSP response) throws Throwable {
     }
 
-    default void handle(REQ request, RSP response, CompletableFuture<Object> completableFuture) throws IOException {
+    default void handle(REQ request, RSP response, CompletableFuture<Object> completableFuture) throws Throwable {
         try {
             handle(request, response);
         } finally {
