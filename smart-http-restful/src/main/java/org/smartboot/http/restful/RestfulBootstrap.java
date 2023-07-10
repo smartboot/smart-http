@@ -1,6 +1,7 @@
 package org.smartboot.http.restful;
 
 import org.smartboot.http.restful.context.ApplicationContext;
+import org.smartboot.http.restful.handler.RestfulHandler;
 import org.smartboot.http.server.HttpBootstrap;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
@@ -21,7 +22,7 @@ public class RestfulBootstrap {
         public void start() {
             try {
                 applicationContext.start();
-                applicationContext.getControllers().forEach(restHandler::addController);
+                applicationContext.getControllers().forEach(restfulHandler::addController);
             } catch (Exception e) {
                 throw new IllegalStateException("start application exception", e);
             }
@@ -29,7 +30,7 @@ public class RestfulBootstrap {
             super.start();
         }
     };
-    private final RestHandler restHandler;
+    private final RestfulHandler restfulHandler;
 
     private static final HttpServerHandler DEFAULT_HANDLER = new HttpServerHandler() {
         private final byte[] BYTES = "hello smart-http-rest".getBytes();
@@ -44,8 +45,8 @@ public class RestfulBootstrap {
         if (defaultHandler == null) {
             throw new NullPointerException();
         }
-        this.restHandler = new RestHandler(defaultHandler);
-        httpBootstrap.httpHandler(restHandler);
+        this.restfulHandler = new RestfulHandler(defaultHandler);
+        httpBootstrap.httpHandler(restfulHandler);
     }
 
     public RestfulBootstrap addBean(String name, Object object) throws Exception {
@@ -80,7 +81,7 @@ public class RestfulBootstrap {
 
 
     public RestfulBootstrap inspect(BiConsumer<HttpRequest, HttpResponse> consumer) {
-        restHandler.setInspect(consumer);
+        restfulHandler.setInspect(consumer);
         return this;
     }
 
