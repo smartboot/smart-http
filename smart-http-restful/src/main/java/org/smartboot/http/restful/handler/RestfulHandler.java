@@ -34,8 +34,7 @@ public class RestfulHandler extends HttpServerHandler {
 
     public void addController(Object object) {
         Class<?> clazz = object.getClass();
-        Controller controller = clazz.getDeclaredAnnotation(Controller.class);
-        String rootPath = controller.value();
+        String rootPath = clazz.getDeclaredAnnotation(Controller.class).value();
         for (Method method : clazz.getDeclaredMethods()) {
             RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
             if (requestMapping == null) {
@@ -43,7 +42,7 @@ public class RestfulHandler extends HttpServerHandler {
             }
             String mappingUrl = getMappingUrl(rootPath, requestMapping);
             LOGGER.info("restful mapping: {} -> {}", mappingUrl, clazz.getName() + "." + method.getName());
-            httpRouteHandler.route(mappingUrl, new ControllerHandler(method, controller, inspect, interceptor));
+            httpRouteHandler.route(mappingUrl, new ControllerHandler(method, object, inspect, interceptor));
         }
     }
 

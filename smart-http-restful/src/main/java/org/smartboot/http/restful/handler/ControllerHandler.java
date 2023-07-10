@@ -11,19 +11,16 @@ import org.smartboot.http.restful.intercept.MethodInvocationImpl;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
 import org.smartboot.http.server.HttpServerHandler;
-import org.smartboot.http.server.impl.Request;
-import org.smartboot.socket.util.AttachKey;
-import org.smartboot.socket.util.Attachment;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
-import java.nio.ByteBuffer;
 import java.util.function.BiConsumer;
 
 class ControllerHandler extends HttpServerHandler {
-    private static final AttachKey<ByteBuffer> jsonBodyBufferKey = AttachKey.valueOf("bodyBuffer");
     private final Method method;
     private final Object controller;
     private final MethodInterceptor interceptor;
@@ -65,36 +62,6 @@ class ControllerHandler extends HttpServerHandler {
     }
 
     @Override
-    public boolean onBodyStream(ByteBuffer buffer, Request request) {
-        Attachment attachment = request.getAttachment();
-        ByteBuffer bodyBuffer = null;
-        if (attachment != null) {
-            bodyBuffer = attachment.get(jsonBodyBufferKey);
-        }
-        if (bodyBuffer != null || request.getContentLength() > 0 && request.getContentType().startsWith("application/json")) {
-            if (bodyBuffer == null) {
-                bodyBuffer = ByteBuffer.allocate(request.getContentLength());
-                if (attachment == null) {
-                    attachment = new Attachment();
-                    request.setAttachment(attachment);
-                }
-                attachment.put(jsonBodyBufferKey, bodyBuffer);
-            }
-            if (buffer.remaining() <= bodyBuffer.remaining()) {
-                bodyBuffer.put(buffer);
-            } else {
-                int limit = buffer.limit();
-                buffer.limit(buffer.position() + bodyBuffer.remaining());
-                bodyBuffer.put(buffer);
-                buffer.limit(limit);
-            }
-            return !bodyBuffer.hasRemaining();
-        } else {
-            return super.onBodyStream(buffer, request);
-        }
-    }
-
-    @Override
     public void handle(HttpRequest request, HttpResponse response) throws IOException {
         try {
             Object[] params = getParams(request, response);
@@ -120,19 +87,21 @@ class ControllerHandler extends HttpServerHandler {
         }
     }
 
-    private Object[] getParams(HttpRequest request, HttpResponse response) {
+    private Object[] getParams(HttpRequest request, HttpResponse response) throws IOException {
         Object[] params = new Object[paramInvokers.length];
 
         InvokerContext context = null;
         if (needContext) {
             JSONObject jsonObject;
-            Attachment attachment = request.getAttachment();
-            ByteBuffer bodyBuffer = null;
-            if (attachment != null) {
-                bodyBuffer = attachment.get(jsonBodyBufferKey);
-            }
-            if (bodyBuffer != null) {
-                jsonObject = JSON.parseObject(bodyBuffer.array());
+            if (request.getContentType().startsWith("application/json")) {
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                byte[] bytes = new byte[1024];
+                int len = 0;
+                InputStream inputStream = request.getInputStream();
+                while ((len = inputStream.read(bytes)) != -1) {
+                    out.write(bytes, 0, len);
+                }
+                jsonObject = JSON.parseObject(out.toByteArray());
             } else {
                 jsonObject = new JSONObject();
                 request.getParameters().keySet().forEach(param -> {
