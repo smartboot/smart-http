@@ -15,6 +15,7 @@ import org.smartboot.http.server.WebSocketRequest;
 import org.smartboot.http.server.WebSocketResponse;
 import org.smartboot.http.server.impl.WebSocketRequestImpl;
 import org.smartboot.http.server.impl.WebSocketResponseImpl;
+import org.smartboot.socket.util.StringUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -56,7 +57,7 @@ public class WebSocketDefaultHandler extends WebSocketHandler {
 //                            LOGGER.warn("unSupport pong now");
                     break;
                 case WebSocketRequestImpl.OPCODE_CONTINUE:
-                    System.out.println(new String(request.getPayload()));
+                    LOGGER.warn("unSupport OPCODE_CONTINUE now,ignore payload: {}", StringUtils.toHexString(request.getPayload()));
                     break;
                 default:
                     throw new UnsupportedOperationException();
