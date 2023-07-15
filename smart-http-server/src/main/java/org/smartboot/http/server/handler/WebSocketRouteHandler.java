@@ -62,6 +62,7 @@ public final class WebSocketRouteHandler extends WebSocketHandler {
             }
             handlerMap.put(uri, httpHandler);
         }
+        httpHandler.willHeaderComplete(request, response);
     }
 
     @Override
