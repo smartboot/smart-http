@@ -113,7 +113,7 @@ public class HttpServerConfiguration {
     }
 
     /**
-     * 设置read缓冲区大小
+     * 设置read缓冲区大小，读缓冲区的大小至少得能容纳 url 或者一个Header value的长度，否则将触发异常
      *
      * @param readBufferSize
      * @return
