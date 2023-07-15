@@ -13,7 +13,9 @@ import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.Reset;
 import org.smartboot.http.common.enums.DecodePartEnum;
 import org.smartboot.http.common.enums.HeaderNameEnum;
+import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.enums.HttpTypeEnum;
+import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.utils.ByteTree;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.HttpUtils;
@@ -108,9 +110,20 @@ public final class Request implements HttpRequest, Reset {
     private WebSocketRequestImpl webSocketRequest;
     private ServerHandler serverHandler;
 
+    /**
+     * 剩余可读字节数
+     */
+    private int remainingThreshold;
+
+
     Request(HttpServerConfiguration configuration, AioSession aioSession) {
         this.configuration = configuration;
         this.aioSession = aioSession;
+        this.remainingThreshold = configuration.getMaxPayloadSize();
+    }
+
+    int getRemainingThreshold() {
+        return remainingThreshold;
     }
 
     public DecodePartEnum getDecodePartEnum() {
@@ -131,6 +144,13 @@ public final class Request implements HttpRequest, Reset {
             hostHeader = getHeader(HeaderNameEnum.HOST.getName());
         }
         return hostHeader;
+    }
+
+    void decodeSize(int size) {
+        remainingThreshold -= size;
+        if (remainingThreshold < 0) {
+            throw new HttpException(HttpStatus.PAYLOAD_TOO_LARGE);
+        }
     }
 
     @Override
@@ -308,6 +328,9 @@ public final class Request implements HttpRequest, Reset {
         }
         //不包含content-length,则为：-1
         contentLength = NumberUtils.toInt(getHeader(HeaderNameEnum.CONTENT_LENGTH.getName()), NONE_CONTENT_LENGTH);
+        if (contentLength >= remainingThreshold) {
+            throw new HttpException(HttpStatus.PAYLOAD_TOO_LARGE);
+        }
         return contentLength;
     }
 

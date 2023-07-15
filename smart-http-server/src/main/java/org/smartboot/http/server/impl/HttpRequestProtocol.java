@@ -53,7 +53,9 @@ public class HttpRequestProtocol implements Protocol<Request> {
             return request;
         }
 
+        int p = buffer.position();
         decodeChain = decodeChain.decode(buffer, request);
+        request.decodeSize(buffer.position() - p);
         attachment.setDecoder(decodeChain);
         if (decodeChain == BODY_READY_DECODER) {
             return request;

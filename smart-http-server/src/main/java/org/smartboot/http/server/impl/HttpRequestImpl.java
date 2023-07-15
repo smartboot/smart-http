@@ -62,7 +62,7 @@ public class HttpRequestImpl extends AbstractRequest {
 
         //如果一个消息即存在传输译码（Transfer-Encoding）头域并且也 Content-Length 头域，后者会被忽略。
         if (HeaderValueEnum.CHUNKED.getName().equalsIgnoreCase(request.getHeader(HeaderNameEnum.TRANSFER_ENCODING.getName()))) {
-            inputStream = new ChunkedInputStream(request.getAioSession(), request.getConfiguration().getMaxPayloadSize());
+            inputStream = new ChunkedInputStream(request.getAioSession(), request.getRemainingThreshold());
         } else {
             int contentLength = getContentLength();
             if (contentLength > 0 && request.getFormUrlencoded() == null) {

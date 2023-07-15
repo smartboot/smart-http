@@ -34,9 +34,6 @@ public abstract class HttpServerHandler implements ServerHandler<HttpRequest, Ht
             return true;
         }
         int postLength = request.getContentLength();
-        if (postLength > request.getConfiguration().getMaxPayloadSize()) {
-            throw new HttpException(HttpStatus.PAYLOAD_TOO_LARGE);
-        }
         //Post请求
         if (HttpMethodEnum.POST.getMethod().equals(request.getMethod())
                 && StringUtils.startsWith(request.getContentType(), HeaderValueEnum.X_WWW_FORM_URLENCODED.getName())) {
