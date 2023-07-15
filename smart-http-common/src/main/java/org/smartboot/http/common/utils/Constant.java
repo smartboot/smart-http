@@ -18,7 +18,7 @@ public interface Constant {
     /**
      * Post 最大长度
      */
-    int maxPostSize = 2 * 1024 * 1024;
+    int maxBodySize = 2 * 1024 * 1024;
 
     String SCHEMA_HTTP = "http";
     String SCHEMA_HTTPS = "https";

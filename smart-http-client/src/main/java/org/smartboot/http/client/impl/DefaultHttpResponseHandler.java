@@ -143,7 +143,7 @@ public class DefaultHttpResponseHandler extends ResponseHandler {
         public boolean onBodyStream(ByteBuffer buffer, Response response) {
             if (smartDecoder == null) {
                 int bodyLength = response.getContentLength();
-                if (bodyLength > Constant.maxPostSize) {
+                if (bodyLength > Constant.maxBodySize) {
                     throw new HttpException(HttpStatus.PAYLOAD_TOO_LARGE);
                 }
                 smartDecoder = new FixedLengthFrameDecoder(response.getContentLength());

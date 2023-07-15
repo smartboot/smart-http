@@ -122,7 +122,6 @@ public interface HttpRequest {
     /**
      * 获取附件对象
      *
-     * @param <A> 附件对象类型
      * @return 附件
      */
     Attachment getAttachment();

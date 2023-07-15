@@ -33,13 +33,14 @@ public abstract class HttpServerHandler implements ServerHandler<HttpRequest, Ht
         if (HttpMethodEnum.GET.getMethod().equals(request.getMethod())) {
             return true;
         }
+        int postLength = request.getContentLength();
+        if (postLength > request.getConfiguration().getMaxPayloadSize()) {
+            throw new HttpException(HttpStatus.PAYLOAD_TOO_LARGE);
+        }
         //Post请求
         if (HttpMethodEnum.POST.getMethod().equals(request.getMethod())
                 && StringUtils.startsWith(request.getContentType(), HeaderValueEnum.X_WWW_FORM_URLENCODED.getName())) {
-            int postLength = request.getContentLength();
-            if (postLength > request.getConfiguration().getMaxFormContentSize()) {
-                throw new HttpException(HttpStatus.PAYLOAD_TOO_LARGE);
-            } else if (postLength < 0) {
+            if (postLength < 0) {
                 throw new HttpException(HttpStatus.LENGTH_REQUIRED);
             } else if (postLength == 0) {
                 return true;
@@ -48,7 +49,7 @@ public abstract class HttpServerHandler implements ServerHandler<HttpRequest, Ht
             RequestAttachment attachment = request.getAioSession().getAttachment();
             SmartDecoder smartDecoder = attachment.getBodyDecoder();
             if (smartDecoder == null) {
-                smartDecoder = new FixedLengthFrameDecoder(request.getContentLength());
+                smartDecoder = new FixedLengthFrameDecoder(postLength);
                 attachment.setBodyDecoder(smartDecoder);
             }
 

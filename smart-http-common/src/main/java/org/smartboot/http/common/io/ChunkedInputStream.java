@@ -19,9 +19,14 @@ public class ChunkedInputStream extends InputStream {
     private final AioSession session;
     private InputStream inputStream;
     private boolean eof = false;
+    /**
+     * 剩余可读字节数
+     */
+    private int remainingThreshold;
 
-    public ChunkedInputStream(AioSession session) {
+    public ChunkedInputStream(AioSession session, int maxPayload) {
         this.session = session;
+        this.remainingThreshold = maxPayload;
     }
 
     @Override
@@ -68,6 +73,10 @@ public class ChunkedInputStream extends InputStream {
             }
             if (b == Constant.LF) {
                 int length = Integer.parseInt(buffer.toString(), 16);
+                remainingThreshold = remainingThreshold - 2 - buffer.size() - length;
+                if (remainingThreshold < 0) {
+                    throw new HttpException(HttpStatus.PAYLOAD_TOO_LARGE);
+                }
                 buffer.reset();
                 if (length == 0) {
                     eof = true;

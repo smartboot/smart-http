@@ -9,7 +9,6 @@
 package org.smartboot.http.server;
 
 import org.smartboot.http.common.utils.ByteTree;
-import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.impl.Request;
 import org.smartboot.socket.extension.plugins.Plugin;
@@ -79,9 +78,9 @@ public class HttpServerConfiguration {
      */
     private boolean secure;
     /**
-     * Form长度上限
+     * 最大请求报文
      */
-    private int maxFormContentSize = Constant.maxPostSize;
+    private int maxPayloadSize = Integer.MAX_VALUE;
 
     private AsynchronousChannelGroup group;
 
@@ -249,13 +248,12 @@ public class HttpServerConfiguration {
         return secure;
     }
 
-    public int getMaxFormContentSize() {
-        return maxFormContentSize;
+    public int getMaxPayloadSize() {
+        return maxPayloadSize;
     }
 
-    public HttpServerConfiguration setMaxFormContentSize(int maxFormContentSize) {
-        this.maxFormContentSize = maxFormContentSize <= 0 ? Integer.MAX_VALUE : maxFormContentSize;
-        return this;
+    public void setMaxPayloadSize(int maxPayloadSize) {
+        this.maxPayloadSize = maxPayloadSize;
     }
 
     public HttpServerConfiguration addPlugin(List<Plugin<Request>> plugins) {

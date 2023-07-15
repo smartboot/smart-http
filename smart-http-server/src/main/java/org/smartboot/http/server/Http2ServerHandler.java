@@ -55,7 +55,7 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
         if (HttpMethodEnum.POST.getMethod().equals(request.getMethod())
                 && StringUtils.startsWith(request.getContentType(), HeaderValueEnum.X_WWW_FORM_URLENCODED.getName())) {
             int postLength = request.getContentLength();
-            if (postLength > Constant.maxPostSize) {
+            if (postLength > Constant.maxBodySize) {
                 throw new HttpException(HttpStatus.PAYLOAD_TOO_LARGE);
             } else if (postLength < 0) {
                 throw new HttpException(HttpStatus.LENGTH_REQUIRED);
