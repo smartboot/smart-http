@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 /**
  * @author qinluo
  * @date 2023-07-07 14:49:11
- * @since 1.2.7
+ * @since 1.2.8
  */
 @Target({ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
