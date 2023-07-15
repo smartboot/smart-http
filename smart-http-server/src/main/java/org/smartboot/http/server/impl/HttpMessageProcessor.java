@@ -28,6 +28,7 @@ import org.smartboot.socket.extension.processor.AbstractMessageProcessor;
 import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -132,7 +133,8 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
     private static void responseError(AbstractResponse response, HttpStatus httpStatus, String desc) {
         try {
             response.setHttpStatus(httpStatus);
-            response.getOutputStream().write(desc.getBytes());
+            OutputStream outputStream = response.getOutputStream();
+            outputStream.write(("<center><h1>" + httpStatus.value() + " " + httpStatus.getReasonPhrase() + "</h1>" + desc + "<hr/><a target='_blank' href='https://smartboot.tech/'>smart-http</a>/" + HttpServerConfiguration.VERSION + "</center>").getBytes());
         } catch (IOException e) {
             LOGGER.warn("HttpError response exception", e);
         } finally {

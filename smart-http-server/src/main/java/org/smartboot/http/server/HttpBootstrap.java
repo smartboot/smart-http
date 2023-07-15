@@ -31,7 +31,7 @@ public class HttpBootstrap {
             "                                                       | |    \n" +
             "                                                       (_)   ";
 
-    private static final String VERSION = "1.2.7";
+
     /**
      * http消息解码器
      */
@@ -109,7 +109,7 @@ public class HttpBootstrap {
                 .setWriteBuffer(configuration.getWriteBufferSize(), 16);
         try {
             if (configuration.isBannerEnabled()) {
-                System.out.println(BANNER + "\r\n :: smart-http :: (" + VERSION + ")");
+                System.out.println(BANNER + "\r\n :: smart-http :: (" + HttpServerConfiguration.VERSION + ")");
             }
             if (configuration.group() == null) {
                 server.start();
