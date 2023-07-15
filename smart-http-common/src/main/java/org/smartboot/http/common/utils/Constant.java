@@ -59,4 +59,5 @@ public interface Constant {
 
     byte[] CHUNKED_END_BYTES = "0\r\n\r\n".getBytes(StandardCharsets.US_ASCII);
 
+    byte[] EMPTY_BYTES = {};
 }

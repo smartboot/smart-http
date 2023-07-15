@@ -27,6 +27,7 @@ public class WebSocketDemo {
         routeHandle.route("/", new WebSocketDefaultHandler() {
             @Override
             public void handleTextMessage(WebSocketRequest request, WebSocketResponse response, String data) {
+                response.ping("hello".getBytes());
                 response.sendTextMessage("接受到客户端消息：" + data);
             }
         });

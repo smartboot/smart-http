@@ -51,10 +51,10 @@ public class WebSocketDefaultHandler extends WebSocketHandler {
                     }
                     break;
                 case WebSocketRequestImpl.OPCODE_PING:
-//                            LOGGER.warn("unSupport ping now");
+                    handlePing(request, response);
                     break;
                 case WebSocketRequestImpl.OPCODE_PONG:
-//                            LOGGER.warn("unSupport pong now");
+                    handlePong(request, response);
                     break;
                 case WebSocketRequestImpl.OPCODE_CONTINUE:
                     LOGGER.warn("unSupport OPCODE_CONTINUE now,ignore payload: {}", StringUtils.toHexString(request.getPayload()));
@@ -66,6 +66,14 @@ public class WebSocketDefaultHandler extends WebSocketHandler {
             onError(request, throwable);
             throw throwable;
         }
+    }
+
+    public void handlePing(WebSocketRequest request, WebSocketResponse response) {
+        response.pong(request.getPayload());
+    }
+
+    public void handlePong(WebSocketRequest request, WebSocketResponse response) {
+        LOGGER.warn("receive pong...");
     }
 
     /**

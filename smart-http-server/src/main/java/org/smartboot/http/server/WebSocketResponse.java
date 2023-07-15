@@ -8,6 +8,8 @@
 
 package org.smartboot.http.server;
 
+import org.smartboot.http.common.utils.Constant;
+
 /**
  * WebSocket消息响应接口
  *
@@ -28,12 +30,26 @@ public interface WebSocketResponse {
      * @param bytes
      */
     void sendBinaryMessage(byte[] bytes);
+
     /**
      * 发送二进制响应
      *
      * @param bytes
      */
-    void sendBinaryMessage(byte[] bytes,int offset, int length);
+    void sendBinaryMessage(byte[] bytes, int offset, int length);
+
+    default void pong() {
+        pong(Constant.EMPTY_BYTES);
+    }
+
+
+    void pong(byte[] bytes);
+
+    void ping(byte[] bytes);
+
+    default void ping() {
+        ping(Constant.EMPTY_BYTES);
+    }
 
     /**
      * 关闭ws通道
