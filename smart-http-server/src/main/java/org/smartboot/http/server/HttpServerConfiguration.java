@@ -80,7 +80,7 @@ public class HttpServerConfiguration {
     /**
      * 最大请求报文
      */
-    private int maxPayloadSize = Integer.MAX_VALUE;
+    private int maxRequestSize = Integer.MAX_VALUE;
 
     private AsynchronousChannelGroup group;
 
@@ -248,12 +248,12 @@ public class HttpServerConfiguration {
         return secure;
     }
 
-    public int getMaxPayloadSize() {
-        return maxPayloadSize;
+    public int getMaxRequestSize() {
+        return maxRequestSize;
     }
 
-    public void setMaxPayloadSize(int maxPayloadSize) {
-        this.maxPayloadSize = maxPayloadSize;
+    public void setMaxRequestSize(int maxRequestSize) {
+        this.maxRequestSize = maxRequestSize;
     }
 
     public HttpServerConfiguration addPlugin(List<Plugin<Request>> plugins) {

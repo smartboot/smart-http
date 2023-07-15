@@ -119,7 +119,7 @@ public final class Request implements HttpRequest, Reset {
     Request(HttpServerConfiguration configuration, AioSession aioSession) {
         this.configuration = configuration;
         this.aioSession = aioSession;
-        this.remainingThreshold = configuration.getMaxPayloadSize();
+        this.remainingThreshold = configuration.getMaxRequestSize();
     }
 
     int getRemainingThreshold() {
