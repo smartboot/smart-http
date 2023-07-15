@@ -134,7 +134,9 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
         try {
             response.setHttpStatus(httpStatus);
             OutputStream outputStream = response.getOutputStream();
-            outputStream.write(("<center><h1>" + httpStatus.value() + " " + httpStatus.getReasonPhrase() + "</h1>" + desc + "<hr/><a target='_blank' href='https://smartboot.tech/'>smart-http</a>/" + HttpServerConfiguration.VERSION + "</center>").getBytes());
+            outputStream.write(("<center><h1>" + httpStatus.value() + " " + httpStatus.getReasonPhrase() + "</h1>"
+                    + desc + "<hr/><a target='_blank' href='https://smartboot.tech/'>smart-http</a>/" + HttpServerConfiguration.VERSION
+                    + "&nbsp;|&nbsp; <a target='_blank' href='https://gitee.com/smartboot/smart-http'>Gitee</a></center>").getBytes());
         } catch (IOException e) {
             LOGGER.warn("HttpError response exception", e);
         } finally {
