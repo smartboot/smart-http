@@ -25,6 +25,8 @@ public interface WebSocketRequest {
 
     public byte[] getPayload();
 
+    String getRequestURL();
+
     String getRequestURI();
 
     String getQueryString();
