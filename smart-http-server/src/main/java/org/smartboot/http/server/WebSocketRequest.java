@@ -57,4 +57,9 @@ public interface WebSocketRequest {
      * @param attachment 附件对象
      */
     void setAttachment(Attachment attachment);
+
+    /**
+     * 是否启动安全通信
+     */
+    boolean isSecure();
 }

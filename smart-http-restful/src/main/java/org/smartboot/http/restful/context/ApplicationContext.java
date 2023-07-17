@@ -8,6 +8,7 @@ import org.smartboot.http.restful.annotation.Bean;
 import org.smartboot.http.restful.annotation.Controller;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -139,6 +140,20 @@ public class ApplicationContext {
             PostConstruct postConstruct = method.getAnnotation(PostConstruct.class);
             if (postConstruct != null) {
                 method.invoke(object);
+            }
+        }
+    }
+
+
+    public void destroy() throws InvocationTargetException, IllegalAccessException {
+        //依赖注入
+        for (Map.Entry<String, Object> entry : namedBeans.entrySet()) {
+            Object bean = entry.getValue();
+            for (Method method : bean.getClass().getDeclaredMethods()) {
+                PreDestroy preDestroy = method.getAnnotation(PreDestroy.class);
+                if (preDestroy != null) {
+                    method.invoke(bean);
+                }
             }
         }
     }

@@ -8,6 +8,7 @@ import org.smartboot.http.server.HttpResponse;
 import org.smartboot.http.server.HttpServerHandler;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.function.BiConsumer;
 
@@ -28,6 +29,17 @@ public class RestfulBootstrap {
             }
 
             super.start();
+        }
+
+        @Override
+        public void shutdown() {
+            try {
+                applicationContext.destroy();
+            } catch (InvocationTargetException | IllegalAccessException e) {
+                throw new RuntimeException(e);
+            } finally {
+                super.shutdown();
+            }
         }
     };
     private final RestfulHandler restfulHandler;
