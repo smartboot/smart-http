@@ -139,6 +139,7 @@ public class ApplicationContext {
         for (Method method : object.getClass().getDeclaredMethods()) {
             PostConstruct postConstruct = method.getAnnotation(PostConstruct.class);
             if (postConstruct != null) {
+                method.setAccessible(true);
                 method.invoke(object);
             }
         }
@@ -152,6 +153,7 @@ public class ApplicationContext {
             for (Method method : bean.getClass().getDeclaredMethods()) {
                 PreDestroy preDestroy = method.getAnnotation(PreDestroy.class);
                 if (preDestroy != null) {
+                    method.setAccessible(true);
                     method.invoke(bean);
                 }
             }
