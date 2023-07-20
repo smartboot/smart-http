@@ -41,7 +41,9 @@ public class RestfulHandler extends HttpServerHandler {
                 continue;
             }
             String mappingUrl = getMappingUrl(rootPath, requestMapping);
-            LOGGER.info("restful mapping: {} -> {}", mappingUrl, clazz.getName() + "." + method.getName());
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.info("restful mapping: {} -> {}", mappingUrl, clazz.getName() + "." + method.getName());
+            }
             httpRouteHandler.route(mappingUrl, new ControllerHandler(method, object, inspect, interceptor));
         }
     }
