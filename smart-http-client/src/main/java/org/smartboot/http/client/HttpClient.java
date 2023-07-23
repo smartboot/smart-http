@@ -10,12 +10,10 @@ package org.smartboot.http.client;
 
 import org.smartboot.http.client.impl.HttpMessageProcessor;
 import org.smartboot.http.client.impl.HttpResponseProtocol;
-import org.smartboot.http.client.impl.Response;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.utils.StringUtils;
-import org.smartboot.socket.Protocol;
 import org.smartboot.socket.buffer.BufferPagePool;
 import org.smartboot.socket.buffer.VirtualBuffer;
 import org.smartboot.socket.transport.AioQuickClient;
@@ -31,14 +29,6 @@ import java.util.Base64;
 public final class HttpClient {
 
     private final HttpClientConfiguration configuration;
-    /**
-     * Http 解码协议
-     */
-    private final Protocol<Response> protocol;
-    /**
-     * 消息处理器
-     */
-    private final HttpMessageProcessor processor;
 
     /**
      * Header: Host
@@ -56,35 +46,34 @@ public final class HttpClient {
 
     private boolean connected;
 
+    private boolean firstConnected = true;
 
     public HttpClient(String host, int port) {
-        this(host, port, new HttpResponseProtocol(), new HttpMessageProcessor());
+        this(new HttpClientConfiguration(host, port, new HttpResponseProtocol(), new HttpMessageProcessor()));
     }
 
-    public HttpClient(String host, int port, Protocol<Response> protocol, HttpMessageProcessor processor) {
-        configuration = new HttpClientConfiguration(host, port);
-        this.protocol = protocol;
-        this.processor = processor;
-        hostHeader = host + ":" + port;
+    public HttpClient(HttpClientConfiguration configuration) {
+        this.configuration = configuration;
+        hostHeader = configuration.getHost() + ":" + configuration.getPort();
     }
 
     public HttpGet get(String uri) {
         connect();
-        HttpGet httpGet = new HttpGet(client.getSession(), processor.getQueue(client.getSession()));
+        HttpGet httpGet = new HttpGet(client.getSession(), configuration.getProcessor().getQueue(client.getSession()));
         initRest(httpGet, uri);
         return httpGet;
     }
 
     public HttpRest rest(String uri) {
         connect();
-        HttpRest httpRest = new HttpRest(client.getSession(), processor.getQueue(client.getSession()));
+        HttpRest httpRest = new HttpRest(client.getSession(), configuration.getProcessor().getQueue(client.getSession()));
         initRest(httpRest, uri);
         return httpRest;
     }
 
     public HttpPost post(String uri) {
         connect();
-        HttpPost httpRest = new HttpPost(client.getSession(), processor.getQueue(client.getSession()));
+        HttpPost httpRest = new HttpPost(client.getSession(), configuration.getProcessor().getQueue(client.getSession()));
         initRest(httpRest, uri);
         return httpRest;
     }
@@ -103,7 +92,7 @@ public final class HttpClient {
                 return;
             }
             //存在链路复用情况
-            if (!processor.getQueue(client.getSession()).isEmpty()) {
+            if (!configuration.getProcessor().getQueue(client.getSession()).isEmpty()) {
                 return;
             }
             //非keep-alive,主动断开连接
@@ -128,10 +117,13 @@ public final class HttpClient {
         if (connected) {
             return;
         }
+        if (firstConnected) {
+            configuration.getPlugins().forEach(plugin -> configuration.getProcessor().addPlugin(plugin));
+            firstConnected = false;
+        }
         connected = true;
         try {
-            configuration.getPlugins().forEach(processor::addPlugin);
-            client = configuration.getProxy() == null ? new AioQuickClient(configuration.getHost(), configuration.getPort(), protocol, processor) : new AioQuickClient(configuration.getProxy().getProxyHost(), configuration.getProxy().getProxyPort(), protocol, processor);
+            client = configuration.getProxy() == null ? new AioQuickClient(configuration.getHost(), configuration.getPort(), configuration.getProtocol(), configuration.getProcessor()) : new AioQuickClient(configuration.getProxy().getProxyHost(), configuration.getProxy().getProxyPort(), configuration.getProtocol(), configuration.getProcessor());
             BufferPagePool readPool = configuration.getReadBufferPool();
             client.setBufferPagePool(configuration.getWriteBufferPool()).setReadBufferFactory(bufferPage -> readPool == null ? VirtualBuffer.wrap(ByteBuffer.allocate(configuration.readBufferSize())) : readPool.allocateBufferPage().allocate(configuration.readBufferSize()));
             if (configuration.getConnectTimeout() > 0) {

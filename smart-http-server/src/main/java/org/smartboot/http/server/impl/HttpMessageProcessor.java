@@ -29,6 +29,7 @@ import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -112,6 +113,9 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
         } catch (HttpException e) {
             e.printStackTrace();
             responseError(response, HttpStatus.valueOf(e.getHttpCode()), e.getDesc());
+        } catch (InvocationTargetException e) {
+            e.getTargetException().printStackTrace();
+            responseError(response, HttpStatus.INTERNAL_SERVER_ERROR, e.getTargetException().getMessage());
         } catch (Throwable e) {
             e.printStackTrace();
             responseError(response, HttpStatus.INTERNAL_SERVER_ERROR, e.fillInStackTrace().toString());
