@@ -48,32 +48,38 @@ public final class HttpClient {
 
     private boolean firstConnected = true;
 
-    public HttpClient(String host, int port) {
-        this(new HttpClientConfiguration(host, port, new HttpResponseProtocol(), new HttpMessageProcessor()));
-    }
+    /**
+     * Http 解码协议
+     */
+    private final HttpResponseProtocol protocol = HttpResponseProtocol.INSTANCE;
+    /**
+     * 消息处理器
+     */
+    private final HttpMessageProcessor processor = new HttpMessageProcessor();
 
-    public HttpClient(HttpClientConfiguration configuration) {
-        this.configuration = configuration;
+
+    public HttpClient(String host, int port) {
+        this.configuration = new HttpClientConfiguration(host, port);
         hostHeader = configuration.getHost() + ":" + configuration.getPort();
     }
 
     public HttpGet get(String uri) {
         connect();
-        HttpGet httpGet = new HttpGet(client.getSession(), configuration.getProcessor().getQueue(client.getSession()));
+        HttpGet httpGet = new HttpGet(client.getSession(), processor.getQueue(client.getSession()));
         initRest(httpGet, uri);
         return httpGet;
     }
 
     public HttpRest rest(String uri) {
         connect();
-        HttpRest httpRest = new HttpRest(client.getSession(), configuration.getProcessor().getQueue(client.getSession()));
+        HttpRest httpRest = new HttpRest(client.getSession(), processor.getQueue(client.getSession()));
         initRest(httpRest, uri);
         return httpRest;
     }
 
     public HttpPost post(String uri) {
         connect();
-        HttpPost httpRest = new HttpPost(client.getSession(), configuration.getProcessor().getQueue(client.getSession()));
+        HttpPost httpRest = new HttpPost(client.getSession(), processor.getQueue(client.getSession()));
         initRest(httpRest, uri);
         return httpRest;
     }
@@ -92,7 +98,7 @@ public final class HttpClient {
                 return;
             }
             //存在链路复用情况
-            if (!configuration.getProcessor().getQueue(client.getSession()).isEmpty()) {
+            if (!processor.getQueue(client.getSession()).isEmpty()) {
                 return;
             }
             //非keep-alive,主动断开连接
@@ -118,12 +124,12 @@ public final class HttpClient {
             return;
         }
         if (firstConnected) {
-            configuration.getPlugins().forEach(plugin -> configuration.getProcessor().addPlugin(plugin));
+            configuration.getPlugins().forEach(processor::addPlugin);
             firstConnected = false;
         }
         connected = true;
         try {
-            client = configuration.getProxy() == null ? new AioQuickClient(configuration.getHost(), configuration.getPort(), configuration.getProtocol(), configuration.getProcessor()) : new AioQuickClient(configuration.getProxy().getProxyHost(), configuration.getProxy().getProxyPort(), configuration.getProtocol(), configuration.getProcessor());
+            client = configuration.getProxy() == null ? new AioQuickClient(configuration.getHost(), configuration.getPort(), protocol, processor) : new AioQuickClient(configuration.getProxy().getProxyHost(), configuration.getProxy().getProxyPort(), protocol, processor);
             BufferPagePool readPool = configuration.getReadBufferPool();
             client.setBufferPagePool(configuration.getWriteBufferPool()).setReadBufferFactory(bufferPage -> readPool == null ? VirtualBuffer.wrap(ByteBuffer.allocate(configuration.readBufferSize())) : readPool.allocateBufferPage().allocate(configuration.readBufferSize()));
             if (configuration.getConnectTimeout() > 0) {

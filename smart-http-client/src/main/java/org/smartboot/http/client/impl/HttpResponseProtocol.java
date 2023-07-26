@@ -20,7 +20,7 @@ import java.nio.ByteBuffer;
  * @version V1.0 , 2021/2/2
  */
 public class HttpResponseProtocol implements Protocol<Response> {
-
+    public static HttpResponseProtocol INSTANCE = new HttpResponseProtocol();
     public static final HeaderDecoder BODY_READY_DECODER = (byteBuffer, aioSession, response) -> null;
     public static final HeaderDecoder BODY_CONTINUE_DECODER = (byteBuffer, aioSession, response) -> null;
 

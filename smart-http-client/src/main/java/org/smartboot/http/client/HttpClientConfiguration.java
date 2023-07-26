@@ -1,7 +1,5 @@
 package org.smartboot.http.client;
 
-import org.smartboot.http.client.impl.HttpMessageProcessor;
-import org.smartboot.http.client.impl.HttpResponseProtocol;
 import org.smartboot.http.client.impl.Response;
 import org.smartboot.socket.buffer.BufferPagePool;
 import org.smartboot.socket.extension.plugins.Plugin;
@@ -36,15 +34,6 @@ public class HttpClientConfiguration {
      */
     private final int port;
 
-    /**
-     * Http 解码协议
-     */
-    private final HttpResponseProtocol protocol;
-    /**
-     * 消息处理器
-     */
-    private final HttpMessageProcessor processor;
-
     private ProxyConfig proxy;
 
     /**
@@ -63,11 +52,9 @@ public class HttpClientConfiguration {
      */
     private BufferPagePool readBufferPool;
 
-    public HttpClientConfiguration(String host, int port, HttpResponseProtocol protocol, HttpMessageProcessor processor) {
+    public HttpClientConfiguration(String host, int port) {
         this.host = host;
         this.port = port;
-        this.protocol = protocol;
-        this.processor = processor;
     }
 
     public int getConnectTimeout() {
@@ -164,11 +151,4 @@ public class HttpClientConfiguration {
         return plugins;
     }
 
-    HttpResponseProtocol getProtocol() {
-        return protocol;
-    }
-
-    HttpMessageProcessor getProcessor() {
-        return processor;
-    }
 }
