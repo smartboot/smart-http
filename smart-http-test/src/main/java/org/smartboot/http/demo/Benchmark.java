@@ -10,8 +10,6 @@ package org.smartboot.http.demo;
 
 import org.smartboot.http.client.HttpClient;
 import org.smartboot.http.client.HttpResponse;
-import org.smartboot.http.client.impl.HttpMessageProcessor;
-import org.smartboot.http.client.impl.HttpResponseProtocol;
 import org.smartboot.socket.buffer.BufferPagePool;
 
 import java.io.IOException;
@@ -46,11 +44,9 @@ public class Benchmark {
             }
         });
         BufferPagePool bufferPagePool = new BufferPagePool(10 * 1024 * 1024, threadNum, true);
-        final HttpResponseProtocol protocol = new HttpResponseProtocol();
-        final HttpMessageProcessor processor = new HttpMessageProcessor();
         List<HttpClient> httpClients = new ArrayList<>();
         for (int i = 0; i < connectCount; i++) {
-            HttpClient httpClient = new HttpClient("127.0.0.1", 8080, protocol, processor);
+            HttpClient httpClient = new HttpClient("127.0.0.1", 8080);
             httpClient.setAsynchronousChannelGroup(asynchronousChannelGroup);
             httpClient.configuration().writeBufferPool(bufferPagePool);
             httpClients.add(httpClient);
