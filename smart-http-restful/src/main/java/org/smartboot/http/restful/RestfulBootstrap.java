@@ -1,6 +1,7 @@
 package org.smartboot.http.restful;
 
 import org.smartboot.http.restful.context.ApplicationContext;
+import org.smartboot.http.restful.context.RestfulAnnotatedBeanScanner;
 import org.smartboot.http.restful.handler.RestfulHandler;
 import org.smartboot.http.server.HttpBootstrap;
 import org.smartboot.http.server.HttpRequest;
@@ -57,8 +58,13 @@ public class RestfulBootstrap {
         if (defaultHandler == null) {
             throw new NullPointerException();
         }
+        applicationContext.addScanner(new RestfulAnnotatedBeanScanner());
         this.restfulHandler = new RestfulHandler(defaultHandler);
         httpBootstrap.httpHandler(restfulHandler);
+    }
+
+    public ApplicationContext getApplicationContext() {
+        return applicationContext;
     }
 
     public RestfulBootstrap addBean(String name, Object object) throws Exception {

@@ -5,17 +5,14 @@ import org.slf4j.LoggerFactory;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.restful.annotation.Autowired;
 import org.smartboot.http.restful.annotation.Bean;
-import org.smartboot.http.restful.annotation.Controller;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +26,11 @@ public class ApplicationContext {
     private final Map<String, Object> namedBeans = new HashMap<>();
 
     private final List<Object> controllers = new ArrayList<>();
+    private final List<BeanScanner> beanScanners = new ArrayList<>();
+
+    public void addScanner(BeanScanner scanner) {
+        beanScanners.add(scanner);
+    }
 
     public void start() throws Exception {
         //依赖注入
@@ -38,21 +40,8 @@ public class ApplicationContext {
     }
 
     public void scan(List<String> packages) throws Exception {
-        for (String p : packages) {
-            Map<Class<? extends Annotation>, List<Class<?>>> map = ClassScanner.findClassesWithAnnotation(Arrays.asList(Controller.class, Bean.class), p);
-            //注册Bean
-            if (map.containsKey(Bean.class)) {
-                for (Class<?> clazz : map.get(Bean.class)) {
-                    addBean(clazz);
-                }
-            }
-
-            //注册Controller
-            if (map.containsKey(Controller.class)) {
-                for (Class<?> clazz : map.get(Controller.class)) {
-                    addController(clazz);
-                }
-            }
+        for (BeanScanner scanner : beanScanners) {
+            scanner.scanAndRegister(this, packages);
         }
     }
 
