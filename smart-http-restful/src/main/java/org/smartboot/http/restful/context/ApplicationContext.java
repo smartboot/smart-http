@@ -2,7 +2,9 @@ package org.smartboot.http.restful.context;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.smartboot.http.common.utils.CollectionUtils;
 import org.smartboot.http.common.utils.StringUtils;
+import org.smartboot.http.restful.Expand;
 import org.smartboot.http.restful.annotation.Autowired;
 import org.smartboot.http.restful.annotation.Bean;
 import org.smartboot.http.restful.annotation.Controller;
@@ -19,6 +21,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 
 /**
  * @author 三刀（zhengjunweimail@163.com）
@@ -30,7 +33,20 @@ public class ApplicationContext {
 
     private final List<Object> controllers = new ArrayList<>();
 
+    private final List<Class<? extends Annotation>> annotations = new ArrayList<>(Arrays.asList(Controller.class, Bean.class));
+    private final ServiceLoader<Expand> serviceLoader = ServiceLoader.load(Expand.class);
+    private final Map<Expand, List<Class<?>>> expandListMap = new HashMap<>();
+
+    {
+        serviceLoader.forEach(expand -> annotations.add(expand.expandAnnotation()));
+    }
+
     public void start() throws Exception {
+        for (Map.Entry<Expand, List<Class<?>>> entry : expandListMap.entrySet()) {
+            Expand key = entry.getKey();
+            List<Class<?>> value = entry.getValue();
+            key.init(this, value);
+        }
         //依赖注入
         for (Map.Entry<String, Object> entry : namedBeans.entrySet()) {
             initialBean(entry.getValue());
@@ -39,7 +55,7 @@ public class ApplicationContext {
 
     public void scan(List<String> packages) throws Exception {
         for (String p : packages) {
-            Map<Class<? extends Annotation>, List<Class<?>>> map = ClassScanner.findClassesWithAnnotation(Arrays.asList(Controller.class, Bean.class), p);
+            Map<Class<? extends Annotation>, List<Class<?>>> map = ClassScanner.findClassesWithAnnotation(annotations, p);
             //注册Bean
             if (map.containsKey(Bean.class)) {
                 for (Class<?> clazz : map.get(Bean.class)) {
@@ -51,6 +67,13 @@ public class ApplicationContext {
             if (map.containsKey(Controller.class)) {
                 for (Class<?> clazz : map.get(Controller.class)) {
                     addController(clazz);
+                }
+            }
+
+            for (Expand expand : serviceLoader) {
+                List<Class<?>> classes = map.get(expand.expandAnnotation());
+                if (CollectionUtils.isNotEmpty(classes)) {
+                    expandListMap.put(expand, classes);
                 }
             }
         }
@@ -160,5 +183,9 @@ public class ApplicationContext {
                 }
             }
         }
+    }
+
+    public <T> T getBean(String name) {
+        return (T) namedBeans.get(name);
     }
 }

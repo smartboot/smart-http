@@ -17,8 +17,7 @@ public class MyBatisExpand implements Expand<Mapper> {
         for (Class<Mapper> mapperClass : mappers) {
             context.addBean(mapperClass.getSimpleName().substring(0, 1).toLowerCase() + mapperClass.getSimpleName().substring(1), Proxy.newProxyInstance(mapperClass.getClassLoader(), new Class[]{mapperClass}, (proxy, method, args) -> {
                 try (SqlSession session = factory.openSession()) {
-                    Object o1 = session.getMapper(mapperClass);
-                    return method.invoke(o1, args);
+                    return method.invoke(session.getMapper(mapperClass), args);
                 }
             }));
         }
