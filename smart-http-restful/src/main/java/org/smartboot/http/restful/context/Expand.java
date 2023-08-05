@@ -1,4 +1,4 @@
-package org.smartboot.http.restful;
+package org.smartboot.http.restful.context;
 
 import org.smartboot.http.restful.context.ApplicationContext;
 
@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface Expand<T extends Annotation> {
 
-    void init(ApplicationContext context, List<Class<T>> clazz) throws Exception;
+    void initializeBean(ApplicationContext context, List<Class<T>> clazz) throws Exception;
 
     Class<T> expandAnnotation();
 }

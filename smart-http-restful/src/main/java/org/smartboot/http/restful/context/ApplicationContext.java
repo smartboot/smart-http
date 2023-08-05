@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartboot.http.common.utils.CollectionUtils;
 import org.smartboot.http.common.utils.StringUtils;
-import org.smartboot.http.restful.Expand;
 import org.smartboot.http.restful.annotation.Autowired;
 import org.smartboot.http.restful.annotation.Bean;
 import org.smartboot.http.restful.annotation.Controller;
@@ -45,7 +44,7 @@ public class ApplicationContext {
         for (Map.Entry<Expand, List<Class<?>>> entry : expandListMap.entrySet()) {
             Expand key = entry.getKey();
             List<Class<?>> value = entry.getValue();
-            key.init(this, value);
+            key.initializeBean(this, value);
         }
         //依赖注入
         for (Map.Entry<String, Object> entry : namedBeans.entrySet()) {
