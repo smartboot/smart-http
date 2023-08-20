@@ -249,6 +249,11 @@ class AbstractResponse implements HttpResponse, Reset {
     }
 
     @Override
+    public void gzip() {
+        setHeader(HeaderNameEnum.CONTENT_ENCODING.getName(), HeaderValueEnum.GZIP.getName());
+    }
+
+    @Override
     public int getContentLength() {
         return contentLength;
     }

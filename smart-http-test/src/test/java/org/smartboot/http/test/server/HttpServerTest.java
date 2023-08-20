@@ -56,6 +56,10 @@ public class HttpServerTest extends BastTest {
         bootstrap.httpHandler(new HttpServerHandler() {
             @Override
             public void handle(HttpRequest request, HttpResponse response) throws IOException {
+                //随机启用GZIP
+                if (System.currentTimeMillis() % 2 == 0) {
+                    response.gzip();
+                }
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put(KEY_METHOD, request.getMethod());
                 jsonObject.put(KEY_URI, request.getRequestURI());
