@@ -11,6 +11,7 @@ package org.smartboot.http.server.handler;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.enums.HttpStatus;
+import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
 import org.smartboot.http.common.utils.DateUtils;
@@ -35,8 +36,6 @@ import java.util.Date;
  */
 public class HttpStaticResourceHandler extends HttpServerHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpStaticResourceHandler.class);
-    private static final int READ_BUFFER = 1024 * 1024;
-    private static final String URL_404 = "<html>" + "<head>" + "<title>smart-http 404</title>" + "</head>" + "<body><h1>smart-http 找不到你所请求的地址资源，404</h1></body>" + "</html>";
 
     private final File baseDir;
 
@@ -68,7 +67,7 @@ public class HttpStaticResourceHandler extends HttpServerHandler {
             response.setHeader(HeaderNameEnum.CONTENT_TYPE.getName(), "text/html; charset=utf-8");
 
             if (!HttpMethodEnum.HEAD.getMethod().equals(method)) {
-                response.write(URL_404.getBytes());
+                throw new HttpException(HttpStatus.NOT_FOUND);
             }
             return;
         }
