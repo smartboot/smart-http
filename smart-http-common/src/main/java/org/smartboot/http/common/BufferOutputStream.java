@@ -9,8 +9,8 @@
 package org.smartboot.http.common;
 
 import org.smartboot.http.common.enums.HeaderNameEnum;
+import org.smartboot.http.common.io.ChunkedGzipOutputStream;
 import org.smartboot.http.common.utils.Constant;
-import org.smartboot.http.common.utils.GzipUtils;
 import org.smartboot.socket.transport.AioSession;
 import org.smartboot.socket.transport.WriteBuffer;
 
@@ -20,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * @author 三刀
@@ -36,6 +37,8 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
      * 当前流是否完结
      */
     private boolean closed = false;
+
+    private GZIPOutputStream gzipOut;
 
     public BufferOutputStream(AioSession session) {
         this.session = session;
@@ -64,14 +67,17 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
 
         if (chunked) {
             if (gzip) {
-                b = GzipUtils.compress(b, off, len);
-                off = 0;
-                len = b.length;
+                if (gzipOut == null) {
+                    gzipOut = new GZIPOutputStream(new ChunkedGzipOutputStream(writeBuffer));
+                }
+                gzipOut.write(b, off, len);
+            } else {
+                byte[] start = getBytes(Integer.toHexString(len) + "\r\n");
+                writeBuffer.write(start);
+                writeBuffer.write(b, off, len);
+                writeBuffer.write(Constant.CRLF_BYTES);
             }
-            byte[] start = getBytes(Integer.toHexString(len) + "\r\n");
-            writeBuffer.write(start);
-            writeBuffer.write(b, off, len);
-            writeBuffer.write(Constant.CRLF_BYTES);
+
         } else {
             writeBuffer.write(b, off, len);
         }
@@ -95,7 +101,10 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
 
     @Override
     public final void flush() throws IOException {
-        writeHeader();
+        //无body情况下不应该调用flush
+        if (!committed) {
+            throw new IllegalStateException("can't flush before buffer committed");
+        }
         writeBuffer.flush();
     }
 
@@ -107,6 +116,13 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
         writeHeader();
 
         if (chunked) {
+            if (gzip) {
+                try {
+                    gzipOut.close();
+                } finally {
+                    gzipOut = null;
+                }
+            }
             writeBuffer.write(Constant.CHUNKED_END_BYTES);
         }
         closed = true;

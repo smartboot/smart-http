@@ -24,7 +24,7 @@ import java.io.IOException;
  */
 public class GzipHttpDemo {
     public static void main(String[] args) {
-        String text="Hello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello World";
+        String text = "Hello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello WorldHello World";
         HttpRouteHandler routeHandle = new HttpRouteHandler();
         routeHandle.route("/a", new HttpServerHandler() {
             @Override
@@ -40,10 +40,18 @@ public class GzipHttpDemo {
                 response.setHeader(HeaderNameEnum.CONTENT_ENCODING.getName(), HeaderValueEnum.GZIP.getName());
                 response.write(text.getBytes());
             }
+        }).route("/c", new HttpServerHandler() {
+            @Override
+            public void handle(HttpRequest request, HttpResponse response) throws Throwable {
+                response.gzip();
+                response.write("<html><body>hello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello world".getBytes());
+                response.write("hello world111".getBytes());
+                response.write("</body></html>".getBytes());
+            }
         });
         HttpBootstrap bootstrap = new HttpBootstrap();
         bootstrap.httpHandler(routeHandle);
-        bootstrap.configuration().writeBufferSize(1024*1024).debug(true);
+        bootstrap.configuration().writeBufferSize(1024 * 1024).debug(true);
         bootstrap.setPort(8080).start();
     }
 }
