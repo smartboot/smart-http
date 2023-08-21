@@ -44,7 +44,9 @@ abstract class AbstractOutputStream extends BufferOutputStream {
         if (committed) {
             return;
         }
-        chunked = supportChunked(request);
+        if (body) {
+            chunked = supportChunked(request);
+        }
 
         //输出http状态行、contentType,contentLength、Transfer-Encoding、server等信息
         String headLine = request.getMethod() + " " + request.getUri() + " " + request.getProtocol() + "\r\n";
@@ -88,8 +90,7 @@ abstract class AbstractOutputStream extends BufferOutputStream {
      * @return
      */
     private boolean supportChunked(AbstractRequest request) {
-        return request.getContentLength() < 0
-                && HttpProtocolEnum.HTTP_11.getProtocol().equals(request.getProtocol());
+        return request.getContentLength() < 0 && HttpProtocolEnum.HTTP_11.getProtocol().equals(request.getProtocol());
     }
 
     private void convertCookieToHeader(AbstractRequest request) {

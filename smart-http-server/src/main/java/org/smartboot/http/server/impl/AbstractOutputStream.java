@@ -52,6 +52,9 @@ abstract class AbstractOutputStream extends BufferOutputStream {
         if (committed) {
             return;
         }
+        if (!body) {
+            response.setContentLength(0);
+        }
         chunked = supportChunked(request, response);
         //转换Cookie
         convertCookieToHeader();
@@ -109,8 +112,6 @@ abstract class AbstractOutputStream extends BufferOutputStream {
         }
 
         //去掉method的限制 by noear 2022/10/18
-        return response.getContentLength() < 0
-                && response.getHttpStatus() != HttpStatus.CONTINUE.value()
-                && HttpProtocolEnum.HTTP_11.getProtocol().equals(request.getProtocol());
+        return response.getContentLength() < 0 && response.getHttpStatus() != HttpStatus.CONTINUE.value() && HttpProtocolEnum.HTTP_11.getProtocol().equals(request.getProtocol());
     }
 }

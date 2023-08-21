@@ -31,6 +31,7 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
     protected final WriteBuffer writeBuffer;
     protected boolean committed = false;
     protected boolean chunked = false;
+    protected boolean body = false;
     protected boolean gzip = false;
     /**
      * 当前流是否完结
@@ -58,6 +59,7 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
      * @throws IOException
      */
     public final void write(byte b[], int off, int len) throws IOException {
+        body = true;
         writeHeader();
 
         if (len == 0) {
@@ -109,7 +111,7 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
         }
         writeHeader();
 
-        if (chunked && chunkedOutputStream != null) {
+        if (chunked) {
             chunkedOutputStream.close();
             chunkedOutputStream = null;
         }
