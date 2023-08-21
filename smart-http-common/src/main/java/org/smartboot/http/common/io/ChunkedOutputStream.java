@@ -6,15 +6,15 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 
-public class ChunkedGzipOutputStream extends OutputStream {
+public class ChunkedOutputStream extends OutputStream {
     private final OutputStream writeBuffer;
 
-    public ChunkedGzipOutputStream(OutputStream writeBuffer) {
+    public ChunkedOutputStream(OutputStream writeBuffer) {
         this.writeBuffer = writeBuffer;
     }
 
     @Override
-    public void write(int b) throws IOException {
+    public final void write(int b) throws IOException {
         throw new UnsupportedEncodingException();
     }
 
@@ -24,5 +24,10 @@ public class ChunkedGzipOutputStream extends OutputStream {
         writeBuffer.write(start);
         writeBuffer.write(b, off, len);
         writeBuffer.write(Constant.CRLF_BYTES);
+    }
+
+    @Override
+    public void close() throws IOException {
+        writeBuffer.write(Constant.CHUNKED_END_BYTES);
     }
 }

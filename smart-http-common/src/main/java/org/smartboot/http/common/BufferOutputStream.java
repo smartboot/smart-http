@@ -9,8 +9,7 @@
 package org.smartboot.http.common;
 
 import org.smartboot.http.common.enums.HeaderNameEnum;
-import org.smartboot.http.common.io.ChunkedGzipOutputStream;
-import org.smartboot.http.common.utils.Constant;
+import org.smartboot.http.common.io.ChunkedOutputStream;
 import org.smartboot.socket.transport.AioSession;
 import org.smartboot.socket.transport.WriteBuffer;
 
@@ -38,7 +37,7 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
      */
     private boolean closed = false;
 
-    private GZIPOutputStream gzipOut;
+    private OutputStream chunkedOutputStream;
 
     public BufferOutputStream(AioSession session) {
         this.session = session;
@@ -66,18 +65,13 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
         }
 
         if (chunked) {
-            if (gzip) {
-                if (gzipOut == null) {
-                    gzipOut = new GZIPOutputStream(new ChunkedGzipOutputStream(writeBuffer));
+            if (chunkedOutputStream == null) {
+                chunkedOutputStream = new ChunkedOutputStream(writeBuffer);
+                if (gzip) {
+                    chunkedOutputStream = new GZIPOutputStream(chunkedOutputStream);
                 }
-                gzipOut.write(b, off, len);
-            } else {
-                byte[] start = getBytes(Integer.toHexString(len) + "\r\n");
-                writeBuffer.write(start);
-                writeBuffer.write(b, off, len);
-                writeBuffer.write(Constant.CRLF_BYTES);
             }
-
+            chunkedOutputStream.write(b, off, len);
         } else {
             writeBuffer.write(b, off, len);
         }
@@ -115,15 +109,9 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
         }
         writeHeader();
 
-        if (chunked) {
-            if (gzip) {
-                try {
-                    gzipOut.close();
-                } finally {
-                    gzipOut = null;
-                }
-            }
-            writeBuffer.write(Constant.CHUNKED_END_BYTES);
+        if (chunked && chunkedOutputStream != null) {
+            chunkedOutputStream.close();
+            chunkedOutputStream = null;
         }
         closed = true;
     }
