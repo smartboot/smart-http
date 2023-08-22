@@ -58,7 +58,7 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
      * @param len
      * @throws IOException
      */
-    public final void write(byte b[], int off, int len) throws IOException {
+    public final void write(byte[] b, int off, int len) throws IOException {
         body = true;
         writeHeader();
 
@@ -67,15 +67,19 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
         }
 
         if (chunked) {
-            if (chunkedOutputStream == null) {
-                chunkedOutputStream = new ChunkedOutputStream(writeBuffer);
-                if (gzip) {
-                    chunkedOutputStream = new GZIPOutputStream(chunkedOutputStream);
-                }
-            }
+            checkChunkedOutputStream();
             chunkedOutputStream.write(b, off, len);
         } else {
             writeBuffer.write(b, off, len);
+        }
+    }
+
+    private void checkChunkedOutputStream() throws IOException {
+        if (chunkedOutputStream == null) {
+            chunkedOutputStream = new ChunkedOutputStream(writeBuffer);
+            if (gzip) {
+                chunkedOutputStream = new GZIPOutputStream(chunkedOutputStream);
+            }
         }
     }
 
@@ -97,10 +101,7 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
 
     @Override
     public final void flush() throws IOException {
-        //无body情况下不应该调用flush
-        if (!committed) {
-            throw new IllegalStateException("can't flush before buffer committed");
-        }
+        writeHeader();
         writeBuffer.flush();
     }
 
@@ -112,6 +113,7 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
         writeHeader();
 
         if (chunked) {
+            checkChunkedOutputStream();
             chunkedOutputStream.close();
             chunkedOutputStream = null;
         }
@@ -142,7 +144,7 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
     }
 
     public final void reset() {
-        committed = closed = chunked = gzip = false;
+        committed = closed = chunked = gzip = body = false;
     }
 
 

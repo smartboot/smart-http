@@ -12,6 +12,7 @@ import org.smartboot.http.common.BufferOutputStream;
 import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.enums.HeaderNameEnum;
+import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.utils.Constant;
@@ -52,10 +53,8 @@ abstract class AbstractOutputStream extends BufferOutputStream {
         if (committed) {
             return;
         }
-        if (!body) {
-            response.setContentLength(0);
-        }
         chunked = supportChunked(request, response);
+
         //转换Cookie
         convertCookieToHeader();
 
@@ -102,6 +101,9 @@ abstract class AbstractOutputStream extends BufferOutputStream {
      */
     private boolean supportChunked(HttpRequest request, AbstractResponse response) {
         if (request instanceof WebSocketRequest) {
+            return false;
+        }
+        if (HttpMethodEnum.HEAD.name().equals(request.getMethod())) {
             return false;
         }
         //gzip采用chunked编码
