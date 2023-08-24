@@ -111,13 +111,10 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
             abstractRequest.request.getServerHandler().handle(abstractRequest, response, future);
             finishHttpHandle(abstractRequest, future);
         } catch (HttpException e) {
-            e.printStackTrace();
             responseError(response, HttpStatus.valueOf(e.getHttpCode()), e.getDesc());
         } catch (InvocationTargetException e) {
-            e.getTargetException().printStackTrace();
             responseError(response, HttpStatus.INTERNAL_SERVER_ERROR, e.getTargetException().getMessage());
         } catch (Throwable e) {
-            e.printStackTrace();
             responseError(response, HttpStatus.INTERNAL_SERVER_ERROR, e.fillInStackTrace().toString());
         }
     }
@@ -167,10 +164,8 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
                         }
                     }
                 } catch (HttpException e) {
-                    e.printStackTrace();
                     responseError(response, HttpStatus.valueOf(e.getHttpCode()), e.getDesc());
                 } catch (Exception e) {
-                    e.printStackTrace();
                     responseError(response, HttpStatus.INTERNAL_SERVER_ERROR, e.fillInStackTrace().toString());
                 } finally {
                     session.signalRead();

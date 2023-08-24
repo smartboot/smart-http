@@ -25,6 +25,7 @@ import org.smartboot.http.server.handler.HttpRouteHandler;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * @author huqiang
@@ -43,21 +44,25 @@ public class HttpGzipTest {
             @Override
             public void handle(HttpRequest request, HttpResponse response) throws IOException {
                 int count = NumberUtils.toInt(request.getParameter("count"), 1);
-                response.gzip();
+                response.setHeader(HeaderNameEnum.CONTENT_ENCODING.getName(), HeaderValueEnum.GZIP.getName());
+                GZIPOutputStream outputStream = new GZIPOutputStream(response.getOutputStream());
                 while (count-- > 0) {
-                    response.write(new byte[chunk]);
+                    outputStream.write(new byte[chunk]);
                 }
+                outputStream.close();
             }
         });
 
         routeHandle.route("/html", new HttpServerHandler() {
             @Override
             public void handle(HttpRequest request, HttpResponse response) throws IOException {
-                response.gzip();
-                response.write("<html>".getBytes());
-                response.write("<body>".getBytes());
-                response.write("hello world".getBytes());
-                response.write("</body></html>".getBytes());
+                response.setHeader(HeaderNameEnum.CONTENT_ENCODING.getName(), HeaderValueEnum.GZIP.getName());
+                GZIPOutputStream outputStream = new GZIPOutputStream(response.getOutputStream());
+                outputStream.write("<html>".getBytes());
+                outputStream.write("<body>".getBytes());
+                outputStream.write("hello world".getBytes());
+                outputStream.write("</body></html>".getBytes());
+                outputStream.close();
             }
         });
 

@@ -125,9 +125,4 @@ public interface HttpResponse {
      */
     void addCookie(Cookie cookie);
 
-
-    /**
-     * 启用Gzip压缩
-     */
-    void gzip();
 }

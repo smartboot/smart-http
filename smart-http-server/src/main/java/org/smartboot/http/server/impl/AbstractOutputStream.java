@@ -106,12 +106,6 @@ abstract class AbstractOutputStream extends BufferOutputStream {
         if (HttpMethodEnum.HEAD.name().equals(request.getMethod())) {
             return false;
         }
-        //gzip采用chunked编码
-        gzip = response.isGzip();
-        if (gzip) {
-            response.setContentLength(-1);
-            return true;
-        }
 
         //去掉method的限制 by noear 2022/10/18
         return response.getContentLength() < 0 && response.getHttpStatus() != HttpStatus.CONTINUE.value() && HttpProtocolEnum.HTTP_11.getProtocol().equals(request.getProtocol());

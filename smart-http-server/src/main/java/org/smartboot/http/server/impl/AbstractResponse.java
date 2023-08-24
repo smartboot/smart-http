@@ -69,12 +69,6 @@ class AbstractResponse implements HttpResponse, Reset {
      */
     private boolean closed = false;
 
-    /**
-     * 是否启用压缩模式
-     */
-    private boolean gzip = false;
-
-
     private List<Cookie> cookies = Collections.emptyList();
 
     protected void init(AbstractRequest request, AbstractOutputStream outputStream) {
@@ -91,7 +85,6 @@ class AbstractResponse implements HttpResponse, Reset {
         contentLength = -1;
         cookies = Collections.emptyList();
         this.closed = false;
-        gzip = false;
     }
 
 
@@ -178,8 +171,6 @@ class AbstractResponse implements HttpResponse, Reset {
         if (name.equalsIgnoreCase(HeaderNameEnum.CONTENT_TYPE.getName())) {
             setContentType(value);
             return true;
-        } else if (name.equalsIgnoreCase(HeaderNameEnum.CONTENT_ENCODING.getName())) {
-            gzip = HeaderValueEnum.GZIP.getName().equals(value);
         } else if (name.equalsIgnoreCase(HeaderNameEnum.CONTENT_LENGTH.getName())) {
             setContentLength(Integer.parseInt(value));
             return true;
@@ -227,8 +218,7 @@ class AbstractResponse implements HttpResponse, Reset {
             if (outputStream != null && !outputStream.isClosed()) {
                 outputStream.close();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException ignored) {
         } finally {
             request.getRequest().getAioSession().close(false);
         }
@@ -246,11 +236,6 @@ class AbstractResponse implements HttpResponse, Reset {
             cookies = new ArrayList<>();
         }
         cookies.add(cookie);
-    }
-
-    @Override
-    public void gzip() {
-        setHeader(HeaderNameEnum.CONTENT_ENCODING.getName(), HeaderValueEnum.GZIP.getName());
     }
 
     @Override
@@ -282,7 +267,4 @@ class AbstractResponse implements HttpResponse, Reset {
         return closed;
     }
 
-    public boolean isGzip() {
-        return gzip;
-    }
 }

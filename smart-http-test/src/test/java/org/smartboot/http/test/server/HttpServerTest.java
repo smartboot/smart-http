@@ -20,6 +20,8 @@ import org.slf4j.LoggerFactory;
 import org.smartboot.http.client.HttpClient;
 import org.smartboot.http.client.HttpGet;
 import org.smartboot.http.client.HttpPost;
+import org.smartboot.http.common.enums.HeaderNameEnum;
+import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.server.HttpBootstrap;
@@ -30,11 +32,13 @@ import org.smartboot.http.test.BastTest;
 import org.smartboot.socket.extension.plugins.StreamMonitorPlugin;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * @author 三刀（zhengjunweimail@163.com）
@@ -57,9 +61,14 @@ public class HttpServerTest extends BastTest {
             @Override
             public void handle(HttpRequest request, HttpResponse response) throws IOException {
                 //随机启用GZIP
+                OutputStream outputStream;
                 if (System.currentTimeMillis() % 2 == 0) {
-                    response.gzip();
+                    response.setHeader(HeaderNameEnum.CONTENT_ENCODING.getName(), HeaderValueEnum.GZIP.getName());
+                    outputStream = new GZIPOutputStream(response.getOutputStream());
+                } else {
+                    outputStream = response.getOutputStream();
                 }
+
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put(KEY_METHOD, request.getMethod());
                 jsonObject.put(KEY_URI, request.getRequestURI());
@@ -73,7 +82,8 @@ public class HttpServerTest extends BastTest {
                 request.getHeaderNames().forEach(headerName -> headerMap.put(headerName, request.getHeader(headerName)));
                 jsonObject.put(KEY_HEADERS, headerMap);
 
-                response.getOutputStream().write(jsonObject.toJSONString().getBytes(StandardCharsets.UTF_8));
+                outputStream.write(jsonObject.toJSONString().getBytes(StandardCharsets.UTF_8));
+                outputStream.close();
             }
         }).setPort(SERVER_PORT);
         bootstrap.configuration().addPlugin(new StreamMonitorPlugin<>(StreamMonitorPlugin.BLUE_TEXT_INPUT_STREAM, StreamMonitorPlugin.RED_TEXT_OUTPUT_STREAM));
