@@ -30,6 +30,7 @@ import org.smartboot.socket.transport.AioSession;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -52,6 +53,10 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
             switch (request.getDecodePartEnum()) {
                 case HEADER_FINISH:
                     doHttpHeader(request);
+//                    if (HeaderValueEnum.CONTINUE.getName().equals(request.getHeader(HeaderNameEnum.EXPECT.getName()))) {
+//                        session.writeBuffer().write("HTTP/1.1 100 Continue".getBytes());
+//                        session.writeBuffer().flush();
+//                    }
                     if (response.isClosed()) {
                         break;
                     }
@@ -110,12 +115,8 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
         try {
             abstractRequest.request.getServerHandler().handle(abstractRequest, response, future);
             finishHttpHandle(abstractRequest, future);
-        } catch (HttpException e) {
-            responseError(response, HttpStatus.valueOf(e.getHttpCode()), e.getDesc());
-        } catch (InvocationTargetException e) {
-            responseError(response, HttpStatus.INTERNAL_SERVER_ERROR, e.getTargetException().getMessage());
         } catch (Throwable e) {
-            responseError(response, HttpStatus.INTERNAL_SERVER_ERROR, e.fillInStackTrace().toString());
+            responseError(response, e);
         }
     }
 
@@ -129,6 +130,18 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
             }
         }
         return keepAlive;
+    }
+
+    private static void responseError(AbstractResponse response, Throwable throwable) {
+        if (throwable instanceof HttpException) {
+            responseError(response, HttpStatus.valueOf(((HttpException) throwable).getHttpCode()), ((HttpException) throwable).getDesc());
+        } else if (throwable instanceof InvocationTargetException) {
+            responseError(response, ((InvocationTargetException) throwable).getTargetException());
+        } else if (throwable instanceof UndeclaredThrowableException) {
+            responseError(response, throwable.getCause());
+        } else {
+            responseError(response, HttpStatus.INTERNAL_SERVER_ERROR, throwable.fillInStackTrace().toString());
+        }
     }
 
     private static void responseError(AbstractResponse response, HttpStatus httpStatus, String desc) {
@@ -163,10 +176,8 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
                             session.writeBuffer().flush();
                         }
                     }
-                } catch (HttpException e) {
-                    responseError(response, HttpStatus.valueOf(e.getHttpCode()), e.getDesc());
                 } catch (Exception e) {
-                    responseError(response, HttpStatus.INTERNAL_SERVER_ERROR, e.fillInStackTrace().toString());
+                    responseError(response, e);
                 } finally {
                     session.signalRead();
                 }
@@ -237,11 +248,7 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
                 RequestAttachment attachment = session.getAttachment();
                 AbstractRequest abstractRequest = attachment.getRequest().newAbstractRequest();
                 AbstractResponse response = abstractRequest.getResponse();
-                if (throwable instanceof HttpException) {
-                    responseError(response, HttpStatus.valueOf(((HttpException) throwable).getHttpCode()), ((HttpException) throwable).getDesc());
-                } else {
-                    responseError(response, HttpStatus.INTERNAL_SERVER_ERROR, throwable.fillInStackTrace().toString());
-                }
+                responseError(response, throwable);
                 break;
             }
         }
