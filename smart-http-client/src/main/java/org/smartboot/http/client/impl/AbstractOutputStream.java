@@ -40,11 +40,11 @@ abstract class AbstractOutputStream extends BufferOutputStream {
      *
      * @throws IOException
      */
-    protected final void writeHeader() throws IOException {
+    protected final void writeHeader(HeaderWriteSource source) throws IOException {
         if (committed) {
             return;
         }
-        if (body) {
+        if (source == HeaderWriteSource.WRITE) {
             chunked = supportChunked(request);
         }
 

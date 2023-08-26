@@ -1,6 +1,7 @@
 package org.smartboot.http.restful.handler;
 
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
@@ -18,6 +19,7 @@ import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.function.BiConsumer;
 
 class ControllerHandler extends HttpServerHandler {
@@ -47,17 +49,26 @@ class ControllerHandler extends HttpServerHandler {
                 paramInvokers[i] = ParamInvoker.HttpResponseHttpRequest;
                 continue;
             }
-            Param param = parameter.getAnnotation(Param.class);
-            //param为null，说明是对象转换
-            if (param == null) {
-                if (type.getTypeName().startsWith("java")) {
-                    throw new IllegalArgumentException();
-                }
-                paramInvokers[i] = (request, response, context) -> context.getJsonObject().to(type);
-            } else {
-                paramInvokers[i] = (request, response, context) -> context.getJsonObject().getObject(param.value(), type);
-            }
             needContext = true;
+
+            Param param = parameter.getAnnotation(Param.class);
+            if (param != null) {
+                paramInvokers[i] = (request, response, context) -> {
+                    return context.getJsonObject().getObject(param.value(), type);
+                };
+                continue;
+            }
+            //param为null，说明是对象转换
+            if (Collection.class.isAssignableFrom(parameter.getType())) {
+                paramInvokers[i] = (request, response, context) -> context.getJsonArray().to(type);
+                continue;
+            }
+            if (type.getTypeName().startsWith("java")) {
+                throw new IllegalArgumentException();
+            }
+            paramInvokers[i] = (request, response, context) -> context.getJsonObject().to(type);
+
+
         }
     }
 
@@ -88,7 +99,8 @@ class ControllerHandler extends HttpServerHandler {
 
         InvokerContext context = null;
         if (needContext) {
-            JSONObject jsonObject;
+            context = new InvokerContext();
+            Object object;
             if (request.getContentType() != null && request.getContentType().startsWith("application/json")) {
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 byte[] bytes = new byte[1024];
@@ -97,15 +109,16 @@ class ControllerHandler extends HttpServerHandler {
                 while ((len = inputStream.read(bytes)) != -1) {
                     out.write(bytes, 0, len);
                 }
-                jsonObject = JSON.parseObject(out.toByteArray());
+                object = JSON.parse(out.toByteArray());
             } else {
-                jsonObject = new JSONObject();
+                JSONObject jsonObject = new JSONObject();
                 request.getParameters().keySet().forEach(param -> {
                     jsonObject.put(param, request.getParameter(param));
                 });
+                object = jsonObject;
             }
-            context = new InvokerContext();
-            context.setJsonObject(jsonObject);
+
+            context.setJsonObject(object);
         }
         for (int i = 0; i < params.length; i++) {
             params[i] = paramInvokers[i].invoker(request, response, context);
@@ -123,13 +136,17 @@ class ControllerHandler extends HttpServerHandler {
     }
 
     public static class InvokerContext {
-        private JSONObject jsonObject;
+        private Object jsonObject;
 
         public JSONObject getJsonObject() {
-            return jsonObject;
+            return (JSONObject) jsonObject;
         }
 
-        public void setJsonObject(JSONObject jsonObject) {
+        public JSONArray getJsonArray() {
+            return (JSONArray) jsonObject;
+        }
+
+        public void setJsonObject(Object jsonObject) {
             this.jsonObject = jsonObject;
         }
 

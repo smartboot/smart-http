@@ -140,6 +140,7 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
         } else if (throwable instanceof UndeclaredThrowableException) {
             responseError(response, throwable.getCause());
         } else {
+            LOGGER.warn("", throwable);
             responseError(response, HttpStatus.INTERNAL_SERVER_ERROR, throwable.fillInStackTrace().toString());
         }
     }

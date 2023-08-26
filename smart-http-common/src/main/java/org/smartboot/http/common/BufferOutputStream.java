@@ -30,7 +30,6 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
     protected final WriteBuffer writeBuffer;
     protected boolean committed = false;
     protected boolean chunked = false;
-    protected boolean body = false;
     /**
      * 当前流是否完结
      */
@@ -55,8 +54,7 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
      * @throws IOException
      */
     public final void write(byte[] b, int off, int len) throws IOException {
-        body = true;
-        writeHeader();
+        writeHeader(HeaderWriteSource.WRITE);
 
         if (len == 0) {
             return;
@@ -89,7 +87,7 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
 
     @Override
     public final void flush() throws IOException {
-        writeHeader();
+        writeHeader(HeaderWriteSource.FLUSH);
         writeBuffer.flush();
     }
 
@@ -98,7 +96,7 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
         if (closed) {
             throw new IOException("outputStream has already closed");
         }
-        writeHeader();
+        writeHeader(HeaderWriteSource.CLOSE);
 
         if (chunked) {
             writeBuffer.write(Constant.CHUNKED_END_BYTES);
@@ -130,11 +128,11 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
     }
 
     public final void reset() {
-        committed = closed = chunked = body = false;
+        committed = closed = chunked = false;
     }
 
 
-    protected abstract void writeHeader() throws IOException;
+    protected abstract void writeHeader(HeaderWriteSource source) throws IOException;
 
     protected static class WriteCache {
         private final byte[] cacheData;
@@ -163,5 +161,9 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
             return cacheData;
         }
 
+    }
+
+    protected enum HeaderWriteSource {
+        WRITE, FLUSH, CLOSE
     }
 }

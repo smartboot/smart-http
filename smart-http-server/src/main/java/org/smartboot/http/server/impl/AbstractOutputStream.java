@@ -49,7 +49,7 @@ abstract class AbstractOutputStream extends BufferOutputStream {
     /**
      * 输出Http消息头
      */
-    protected void writeHeader() throws IOException {
+    protected void writeHeader(HeaderWriteSource source) throws IOException {
         if (committed) {
             return;
         }
