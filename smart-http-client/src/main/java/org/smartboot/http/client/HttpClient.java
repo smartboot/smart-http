@@ -17,6 +17,7 @@ import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.socket.buffer.BufferPagePool;
 import org.smartboot.socket.buffer.VirtualBuffer;
 import org.smartboot.socket.transport.AioQuickClient;
+import org.smartboot.socket.transport.AioSession;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousChannelGroup;
@@ -121,6 +122,11 @@ public final class HttpClient {
 
     private void connect() {
         if (connected) {
+            AioSession session = client.getSession();
+            if (session == null || session.isInvalid()) {
+                close();
+                connect();
+            }
             return;
         }
         if (firstConnected) {
