@@ -7,9 +7,9 @@ import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.restful.annotation.Autowired;
 import org.smartboot.http.restful.annotation.Bean;
 import org.smartboot.http.restful.annotation.Controller;
+import org.smartboot.http.restful.annotation.PostConstruct;
+import org.smartboot.http.restful.annotation.PreDestroy;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;

@@ -1,10 +1,10 @@
 package org.smartboot.http.test.restful;
 
 import org.smartboot.http.restful.annotation.Controller;
+import org.smartboot.http.restful.annotation.PostConstruct;
+import org.smartboot.http.restful.annotation.PreDestroy;
 import org.smartboot.http.restful.annotation.RequestMapping;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 
 @Controller
 class Demo1Controller {
