@@ -17,7 +17,6 @@ import org.smartboot.http.server.impl.HttpRequestProtocol;
 import org.smartboot.socket.buffer.BufferPagePool;
 import org.smartboot.socket.transport.AioQuickServer;
 
-import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 
 public class HttpBootstrap {
@@ -108,16 +107,22 @@ public class HttpBootstrap {
                 .setReadBufferFactory(bufferPage -> readBufferPool.allocateBufferPage().allocate(configuration.getReadBufferSize()))
                 .setWriteBuffer(configuration.getWriteBufferSize(), 16);
         try {
-            if (configuration.isBannerEnabled()) {
-                System.out.println(BANNER + "\r\n :: smart-http :: (" + HttpServerConfiguration.VERSION + ")");
-            }
             if (configuration.group() == null) {
                 server.start();
             } else {
                 server.start(configuration.group());
             }
 
-        } catch (IOException e) {
+            if (configuration.isBannerEnabled()) {
+                System.out.println(BANNER + "\r\n :: smart-http :: (" + HttpServerConfiguration.VERSION + ")");
+                System.out.println("Technical Support:");
+                System.out.println(" - Document: http://smartboot.tech]");
+                System.out.println(" - Gitee: https://gitee.com/smartboot/smart-http");
+                System.out.println(" - Github: https://github.com/smartboot/smart-http");
+                System.out.println("\u001B[32m\uD83C\uDF89Congratulations, the smart-http startup is successful.\u001B[0m");
+            }
+        } catch (Throwable e) {
+            System.out.println("\u001B[31m❗smart-http has failed to start for some reason.\u001B[0m");
             throw new RuntimeException("server start error.", e);
         }
     }
