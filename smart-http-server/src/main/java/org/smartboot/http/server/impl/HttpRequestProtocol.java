@@ -13,7 +13,7 @@ import org.smartboot.http.server.decode.Decoder;
 import org.smartboot.http.server.decode.HttpMethodDecoder;
 import org.smartboot.socket.Protocol;
 import org.smartboot.socket.transport.AioSession;
-import org.smartboot.socket.util.DecoderException;
+import org.smartboot.socket.DecoderException;
 
 import java.nio.ByteBuffer;
 

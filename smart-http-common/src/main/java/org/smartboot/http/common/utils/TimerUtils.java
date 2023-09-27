@@ -8,8 +8,8 @@
 
 package org.smartboot.http.common.utils;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import org.smartboot.socket.timer.HashedWheelTimer;
+
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -24,12 +24,7 @@ public class TimerUtils {
     private static long currentTimeMillis = System.currentTimeMillis();
 
     static {
-        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(r -> {
-            Thread thread = new Thread(r, "timer");
-            thread.setDaemon(true);
-            return thread;
-        });
-        executor.scheduleAtFixedRate(() -> currentTimeMillis = System.currentTimeMillis(), 0, 1, TimeUnit.SECONDS);
+        HashedWheelTimer.DEFAULT_TIMER.scheduleWithFixedDelay(() -> currentTimeMillis = System.currentTimeMillis(), 1, TimeUnit.SECONDS);
     }
 
     public static long currentTimeMillis() {
