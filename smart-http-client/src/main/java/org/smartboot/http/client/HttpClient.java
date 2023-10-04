@@ -13,6 +13,8 @@ import org.smartboot.http.client.impl.HttpResponseProtocol;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
+import org.smartboot.http.common.utils.Constant;
+import org.smartboot.http.common.utils.NumberUtils;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.socket.buffer.BufferPagePool;
 import org.smartboot.socket.buffer.VirtualBuffer;
@@ -58,10 +60,46 @@ public final class HttpClient {
      */
     private final HttpMessageProcessor processor = new HttpMessageProcessor();
 
+    private final String uri;
+
+    public HttpClient(String url) {
+        int schemaIndex = url.indexOf("://");
+        if (schemaIndex == -1) {
+            throw new IllegalArgumentException("invalid url:" + url);
+        }
+        String schema = url.substring(0, schemaIndex);
+        int uriIndex = url.indexOf("/", schemaIndex + 3);
+        int portIndex = url.indexOf(":", schemaIndex + 3);
+        boolean http = Constant.SCHEMA_HTTP.equals(schema);
+        boolean https = !http && Constant.SCHEMA_HTTPS.equals(schema);
+
+        if (!http && !https) {
+            throw new IllegalArgumentException("invalid url:" + url);
+        }
+        String host;
+        int port;
+        if (portIndex > 0) {
+            host = url.substring(schemaIndex + 3, portIndex);
+            port = NumberUtils.toInt(uriIndex > 0 ? url.substring(portIndex + 1, uriIndex) : url.substring(portIndex), -1);
+        } else if (uriIndex > 0) {
+            host = url.substring(schemaIndex + 3, uriIndex);
+            port = https ? 443 : 80;
+        } else {
+            host = url.substring(schemaIndex + 3);
+            port = https ? 443 : 80;
+        }
+        if (port == -1) {
+            throw new IllegalArgumentException("invalid url:" + url);
+        }
+        this.configuration = new HttpClientConfiguration(host, port);
+        hostHeader = configuration.getHost() + ":" + configuration.getPort();
+        this.uri = uriIndex > 0 ? url.substring(uriIndex) : "/";
+    }
 
     public HttpClient(String host, int port) {
         this.configuration = new HttpClientConfiguration(host, port);
         hostHeader = configuration.getHost() + ":" + configuration.getPort();
+        this.uri = null;
     }
 
     public HttpGet get(String uri) {
@@ -83,6 +121,13 @@ public final class HttpClient {
         HttpPost httpRest = new HttpPost(client.getSession(), processor.getQueue(client.getSession()));
         initRest(httpRest, uri);
         return httpRest;
+    }
+
+    public HttpPost post() {
+        if (uri == null) {
+            throw new UnsupportedOperationException("this method only support on constructor: HttpClient(String url)");
+        }
+        return post(uri);
     }
 
     private void initRest(HttpRest httpRest, String uri) {
