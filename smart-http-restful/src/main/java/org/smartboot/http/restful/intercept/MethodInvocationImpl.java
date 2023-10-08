@@ -1,6 +1,7 @@
 package org.smartboot.http.restful.intercept;
 
 import org.smartboot.http.server.HttpRequest;
+import org.smartboot.http.server.HttpResponse;
 
 import java.lang.reflect.Method;
 
@@ -12,11 +13,15 @@ public final class MethodInvocationImpl implements MethodInvocation {
     private final Method method;
     private final Object[] args;
     private final Object object;
+    private final HttpRequest request;
+    private final HttpResponse response;
 
-    public MethodInvocationImpl(Method method, Object[] args, Object object) {
+    public MethodInvocationImpl(Method method, Object[] args, Object object, HttpRequest request, HttpResponse response) {
         this.method = method;
         this.args = args;
         this.object = object;
+        this.request = request;
+        this.response = response;
     }
 
     @Override
@@ -37,6 +42,16 @@ public final class MethodInvocationImpl implements MethodInvocation {
     @Override
     public Object proceed() throws Throwable {
         return method.invoke(object, args);
+    }
+
+    @Override
+    public HttpRequest request() {
+        return request;
+    }
+
+    @Override
+    public HttpResponse response() {
+        return response;
     }
 
 }

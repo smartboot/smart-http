@@ -23,6 +23,7 @@ public class RestfulBootstrap {
         public void start() {
             try {
                 applicationContext.start();
+                applicationContext.getControllers().forEach(restfulHandler::addInterceptor);
                 applicationContext.getControllers().forEach(restfulHandler::addController);
             } catch (Exception e) {
                 throw new IllegalStateException("start application exception", e);
@@ -91,11 +92,6 @@ public class RestfulBootstrap {
         return new RestfulBootstrap(defaultHandler);
     }
 
-
-    public RestfulBootstrap inspect(BiConsumer<HttpRequest, HttpResponse> consumer) {
-        restfulHandler.setInspect(consumer);
-        return this;
-    }
 
     public HttpBootstrap bootstrap() {
         return httpBootstrap;

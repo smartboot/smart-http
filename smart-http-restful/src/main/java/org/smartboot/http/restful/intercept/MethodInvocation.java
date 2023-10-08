@@ -1,5 +1,8 @@
 package org.smartboot.http.restful.intercept;
 
+import org.smartboot.http.server.HttpRequest;
+import org.smartboot.http.server.HttpResponse;
+
 import java.lang.reflect.Method;
 
 /**
@@ -14,4 +17,8 @@ public interface MethodInvocation {
     Object getThis();
 
     Object proceed() throws Throwable;
+
+    HttpRequest request();
+
+    HttpResponse response();
 }

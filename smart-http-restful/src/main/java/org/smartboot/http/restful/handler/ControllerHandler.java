@@ -20,20 +20,17 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.Collection;
-import java.util.function.BiConsumer;
 
 class ControllerHandler extends HttpServerHandler {
     private final Method method;
     private final Object controller;
     private final MethodInterceptor interceptor;
-    private final BiConsumer<HttpRequest, HttpResponse> inspect;
     private final ParamInvoker[] paramInvokers;
     private boolean needContext;
 
-    public ControllerHandler(Method method, Object controller, BiConsumer<HttpRequest, HttpResponse> inspect, MethodInterceptor interceptor) {
+    public ControllerHandler(Method method, Object controller, MethodInterceptor interceptor) {
         this.method = method;
         this.controller = controller;
-        this.inspect = inspect;
         this.interceptor = interceptor;
         Parameter[] parameters = method.getParameters();
         paramInvokers = new ParamInvoker[parameters.length];
@@ -76,8 +73,7 @@ class ControllerHandler extends HttpServerHandler {
     public void handle(HttpRequest request, HttpResponse response) throws Throwable {
         Object[] params = getParams(request, response);
         method.setAccessible(true);
-        MethodInvocation invocation = new MethodInvocationImpl(method, params, controller);
-        inspect.accept(request, response);
+        MethodInvocation invocation = new MethodInvocationImpl(method, params, controller, request, response);
         Object rsp = interceptor.invoke(invocation);
 //            Object rsp = method.invoke(controller, params);
         if (rsp != null) {
