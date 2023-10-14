@@ -151,7 +151,7 @@ public class ApplicationContext {
                 field.setAccessible(true);
                 Object value = namedBeans.get(field.getName());
                 if (value == null) {
-                    throw new IllegalStateException();
+                    throw new IllegalStateException("this field [" + field.getName() + "] bean of " + object.getClass().getSimpleName() + " is null");
                 }
                 if (field.getType().isAssignableFrom(value.getClass())) {
                     field.set(object, value);
