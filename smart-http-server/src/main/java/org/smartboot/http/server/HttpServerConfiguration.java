@@ -11,6 +11,7 @@ package org.smartboot.http.server;
 import org.smartboot.http.common.utils.ByteTree;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.impl.Request;
+import org.smartboot.http.server.waf.WafConfiguration;
 import org.smartboot.socket.extension.plugins.Plugin;
 import org.smartboot.socket.extension.plugins.SslPlugin;
 import org.smartboot.socket.extension.plugins.StreamMonitorPlugin;
@@ -27,7 +28,7 @@ import java.util.function.Function;
  * @version V1.0 , 2021/2/22
  */
 public class HttpServerConfiguration {
-    public static final String VERSION = "1.3.3";
+    public static final String VERSION = "1.3.4";
 
     /**
      * 缓存
@@ -92,6 +93,8 @@ public class HttpServerConfiguration {
         }
     };
     private WebSocketHandler webSocketHandler;
+
+    private WafConfiguration wafConfiguration = new WafConfiguration();
 
     public HttpServerConfiguration readMemoryPool(int totalBytes) {
         this.readPageSize = totalBytes;
@@ -273,5 +276,9 @@ public class HttpServerConfiguration {
     public HttpServerConfiguration group(AsynchronousChannelGroup group) {
         this.group = group;
         return this;
+    }
+
+    public WafConfiguration getWafConfiguration() {
+        return wafConfiguration;
     }
 }

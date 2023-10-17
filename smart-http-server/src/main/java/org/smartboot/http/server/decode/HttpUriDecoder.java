@@ -33,7 +33,7 @@ class HttpUriDecoder extends AbstractDecoder {
     }
 
     @Override
-    public Decoder decode(ByteBuffer byteBuffer, Request request) {
+    public Decoder decode0(ByteBuffer byteBuffer, Request request) {
         ByteTree<ServerHandler<?, ?>> uriTreeNode = StringUtils.scanByteTree(byteBuffer, URI_END_MATCHER, getConfiguration().getUriByteTree());
         if (uriTreeNode != null) {
             request.setUri(uriTreeNode.getStringValue());
@@ -56,18 +56,4 @@ class HttpUriDecoder extends AbstractDecoder {
         }
     }
 
-//    @Override
-//    public Decoder decode(ByteBuffer buffer, Request request) {
-//        String uri = HttpUtils.getString(buffer, URI_END_MATCHER);
-//        if (uri == null) {
-//            return this;
-//        }
-//        request.setUri(uri);
-//        request.setServerHandler(request.getConfiguration().getHttpServerHandler());
-//        if (buffer.get(buffer.position() - 1) == '?') {
-//            return uriQueryDecoder.decode(buffer, request);
-//        } else {
-//            return protocolDecoder.decode(buffer, request);
-//        }
-//    }
 }

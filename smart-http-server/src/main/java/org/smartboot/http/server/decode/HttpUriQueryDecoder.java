@@ -28,7 +28,7 @@ class HttpUriQueryDecoder extends AbstractDecoder {
     }
 
     @Override
-    public Decoder decode(ByteBuffer byteBuffer, Request request) {
+    public Decoder decode0(ByteBuffer byteBuffer, Request request) {
         int length = scanUriQuery(byteBuffer);
         if (length >= 0) {
             String query = StringUtils.convertToString(byteBuffer, byteBuffer.position() - 1 - length, length);

@@ -264,7 +264,7 @@ public final class Request implements HttpRequest, Reset {
         return configuration.isSecure();
     }
 
-    public final void setMethod(String method) {
+    public void setMethod(String method) {
         this.method = method;
     }
 

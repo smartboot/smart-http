@@ -12,6 +12,7 @@ import org.smartboot.http.common.utils.ByteTree;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.impl.Request;
+import org.smartboot.http.server.waf.MethodWafDecoder;
 
 import java.nio.ByteBuffer;
 
@@ -24,22 +25,11 @@ public class HttpMethodDecoder extends AbstractDecoder {
     private final HttpUriDecoder decoder = new HttpUriDecoder(getConfiguration());
 
     public HttpMethodDecoder(HttpServerConfiguration configuration) {
-        super(configuration);
+        super(configuration, new MethodWafDecoder(configuration));
     }
 
-//    @Override
-//    public Decoder decode(ByteBuffer byteBuffer, Request request) {
-//        String method = HttpUtils.getString(byteBuffer, SP_END_MATCHER);
-//        if (method != null) {
-//            request.setMethod(method);
-//            return decoder.decode(byteBuffer, request);
-//        } else {
-//            return this;
-//        }
-//    }
-
     @Override
-    public Decoder decode(ByteBuffer byteBuffer, Request request) {
+    public Decoder decode0(ByteBuffer byteBuffer, Request request) {
         ByteTree<?> method = StringUtils.scanByteTree(byteBuffer, SP_END_MATCHER, getConfiguration().getByteCache());
         if (method != null) {
             request.setMethod(method.getStringValue());

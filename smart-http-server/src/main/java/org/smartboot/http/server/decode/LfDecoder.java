@@ -29,7 +29,7 @@ class LfDecoder extends AbstractDecoder {
     }
 
     @Override
-    public Decoder decode(ByteBuffer byteBuffer, Request request) {
+    public Decoder decode0(ByteBuffer byteBuffer, Request request) {
         if (byteBuffer.hasRemaining()) {
             if (byteBuffer.get() != Constant.LF) {
                 throw new HttpException(HttpStatus.BAD_REQUEST);

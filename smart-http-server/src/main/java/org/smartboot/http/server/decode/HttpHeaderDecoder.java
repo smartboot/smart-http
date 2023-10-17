@@ -37,7 +37,7 @@ class HttpHeaderDecoder extends AbstractDecoder {
     }
 
     @Override
-    public Decoder decode(ByteBuffer byteBuffer, Request request) {
+    public Decoder decode0(ByteBuffer byteBuffer, Request request) {
         if (request.getHeaderSize() >= 0 && request.getHeaderSize() >= getConfiguration().getHeaderLimiter()) {
             return ignoreHeaderDecoder.decode(byteBuffer, request);
         }
