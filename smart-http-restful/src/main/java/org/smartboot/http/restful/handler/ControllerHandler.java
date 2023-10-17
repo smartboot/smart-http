@@ -3,9 +3,15 @@ package org.smartboot.http.restful.handler;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import org.apache.commons.fileupload.FileItemIterator;
+import org.apache.commons.fileupload.FileItemStream;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.util.Streams;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.restful.annotation.Param;
+import org.smartboot.http.restful.fileupload.MultipartFile;
+import org.smartboot.http.restful.fileupload.SmartHttpFileUpload;
 import org.smartboot.http.restful.intercept.MethodInterceptor;
 import org.smartboot.http.restful.intercept.MethodInvocation;
 import org.smartboot.http.restful.intercept.MethodInvocationImpl;
@@ -20,6 +26,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 class ControllerHandler extends HttpServerHandler {
     private final Method method;
@@ -51,6 +59,9 @@ class ControllerHandler extends HttpServerHandler {
             Param param = parameter.getAnnotation(Param.class);
             if (param != null) {
                 paramInvokers[i] = (request, response, context) -> {
+                    if (type == MultipartFile.class) {
+                        return context.files.get(param.value());
+                    }
                     return context.getJsonObject().getObject(param.value(), type);
                 };
                 continue;
@@ -90,7 +101,7 @@ class ControllerHandler extends HttpServerHandler {
         }
     }
 
-    private Object[] getParams(HttpRequest request, HttpResponse response) throws IOException {
+    private Object[] getParams(HttpRequest request, HttpResponse response) throws IOException, FileUploadException {
         Object[] params = new Object[paramInvokers.length];
 
         InvokerContext context = null;
@@ -106,6 +117,22 @@ class ControllerHandler extends HttpServerHandler {
                     out.write(bytes, 0, len);
                 }
                 object = JSON.parse(out.toByteArray());
+            } else if (request.getContentType() != null && request.getContentType().startsWith(HeaderValueEnum.MULTIPART_FORM_DATA.getName())) {
+                Map<String, MultipartFile> files = new HashMap<>();
+                SmartHttpFileUpload upload = new SmartHttpFileUpload();
+                JSONObject jsonObject = new JSONObject();
+                FileItemIterator iterator = upload.getItemIterator(request);
+                while (iterator.hasNext()) {
+                    FileItemStream item = iterator.next();
+                    InputStream stream = item.openStream();
+                    if (item.isFormField()) {
+                        jsonObject.put(item.getFieldName(), Streams.asString(stream));
+                    } else {
+                        files.put(item.getFieldName(), new MultipartFile(item.getFieldName(), item.openStream()));
+                    }
+                }
+                context.files = files;
+                object = jsonObject;
             } else {
                 JSONObject jsonObject = new JSONObject();
                 request.getParameters().keySet().forEach(param -> {
@@ -133,6 +160,8 @@ class ControllerHandler extends HttpServerHandler {
 
     public static class InvokerContext {
         private Object jsonObject;
+
+        private Map<String, MultipartFile> files;
 
         public JSONObject getJsonObject() {
             return (JSONObject) jsonObject;
