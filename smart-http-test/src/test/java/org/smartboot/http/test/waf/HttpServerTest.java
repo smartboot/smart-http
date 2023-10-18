@@ -130,6 +130,44 @@ public class HttpServerTest extends BastTest {
         Assert.assertEquals(HttpMethodEnum.GET.getMethod(), jsonObject.get(KEY_METHOD));
     }
 
+    @Test
+    public void testURI() throws ExecutionException, InterruptedException {
+        HttpClient httpClient = getHttpClient();
+        StringBuilder uriStr = new StringBuilder(requestUnit.getUri()).append("?");
+        requestUnit.getParameters().forEach((key, value) -> uriStr.append(key).append('=').append(value).append('&'));
+        HttpGet httpGet = httpClient.get(uriStr.toString());
+        requestUnit.getHeaders().forEach((name, value) -> httpGet.header().add(name, value));
+        JSONObject jsonObject = basicCheck(httpGet.done().get(), requestUnit);
+        Assert.assertEquals(HttpMethodEnum.GET.getMethod(), jsonObject.get(KEY_METHOD));
+
+        bootstrap.configuration().getWafConfiguration()
+                .getAllowUriPrefixes().add("/aa");
+        HttpGet httpGet1 = httpClient.get(uriStr.toString());
+        requestUnit.getHeaders().forEach((name, value) -> httpGet1.header().add(name, value));
+        Assert.assertEquals(HttpStatus.BAD_REQUEST.value(), httpGet1.done().get().getStatus());
+
+        bootstrap.configuration().getWafConfiguration()
+                .getAllowUriPrefixes().add("/hello");
+        HttpGet httpGet2 = httpClient.get(uriStr.toString());
+        requestUnit.getHeaders().forEach((name, value) -> httpGet2.header().add(name, value));
+        jsonObject = basicCheck(httpGet2.done().get(), requestUnit);
+        Assert.assertEquals(HttpMethodEnum.GET.getMethod(), jsonObject.get(KEY_METHOD));
+
+        bootstrap.configuration().getWafConfiguration()
+                .getAllowUriPrefixes().clear();
+        bootstrap.configuration().getWafConfiguration().getAllowUriSuffixes().add("/aa");
+        HttpGet httpGet3 = httpClient.get(uriStr.toString());
+        requestUnit.getHeaders().forEach((name, value) -> httpGet3.header().add(name, value));
+        Assert.assertEquals(HttpStatus.BAD_REQUEST.value(), httpGet3.done().get().getStatus());
+
+        bootstrap.configuration().getWafConfiguration()
+                .getAllowUriSuffixes().add("llo");
+        HttpGet httpGet4 = httpClient.get(uriStr.toString());
+        requestUnit.getHeaders().forEach((name, value) -> httpGet4.header().add(name, value));
+        jsonObject = basicCheck(httpGet4.done().get(), requestUnit);
+        Assert.assertEquals(HttpMethodEnum.GET.getMethod(), jsonObject.get(KEY_METHOD));
+    }
+
     private JSONObject basicCheck(org.smartboot.http.client.HttpResponse response, RequestUnit requestUnit) {
         JSONObject jsonObject = JSON.parseObject(response.body());
         LOGGER.info(JSON.toJSONString(jsonObject, SerializerFeature.PrettyFormat, SerializerFeature.WriteMapNullValue,

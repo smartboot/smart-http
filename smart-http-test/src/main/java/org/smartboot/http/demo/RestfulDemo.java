@@ -2,10 +2,8 @@ package org.smartboot.http.demo;
 
 import org.smartboot.http.restful.RestfulBootstrap;
 import org.smartboot.http.restful.annotation.Controller;
-import org.smartboot.http.restful.annotation.Param;
 import org.smartboot.http.restful.annotation.RequestMapping;
 import org.smartboot.http.restful.annotation.RequestMethod;
-import org.smartboot.http.restful.fileupload.MultipartFile;
 
 /**
  * @author 三刀（zhengjunweimail@163.com）
@@ -30,10 +28,10 @@ public class RestfulDemo {
                 "</body></html>");
     }
 
-    @RequestMapping("/upload")
-    public String upload(@Param("text") MultipartFile file, @Param("name") String name) {
-        return "aa";
-    }
+//    @RequestMapping("/upload")
+//    public String upload(@Param("text") MultipartFile file, @Param("name") String name) {
+//        return "aa";
+//    }
 
     public static void main(String[] args) throws Exception {
         RestfulBootstrap bootstrap = RestfulBootstrap.getInstance().controller(RestfulDemo.class);

@@ -16,6 +16,7 @@ import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.ServerHandler;
 import org.smartboot.http.server.impl.Request;
+import org.smartboot.http.server.waf.UriWafDecoder;
 
 import java.nio.ByteBuffer;
 
@@ -29,7 +30,7 @@ class HttpUriDecoder extends AbstractDecoder {
     private final HttpProtocolDecoder protocolDecoder = new HttpProtocolDecoder(getConfiguration());
 
     public HttpUriDecoder(HttpServerConfiguration configuration) {
-        super(configuration);
+        super(configuration, new UriWafDecoder(configuration));
     }
 
     @Override
