@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 
 /**
  * @author 三刀（zhengjunweimail@163.com）
@@ -33,7 +35,9 @@ public class RestfulHandler extends HttpServerHandler {
     private final HttpRouteHandler httpRouteHandler;
     private final MethodInterceptor interceptor = MethodInvocation::proceed;
 
-    private Map<Interceptor, InterceptorEntity> interceptors = new HashMap<>();
+    private final Map<Interceptor, InterceptorEntity> interceptors = new HashMap<>();
+
+    private ExecutorService asyncExecutor;
 
     public RestfulHandler(HttpServerHandler defaultHandler) {
         this.httpRouteHandler = defaultHandler != null ? new HttpRouteHandler(defaultHandler) : new HttpRouteHandler();
@@ -56,7 +60,8 @@ public class RestfulHandler extends HttpServerHandler {
 
     public void addController(Object object) {
         Class<?> clazz = object.getClass();
-        String rootPath = clazz.getDeclaredAnnotation(Controller.class).value();
+        Controller controller = clazz.getDeclaredAnnotation(Controller.class);
+        String rootPath = controller.value();
         for (Method method : clazz.getDeclaredMethods()) {
             RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
             if (requestMapping == null) {
@@ -101,7 +106,29 @@ public class RestfulHandler extends HttpServerHandler {
                 };
             }
 
-            httpRouteHandler.route(mappingUrl, new ControllerHandler(method, object, interceptor0));
+            if (controller.async() || requestMapping.async()) {
+                if (asyncExecutor == null) {
+                    throw new NullPointerException("The async request must set the asyncExecutor.");
+                }
+                httpRouteHandler.route(mappingUrl, new ControllerHandler(method, object, interceptor0) {
+                    @Override
+                    public void handle(HttpRequest request, HttpResponse response, CompletableFuture<Object> completableFuture) throws Throwable {
+                        ControllerHandler handler = this;
+                        asyncExecutor.execute(() -> {
+                            try {
+                                handler.handle(request, response);
+                                completableFuture.complete(null);
+                            } catch (Throwable e) {
+                                completableFuture.completeExceptionally(e);
+                            }
+                        });
+
+                    }
+                });
+            } else {
+                httpRouteHandler.route(mappingUrl, new ControllerHandler(method, object, interceptor0));
+            }
+
         }
     }
 
@@ -136,6 +163,10 @@ public class RestfulHandler extends HttpServerHandler {
     @Override
     public void onHeaderComplete(Request request) throws IOException {
         httpRouteHandler.onHeaderComplete(request);
+    }
+
+    public void setAsyncExecutor(ExecutorService asyncExecutor) {
+        this.asyncExecutor = asyncExecutor;
     }
 
     class InterceptorEntity {

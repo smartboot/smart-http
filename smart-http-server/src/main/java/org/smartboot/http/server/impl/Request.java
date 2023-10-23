@@ -583,6 +583,7 @@ public final class Request implements HttpRequest, Reset {
     }
 
     public void reset() {
+        remainingThreshold = configuration.getMaxRequestSize();
         headerSize = 0;
         method = null;
         uri = null;

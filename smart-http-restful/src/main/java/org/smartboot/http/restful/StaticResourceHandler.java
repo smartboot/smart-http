@@ -14,6 +14,8 @@ import org.smartboot.http.server.HttpServerHandler;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 
 /**
  * @author 三刀（zhengjunweimail@163.com）
@@ -24,6 +26,32 @@ public class StaticResourceHandler extends HttpServerHandler {
     private final Date lastModifyDate = new Date(System.currentTimeMillis() / 1000 * 1000);
 
     private final String lastModifyDateFormat = DateUtils.formatLastModified(lastModifyDate);
+
+    private final ExecutorService asyncExecutor;
+
+    public StaticResourceHandler() {
+        this(null);
+    }
+
+    public StaticResourceHandler(ExecutorService asyncExecutor) {
+        this.asyncExecutor = asyncExecutor;
+    }
+
+    @Override
+    public void handle(HttpRequest request, HttpResponse response, CompletableFuture<Object> completableFuture) throws Throwable {
+        if (asyncExecutor == null) {
+            super.handle(request, response, completableFuture);
+        } else {
+            asyncExecutor.execute(() -> {
+                try {
+                    handle(request, response);
+                    completableFuture.complete(null);
+                } catch (IOException e) {
+                    completableFuture.completeExceptionally(e);
+                }
+            });
+        }
+    }
 
     @Override
     public void handle(HttpRequest request, HttpResponse response) throws IOException {

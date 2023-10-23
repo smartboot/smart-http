@@ -10,7 +10,7 @@ import org.smartboot.http.server.HttpServerHandler;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
-import java.util.function.BiConsumer;
+import java.util.concurrent.ExecutorService;
 
 /**
  * @author 三刀（zhengjunweimail@163.com）
@@ -92,6 +92,9 @@ public class RestfulBootstrap {
         return new RestfulBootstrap(defaultHandler);
     }
 
+    public void setAsyncExecutor(ExecutorService asyncExecutor) {
+        restfulHandler.setAsyncExecutor(asyncExecutor);
+    }
 
     public HttpBootstrap bootstrap() {
         return httpBootstrap;

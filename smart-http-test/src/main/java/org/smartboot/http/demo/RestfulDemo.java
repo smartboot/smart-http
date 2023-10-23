@@ -5,6 +5,8 @@ import org.smartboot.http.restful.annotation.Controller;
 import org.smartboot.http.restful.annotation.RequestMapping;
 import org.smartboot.http.restful.annotation.RequestMethod;
 
+import java.util.concurrent.Executors;
+
 /**
  * @author 三刀（zhengjunweimail@163.com）
  * @version V1.0 , 2023/1/27
@@ -28,6 +30,12 @@ public class RestfulDemo {
                 "</body></html>");
     }
 
+    @RequestMapping(value = "/async", async = true)
+    public String async() throws InterruptedException {
+        int sleep = (int) (Math.random() * 5000);
+        Thread.sleep(sleep);
+        return "sleep: " + sleep + "ms";
+    }
 //    @RequestMapping("/upload")
 //    public String upload(@Param("text") MultipartFile file, @Param("name") String name) {
 //        return "aa";
@@ -35,7 +43,8 @@ public class RestfulDemo {
 
     public static void main(String[] args) throws Exception {
         RestfulBootstrap bootstrap = RestfulBootstrap.getInstance().controller(RestfulDemo.class);
-        bootstrap.bootstrap().configuration().debug(true);
+        bootstrap.setAsyncExecutor(Executors.newCachedThreadPool());
+        bootstrap.bootstrap().configuration().debug(false);
         bootstrap.bootstrap().setPort(8080).start();
     }
 }
