@@ -15,6 +15,7 @@ import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.server.impl.HttpMessageProcessor;
 import org.smartboot.http.server.impl.HttpRequestProtocol;
 import org.smartboot.socket.buffer.BufferPagePool;
+import org.smartboot.socket.extension.plugins.IdleStatePlugin;
 import org.smartboot.socket.transport.AioQuickServer;
 
 import java.util.concurrent.CompletableFuture;
@@ -99,6 +100,10 @@ public class HttpBootstrap {
         initByteCache();
         BufferPagePool readBufferPool = new BufferPagePool(configuration.getReadPageSize(), 1, false);
         configuration.getPlugins().forEach(processor::addPlugin);
+        //设置闲置超时时间
+        if (configuration.getIdleTimeout() > 0) {
+            processor.addPlugin(new IdleStatePlugin<>(configuration.getIdleTimeout()));
+        }
 
         server = new AioQuickServer(configuration.getHost(), port, new HttpRequestProtocol(configuration), processor);
         server.setThreadNum(configuration.getThreadNum())

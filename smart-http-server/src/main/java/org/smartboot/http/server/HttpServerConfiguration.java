@@ -12,6 +12,7 @@ import org.smartboot.http.common.utils.ByteTree;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.impl.Request;
 import org.smartboot.http.server.waf.WafConfiguration;
+import org.smartboot.socket.extension.plugins.IdleStatePlugin;
 import org.smartboot.socket.extension.plugins.Plugin;
 import org.smartboot.socket.extension.plugins.SslPlugin;
 import org.smartboot.socket.extension.plugins.StreamMonitorPlugin;
@@ -70,6 +71,11 @@ public class HttpServerConfiguration {
      * 解析的header数量上限
      */
     private int headerLimiter = 100;
+
+    /**
+     * 闲置超时时间，默认：1分钟
+     */
+    private int idleTimeout = 60000;
     /**
      * 服务器名称
      */
@@ -241,6 +247,9 @@ public class HttpServerConfiguration {
     }
 
     public HttpServerConfiguration addPlugin(Plugin<Request> plugin) {
+        if (plugin instanceof IdleStatePlugin) {
+            throw new IllegalArgumentException("config IdleStatePlugin by setIdleTimeout");
+        }
         plugins.add(plugin);
         if (plugin instanceof SslPlugin) {
             secure = true;
@@ -280,5 +289,14 @@ public class HttpServerConfiguration {
 
     public WafConfiguration getWafConfiguration() {
         return wafConfiguration;
+    }
+
+    public int getIdleTimeout() {
+        return idleTimeout;
+    }
+
+    public HttpServerConfiguration setIdleTimeout(int idleTimeout) {
+        this.idleTimeout = idleTimeout;
+        return this;
     }
 }
