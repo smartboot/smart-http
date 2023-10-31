@@ -182,6 +182,13 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
                 } finally {
                     session.signalRead();
                 }
+            }).exceptionally(throwable -> {
+                try {
+                    responseError(response, throwable);
+                } finally {
+                    session.signalRead();
+                }
+                return null;
             });
         }
     }
