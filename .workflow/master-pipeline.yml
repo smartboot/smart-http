@@ -19,7 +19,7 @@ stages:
         jdkVersion: 8
         mavenVersion: 3.3.9
         commands:
-          - 'mvn -B clean deploy -Dmaven.test.skip=true '
+          - mvn -B clean deploy -Dmaven.test.skip=true  -Dgpg.passphrase=${gpg_passphrase}
         settings:
           - certificate: af4838f0-5c64-013c-9226-626c6c53c0ec
             isRelease: true
