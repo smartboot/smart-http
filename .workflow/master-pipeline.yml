@@ -20,10 +20,6 @@ stages:
         mavenVersion: 3.3.9
         commands:
           - mvn -B clean package -Dmaven.test.skip=true
-        artifacts:
-          - name: BUILD_ARTIFACT
-            path:
-              - ./target
         settings:
           - certificate: 40ec0c20-7ab6-013b-648a-223655f2e30d
             isRelease: true
