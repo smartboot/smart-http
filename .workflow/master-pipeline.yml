@@ -19,7 +19,7 @@ stages:
         jdkVersion: 8
         mavenVersion: 3.3.9
         commands:
-          - ls -la
+          - ls ~/.m2
           - mvn -B clean deploy -Dmaven.test.skip=true -s ./settings.xml
         settings:
           - certificate: ossrh
