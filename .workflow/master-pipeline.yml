@@ -21,7 +21,7 @@ stages:
         commands:
           - 'mvn -B clean deploy -Dmaven.test.skip=true '
         settings:
-          - certificate: ossrh
+          - certificate: af4838f0-5c64-013c-9226-626c6c53c0ec
             isRelease: true
             isSnapshot: false
         caches:
