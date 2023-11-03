@@ -19,6 +19,8 @@ stages:
         jdkVersion: 8
         mavenVersion: 3.3.9
         commands:
+          - curl -O https://bazel.build/bazel-release.pub.gpg
+          - apt-key add bazel-release.pub.gp
           - gpg --list-keys
           - cat <(echo -e "${OSSRH_GPG_SECRET_KEY}") | gpg --batch --import
           - gpg --list-secret-keys --keyid-format LONG
