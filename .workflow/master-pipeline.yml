@@ -21,7 +21,7 @@ stages:
         commands:
           - cat <(echo -e "${OSSRH_GPG_SECRET_KEY}") | gpg --batch --import
           - gpg --list-secret-keys --keyid-format LONG
-          - mvn -B clean deploy -Dmaven.test.skip=true  -Dgpg.passphrase=${gpg_passphrase}
+          - mvn --batch-mode -Dgpg.passphrase=${gpg_passphrase} clean deploy
         settings:
           - certificate: af4838f0-5c64-013c-9226-626c6c53c0ec
             isRelease: true
