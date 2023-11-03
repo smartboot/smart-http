@@ -19,6 +19,7 @@ stages:
         jdkVersion: 8
         mavenVersion: 3.3.9
         commands:
+          - gpg --list-keys
           - cat <(echo -e "${OSSRH_GPG_SECRET_KEY}") | gpg --batch --import
           - gpg --list-secret-keys --keyid-format LONG
           - mvn --batch-mode -Dgpg.passphrase=${gpg_passphrase} clean deploy
