@@ -225,11 +225,11 @@
         </pluginManagement>
     </build>
     <repositories>
-        <repository>
-            <id>alimaven</id>
-            <name>aliyun maven</name>
-            <url>https://maven.aliyun.com/repository/public</url>
-        </repository>
+<!--        <repository>-->
+<!--            <id>alimaven</id>-->
+<!--            <name>aliyun maven</name>-->
+<!--            <url>https://maven.aliyun.com/repository/public</url>-->
+<!--        </repository>-->
         <repository>
             <id>sonatype-nexus-snapshots</id>
             <name>Sonatype Nexus Snapshots</name>
@@ -237,11 +237,11 @@
         </repository>
     </repositories>
     <pluginRepositories>
-        <pluginRepository>
-            <id>alimaven</id>
-            <name>aliyun maven</name>
-            <url>https://maven.aliyun.com/repository/public</url>
-        </pluginRepository>
+<!--        <pluginRepository>-->
+<!--            <id>alimaven</id>-->
+<!--            <name>aliyun maven</name>-->
+<!--            <url>https://maven.aliyun.com/repository/public</url>-->
+<!--        </pluginRepository>-->
         <pluginRepository>
             <id>sonatype-nexus-snapshots</id>
             <name>Sonatype Nexus Snapshots</name>
