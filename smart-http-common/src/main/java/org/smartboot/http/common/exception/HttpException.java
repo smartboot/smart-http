@@ -11,13 +11,14 @@ package org.smartboot.http.common.exception;
 import org.smartboot.http.common.enums.HttpStatus;
 
 /**
+ * HTTP异常
  * @author 三刀
  * @version V1.0 , 2018/6/3
  */
 public class HttpException extends RuntimeException {
-    private int httpCode;
+    private final int httpCode;
 
-    private String desc;
+    private final String desc;
 
     public HttpException(HttpStatus httpStatus) {
         this(httpStatus, httpStatus.getReasonPhrase());
@@ -33,15 +34,9 @@ public class HttpException extends RuntimeException {
         return httpCode;
     }
 
-    public void setHttpCode(int httpCode) {
-        this.httpCode = httpCode;
-    }
 
     public String getDesc() {
         return desc;
     }
 
-    public void setDesc(String desc) {
-        this.desc = desc;
-    }
 }

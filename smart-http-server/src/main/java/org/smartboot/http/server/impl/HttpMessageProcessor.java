@@ -29,13 +29,12 @@ import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.UndeclaredThrowableException;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 /**
+ * http消息处理器
  * @author 三刀
  * @version V1.0 , 2018/6/10
  */
@@ -135,9 +134,7 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
     private static void responseError(AbstractResponse response, Throwable throwable) {
         if (throwable instanceof HttpException) {
             responseError(response, HttpStatus.valueOf(((HttpException) throwable).getHttpCode()), ((HttpException) throwable).getDesc());
-        } else if (throwable instanceof InvocationTargetException) {
-            responseError(response, ((InvocationTargetException) throwable).getTargetException());
-        } else if (throwable instanceof UndeclaredThrowableException) {
+        } else if (throwable.getCause() != null) {
             responseError(response, throwable.getCause());
         } else {
             LOGGER.warn("", throwable);
@@ -149,9 +146,7 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
         try {
             response.setHttpStatus(httpStatus);
             OutputStream outputStream = response.getOutputStream();
-            outputStream.write(("<center><h1>" + httpStatus.value() + " " + httpStatus.getReasonPhrase() + "</h1>"
-                    + desc + "<hr/><a target='_blank' href='https://smartboot.tech/'>smart-http</a>/" + HttpServerConfiguration.VERSION
-                    + "&nbsp;|&nbsp; <a target='_blank' href='https://gitee.com/smartboot/smart-http'>Gitee</a></center>").getBytes());
+            outputStream.write(("<center><h1>" + httpStatus.value() + " " + httpStatus.getReasonPhrase() + "</h1>" + desc + "<hr/><a target='_blank' href='https://smartboot.tech/'>smart-http</a>/" + HttpServerConfiguration.VERSION + "&nbsp;|&nbsp; <a target='_blank' href='https://gitee.com/smartboot/smart-http'>Gitee</a></center>").getBytes());
         } catch (IOException e) {
             LOGGER.warn("HttpError response exception", e);
         } finally {
