@@ -11,9 +11,9 @@ package org.smartboot.http.server.impl;
 import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.decode.Decoder;
 import org.smartboot.http.server.decode.HttpMethodDecoder;
+import org.smartboot.socket.DecoderException;
 import org.smartboot.socket.Protocol;
 import org.smartboot.socket.transport.AioSession;
-import org.smartboot.socket.DecoderException;
 
 import java.nio.ByteBuffer;
 
@@ -35,11 +35,7 @@ public class HttpRequestProtocol implements Protocol<Request> {
 
     @Override
     public Request decode(ByteBuffer buffer, AioSession session) {
-        if (buffer.remaining() == 0) {
-            return null;
-        }
         RequestAttachment attachment = session.getAttachment();
-
         Request request = attachment.getRequest();
         Decoder decodeChain = attachment.getDecoder();
         if (decodeChain == null) {

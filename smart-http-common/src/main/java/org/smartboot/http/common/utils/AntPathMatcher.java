@@ -63,7 +63,6 @@ public class AntPathMatcher {
     final Map<String, AntPathStringMatcher> stringMatcherCache = new ConcurrentHashMap<String, AntPathStringMatcher>(256);
     private final Map<String, String[]> tokenizedPatternCache = new ConcurrentHashMap<String, String[]>(256);
     private String pathSeparator;
-    private PathSeparatorPatternCache pathSeparatorPatternCache;
     private boolean trimTokens = true;
     private volatile Boolean cachePatterns;
 
@@ -73,56 +72,6 @@ public class AntPathMatcher {
      */
     public AntPathMatcher() {
         this.pathSeparator = DEFAULT_PATH_SEPARATOR;
-        this.pathSeparatorPatternCache = new PathSeparatorPatternCache(DEFAULT_PATH_SEPARATOR);
-    }
-
-    /**
-     * A convenient, alternative constructor to use with a custom path separator.
-     *
-     * @param pathSeparator the path separator to use, must not be {@code null}.
-     * @since 4.1
-     */
-    public AntPathMatcher(String pathSeparator) {
-        if (pathSeparator == null) {
-            throw new IllegalArgumentException("'pathSeparator' is required");
-        }
-        this.pathSeparator = pathSeparator;
-        this.pathSeparatorPatternCache = new PathSeparatorPatternCache(pathSeparator);
-    }
-
-
-    /**
-     * Set the path separator to use for pattern parsing.
-     * <p>Default is "/", as in Ant.
-     */
-    public void setPathSeparator(String pathSeparator) {
-        this.pathSeparator = (pathSeparator != null ? pathSeparator : DEFAULT_PATH_SEPARATOR);
-        this.pathSeparatorPatternCache = new PathSeparatorPatternCache(this.pathSeparator);
-    }
-
-    /**
-     * Specify whether to trim tokenized paths and patterns.
-     * <p>Default is {@code true}.
-     */
-    public void setTrimTokens(boolean trimTokens) {
-        this.trimTokens = trimTokens;
-    }
-
-    /**
-     * Specify whether to cache parsed pattern metadata for patterns passed
-     * into this matcher's {@link #match} method. A value of {@code true}
-     * activates an unlimited pattern cache; a value of {@code false} turns
-     * the pattern cache off completely.
-     * <p>Default is for the cache to be on, but with the variant to automatically
-     * turn it off when encountering too many patterns to cache at runtime
-     * (the threshold is 65536), assuming that arbitrary permutations of patterns
-     * are coming in, with little chance for encountering a recurring pattern.
-     *
-     * @see #getStringMatcher(String)
-     * @since 4.0.1
-     */
-    public void setCachePatterns(boolean cachePatterns) {
-        this.cachePatterns = cachePatterns;
     }
 
     private void deactivatePatternCache() {
@@ -132,17 +81,11 @@ public class AntPathMatcher {
     }
 
 
-    public boolean isPattern(String path) {
-        return (path.indexOf('*') != -1 || path.indexOf('?') != -1);
-    }
 
     public boolean match(String pattern, String path) {
         return doMatch(pattern, path, true, null);
     }
 
-    public boolean matchStart(String pattern, String path) {
-        return doMatch(pattern, path, false, null);
-    }
 
     /**
      * Actually match the given {@code path} against the given {@code pattern}.
@@ -363,84 +306,7 @@ public class AntPathMatcher {
         return matcher;
     }
 
-    /**
-     * Given a pattern and a full path, determine the pattern-mapped part. <p>For example: <ul>
-     * <li>'{@code /docs/cvs/commit.html}' and '{@code /docs/cvs/commit.html} -> ''</li>
-     * <li>'{@code /docs/*}' and '{@code /docs/cvs/commit} -> '{@code cvs/commit}'</li>
-     * <li>'{@code /docs/cvs/*.html}' and '{@code /docs/cvs/commit.html} -> '{@code commit.html}'</li>
-     * <li>'{@code /docs/**}' and '{@code /docs/cvs/commit} -> '{@code cvs/commit}'</li>
-     * <li>'{@code /docs/**\/*.html}' and '{@code /docs/cvs/commit.html} -> '{@code cvs/commit.html}'</li>
-     * <li>'{@code /*.html}' and '{@code /docs/cvs/commit.html} -> '{@code docs/cvs/commit.html}'</li>
-     * <li>'{@code *.html}' and '{@code /docs/cvs/commit.html} -> '{@code /docs/cvs/commit.html}'</li>
-     * <li>'{@code *}' and '{@code /docs/cvs/commit.html} -> '{@code /docs/cvs/commit.html}'</li> </ul>
-     * <p>Assumes that {@link #match} returns {@code true} for '{@code pattern}' and '{@code path}', but
-     * does <strong>not</strong> enforce this.
-     */
-    public String extractPathWithinPattern(String pattern, String path) {
-        String[] patternParts = StringUtils.tokenizeToStringArray(pattern, this.pathSeparator, this.trimTokens, true);
-        String[] pathParts = StringUtils.tokenizeToStringArray(path, this.pathSeparator, this.trimTokens, true);
-        StringBuilder builder = new StringBuilder();
-        boolean pathStarted = false;
 
-        for (int segment = 0; segment < patternParts.length; segment++) {
-            String patternPart = patternParts[segment];
-            if (patternPart.indexOf('*') > -1 || patternPart.indexOf('?') > -1) {
-                for (; segment < pathParts.length; segment++) {
-                    if (pathStarted || (segment == 0 && !pattern.startsWith(this.pathSeparator))) {
-                        builder.append(this.pathSeparator);
-                    }
-                    builder.append(pathParts[segment]);
-                    pathStarted = true;
-                }
-            }
-        }
-
-        return builder.toString();
-    }
-
-    public Map<String, String> extractUriTemplateVariables(String pattern, String path) {
-        Map<String, String> variables = new LinkedHashMap<String, String>();
-        boolean result = doMatch(pattern, path, true, variables);
-        if (!result) {
-            throw new IllegalStateException("Pattern \"" + pattern + "\" is not a match for \"" + path + "\"");
-        }
-        return variables;
-    }
-
-
-    private String concat(String path1, String path2) {
-        boolean path1EndsWithSeparator = path1.endsWith(this.pathSeparator);
-        boolean path2StartsWithSeparator = path2.startsWith(this.pathSeparator);
-
-        if (path1EndsWithSeparator && path2StartsWithSeparator) {
-            return path1 + path2.substring(1);
-        } else if (path1EndsWithSeparator || path2StartsWithSeparator) {
-            return path1 + path2;
-        } else {
-            return path1 + this.pathSeparator + path2;
-        }
-    }
-
-    /**
-     * Given a full path, returns a {@link Comparator} suitable for sorting patterns in order of
-     * explicitness.
-     * <p>This{@code Comparator} will {@linkplain java.util.Collections#sort(List, Comparator) sort}
-     * a list so that more specific patterns (without uri templates or wild cards) come before
-     * generic patterns. So given a list with the following patterns:
-     * <ol>
-     * <li>{@code /hotels/new}</li>
-     * <li>{@code /hotels/{hotel}}</li> <li>{@code /hotels/*}</li>
-     * </ol>
-     * the returned comparator will sort this list so that the order will be as indicated.
-     * <p>The full path given as parameter is used to test for exact matches. So when the given path
-     * is {@code /hotels/2}, the pattern {@code /hotels/2} will be sorted before {@code /hotels/1}.
-     *
-     * @param path the full path to use for comparison
-     * @return a comparator capable of sorting patterns in order of explicitness
-     */
-    public Comparator<String> getPatternComparator(String path) {
-        return new AntPatternComparator(path);
-    }
 
 
     /**

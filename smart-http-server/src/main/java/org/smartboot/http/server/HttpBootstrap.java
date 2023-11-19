@@ -121,7 +121,7 @@ public class HttpBootstrap {
             if (configuration.isBannerEnabled()) {
                 System.out.println(BANNER + "\r\n :: smart-http :: (" + HttpServerConfiguration.VERSION + ")");
                 System.out.println("Technical Support:");
-                System.out.println(" - Document: http://smartboot.tech]");
+                System.out.println(" - Document: https://smartboot.tech]");
                 System.out.println(" - Gitee: https://gitee.com/smartboot/smart-http");
                 System.out.println(" - Github: https://github.com/smartboot/smart-http");
                 System.out.println("\u001B[32m\uD83C\uDF89Congratulations, the smart-http startup is successful.\u001B[0m");
