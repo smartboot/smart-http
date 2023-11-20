@@ -45,14 +45,14 @@ class HttpHeaderDecoder extends AbstractDecoder {
             return this;
         }
         //header解码结束
-        if (byteBuffer.get(byteBuffer.position()) == Constant.CR) {
-            if (byteBuffer.get(byteBuffer.position() + 1) != Constant.LF) {
+        byteBuffer.mark();
+        if (byteBuffer.get() == Constant.CR) {
+            if (byteBuffer.get() != Constant.LF) {
                 throw new HttpException(HttpStatus.BAD_REQUEST);
             }
-            byteBuffer.position(byteBuffer.position() + 2);
-//            return decoder.decode(byteBuffer, aioSession, request);
             return HttpRequestProtocol.BODY_READY_DECODER;
         }
+        byteBuffer.reset();
         //Header name解码
         ByteTree<Function<String, ServerHandler<?, ?>>> name = StringUtils.scanByteTree(byteBuffer, COLON_END_MATCHER, getConfiguration().getHeaderNameByteTree());
         if (name == null) {
