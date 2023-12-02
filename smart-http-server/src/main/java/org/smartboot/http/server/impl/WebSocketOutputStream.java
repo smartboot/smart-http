@@ -16,8 +16,8 @@ import org.smartboot.http.common.enums.HeaderNameEnum;
  */
 final class WebSocketOutputStream extends AbstractOutputStream {
 
-    public WebSocketOutputStream(WebSocketRequestImpl webSocketRequest, WebSocketResponseImpl response, Request request) {
-        super(webSocketRequest, response, request);
+    public WebSocketOutputStream(WebSocketRequestImpl webSocketRequest, WebSocketResponseImpl response) {
+        super(webSocketRequest, response);
     }
 
     protected byte[] getHeadPart(boolean hasHeader) {

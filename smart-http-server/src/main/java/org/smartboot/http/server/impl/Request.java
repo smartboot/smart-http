@@ -115,6 +115,11 @@ public final class Request implements HttpRequest, Reset {
      */
     private int remainingThreshold;
 
+    /**
+     * 最近一次IO时间
+     */
+    private long latestIo;
+
 
     Request(HttpServerConfiguration configuration, AioSession aioSession) {
         this.configuration = configuration;
@@ -580,6 +585,14 @@ public final class Request implements HttpRequest, Reset {
 
     public HttpServerConfiguration getConfiguration() {
         return configuration;
+    }
+
+    public long getLatestIo() {
+        return latestIo;
+    }
+
+    public void setLatestIo(long latestIo) {
+        this.latestIo = latestIo;
     }
 
     public void reset() {

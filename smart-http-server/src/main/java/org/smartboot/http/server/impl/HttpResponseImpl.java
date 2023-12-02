@@ -14,7 +14,7 @@ package org.smartboot.http.server.impl;
  */
 class HttpResponseImpl extends AbstractResponse {
 
-    public HttpResponseImpl(HttpRequestImpl httpRequest, Request request) {
-        init(httpRequest, new HttpOutputStream(httpRequest, this, request));
+    public HttpResponseImpl(HttpRequestImpl httpRequest) {
+        init(httpRequest, new HttpOutputStream(httpRequest, this));
     }
 }

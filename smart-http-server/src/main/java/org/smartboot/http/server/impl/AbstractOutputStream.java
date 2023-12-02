@@ -33,14 +33,14 @@ abstract class AbstractOutputStream extends BufferOutputStream {
 
     protected static String SERVER_LINE = null;
     protected final AbstractResponse response;
-    protected final HttpRequest request;
+    protected final AbstractRequest request;
     protected final HttpServerConfiguration configuration;
 
-    public AbstractOutputStream(HttpRequest httpRequest, AbstractResponse response, Request request) {
-        super(request.getAioSession());
+    public AbstractOutputStream(AbstractRequest httpRequest, AbstractResponse response) {
+        super(httpRequest.request.getAioSession());
         this.response = response;
         this.request = httpRequest;
-        this.configuration = request.getConfiguration();
+        this.configuration = httpRequest.request.getConfiguration();
         if (SERVER_LINE == null) {
             SERVER_LINE = HeaderNameEnum.SERVER.getName() + Constant.COLON_CHAR + configuration.serverName() + Constant.CRLF;
         }
@@ -75,6 +75,12 @@ abstract class AbstractOutputStream extends BufferOutputStream {
         if (cookies.size() > 0) {
             cookies.forEach(cookie -> response.addHeader(HeaderNameEnum.SET_COOKIE.getName(), cookie.toString()));
         }
+    }
+
+    @Override
+    public void write(byte[] b, int off, int len) throws IOException {
+        super.write(b, off, len);
+        request.request.setLatestIo(System.currentTimeMillis());
     }
 
     protected boolean hasHeader() {

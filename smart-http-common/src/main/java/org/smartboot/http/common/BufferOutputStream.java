@@ -53,7 +53,7 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
      * @param len
      * @throws IOException
      */
-    public final void write(byte[] b, int off, int len) throws IOException {
+    public void write(byte[] b, int off, int len) throws IOException {
         writeHeader(HeaderWriteSource.WRITE);
 
         if (len == 0) {

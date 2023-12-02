@@ -44,8 +44,8 @@ final class HttpOutputStream extends AbstractOutputStream {
         }
     }
 
-    public HttpOutputStream(HttpRequestImpl httpRequest, HttpResponseImpl response, Request request) {
-        super(httpRequest, response, request);
+    public HttpOutputStream(HttpRequestImpl httpRequest, HttpResponseImpl response) {
+        super(httpRequest, response);
     }
 
     private static long flushDate() {

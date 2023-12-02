@@ -42,7 +42,7 @@ public class WebSocketRequestImpl extends AbstractRequest implements WebSocketRe
 
     public WebSocketRequestImpl(Request baseHttpRequest) {
         init(baseHttpRequest);
-        this.response = new WebSocketResponseImpl(this, baseHttpRequest);
+        this.response = new WebSocketResponseImpl(this);
     }
 
     public final WebSocketResponseImpl getResponse() {
