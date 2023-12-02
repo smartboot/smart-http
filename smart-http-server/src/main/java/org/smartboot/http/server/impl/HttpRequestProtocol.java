@@ -29,8 +29,11 @@ public class HttpRequestProtocol implements Protocol<Request> {
      */
     private final HttpMethodDecoder httpMethodDecoder;
 
+    private HttpServerConfiguration configuration;
+
     public HttpRequestProtocol(HttpServerConfiguration configuration) {
         httpMethodDecoder = new HttpMethodDecoder(configuration);
+        this.configuration = configuration;
     }
 
     @Override
@@ -41,7 +44,10 @@ public class HttpRequestProtocol implements Protocol<Request> {
         if (decodeChain == null) {
             decodeChain = httpMethodDecoder;
         }
-        request.setLatestIo(System.currentTimeMillis());
+        if (configuration.getHttpIdleTimeout() > 0 || configuration.getWsIdleTimeout() > 0) {
+            request.setLatestIo(System.currentTimeMillis());
+        }
+
         // 数据还未就绪，继续读
         if (decodeChain == BODY_CONTINUE_DECODER) {
             attachment.setDecoder(BODY_READY_DECODER);

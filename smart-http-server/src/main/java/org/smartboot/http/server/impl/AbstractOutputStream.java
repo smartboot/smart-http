@@ -80,7 +80,9 @@ abstract class AbstractOutputStream extends BufferOutputStream {
     @Override
     public void write(byte[] b, int off, int len) throws IOException {
         super.write(b, off, len);
-        request.request.setLatestIo(System.currentTimeMillis());
+        if (configuration.getWsIdleTimeout() > 0 || configuration.getHttpIdleTimeout() > 0) {
+            request.request.setLatestIo(System.currentTimeMillis());
+        }
     }
 
     protected boolean hasHeader() {

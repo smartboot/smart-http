@@ -640,10 +640,6 @@ public final class Request implements HttpRequest, Reset {
         return configuration;
     }
 
-    public long getLatestIo() {
-        return latestIo;
-    }
-
     public void setLatestIo(long latestIo) {
         this.latestIo = latestIo;
     }
