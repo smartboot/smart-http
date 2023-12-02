@@ -26,6 +26,7 @@ import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.ServerHandler;
 import org.smartboot.http.server.WebSocketHandler;
+import org.smartboot.socket.timer.HashedWheelTimer;
 import org.smartboot.socket.transport.AioSession;
 import org.smartboot.socket.util.Attachment;
 
@@ -43,6 +44,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 /**
@@ -125,6 +127,28 @@ public final class Request implements HttpRequest, Reset {
         this.configuration = configuration;
         this.aioSession = aioSession;
         this.remainingThreshold = configuration.getMaxRequestSize();
+        int timeout = Math.max(configuration.getHttpIdleTimeout(), configuration.getWsIdleTimeout());
+        if (timeout > 0) {
+            HashedWheelTimer.DEFAULT_TIMER.schedule(() -> {
+                if (httpRequest == null && webSocketRequest == null) {
+                    aioSession.close();
+                    return;
+                }
+                if (httpRequest != null && configuration.getHttpIdleTimeout() > 0) {
+                    HashedWheelTimer.DEFAULT_TIMER.scheduleWithFixedDelay(() -> {
+                        if (System.currentTimeMillis() - latestIo > configuration.getHttpIdleTimeout()) {
+                            httpRequest.getResponse().close();
+                        }
+                    }, configuration.getHttpIdleTimeout(), TimeUnit.MILLISECONDS);
+                } else if (webSocketRequest != null && configuration.getWsIdleTimeout() > 0) {
+                    HashedWheelTimer.DEFAULT_TIMER.scheduleWithFixedDelay(() -> {
+                        if (System.currentTimeMillis() - latestIo > configuration.getHttpIdleTimeout()) {
+                            webSocketRequest.getResponse().close();
+                        }
+                    }, configuration.getWsIdleTimeout(), TimeUnit.MILLISECONDS);
+                }
+            }, timeout, TimeUnit.MILLISECONDS);
+        }
     }
 
     int getRemainingThreshold() {

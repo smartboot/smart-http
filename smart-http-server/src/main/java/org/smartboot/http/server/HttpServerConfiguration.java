@@ -12,7 +12,6 @@ import org.smartboot.http.common.utils.ByteTree;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.impl.Request;
 import org.smartboot.http.server.waf.WafConfiguration;
-import org.smartboot.socket.extension.plugins.IdleStatePlugin;
 import org.smartboot.socket.extension.plugins.Plugin;
 import org.smartboot.socket.extension.plugins.SslPlugin;
 import org.smartboot.socket.extension.plugins.StreamMonitorPlugin;
@@ -75,7 +74,12 @@ public class HttpServerConfiguration {
     /**
      * 闲置超时时间，默认：1分钟
      */
-    private int idleTimeout = 60000;
+    private int httpIdleTimeout = 60000;
+
+    /**
+     * 闲置超时时间，默认：1分钟
+     */
+    private int wsIdleTimeout = 120000;
     /**
      * 服务器名称
      */
@@ -247,9 +251,6 @@ public class HttpServerConfiguration {
     }
 
     public HttpServerConfiguration addPlugin(Plugin<Request> plugin) {
-        if (plugin instanceof IdleStatePlugin) {
-            throw new IllegalArgumentException("config IdleStatePlugin by setIdleTimeout");
-        }
         plugins.add(plugin);
         if (plugin instanceof SslPlugin) {
             secure = true;
@@ -291,12 +292,19 @@ public class HttpServerConfiguration {
         return wafConfiguration;
     }
 
-    public int getIdleTimeout() {
-        return idleTimeout;
+    public int getHttpIdleTimeout() {
+        return httpIdleTimeout;
     }
 
-    public HttpServerConfiguration setIdleTimeout(int idleTimeout) {
-        this.idleTimeout = idleTimeout;
-        return this;
+    public void setHttpIdleTimeout(int httpIdleTimeout) {
+        this.httpIdleTimeout = httpIdleTimeout;
+    }
+
+    public int getWsIdleTimeout() {
+        return wsIdleTimeout;
+    }
+
+    public void setWsIdleTimeout(int wsIdleTimeout) {
+        this.wsIdleTimeout = wsIdleTimeout;
     }
 }
