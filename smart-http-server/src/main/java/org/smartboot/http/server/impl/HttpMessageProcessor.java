@@ -241,8 +241,13 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
                 break;
             case SESSION_CLOSED: {
                 RequestAttachment att = session.getAttachment();
-                if (att.getRequest().getServerHandler() != null) {
-                    att.getRequest().getServerHandler().onClose(att.getRequest());
+                try {
+                    if (att.getRequest().getServerHandler() != null) {
+                        att.getRequest().getServerHandler().onClose(att.getRequest());
+                    }
+                } finally {
+                    att.getRequest().cancelWsIdleTask();
+                    att.getRequest().cancelHttpIdleTask();
                 }
                 break;
             }

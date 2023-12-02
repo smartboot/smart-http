@@ -128,7 +128,7 @@ public final class Request implements HttpRequest, Reset {
     private TimerTask httpIdleTask;
     private TimerTask wsIdleTask;
 
-    private void cancelHttpIdleTask() {
+    void cancelHttpIdleTask() {
         synchronized (this) {
             if (httpIdleTask != null) {
                 httpIdleTask.cancel();
@@ -137,7 +137,7 @@ public final class Request implements HttpRequest, Reset {
         }
     }
 
-    private void cancelWsIdleTask() {
+    void cancelWsIdleTask() {
         synchronized (this) {
             if (wsIdleTask != null) {
                 wsIdleTask.cancel();
