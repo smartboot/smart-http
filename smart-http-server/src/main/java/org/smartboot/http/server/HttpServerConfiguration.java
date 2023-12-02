@@ -296,15 +296,17 @@ public class HttpServerConfiguration {
         return httpIdleTimeout;
     }
 
-    public void setHttpIdleTimeout(int httpIdleTimeout) {
+    public HttpServerConfiguration setHttpIdleTimeout(int httpIdleTimeout) {
         this.httpIdleTimeout = httpIdleTimeout;
+        return this;
     }
 
     public int getWsIdleTimeout() {
         return wsIdleTimeout;
     }
 
-    public void setWsIdleTimeout(int wsIdleTimeout) {
+    public HttpServerConfiguration setWsIdleTimeout(int wsIdleTimeout) {
         this.wsIdleTimeout = wsIdleTimeout;
+        return this;
     }
 }

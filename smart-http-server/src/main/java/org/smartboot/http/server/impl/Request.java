@@ -8,6 +8,8 @@
 
 package org.smartboot.http.server.impl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.Reset;
@@ -27,6 +29,7 @@ import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.ServerHandler;
 import org.smartboot.http.server.WebSocketHandler;
 import org.smartboot.socket.timer.HashedWheelTimer;
+import org.smartboot.socket.timer.TimerTask;
 import org.smartboot.socket.transport.AioSession;
 import org.smartboot.socket.util.Attachment;
 
@@ -52,6 +55,7 @@ import java.util.function.Function;
  * @version V1.0 , 2018/8/31
  */
 public final class Request implements HttpRequest, Reset {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Request.class);
     private static final Locale defaultLocale = Locale.getDefault();
     private static final int INIT_CONTENT_LENGTH = -2;
     private static final int NONE_CONTENT_LENGTH = -1;
@@ -121,33 +125,58 @@ public final class Request implements HttpRequest, Reset {
      * 最近一次IO时间
      */
     private long latestIo;
+    private TimerTask httpIdleTask;
+    private TimerTask wsIdleTask;
 
+    private void cancelHttpIdleTask() {
+        synchronized (this) {
+            if (httpIdleTask != null) {
+                httpIdleTask.cancel();
+                httpIdleTask = null;
+            }
+        }
+    }
+
+    private void cancelWsIdleTask() {
+        synchronized (this) {
+            if (wsIdleTask != null) {
+                wsIdleTask.cancel();
+                wsIdleTask = null;
+            }
+        }
+    }
 
     Request(HttpServerConfiguration configuration, AioSession aioSession) {
         this.configuration = configuration;
         this.aioSession = aioSession;
         this.remainingThreshold = configuration.getMaxRequestSize();
-        int timeout = Math.max(configuration.getHttpIdleTimeout(), configuration.getWsIdleTimeout());
-        if (timeout > 0) {
-            HashedWheelTimer.DEFAULT_TIMER.schedule(() -> {
-                if (httpRequest == null && webSocketRequest == null) {
-                    aioSession.close();
-                    return;
+        if (configuration.getWsIdleTimeout() > 0) {
+            wsIdleTask = HashedWheelTimer.DEFAULT_TIMER.scheduleWithFixedDelay(() -> {
+                LOGGER.info("check wsIdle monitor");
+                if (System.currentTimeMillis() - latestIo > configuration.getWsIdleTimeout() && webSocketRequest != null) {
+                    LOGGER.info("close ws connection by idle monitor");
+                    try {
+                        webSocketRequest.getResponse().close();
+                    } finally {
+                        cancelWsIdleTask();
+                        cancelHttpIdleTask();
+                    }
                 }
-                if (httpRequest != null && configuration.getHttpIdleTimeout() > 0) {
-                    HashedWheelTimer.DEFAULT_TIMER.scheduleWithFixedDelay(() -> {
-                        if (System.currentTimeMillis() - latestIo > configuration.getHttpIdleTimeout()) {
-                            httpRequest.getResponse().close();
-                        }
-                    }, configuration.getHttpIdleTimeout(), TimeUnit.MILLISECONDS);
-                } else if (webSocketRequest != null && configuration.getWsIdleTimeout() > 0) {
-                    HashedWheelTimer.DEFAULT_TIMER.scheduleWithFixedDelay(() -> {
-                        if (System.currentTimeMillis() - latestIo > configuration.getHttpIdleTimeout()) {
-                            webSocketRequest.getResponse().close();
-                        }
-                    }, configuration.getWsIdleTimeout(), TimeUnit.MILLISECONDS);
+            }, configuration.getWsIdleTimeout(), TimeUnit.MILLISECONDS);
+        }
+        if (configuration.getHttpIdleTimeout() > 0) {
+            httpIdleTask = HashedWheelTimer.DEFAULT_TIMER.scheduleWithFixedDelay(() -> {
+                LOGGER.info("check httpIdle monitor");
+                if (System.currentTimeMillis() - latestIo > configuration.getHttpIdleTimeout() && webSocketRequest == null) {
+                    LOGGER.info("close http connection by idle monitor");
+                    try {
+                        httpRequest.getResponse().close();
+                    } finally {
+                        cancelHttpIdleTask();
+                        cancelWsIdleTask();
+                    }
                 }
-            }, timeout, TimeUnit.MILLISECONDS);
+            }, configuration.getHttpIdleTimeout(), TimeUnit.MILLISECONDS);
         }
     }
 
@@ -564,7 +593,6 @@ public final class Request implements HttpRequest, Reset {
     /**
      * 获取附件对象
      *
-     * @param <A> 附件对象类型
      * @return 附件
      */
     public Attachment getAttachment() {
@@ -574,7 +602,6 @@ public final class Request implements HttpRequest, Reset {
     /**
      * 存放附件，支持任意类型
      *
-     * @param <A>        附件对象类型
      * @param attachment 附件对象
      */
     public void setAttachment(Attachment attachment) {
@@ -596,6 +623,7 @@ public final class Request implements HttpRequest, Reset {
     public HttpRequestImpl newHttpRequest() {
         if (httpRequest == null) {
             httpRequest = new HttpRequestImpl(this);
+            cancelWsIdleTask();
         }
         return httpRequest;
     }
@@ -603,6 +631,7 @@ public final class Request implements HttpRequest, Reset {
     public WebSocketRequestImpl newWebsocketRequest() {
         if (webSocketRequest == null) {
             webSocketRequest = new WebSocketRequestImpl(this);
+            cancelHttpIdleTask();
         }
         return webSocketRequest;
     }
