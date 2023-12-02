@@ -34,6 +34,7 @@ public class WebSocketDemo {
 
         // 3. 启动服务
         HttpBootstrap bootstrap = new HttpBootstrap();
+        bootstrap.configuration().setWsIdleTimeout(5000);
         bootstrap.webSocketHandler(routeHandle);
         bootstrap.start();
     }
