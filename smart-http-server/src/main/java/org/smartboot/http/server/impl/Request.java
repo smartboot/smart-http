@@ -131,6 +131,9 @@ public final class Request implements HttpRequest, Reset {
     void cancelHttpIdleTask() {
         synchronized (this) {
             if (httpIdleTask != null) {
+                if (LOGGER.isInfoEnabled()) {
+                    LOGGER.info("cancel http idle monitor, request:{}", this);
+                }
                 httpIdleTask.cancel();
                 httpIdleTask = null;
             }
@@ -140,6 +143,9 @@ public final class Request implements HttpRequest, Reset {
     void cancelWsIdleTask() {
         synchronized (this) {
             if (wsIdleTask != null) {
+                if (LOGGER.isInfoEnabled()) {
+                    LOGGER.info("cancel websocket idle monitor, request:{}", this);
+                }
                 wsIdleTask.cancel();
                 wsIdleTask = null;
             }
