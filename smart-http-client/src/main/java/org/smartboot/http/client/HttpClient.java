@@ -10,6 +10,7 @@ package org.smartboot.http.client;
 
 import org.smartboot.http.client.impl.HttpMessageProcessor;
 import org.smartboot.http.client.impl.HttpResponseProtocol;
+import org.smartboot.http.client.impl.Response;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
@@ -18,6 +19,9 @@ import org.smartboot.http.common.utils.NumberUtils;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.socket.buffer.BufferPagePool;
 import org.smartboot.socket.buffer.VirtualBuffer;
+import org.smartboot.socket.extension.plugins.Plugin;
+import org.smartboot.socket.extension.plugins.SslPlugin;
+import org.smartboot.socket.extension.ssl.factory.ClientSSLContextFactory;
 import org.smartboot.socket.transport.AioQuickClient;
 import org.smartboot.socket.transport.AioSession;
 
@@ -92,6 +96,7 @@ public final class HttpClient {
             throw new IllegalArgumentException("invalid url:" + url);
         }
         this.configuration = new HttpClientConfiguration(host, port);
+        configuration.setHttps(https);
         hostHeader = configuration.getHost() + ":" + configuration.getPort();
         this.uri = uriIndex > 0 ? url.substring(uriIndex) : "/";
     }
@@ -100,6 +105,13 @@ public final class HttpClient {
         this.configuration = new HttpClientConfiguration(host, port);
         hostHeader = configuration.getHost() + ":" + configuration.getPort();
         this.uri = null;
+    }
+
+    public HttpGet get() {
+        connect();
+        HttpGet httpGet = new HttpGet(client.getSession(), processor.getQueue(client.getSession()));
+        initRest(httpGet, uri);
+        return httpGet;
     }
 
     public HttpGet get(String uri) {
@@ -174,12 +186,23 @@ public final class HttpClient {
             }
             return;
         }
-        if (firstConnected) {
-            configuration.getPlugins().forEach(processor::addPlugin);
-            firstConnected = false;
-        }
-        connected = true;
+
         try {
+            if (firstConnected) {
+                boolean noneSslPlugin = true;
+                for (Plugin<Response> responsePlugin : configuration.getPlugins()) {
+                    processor.addPlugin(responsePlugin);
+                    if (responsePlugin instanceof SslPlugin) {
+                        noneSslPlugin = false;
+                    }
+                }
+                if (noneSslPlugin && configuration.isHttps()) {
+                    processor.addPlugin(new SslPlugin<>(new ClientSSLContextFactory()));
+                }
+
+                firstConnected = false;
+            }
+            connected = true;
             client = configuration.getProxy() == null ? new AioQuickClient(configuration.getHost(), configuration.getPort(), protocol, processor) : new AioQuickClient(configuration.getProxy().getProxyHost(), configuration.getProxy().getProxyPort(), protocol, processor);
             BufferPagePool readPool = configuration.getReadBufferPool();
             client.setBufferPagePool(configuration.getWriteBufferPool()).setReadBufferFactory(bufferPage -> readPool == null ? VirtualBuffer.wrap(ByteBuffer.allocate(configuration.readBufferSize())) : readPool.allocateBufferPage().allocate(configuration.readBufferSize()));

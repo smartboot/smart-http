@@ -52,6 +52,8 @@ public class HttpClientConfiguration {
      */
     private BufferPagePool readBufferPool;
 
+    private boolean https = false;
+
     public HttpClientConfiguration(String host, int port) {
         this.host = host;
         this.port = port;
@@ -76,6 +78,7 @@ public class HttpClientConfiguration {
     public int getPort() {
         return port;
     }
+
 
     /**
      * 设置 Http 代理服务器
@@ -151,4 +154,12 @@ public class HttpClientConfiguration {
         return plugins;
     }
 
+    public boolean isHttps() {
+        return https;
+    }
+
+    public HttpClientConfiguration setHttps(boolean https) {
+        this.https = https;
+        return this;
+    }
 }
