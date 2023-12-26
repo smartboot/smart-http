@@ -84,7 +84,7 @@ public final class HttpClient {
         int port;
         if (portIndex > 0) {
             host = url.substring(schemaIndex + 3, portIndex);
-            port = NumberUtils.toInt(uriIndex > 0 ? url.substring(portIndex + 1, uriIndex) : url.substring(portIndex), -1);
+            port = NumberUtils.toInt(uriIndex > 0 ? url.substring(portIndex + 1, uriIndex) : url.substring(portIndex + 1), -1);
         } else if (uriIndex > 0) {
             host = url.substring(schemaIndex + 3, uriIndex);
             port = https ? 443 : 80;
