@@ -10,6 +10,8 @@ package org.smartboot.http.client.impl;
 
 import org.smartboot.http.client.AbstractResponse;
 import org.smartboot.http.client.WebSocketResponse;
+import org.smartboot.http.common.codec.websocket.BasicFrameDecoder;
+import org.smartboot.http.common.codec.websocket.Decoder;
 import org.smartboot.http.common.codec.websocket.WebSocket;
 import org.smartboot.http.common.enums.DecodePartEnum;
 import org.smartboot.http.common.utils.WebSocketUtil;
@@ -24,6 +26,8 @@ import java.io.IOException;
  * @version V1.0 , 2021/2/2
  */
 public class WebSocketResponseImpl extends AbstractResponse implements WebSocket, WebSocketResponse {
+    private final static Decoder basicFrameDecoder = new BasicFrameDecoder();
+    private Decoder decoder = basicFrameDecoder;
     private final ByteArrayOutputStream payload = new ByteArrayOutputStream();
     private boolean frameFinalFlag;
     private boolean frameMasked;
@@ -48,6 +52,7 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
         if (frameOpcode != WebSocketUtil.OPCODE_CONTINUE) {
             payload.reset();
         }
+        decoder = basicFrameDecoder;
     }
 
     public boolean isFrameFinalFlag() {
@@ -112,5 +117,13 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
 
     public Attachment getAttachment() {
         return attachment;
+    }
+
+    public Decoder getDecoder() {
+        return decoder;
+    }
+
+    public void setDecoder(Decoder decoder) {
+        this.decoder = decoder;
     }
 }

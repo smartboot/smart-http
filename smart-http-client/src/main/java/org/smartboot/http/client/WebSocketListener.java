@@ -7,7 +7,7 @@ public interface WebSocketListener {
     }
 
 
-    default void onClose(WebSocketClient client, int code, String reason) {
+    default void onClose(WebSocketClient client, WebSocketResponse session) {
         System.out.println("连接已关闭");
     }
 

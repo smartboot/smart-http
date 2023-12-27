@@ -5,13 +5,14 @@ import org.smartboot.http.client.impl.HttpResponseProtocol;
 import org.smartboot.http.client.impl.ResponseAttachment;
 import org.smartboot.http.client.impl.WebSocketRequestImpl;
 import org.smartboot.http.client.impl.WebSocketResponseImpl;
-import org.smartboot.http.common.codec.websocket.BasicFrameDecoder;
 import org.smartboot.http.common.codec.websocket.Decoder;
 import org.smartboot.http.common.codec.websocket.WebSocket;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpStatus;
+import org.smartboot.http.common.logging.Logger;
+import org.smartboot.http.common.logging.LoggerFactory;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.NumberUtils;
 import org.smartboot.http.common.utils.WebSocketUtil;
@@ -22,8 +23,7 @@ import org.smartboot.socket.extension.plugins.SslPlugin;
 import org.smartboot.socket.extension.ssl.factory.ClientSSLContextFactory;
 import org.smartboot.socket.transport.AioQuickClient;
 import org.smartboot.socket.transport.AioSession;
-import org.smartboot.socket.util.AttachKey;
-import org.smartboot.socket.util.Attachment;
+import org.smartboot.socket.util.StringUtils;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -34,10 +34,9 @@ import java.util.Base64;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
 public class WebSocketClient {
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketClient.class);
 
     private final HttpClientConfiguration configuration;
 
@@ -72,8 +71,7 @@ public class WebSocketClient {
     private WebSocketRequestImpl request;
     protected final CompletableFuture<WebSocketResponseImpl> completableFuture = new CompletableFuture<>();
     private WebSocketListener listener;
-    private final Decoder basicFrameDecoder = new BasicFrameDecoder();
-    private static final AttachKey<Decoder> FRAME_DECODER_KEY = AttachKey.valueOf("ws_frame_decoder");
+
     private WebSocketResponseImpl webSocketResponse;
 
     public static void main(String[] args) throws IOException {
@@ -205,35 +203,6 @@ public class WebSocketClient {
         request.setHeader(HeaderNameEnum.Sec_WebSocket_Key.getName(), generateSecWebSocketKey());
         request.setHeader(HeaderNameEnum.Sec_WebSocket_Version.getName(), "13");
 //        request.setHeader(HeaderNameEnum.Sec_WebSocket_Protocol.getName(), HeaderValueEnum.PERMESSAGE_DEFLATE.getName());
-        completableFuture.thenAccept(new Consumer<WebSocketResponseImpl>() {
-            @Override
-            public void accept(WebSocketResponseImpl webSocketResponse) {
-                try {
-                    switch (webSocketResponse.getFrameOpcode()) {
-                        case WebSocketUtil.OPCODE_TEXT:
-                            listener.onMessage(WebSocketClient.this, new String(webSocketResponse.getPayload(), StandardCharsets.UTF_8));
-                            break;
-                        case WebSocketUtil.OPCODE_BINARY:
-                            listener.onMessage(WebSocketClient.this, webSocketResponse.getPayload());
-                            break;
-                        case WebSocketUtil.OPCODE_PING:
-//                                handlePing(request, response);
-                            break;
-                        case WebSocketUtil.OPCODE_PONG:
-//                                handlePong(request, response);
-                            break;
-                        case WebSocketUtil.OPCODE_CONTINUE:
-//                                LOGGER.warn("unSupport OPCODE_CONTINUE now,ignore payload: {}", StringUtils.toHexString(request.getPayload()));
-                            break;
-                        default:
-                            throw new UnsupportedOperationException();
-                    }
-                } catch (Throwable throwable) {
-                    listener.onError(WebSocketClient.this, webSocketResponse, throwable);
-                    throw throwable;
-                }
-            }
-        });
         processor.getQueue(client.getSession()).offer(new QueueUnit(completableFuture, new ResponseHandler() {
             @Override
             public void onHeaderComplete(AbstractResponse abstractResponse) throws IOException {
@@ -241,24 +210,51 @@ public class WebSocketClient {
                 super.onHeaderComplete(webSocketResponse);
                 System.out.println(webSocketResponse.getStatus());
                 if (webSocketResponse.getStatus() != HttpStatus.SWITCHING_PROTOCOLS.value()) {
-                    listener.onClose(WebSocketClient.this, abstractResponse.getStatus(), abstractResponse.getReasonPhrase());
+                    listener.onClose(WebSocketClient.this, webSocketResponse);
                     return;
                 }
-
-                webSocketResponse.getAttachment().put(FRAME_DECODER_KEY, basicFrameDecoder);
                 listener.onOpen(WebSocketClient.this, webSocketResponse);
             }
 
             @Override
             public boolean onBodyStream(ByteBuffer buffer, AbstractResponse abstractResponse) {
                 WebSocketResponseImpl webSocketResponse = (WebSocketResponseImpl) abstractResponse;
-                Attachment attachment = webSocketResponse.getAttachment();
-                Decoder decoder = attachment.get(FRAME_DECODER_KEY).decode(buffer, webSocketResponse);
+                Decoder decoder = webSocketResponse.getDecoder().decode(buffer, webSocketResponse);
                 if (decoder == WebSocket.PAYLOAD_FINISH) {
-                    attachment.put(FRAME_DECODER_KEY, basicFrameDecoder);
+                    try {
+                        switch (webSocketResponse.getFrameOpcode()) {
+                            case WebSocketUtil.OPCODE_TEXT:
+                                listener.onMessage(WebSocketClient.this, new String(webSocketResponse.getPayload(), StandardCharsets.UTF_8));
+                                break;
+                            case WebSocketUtil.OPCODE_BINARY:
+                                listener.onMessage(WebSocketClient.this, webSocketResponse.getPayload());
+                                break;
+                            case WebSocketUtil.OPCODE_CLOSE:
+                                try {
+                                    listener.onClose(WebSocketClient.this, webSocketResponse);
+                                } finally {
+                                    close();
+                                }
+                                break;
+                            case WebSocketUtil.OPCODE_PING:
+//                                handlePing(request, response);
+                                break;
+                            case WebSocketUtil.OPCODE_PONG:
+//                                handlePong(request, response);
+                                break;
+                            case WebSocketUtil.OPCODE_CONTINUE:
+                                LOGGER.warn("unSupport OPCODE_CONTINUE now,ignore payload: {}", StringUtils.toHexString(webSocketResponse.getPayload()));
+                                break;
+                            default:
+                                throw new UnsupportedOperationException();
+                        }
+                    } catch (Throwable throwable) {
+                        listener.onError(WebSocketClient.this, webSocketResponse, throwable);
+                        throw throwable;
+                    }
                     return true;
                 } else {
-                    attachment.put(FRAME_DECODER_KEY, decoder);
+                    webSocketResponse.setDecoder(decoder);
                     return false;
                 }
 

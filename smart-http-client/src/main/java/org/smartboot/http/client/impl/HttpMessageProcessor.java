@@ -57,42 +57,7 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<AbstractRespo
                 }
             case FINISH:
                 if (responseAttachment.isWs()) {
-                    WebSocketResponseImpl webSocketResponse = (WebSocketResponseImpl) response;
-                    try {
-                        System.out.println(new String(webSocketResponse.getPayload()));
-//                        switch (webSocketResponse.getFrameOpcode()) {
-//                            case WebSocketUtil.OPCODE_TEXT:
-//                                handleTextMessage(request, response, new String(request.getPayload(), StandardCharsets.UTF_8));
-//                                break;
-//                            case WebSocketUtil.OPCODE_BINARY:
-//                                handleBinaryMessage(request, response, request.getPayload());
-//                                break;
-//                            case WebSocketUtil.OPCODE_CLOSE:
-//                                try {
-//                                    onClose(request, response);
-//                                } finally {
-//                                    response.close();
-//                                }
-//                                break;
-//                            case WebSocketUtil.OPCODE_PING:
-//                                handlePing(request, response);
-//                                break;
-//                            case WebSocketUtil.OPCODE_PONG:
-//                                handlePong(request, response);
-//                                break;
-//                            case WebSocketUtil.OPCODE_CONTINUE:
-//                                LOGGER.warn("unSupport OPCODE_CONTINUE now,ignore payload: {}", StringUtils.toHexString(request.getPayload()));
-//                                break;
-//                            default:
-//                                throw new UnsupportedOperationException();
-//                        }
-                    } catch (Throwable throwable) {
-//                        onError(request, throwable);
-                        throw throwable;
-                    }
-                    System.out.println(webSocketResponse);
-//                    queueUnit.getFuture().
-                    webSocketResponse.reset();
+                    response.reset();
                 } else {
                     queue.poll();
                     responseAttachment.setDecoder(null);
