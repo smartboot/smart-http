@@ -6,23 +6,21 @@
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
-package org.smartboot.http.client.impl;
+package org.smartboot.http.client;
 
-import org.smartboot.http.client.HttpResponse;
-import org.smartboot.http.client.ResponseHandler;
 
 import java.util.concurrent.CompletableFuture;
 
 public class QueueUnit {
-    private final CompletableFuture<HttpResponse> future;
+    private final CompletableFuture future;
     private final ResponseHandler responseHandler;
 
-    public QueueUnit(CompletableFuture<HttpResponse> future, ResponseHandler responseHandler) {
+    public QueueUnit(CompletableFuture<? extends AbstractResponse> future, ResponseHandler responseHandler) {
         this.future = future;
         this.responseHandler = responseHandler;
     }
 
-    public CompletableFuture<HttpResponse> getFuture() {
+    public CompletableFuture<AbstractResponse> getFuture() {
         return future;
     }
 

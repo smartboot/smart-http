@@ -8,6 +8,8 @@
 
 package org.smartboot.http.client.impl;
 
+import org.smartboot.http.client.AbstractResponse;
+import org.smartboot.http.client.QueueUnit;
 import org.smartboot.http.client.ResponseHandler;
 import org.smartboot.http.common.enums.DecodePartEnum;
 import org.smartboot.socket.StateMachineEnum;
@@ -26,7 +28,7 @@ import java.util.concurrent.ExecutorService;
  * @author 三刀
  * @version V1.0 , 2018/6/10
  */
-public class HttpMessageProcessor extends AbstractMessageProcessor<Response> {
+public class HttpMessageProcessor extends AbstractMessageProcessor<AbstractResponse> {
     private final ExecutorService executorService;
     private final Map<AioSession, AbstractQueue<QueueUnit>> map = new ConcurrentHashMap<>();
 
@@ -39,7 +41,7 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Response> {
     }
 
     @Override
-    public void process0(AioSession session, Response response) {
+    public void process0(AioSession session, AbstractResponse response) {
         ResponseAttachment responseAttachment = session.getAttachment();
         AbstractQueue<QueueUnit> queue = map.get(session);
         QueueUnit queueUnit = queue.peek();
@@ -54,28 +56,64 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Response> {
                     break;
                 }
             case FINISH:
-                queue.poll();
-                responseAttachment.setDecoder(null);
-                responseAttachment.setResponse(null);
-                if (executorService == null) {
-                    responseCallback(response, queueUnit);
+                if (responseAttachment.isWs()) {
+                    WebSocketResponseImpl webSocketResponse = (WebSocketResponseImpl) response;
+                    try {
+                        System.out.println(new String(webSocketResponse.getPayload()));
+//                        switch (webSocketResponse.getFrameOpcode()) {
+//                            case WebSocketUtil.OPCODE_TEXT:
+//                                handleTextMessage(request, response, new String(request.getPayload(), StandardCharsets.UTF_8));
+//                                break;
+//                            case WebSocketUtil.OPCODE_BINARY:
+//                                handleBinaryMessage(request, response, request.getPayload());
+//                                break;
+//                            case WebSocketUtil.OPCODE_CLOSE:
+//                                try {
+//                                    onClose(request, response);
+//                                } finally {
+//                                    response.close();
+//                                }
+//                                break;
+//                            case WebSocketUtil.OPCODE_PING:
+//                                handlePing(request, response);
+//                                break;
+//                            case WebSocketUtil.OPCODE_PONG:
+//                                handlePong(request, response);
+//                                break;
+//                            case WebSocketUtil.OPCODE_CONTINUE:
+//                                LOGGER.warn("unSupport OPCODE_CONTINUE now,ignore payload: {}", StringUtils.toHexString(request.getPayload()));
+//                                break;
+//                            default:
+//                                throw new UnsupportedOperationException();
+//                        }
+                    } catch (Throwable throwable) {
+//                        onError(request, throwable);
+                        throw throwable;
+                    }
+                    System.out.println(webSocketResponse);
+//                    queueUnit.getFuture().
+                    webSocketResponse.reset();
                 } else {
-                    session.awaitRead();
-                    executorService.execute(() -> {
-                        responseCallback(response, queueUnit);
-                        session.signalRead();
-                    });
+                    queue.poll();
+                    responseAttachment.setDecoder(null);
+                    responseAttachment.setResponse(null);
+                    if (executorService == null) {
+                        queueUnit.getFuture().complete(response);
+                    } else {
+                        session.awaitRead();
+                        executorService.execute(() -> {
+                            queueUnit.getFuture().complete(response);
+                            session.signalRead();
+                        });
+                    }
                 }
                 break;
             default:
         }
     }
 
-    private void responseCallback(Response response, QueueUnit queueUnit) {
-        queueUnit.getFuture().complete(response);
-    }
 
-    private void doHttpBody(Response response, ByteBuffer readBuffer, ResponseAttachment responseAttachment, ResponseHandler responseHandler) {
+    private void doHttpBody(AbstractResponse response, ByteBuffer readBuffer, ResponseAttachment responseAttachment, ResponseHandler responseHandler) {
         if (responseHandler.onBodyStream(readBuffer, response)) {
             response.setDecodePartEnum(DecodePartEnum.FINISH);
         } else if (readBuffer.hasRemaining()) {
@@ -84,7 +122,7 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Response> {
         }
     }
 
-    private void doHttpHeader(Response response, ResponseHandler responseHandler) {
+    private void doHttpHeader(AbstractResponse response, ResponseHandler responseHandler) {
         response.setDecodePartEnum(DecodePartEnum.BODY);
         try {
             responseHandler.onHeaderComplete(response);
@@ -112,6 +150,9 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Response> {
                 session.setAttachment(attachment);
                 break;
             case PROCESS_EXCEPTION:
+                if (throwable != null) {
+                    throwable.printStackTrace();
+                }
                 session.close();
                 break;
             case DECODE_EXCEPTION:

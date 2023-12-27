@@ -10,7 +10,7 @@ package org.smartboot.http.client;
 
 import org.smartboot.http.client.impl.DefaultHttpResponseHandler;
 import org.smartboot.http.client.impl.HttpRequestImpl;
-import org.smartboot.http.client.impl.QueueUnit;
+import org.smartboot.http.client.impl.HttpResponseImpl;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.socket.transport.AioSession;
 
@@ -23,7 +23,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
 /**
@@ -33,7 +36,7 @@ import java.util.function.Consumer;
 public class HttpRest {
     private final static String DEFAULT_USER_AGENT = "smart-http";
     protected final HttpRequestImpl request;
-    protected final CompletableFuture<HttpResponse> completableFuture = new CompletableFuture<>();
+    protected final CompletableFuture<HttpResponseImpl> completableFuture = new CompletableFuture<>();
     private final AbstractQueue<QueueUnit> queue;
     private Map<String, String> queryParams = null;
     private boolean commit = false;
@@ -134,7 +137,33 @@ public class HttpRest {
         } catch (Throwable e) {
             completableFuture.completeExceptionally(e);
         }
-        return completableFuture;
+        return new Future<HttpResponse>() {
+            @Override
+            public boolean cancel(boolean mayInterruptIfRunning) {
+                return completableFuture.cancel(mayInterruptIfRunning);
+            }
+
+            @Override
+            public boolean isCancelled() {
+                return completableFuture.isCancelled();
+            }
+
+            @Override
+            public boolean isDone() {
+                return completableFuture.isDone();
+            }
+
+            @Override
+            public HttpResponse get() throws InterruptedException, ExecutionException {
+                return completableFuture.get();
+            }
+
+            @Override
+            public HttpResponse get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+                return completableFuture.get(timeout, unit);
+            }
+
+        };
     }
 
     public HttpRest onSuccess(Consumer<HttpResponse> consumer) {

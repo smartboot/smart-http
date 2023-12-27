@@ -8,6 +8,7 @@
 
 package org.smartboot.http.client.impl;
 
+import org.smartboot.http.client.AbstractResponse;
 import org.smartboot.http.client.decode.HeaderDecoder;
 import org.smartboot.http.client.decode.HttpProtocolDecoder;
 import org.smartboot.socket.Protocol;
@@ -19,7 +20,7 @@ import java.nio.ByteBuffer;
  * @author 三刀（zhengjunweimail@163.com）
  * @version V1.0 , 2021/2/2
  */
-public class HttpResponseProtocol implements Protocol<Response> {
+public class HttpResponseProtocol implements Protocol<AbstractResponse> {
     public static HttpResponseProtocol INSTANCE = new HttpResponseProtocol();
     public static final HeaderDecoder BODY_READY_DECODER = (byteBuffer, aioSession, response) -> null;
     public static final HeaderDecoder BODY_CONTINUE_DECODER = (byteBuffer, aioSession, response) -> null;
@@ -27,14 +28,16 @@ public class HttpResponseProtocol implements Protocol<Response> {
     private final HttpProtocolDecoder httpMethodDecoder = new HttpProtocolDecoder();
 
     @Override
-    public Response decode(ByteBuffer buffer, AioSession session) {
+    public AbstractResponse decode(ByteBuffer buffer, AioSession session) {
         ResponseAttachment attachment = session.getAttachment();
         HeaderDecoder decodeChain = attachment.getDecoder();
         if (decodeChain == null) {
-            attachment.setResponse(new Response(session));
+            if (!attachment.isWs()) {
+                attachment.setResponse(new HttpResponseImpl(session));
+            }
             decodeChain = httpMethodDecoder;
         }
-        Response response = attachment.getResponse();
+        AbstractResponse response = attachment.getResponse();
 
         // 数据还未就绪，继续读
         if (decodeChain == BODY_CONTINUE_DECODER) {

@@ -1,9 +1,7 @@
-package org.smartboot.http.server.decode.websocket;
+package org.smartboot.http.common.codec.websocket;
 
 import org.smartboot.http.common.utils.FixedLengthFrameDecoder;
 import org.smartboot.http.common.utils.SmartDecoder;
-import org.smartboot.http.server.WebSocketHandler;
-import org.smartboot.http.server.impl.WebSocketRequestImpl;
 import org.smartboot.socket.util.AttachKey;
 import org.smartboot.socket.util.Attachment;
 
@@ -18,14 +16,14 @@ class PayloadDecoder implements Decoder {
     private static final AttachKey<SmartDecoder> PAYLOAD_DECODER_KEY = AttachKey.valueOf("ws_payload_decoder");
 
     @Override
-    public Decoder decode(ByteBuffer byteBuffer, WebSocketRequestImpl request) {
+    public Decoder decode(ByteBuffer byteBuffer, WebSocket request) {
         Attachment attachment = request.getAttachment();
         SmartDecoder smartDecoder = attachment.get(PAYLOAD_DECODER_KEY);
         if (smartDecoder != null) {
             if (smartDecoder.decode(byteBuffer)) {
                 finishPayloadDecoder(smartDecoder.getBuffer(), request);
                 attachment.remove(PAYLOAD_DECODER_KEY);
-                return WebSocketHandler.PAYLOAD_FINISH;
+                return WebSocket.PAYLOAD_FINISH;
             } else {
                 return this;
             }
@@ -38,12 +36,14 @@ class PayloadDecoder implements Decoder {
             return this;
         }
         finishPayloadDecoder(byteBuffer, request);
-        return WebSocketHandler.PAYLOAD_FINISH;
+        return WebSocket.PAYLOAD_FINISH;
     }
 
-    private void finishPayloadDecoder(ByteBuffer byteBuffer, WebSocketRequestImpl request) {
+    private void finishPayloadDecoder(ByteBuffer byteBuffer, WebSocket request) {
         byte[] bytes = new byte[(int) request.getPayloadLength()];
-        unmask(byteBuffer, request.getMaskingKey(), bytes.length);
+        if (request.isFrameMasked()) {
+            unmask(byteBuffer, request.getMaskingKey(), bytes.length);
+        }
         byteBuffer.get(bytes);
         request.setPayload(bytes);
     }

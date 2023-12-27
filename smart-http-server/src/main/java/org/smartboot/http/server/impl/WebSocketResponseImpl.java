@@ -10,7 +10,7 @@ package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
-import org.smartboot.http.common.utils.Constant;
+import org.smartboot.http.common.utils.WebSocketUtil;
 import org.smartboot.http.server.WebSocketResponse;
 
 import java.io.IOException;
@@ -33,7 +33,7 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
         if (LOGGER.isInfoEnabled()) LOGGER.info("发送字符串消息: " + text);
         byte[] bytes = text.getBytes(StandardCharsets.UTF_8);
         try {
-            send(WebSocketRequestImpl.OPCODE_TEXT, bytes, 0, bytes.length);
+            WebSocketUtil.send(getOutputStream(), WebSocketUtil.OPCODE_TEXT, bytes, 0, bytes.length);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -43,7 +43,7 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
     public void sendBinaryMessage(byte[] bytes) {
         if (LOGGER.isInfoEnabled()) LOGGER.info("发送二进制消息: " + Arrays.toString(bytes));
         try {
-            send(WebSocketRequestImpl.OPCODE_BINARY, bytes, 0, bytes.length);
+            WebSocketUtil.send(getOutputStream(), WebSocketUtil.OPCODE_BINARY, bytes, 0, bytes.length);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -52,7 +52,7 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
     @Override
     public void sendBinaryMessage(byte[] bytes, int offset, int length) {
         try {
-            send(WebSocketRequestImpl.OPCODE_BINARY, bytes, offset, length);
+            WebSocketUtil.send(getOutputStream(), WebSocketUtil.OPCODE_BINARY, bytes, offset, length);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -61,7 +61,7 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
     @Override
     public void pong(byte[] bytes) {
         try {
-            send(WebSocketRequestImpl.OPCODE_PONG, bytes, 0, bytes.length);
+            WebSocketUtil.send(getOutputStream(), WebSocketUtil.OPCODE_PONG, bytes, 0, bytes.length);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -70,7 +70,7 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
     @Override
     public void ping(byte[] bytes) {
         try {
-            send(WebSocketRequestImpl.OPCODE_PING, bytes, 0, bytes.length);
+            WebSocketUtil.send(getOutputStream(), WebSocketUtil.OPCODE_PING, bytes, 0, bytes.length);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -85,37 +85,5 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
         }
     }
 
-    private void send(byte opCode, byte[] bytes, int offset, int len) throws IOException {
-        int maxlength;
-        if (len < Constant.WS_PLAY_LOAD_126) {
-            maxlength = 2 + len;
-        } else {
-            maxlength = 4 + Math.min(Constant.WS_DEFAULT_MAX_FRAME_SIZE, len);
-        }
-        byte[] writBytes = new byte[maxlength];
-        do {
-            int payloadLength = len - offset;
-            if (payloadLength > Constant.WS_DEFAULT_MAX_FRAME_SIZE) {
-                payloadLength = Constant.WS_DEFAULT_MAX_FRAME_SIZE;
-            }
-            byte firstByte = offset + payloadLength < len ? (byte) 0x00 : (byte) 0x80;
-            if (offset == 0) {
-                firstByte |= opCode;
-            } else {
-                firstByte |= WebSocketRequestImpl.OPCODE_CONTINUE;
-            }
-            byte secondByte = payloadLength < Constant.WS_PLAY_LOAD_126 ? (byte) payloadLength : Constant.WS_PLAY_LOAD_126;
-            writBytes[0] = firstByte;
-            writBytes[1] = secondByte;
-            if (secondByte == Constant.WS_PLAY_LOAD_126) {
-                writBytes[2] = (byte) (payloadLength >> 8 & 0xff);
-                writBytes[3] = (byte) (payloadLength & 0xff);
-                System.arraycopy(bytes, offset, writBytes, 4, payloadLength);
-            } else {
-                System.arraycopy(bytes, offset, writBytes, 2, payloadLength);
-            }
-            this.getOutputStream().write(writBytes, 0, payloadLength < Constant.WS_PLAY_LOAD_126 ? 2 + payloadLength : 4 + payloadLength);
-            offset += payloadLength;
-        } while (offset < len);
-    }
+
 }

@@ -1,6 +1,4 @@
-package org.smartboot.http.server.decode.websocket;
-
-import org.smartboot.http.server.impl.WebSocketRequestImpl;
+package org.smartboot.http.common.codec.websocket;
 
 import java.nio.ByteBuffer;
 
@@ -17,7 +15,7 @@ class MaskingKeyDecoder implements Decoder {
      * 位设置为 1，则该字段存在，如果 mask 位设置为 0，则该字段缺失。
      */
     @Override
-    public Decoder decode(ByteBuffer byteBuffer, WebSocketRequestImpl request) {
+    public Decoder decode(ByteBuffer byteBuffer, WebSocket request) {
         if (request.isFrameMasked()) {
             if (byteBuffer.remaining() < 4) {
                 return this;

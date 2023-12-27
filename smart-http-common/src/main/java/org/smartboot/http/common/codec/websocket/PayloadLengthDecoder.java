@@ -1,7 +1,6 @@
-package org.smartboot.http.server.decode.websocket;
+package org.smartboot.http.common.codec.websocket;
 
 import org.smartboot.http.common.utils.Constant;
-import org.smartboot.http.server.impl.WebSocketRequestImpl;
 
 import java.nio.ByteBuffer;
 
@@ -14,7 +13,7 @@ class PayloadLengthDecoder implements Decoder {
     private final Decoder maskingKeyDecoder = new MaskingKeyDecoder();
 
     @Override
-    public Decoder decode(ByteBuffer byteBuffer, WebSocketRequestImpl request) {
+    public Decoder decode(ByteBuffer byteBuffer, WebSocket request) {
         long length = request.getPayloadLength();
 
         if (length == Constant.WS_PLAY_LOAD_126) {

@@ -1,6 +1,4 @@
-package org.smartboot.http.server.decode.websocket;
-
-import org.smartboot.http.server.impl.WebSocketRequestImpl;
+package org.smartboot.http.common.codec.websocket;
 
 import java.nio.ByteBuffer;
 
@@ -13,7 +11,7 @@ public class BasicFrameDecoder implements Decoder {
     private final Decoder payloadLengthDecoder = new PayloadLengthDecoder();
 
     @Override
-    public Decoder decode(ByteBuffer byteBuffer, WebSocketRequestImpl request) {
+    public Decoder decode(ByteBuffer byteBuffer, WebSocket webSocket) {
         if (byteBuffer.remaining() < 2) {
             return this;
         }
@@ -24,12 +22,12 @@ public class BasicFrameDecoder implements Decoder {
         boolean fin = (first & 0x80) != 0;
         int rsv = (first & 0x70) >> 4;
         int opcode = first & 0x0f;
-        request.setFrameFinalFlag(fin);
-        request.setFrameRsv(rsv);
-        request.setFrameOpcode(opcode);
-        request.setFrameMasked(mask);
-        request.setPayloadLength(second & 0x7F);
+        webSocket.setFrameFinalFlag(fin);
+        webSocket.setFrameRsv(rsv);
+        webSocket.setFrameOpcode(opcode);
+        webSocket.setFrameMasked(mask);
+        webSocket.setPayloadLength(second & 0x7F);
 
-        return payloadLengthDecoder.decode(byteBuffer, request);
+        return payloadLengthDecoder.decode(byteBuffer, webSocket);
     }
 }

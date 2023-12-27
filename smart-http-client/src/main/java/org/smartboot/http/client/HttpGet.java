@@ -8,7 +8,6 @@
 
 package org.smartboot.http.client;
 
-import org.smartboot.http.client.impl.QueueUnit;
 import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.socket.transport.AioSession;
 

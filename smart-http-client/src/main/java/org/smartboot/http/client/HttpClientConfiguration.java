@@ -1,6 +1,5 @@
 package org.smartboot.http.client;
 
-import org.smartboot.http.client.impl.Response;
 import org.smartboot.socket.buffer.BufferPagePool;
 import org.smartboot.socket.extension.plugins.Plugin;
 import org.smartboot.socket.extension.plugins.StreamMonitorPlugin;
@@ -18,7 +17,7 @@ public class HttpClientConfiguration {
     /**
      * smart-socket 插件
      */
-    private final List<Plugin<Response>> plugins = new ArrayList<>();
+    private final List<Plugin<AbstractResponse>> plugins = new ArrayList<>();
 
     /**
      * 连接超时时间
@@ -145,12 +144,12 @@ public class HttpClientConfiguration {
         return this;
     }
 
-    public HttpClientConfiguration addPlugin(Plugin<Response> plugin) {
+    public HttpClientConfiguration addPlugin(Plugin<AbstractResponse> plugin) {
         plugins.add(plugin);
         return this;
     }
 
-    public List<Plugin<Response>> getPlugins() {
+    public List<Plugin<AbstractResponse>> getPlugins() {
         return plugins;
     }
 

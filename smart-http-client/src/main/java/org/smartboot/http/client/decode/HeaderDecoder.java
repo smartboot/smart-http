@@ -8,7 +8,7 @@
 
 package org.smartboot.http.client.decode;
 
-import org.smartboot.http.client.impl.Response;
+import org.smartboot.http.client.AbstractResponse;
 import org.smartboot.socket.transport.AioSession;
 
 import java.nio.ByteBuffer;
@@ -21,6 +21,6 @@ import java.nio.ByteBuffer;
  */
 public interface HeaderDecoder {
 
-    HeaderDecoder decode(ByteBuffer byteBuffer, AioSession aioSession, Response response);
+    HeaderDecoder decode(ByteBuffer byteBuffer, AioSession aioSession, AbstractResponse response);
 
 }

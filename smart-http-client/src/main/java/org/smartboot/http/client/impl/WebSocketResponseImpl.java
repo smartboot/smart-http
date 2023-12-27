@@ -1,30 +1,30 @@
 /*******************************************************************************
  * Copyright (c) 2017-2021, org.smartboot. All rights reserved.
  * project name: smart-http
- * file name: WebSocketRequestImpl.java
- * Date: 2021-02-07
+ * file name: Response.java
+ * Date: 2021-02-04
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
-package org.smartboot.http.server.impl;
+package org.smartboot.http.client.impl;
 
+import org.smartboot.http.client.AbstractResponse;
+import org.smartboot.http.client.WebSocketResponse;
 import org.smartboot.http.common.codec.websocket.WebSocket;
 import org.smartboot.http.common.enums.DecodePartEnum;
 import org.smartboot.http.common.utils.WebSocketUtil;
-import org.smartboot.http.server.WebSocketRequest;
+import org.smartboot.socket.transport.AioSession;
+import org.smartboot.socket.util.Attachment;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
 /**
- * @author 三刀
- * @version V1.0 , 2018/8/31
+ * @author 三刀（zhengjunweimail@163.com）
+ * @version V1.0 , 2021/2/2
  */
-public class WebSocketRequestImpl extends AbstractRequest implements WebSocketRequest, WebSocket {
-
+public class WebSocketResponseImpl extends AbstractResponse implements WebSocket, WebSocketResponse {
     private final ByteArrayOutputStream payload = new ByteArrayOutputStream();
-    private final WebSocketResponseImpl response;
     private boolean frameFinalFlag;
     private boolean frameMasked;
     private int frameRsv;
@@ -36,24 +36,15 @@ public class WebSocketRequestImpl extends AbstractRequest implements WebSocketRe
     private long payloadLength;
 
     private byte[] maskingKey;
+    private Attachment attachment = new Attachment();
 
-    public WebSocketRequestImpl(Request baseHttpRequest) {
-        init(baseHttpRequest);
-        this.response = new WebSocketResponseImpl(this);
-    }
-
-    public final WebSocketResponseImpl getResponse() {
-        return response;
-    }
-
-    public InputStream getInputStream() {
-        throw new UnsupportedOperationException();
+    public WebSocketResponseImpl(AioSession session) {
+        super(session);
     }
 
 
-    @Override
     public void reset() {
-        request.setDecodePartEnum(DecodePartEnum.BODY);
+        setDecodePartEnum(DecodePartEnum.BODY);
         if (frameOpcode != WebSocketUtil.OPCODE_CONTINUE) {
             payload.reset();
         }
@@ -119,5 +110,7 @@ public class WebSocketRequestImpl extends AbstractRequest implements WebSocketRe
         }
     }
 
-
+    public Attachment getAttachment() {
+        return attachment;
+    }
 }

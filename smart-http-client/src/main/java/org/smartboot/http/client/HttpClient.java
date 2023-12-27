@@ -10,7 +10,7 @@ package org.smartboot.http.client;
 
 import org.smartboot.http.client.impl.HttpMessageProcessor;
 import org.smartboot.http.client.impl.HttpResponseProtocol;
-import org.smartboot.http.client.impl.Response;
+import org.smartboot.http.client.impl.ResponseAttachment;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
@@ -190,7 +190,7 @@ public final class HttpClient {
         try {
             if (firstConnected) {
                 boolean noneSslPlugin = true;
-                for (Plugin<Response> responsePlugin : configuration.getPlugins()) {
+                for (Plugin<AbstractResponse> responsePlugin : configuration.getPlugins()) {
                     processor.addPlugin(responsePlugin);
                     if (responsePlugin instanceof SslPlugin) {
                         noneSslPlugin = false;
@@ -217,6 +217,9 @@ public final class HttpClient {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        AioSession session = client.getSession();
+        ResponseAttachment attachment = session.getAttachment();
+        attachment.setWs(false);
     }
 
 

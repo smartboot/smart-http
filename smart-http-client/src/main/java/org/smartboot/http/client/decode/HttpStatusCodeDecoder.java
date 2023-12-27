@@ -8,7 +8,7 @@
 
 package org.smartboot.http.client.decode;
 
-import org.smartboot.http.client.impl.Response;
+import org.smartboot.http.client.AbstractResponse;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.socket.transport.AioSession;
@@ -23,7 +23,7 @@ class HttpStatusCodeDecoder implements HeaderDecoder {
     private final HttpStatusDescDecoder protocolDecoder = new HttpStatusDescDecoder();
 
     @Override
-    public HeaderDecoder decode(ByteBuffer byteBuffer, AioSession aioSession, Response response) {
+    public HeaderDecoder decode(ByteBuffer byteBuffer, AioSession aioSession, AbstractResponse response) {
         int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.SP);
         if (length > 0) {
             int statusCode = StringUtils.convertToInteger(byteBuffer, byteBuffer.position() - length - 1, length, StringUtils.INTEGER_CACHE_HTTP_STATUS_CODE);

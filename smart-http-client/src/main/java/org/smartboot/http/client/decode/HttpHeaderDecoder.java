@@ -8,8 +8,8 @@
 
 package org.smartboot.http.client.decode;
 
+import org.smartboot.http.client.AbstractResponse;
 import org.smartboot.http.client.impl.HttpResponseProtocol;
-import org.smartboot.http.client.impl.Response;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.utils.Constant;
@@ -27,7 +27,7 @@ class HttpHeaderDecoder implements HeaderDecoder {
     private final HeaderValueDecoder headerValueDecoder = new HeaderValueDecoder();
 
     @Override
-    public HeaderDecoder decode(ByteBuffer byteBuffer, AioSession aioSession, Response request) {
+    public HeaderDecoder decode(ByteBuffer byteBuffer, AioSession aioSession, AbstractResponse request) {
         if (byteBuffer.remaining() < 2) {
             return this;
         }
@@ -55,7 +55,7 @@ class HttpHeaderDecoder implements HeaderDecoder {
      */
     class HeaderValueDecoder implements HeaderDecoder {
         @Override
-        public HeaderDecoder decode(ByteBuffer byteBuffer, AioSession aioSession, Response request) {
+        public HeaderDecoder decode(ByteBuffer byteBuffer, AioSession aioSession, AbstractResponse request) {
             int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.LF);
             if (length == -1) {
                 return this;

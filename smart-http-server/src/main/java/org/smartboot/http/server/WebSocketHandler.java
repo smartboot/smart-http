@@ -8,12 +8,13 @@
 
 package org.smartboot.http.server;
 
+import org.smartboot.http.common.codec.websocket.BasicFrameDecoder;
+import org.smartboot.http.common.codec.websocket.Decoder;
+import org.smartboot.http.common.codec.websocket.WebSocket;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.utils.SHA1;
-import org.smartboot.http.server.decode.websocket.BasicFrameDecoder;
-import org.smartboot.http.server.decode.websocket.Decoder;
 import org.smartboot.http.server.impl.Request;
 import org.smartboot.http.server.impl.WebSocketRequestImpl;
 import org.smartboot.http.server.impl.WebSocketResponseImpl;
@@ -38,12 +39,6 @@ public abstract class WebSocketHandler implements ServerHandler<WebSocketRequest
 
     private final Decoder basicFrameDecoder = new BasicFrameDecoder();
 
-    public static final Decoder PAYLOAD_FINISH = new Decoder() {
-        @Override
-        public Decoder decode(ByteBuffer byteBuffer, WebSocketRequestImpl request) {
-            return this;
-        }
-    };
 
     public void willHeaderComplete(WebSocketRequestImpl request, WebSocketResponseImpl response) {
 
@@ -83,7 +78,7 @@ public abstract class WebSocketHandler implements ServerHandler<WebSocketRequest
     public boolean onBodyStream(ByteBuffer byteBuffer, Request request) {
         Attachment attachment = request.newWebsocketRequest().getAttachment();
         Decoder decoder = attachment.get(FRAME_DECODER_KEY).decode(byteBuffer, request.newWebsocketRequest());
-        if (decoder == PAYLOAD_FINISH) {
+        if (decoder == WebSocket.PAYLOAD_FINISH) {
             attachment.put(FRAME_DECODER_KEY, basicFrameDecoder);
             return true;
         } else {

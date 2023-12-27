@@ -1,27 +1,21 @@
 /*******************************************************************************
  * Copyright (c) 2017-2021, org.smartboot. All rights reserved.
  * project name: smart-http
- * file name: HttpResponse.java
+ * file name: HttpOutputStream.java
  * Date: 2021-02-04
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
-package org.smartboot.http.client;
+package org.smartboot.http.client.impl;
+
+import org.smartboot.socket.transport.AioSession;
 
 /**
- * Http消息请求接口
- *
  * @author 三刀
- * @version V1.0 , 2018/8/7
+ * @version V1.0 , 2018/2/3
  */
-public interface HttpResponse extends Response {
-
-    String getContentType();
-
-    int getContentLength();
-
-    String getCharacterEncoding();
-
-    String body();
-
+final class WebSocketOutputStream extends AbstractOutputStream {
+    public WebSocketOutputStream(WebSocketRequestImpl request, AioSession session) {
+        super(request, session);
+    }
 }

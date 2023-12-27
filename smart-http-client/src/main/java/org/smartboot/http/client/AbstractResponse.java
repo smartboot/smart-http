@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2017-2021, org.smartboot. All rights reserved.
  * project name: smart-http
- * file name: Response.java
+ * file name: AbstractResponse.java
  * Date: 2021-02-04
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
-package org.smartboot.http.client.impl;
+package org.smartboot.http.client;
 
-import org.smartboot.http.client.HttpResponse;
 import org.smartboot.http.common.HeaderValue;
+import org.smartboot.http.common.Reset;
 import org.smartboot.http.common.enums.DecodePartEnum;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.utils.NumberUtils;
@@ -23,11 +23,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-/**
- * @author 三刀（zhengjunweimail@163.com）
- * @version V1.0 , 2021/2/2
- */
-public class Response implements HttpResponse {
+public abstract class AbstractResponse implements Response, Reset {
+
     private static final int INIT_CONTENT_LENGTH = -2;
     private static final int NONE_CONTENT_LENGTH = -1;
     /**
@@ -43,10 +40,7 @@ public class Response implements HttpResponse {
     private String protocol;
     private String contentType;
     private int contentLength = INIT_CONTENT_LENGTH;
-    /**
-     * body内容
-     */
-    private String body;
+
     /**
      * http 响应码
      */
@@ -58,7 +52,7 @@ public class Response implements HttpResponse {
     private String encoding;
     private DecodePartEnum decodePartEnum = DecodePartEnum.HEADER_FINISH;
 
-    public Response(AioSession session) {
+    public AbstractResponse(AioSession session) {
         this.session = session;
     }
 
@@ -66,7 +60,6 @@ public class Response implements HttpResponse {
         return session;
     }
 
-    @Override
     public final String getHeader(String headName) {
         for (int i = 0; i < headerSize; i++) {
             HeaderValue headerValue = headers.get(i);
@@ -77,7 +70,6 @@ public class Response implements HttpResponse {
         return null;
     }
 
-    @Override
     public final Collection<String> getHeaders(String name) {
         List<String> value = new ArrayList<>(4);
         for (int i = 0; i < headerSize; i++) {
@@ -89,7 +81,6 @@ public class Response implements HttpResponse {
         return value;
     }
 
-    @Override
     public final Collection<String> getHeaderNames() {
         Set<String> nameSet = new HashSet<>();
         for (int i = 0; i < headerSize; i++) {
@@ -121,7 +112,6 @@ public class Response implements HttpResponse {
         this.decodePartEnum = decodePartEnum;
     }
 
-    @Override
     public final String getProtocol() {
         return protocol;
     }
@@ -134,7 +124,6 @@ public class Response implements HttpResponse {
         this.headerTemp = headerTemp;
     }
 
-    @Override
     public final String getContentType() {
         if (contentType != null) {
             return contentType;
@@ -143,7 +132,6 @@ public class Response implements HttpResponse {
         return contentType;
     }
 
-    @Override
     public final int getContentLength() {
         if (contentLength > INIT_CONTENT_LENGTH) {
             return contentLength;
@@ -153,7 +141,6 @@ public class Response implements HttpResponse {
         return contentLength;
     }
 
-    @Override
     public final String getCharacterEncoding() {
         if (encoding != null) {
             return encoding;
@@ -168,13 +155,6 @@ public class Response implements HttpResponse {
         return this.encoding;
     }
 
-    public String body() {
-        return body;
-    }
-
-    public void setBody(String body) {
-        this.body = body;
-    }
 
     public int getStatus() {
         return status;
@@ -191,5 +171,4 @@ public class Response implements HttpResponse {
     public void setReasonPhrase(String reasonPhrase) {
         this.reasonPhrase = reasonPhrase;
     }
-
 }

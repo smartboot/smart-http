@@ -8,6 +8,7 @@
 
 package org.smartboot.http.client.impl;
 
+import org.smartboot.http.client.AbstractResponse;
 import org.smartboot.http.client.decode.HeaderDecoder;
 
 /**
@@ -15,16 +16,18 @@ import org.smartboot.http.client.decode.HeaderDecoder;
  * @version V1.0 , 2021/5/26
  */
 public class ResponseAttachment {
-    private Response response;
+
+    private boolean ws;
+    private AbstractResponse response;
 
     private HeaderDecoder decoder;
 
 
-    public Response getResponse() {
+    public AbstractResponse getResponse() {
         return response;
     }
 
-    public void setResponse(Response response) {
+    public void setResponse(AbstractResponse response) {
         this.response = response;
     }
 
@@ -36,4 +39,11 @@ public class ResponseAttachment {
         this.decoder = decoder;
     }
 
+    public boolean isWs() {
+        return ws;
+    }
+
+    public void setWs(boolean ws) {
+        this.ws = ws;
+    }
 }

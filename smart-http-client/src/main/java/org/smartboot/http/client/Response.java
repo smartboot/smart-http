@@ -8,20 +8,39 @@
 
 package org.smartboot.http.client;
 
+import java.util.Collection;
+
 /**
  * Http消息请求接口
  *
  * @author 三刀
  * @version V1.0 , 2018/8/7
  */
-public interface HttpResponse extends Response {
+interface Response {
+    /**
+     * 获取指定名称的Http Header值
+     *
+     */
+    String getHeader(String headName);
 
-    String getContentType();
 
-    int getContentLength();
+    Collection<String> getHeaders(String name);
 
-    String getCharacterEncoding();
+    Collection<String> getHeaderNames();
 
-    String body();
+    String getProtocol();
 
+    /**
+     * 获取响应码
+     *
+     * @return
+     */
+    int getStatus();
+
+    /**
+     * 获取响应描述
+     *
+     * @return
+     */
+    String getReasonPhrase();
 }
