@@ -9,12 +9,12 @@ import java.util.List;
  * @author 三刀（zhengjunweimail@163.com）
  * @version V1.0 , 2023/2/13
  */
-public class HttpClientConfiguration extends ClientConfiguration<HttpResponse> {
+public class WebSocketConfiguration extends ClientConfiguration<WebSocketResponse> {
 
 
-    private boolean https = false;
+    private boolean wss = false;
 
-    public HttpClientConfiguration(String host, int port) {
+    public WebSocketConfiguration(String host, int port) {
         super(host, port);
     }
 
@@ -22,7 +22,7 @@ public class HttpClientConfiguration extends ClientConfiguration<HttpResponse> {
     /**
      * 设置建立连接的超时时间
      */
-    public HttpClientConfiguration connectTimeout(int connectTimeout) {
+    public WebSocketConfiguration connectTimeout(int connectTimeout) {
         super.connectTimeout(connectTimeout);
         return this;
     }
@@ -35,7 +35,7 @@ public class HttpClientConfiguration extends ClientConfiguration<HttpResponse> {
      * @param username 授权账户
      * @param password 授权密码
      */
-    public HttpClientConfiguration proxy(String host, int port, String username, String password) {
+    public WebSocketConfiguration proxy(String host, int port, String username, String password) {
         super.proxy(host, port, username, password);
         return this;
     }
@@ -46,22 +46,22 @@ public class HttpClientConfiguration extends ClientConfiguration<HttpResponse> {
      * @param host 代理服务器地址
      * @param port 代理服务器端口
      */
-    public HttpClientConfiguration proxy(String host, int port) {
+    public WebSocketConfiguration proxy(String host, int port) {
         return this.proxy(host, port, null, null);
     }
 
 
-    public HttpClientConfiguration readBufferSize(int readBufferSize) {
+    public WebSocketConfiguration readBufferSize(int readBufferSize) {
         super.readBufferSize(readBufferSize);
         return this;
     }
 
-    public HttpClientConfiguration readBufferPool(BufferPagePool readBufferPool) {
+    public WebSocketConfiguration readBufferPool(BufferPagePool readBufferPool) {
         super.readBufferPool(readBufferPool);
         return this;
     }
 
-    public HttpClientConfiguration writeBufferPool(BufferPagePool writeBufferPool) {
+    public WebSocketConfiguration writeBufferPool(BufferPagePool writeBufferPool) {
         super.writeBufferPool(writeBufferPool);
         return this;
     }
@@ -69,26 +69,26 @@ public class HttpClientConfiguration extends ClientConfiguration<HttpResponse> {
     /**
      * 启用 debug 模式后会打印码流
      */
-    public HttpClientConfiguration debug(boolean debug) {
+    public WebSocketConfiguration debug(boolean debug) {
         super.debug(debug);
         return this;
     }
 
-    public HttpClientConfiguration addPlugin(Plugin<HttpResponse> plugin) {
+    public WebSocketConfiguration addPlugin(Plugin<WebSocketResponse> plugin) {
         super.addPlugin(plugin);
         return this;
     }
 
-    public List<Plugin<HttpResponse>> getPlugins() {
+    public List<Plugin<WebSocketResponse>> getPlugins() {
         return super.getPlugins();
     }
 
-    public boolean isHttps() {
-        return https;
+    public boolean isWss() {
+        return wss;
     }
 
-    public HttpClientConfiguration setHttps(boolean https) {
-        this.https = https;
+    public WebSocketConfiguration setWss(boolean wss) {
+        this.wss = wss;
         return this;
     }
 }

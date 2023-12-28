@@ -32,9 +32,6 @@ public class HttpResponseProtocol implements Protocol<AbstractResponse> {
         ResponseAttachment attachment = session.getAttachment();
         HeaderDecoder decodeChain = attachment.getDecoder();
         if (decodeChain == null) {
-            if (!attachment.isWs()) {
-                attachment.setResponse(new HttpResponseImpl(session));
-            }
             decodeChain = httpMethodDecoder;
         }
         AbstractResponse response = attachment.getResponse();

@@ -9,6 +9,7 @@
 package org.smartboot.http.client;
 
 import java.util.Collection;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Http消息请求接口

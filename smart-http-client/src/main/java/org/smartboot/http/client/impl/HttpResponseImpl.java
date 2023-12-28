@@ -4,14 +4,17 @@ import org.smartboot.http.client.AbstractResponse;
 import org.smartboot.http.client.HttpResponse;
 import org.smartboot.socket.transport.AioSession;
 
+import java.util.concurrent.CompletableFuture;
+
 public class HttpResponseImpl extends AbstractResponse implements HttpResponse {
     /**
      * body内容
      */
     private String body;
 
-    public HttpResponseImpl(AioSession session) {
-        super(session);
+
+    public HttpResponseImpl(AioSession session, CompletableFuture future) {
+        super(session, future);
     }
 
     public String body() {

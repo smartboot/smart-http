@@ -9,7 +9,6 @@
 package org.smartboot.http.client.impl;
 
 import org.smartboot.http.client.AbstractResponse;
-import org.smartboot.http.client.QueueUnit;
 import org.smartboot.http.client.ResponseHandler;
 import org.smartboot.http.common.enums.DecodePartEnum;
 import org.smartboot.socket.StateMachineEnum;
@@ -18,10 +17,6 @@ import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.AbstractQueue;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -30,7 +25,6 @@ import java.util.concurrent.ExecutorService;
  */
 public class HttpMessageProcessor extends AbstractMessageProcessor<AbstractResponse> {
     private final ExecutorService executorService;
-    private final Map<AioSession, AbstractQueue<QueueUnit>> map = new ConcurrentHashMap<>();
 
     public HttpMessageProcessor() {
         this(null);
@@ -43,9 +37,7 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<AbstractRespo
     @Override
     public void process0(AioSession session, AbstractResponse response) {
         ResponseAttachment responseAttachment = session.getAttachment();
-        AbstractQueue<QueueUnit> queue = map.get(session);
-        QueueUnit queueUnit = queue.peek();
-        ResponseHandler responseHandler = queueUnit.getResponseHandler();
+        ResponseHandler responseHandler = response.getResponseHandler();
 
         switch (response.getDecodePartEnum()) {
             case HEADER_FINISH:
@@ -56,27 +48,19 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<AbstractRespo
                     break;
                 }
             case FINISH:
-                if (responseAttachment.isWs()) {
-                    response.reset();
+                if (executorService == null) {
+                    response.getFuture().complete(response);
                 } else {
-                    queue.poll();
-                    responseAttachment.setDecoder(null);
-                    responseAttachment.setResponse(null);
-                    if (executorService == null) {
-                        queueUnit.getFuture().complete(response);
-                    } else {
-                        session.awaitRead();
-                        executorService.execute(() -> {
-                            queueUnit.getFuture().complete(response);
-                            session.signalRead();
-                        });
-                    }
+                    session.awaitRead();
+                    executorService.execute(() -> {
+                        response.getFuture().complete(response);
+                        session.signalRead();
+                    });
                 }
                 break;
             default:
         }
     }
-
 
     private void doHttpBody(AbstractResponse response, ByteBuffer readBuffer, ResponseAttachment responseAttachment, ResponseHandler responseHandler) {
         if (responseHandler.onBodyStream(readBuffer, response)) {
@@ -99,18 +83,9 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<AbstractRespo
 
     @Override
     public void stateEvent0(AioSession session, StateMachineEnum stateMachineEnum, Throwable throwable) {
-        if (throwable != null) {
-            AbstractQueue<QueueUnit> queue = map.get(session);
-            if (queue != null) {
-                QueueUnit future;
-                while ((future = queue.poll()) != null) {
-                    future.getFuture().completeExceptionally(throwable);
-                }
-            }
-        }
+
         switch (stateMachineEnum) {
             case NEW_SESSION:
-                map.put(session, new ConcurrentLinkedQueue<>());
                 ResponseAttachment attachment = new ResponseAttachment();
                 session.setAttachment(attachment);
                 break;
@@ -124,16 +99,8 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<AbstractRespo
                 throwable.printStackTrace();
                 break;
             case SESSION_CLOSED:
-                AbstractQueue<QueueUnit> queue = map.remove(session);
-                QueueUnit future;
-                while ((future = queue.poll()) != null) {
-                    future.getFuture().completeExceptionally(new IOException("client is closed"));
-                }
                 break;
         }
     }
 
-    public AbstractQueue<QueueUnit> getQueue(AioSession aioSession) {
-        return map.get(aioSession);
-    }
 }

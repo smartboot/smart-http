@@ -10,6 +10,7 @@ package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.codec.websocket.WebSocket;
 import org.smartboot.http.common.enums.DecodePartEnum;
+import org.smartboot.http.common.utils.SmartDecoder;
 import org.smartboot.http.common.utils.WebSocketUtil;
 import org.smartboot.http.server.WebSocketRequest;
 
@@ -22,7 +23,7 @@ import java.io.InputStream;
  * @version V1.0 , 2018/8/31
  */
 public class WebSocketRequestImpl extends AbstractRequest implements WebSocketRequest, WebSocket {
-
+    private SmartDecoder payloadDecoder;
     private final ByteArrayOutputStream payload = new ByteArrayOutputStream();
     private final WebSocketResponseImpl response;
     private boolean frameFinalFlag;
@@ -119,5 +120,13 @@ public class WebSocketRequestImpl extends AbstractRequest implements WebSocketRe
         }
     }
 
+    @Override
+    public SmartDecoder getPayloadDecoder() {
+        return payloadDecoder;
+    }
 
+    @Override
+    public void setPayloadDecoder(SmartDecoder payloadDecoder) {
+        this.payloadDecoder = payloadDecoder;
+    }
 }

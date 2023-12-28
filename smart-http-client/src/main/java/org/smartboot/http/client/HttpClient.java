@@ -28,6 +28,7 @@ import org.smartboot.socket.transport.AioSession;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.util.Base64;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * @author 三刀（zhengjunweimail@163.com）
@@ -63,7 +64,7 @@ public final class HttpClient {
      * 消息处理器
      */
     private final HttpMessageProcessor processor = new HttpMessageProcessor();
-
+    private final ConcurrentLinkedQueue<AbstractResponse> queue = new ConcurrentLinkedQueue<>();
     private final String uri;
 
     public HttpClient(String url) {
@@ -109,28 +110,28 @@ public final class HttpClient {
 
     public HttpGet get() {
         connect();
-        HttpGet httpGet = new HttpGet(client.getSession(), processor.getQueue(client.getSession()));
+        HttpGet httpGet = new HttpGet(client.getSession(), queue);
         initRest(httpGet, uri);
         return httpGet;
     }
 
     public HttpGet get(String uri) {
         connect();
-        HttpGet httpGet = new HttpGet(client.getSession(), processor.getQueue(client.getSession()));
+        HttpGet httpGet = new HttpGet(client.getSession(), queue);
         initRest(httpGet, uri);
         return httpGet;
     }
 
     public HttpRest rest(String uri) {
         connect();
-        HttpRest httpRest = new HttpRest(client.getSession(), processor.getQueue(client.getSession()));
+        HttpRest httpRest = new HttpRest(client.getSession(), queue);
         initRest(httpRest, uri);
         return httpRest;
     }
 
     public HttpPost post(String uri) {
         connect();
-        HttpPost httpRest = new HttpPost(client.getSession(), processor.getQueue(client.getSession()));
+        HttpPost httpRest = new HttpPost(client.getSession(), queue);
         initRest(httpRest, uri);
         return httpRest;
     }
@@ -151,12 +152,16 @@ public final class HttpClient {
         httpRest.request.setProtocol(HttpProtocolEnum.HTTP_11.getProtocol());
 
         httpRest.completableFuture.thenAccept(httpResponse -> {
+            AioSession session = client.getSession();
+            ResponseAttachment attachment = session.getAttachment();
+            attachment.setDecoder(null);
+            attachment.setResponse(queue.poll());
             //request标注为keep-alive，response不包含该header,默认保持连接.
             if (HeaderValueEnum.KEEPALIVE.getName().equalsIgnoreCase(httpRest.request.getHeader(HeaderNameEnum.CONNECTION.getName())) && httpResponse.getHeader(HeaderNameEnum.CONNECTION.getName()) == null) {
                 return;
             }
             //存在链路复用情况
-            if (!processor.getQueue(client.getSession()).isEmpty()) {
+            if (!queue.isEmpty()) {
                 return;
             }
             //非keep-alive,主动断开连接
@@ -190,7 +195,7 @@ public final class HttpClient {
         try {
             if (firstConnected) {
                 boolean noneSslPlugin = true;
-                for (Plugin<AbstractResponse> responsePlugin : configuration.getPlugins()) {
+                for (Plugin responsePlugin : configuration.getPlugins()) {
                     processor.addPlugin(responsePlugin);
                     if (responsePlugin instanceof SslPlugin) {
                         noneSslPlugin = false;
@@ -217,9 +222,6 @@ public final class HttpClient {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        AioSession session = client.getSession();
-        ResponseAttachment attachment = session.getAttachment();
-        attachment.setWs(false);
     }
 
 

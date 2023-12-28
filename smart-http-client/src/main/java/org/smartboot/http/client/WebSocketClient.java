@@ -38,7 +38,7 @@ import java.util.concurrent.TimeUnit;
 public class WebSocketClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketClient.class);
 
-    private final HttpClientConfiguration configuration;
+    private final WebSocketConfiguration configuration;
 
     /**
      * Header: Host
@@ -133,14 +133,14 @@ public class WebSocketClient {
         if (port == -1) {
             throw new IllegalArgumentException("invalid url:" + url);
         }
-        this.configuration = new HttpClientConfiguration(host, port);
+        this.configuration = new WebSocketConfiguration(host, port);
         configuration.setHttps(https);
         hostHeader = configuration.getHost() + ":" + configuration.getPort();
         this.uri = uriIndex > 0 ? url.substring(uriIndex) : "/";
 
     }
 
-    public HttpClientConfiguration configuration() {
+    public WebSocketConfiguration configuration() {
         return configuration;
     }
 
@@ -158,7 +158,7 @@ public class WebSocketClient {
         try {
             if (firstConnected) {
                 boolean noneSslPlugin = true;
-                for (Plugin<AbstractResponse> responsePlugin : configuration.getPlugins()) {
+                for (Plugin responsePlugin : configuration.getPlugins()) {
                     processor.addPlugin(responsePlugin);
                     if (responsePlugin instanceof SslPlugin) {
                         noneSslPlugin = false;
@@ -186,24 +186,8 @@ public class WebSocketClient {
             throw new RuntimeException(e);
         }
         AioSession session = client.getSession();
-        webSocketResponse = new WebSocketResponseImpl(session);
-        ResponseAttachment attachment = session.getAttachment();
-        attachment.setWs(true);
-        attachment.setResponse(webSocketResponse);
-        initRest();
-    }
-
-    private void initRest() throws IOException {
-        request = new WebSocketRequestImpl(client.getSession());
-        request.setUri(uri);
-        request.setProtocol(HttpProtocolEnum.HTTP_11.getProtocol());
-        request.addHeader(HeaderNameEnum.HOST.getName(), hostHeader);
-        request.addHeader(HeaderNameEnum.UPGRADE.getName(), HeaderValueEnum.WEBSOCKET.getName());
-        request.setHeader(HeaderNameEnum.CONNECTION.getName(), HeaderValueEnum.UPGRADE.getName());
-        request.setHeader(HeaderNameEnum.Sec_WebSocket_Key.getName(), generateSecWebSocketKey());
-        request.setHeader(HeaderNameEnum.Sec_WebSocket_Version.getName(), "13");
-//        request.setHeader(HeaderNameEnum.Sec_WebSocket_Protocol.getName(), HeaderValueEnum.PERMESSAGE_DEFLATE.getName());
-        processor.getQueue(client.getSession()).offer(new QueueUnit(completableFuture, new ResponseHandler() {
+        webSocketResponse = new WebSocketResponseImpl(session,completableFuture);
+        webSocketResponse.setResponseHandler( new ResponseHandler() {
             @Override
             public void onHeaderComplete(AbstractResponse abstractResponse) throws IOException {
                 WebSocketResponseImpl webSocketResponse = (WebSocketResponseImpl) abstractResponse;
@@ -260,7 +244,22 @@ public class WebSocketClient {
 
             }
 
-        }));
+        });
+        ResponseAttachment attachment = session.getAttachment();
+        attachment.setResponse(webSocketResponse);
+        initRest();
+    }
+
+    private void initRest() throws IOException {
+        request = new WebSocketRequestImpl(client.getSession());
+        request.setUri(uri);
+        request.setProtocol(HttpProtocolEnum.HTTP_11.getProtocol());
+        request.addHeader(HeaderNameEnum.HOST.getName(), hostHeader);
+        request.addHeader(HeaderNameEnum.UPGRADE.getName(), HeaderValueEnum.WEBSOCKET.getName());
+        request.setHeader(HeaderNameEnum.CONNECTION.getName(), HeaderValueEnum.UPGRADE.getName());
+        request.setHeader(HeaderNameEnum.Sec_WebSocket_Key.getName(), generateSecWebSocketKey());
+        request.setHeader(HeaderNameEnum.Sec_WebSocket_Version.getName(), "13");
+//        request.setHeader(HeaderNameEnum.Sec_WebSocket_Protocol.getName(), HeaderValueEnum.PERMESSAGE_DEFLATE.getName());
         request.getOutputStream().flush();
     }
 

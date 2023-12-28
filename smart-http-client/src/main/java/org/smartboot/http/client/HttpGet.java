@@ -20,7 +20,7 @@ import java.util.function.Consumer;
  */
 public class HttpGet extends HttpRest {
 
-    HttpGet(AioSession session, AbstractQueue<QueueUnit> queue) {
+    HttpGet(AioSession session, AbstractQueue<AbstractResponse> queue) {
         super(session, queue);
         request.setMethod(HttpMethodEnum.GET.getMethod());
     }

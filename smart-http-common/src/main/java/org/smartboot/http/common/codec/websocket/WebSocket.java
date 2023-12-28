@@ -1,6 +1,6 @@
 package org.smartboot.http.common.codec.websocket;
 
-import org.smartboot.socket.util.Attachment;
+import org.smartboot.http.common.utils.SmartDecoder;
 
 import java.nio.ByteBuffer;
 
@@ -38,7 +38,9 @@ public interface WebSocket {
 
     public void setMaskingKey(byte[] maskingKey);
 
-    Attachment getAttachment();
-
     public void setPayload(byte[] payload);
+
+    SmartDecoder getPayloadDecoder();
+
+    void setPayloadDecoder(SmartDecoder decoder);
 }

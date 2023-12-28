@@ -14,12 +14,13 @@ import org.smartboot.http.common.codec.websocket.BasicFrameDecoder;
 import org.smartboot.http.common.codec.websocket.Decoder;
 import org.smartboot.http.common.codec.websocket.WebSocket;
 import org.smartboot.http.common.enums.DecodePartEnum;
+import org.smartboot.http.common.utils.SmartDecoder;
 import org.smartboot.http.common.utils.WebSocketUtil;
 import org.smartboot.socket.transport.AioSession;
-import org.smartboot.socket.util.Attachment;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @author 三刀（zhengjunweimail@163.com）
@@ -40,10 +41,10 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
     private long payloadLength;
 
     private byte[] maskingKey;
-    private Attachment attachment = new Attachment();
+    private SmartDecoder payloadDecoder;
 
-    public WebSocketResponseImpl(AioSession session) {
-        super(session);
+    public WebSocketResponseImpl(AioSession session, CompletableFuture future) {
+        super(session, future);
     }
 
 
@@ -115,9 +116,6 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
         }
     }
 
-    public Attachment getAttachment() {
-        return attachment;
-    }
 
     public Decoder getDecoder() {
         return decoder;
@@ -126,4 +124,15 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
     public void setDecoder(Decoder decoder) {
         this.decoder = decoder;
     }
+
+    @Override
+    public SmartDecoder getPayloadDecoder() {
+        return payloadDecoder;
+    }
+
+    @Override
+    public void setPayloadDecoder(SmartDecoder payloadDecoder) {
+        this.payloadDecoder = payloadDecoder;
+    }
+
 }

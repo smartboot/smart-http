@@ -37,7 +37,7 @@ public class HttpRest {
     private final static String DEFAULT_USER_AGENT = "smart-http";
     protected final HttpRequestImpl request;
     protected final CompletableFuture<HttpResponseImpl> completableFuture = new CompletableFuture<>();
-    private final AbstractQueue<QueueUnit> queue;
+    private final AbstractQueue<AbstractResponse> queue;
     private Map<String, String> queryParams = null;
     private boolean commit = false;
     private Body<HttpRest> body;
@@ -45,10 +45,12 @@ public class HttpRest {
      * http body 解码器
      */
     private ResponseHandler responseHandler = new DefaultHttpResponseHandler();
+    private final HttpResponseImpl response;
 
-    HttpRest(AioSession session, AbstractQueue<QueueUnit> queue) {
+    HttpRest(AioSession session, AbstractQueue<AbstractResponse> queue) {
         this.request = new HttpRequestImpl(session);
         this.queue = queue;
+        this.response = new HttpResponseImpl(session, completableFuture);
     }
 
     protected final void willSendRequest() {
@@ -61,7 +63,8 @@ public class HttpRest {
         if (!headers.contains(HeaderNameEnum.USER_AGENT.getName())) {
             request.addHeader(HeaderNameEnum.USER_AGENT.getName(), DEFAULT_USER_AGENT);
         }
-        queue.offer(new QueueUnit(completableFuture, responseHandler));
+        response.setResponseHandler(responseHandler);
+        queue.offer(response);
     }
 
     private void resetUri() {

@@ -13,5 +13,4 @@ package org.smartboot.http.client;
  * @version V1.0 , 2021/2/2
  */
 public interface WebSocketResponse extends Response {
-
 }

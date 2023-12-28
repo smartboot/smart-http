@@ -17,7 +17,6 @@ import org.smartboot.http.client.decode.HeaderDecoder;
  */
 public class ResponseAttachment {
 
-    private boolean ws;
     private AbstractResponse response;
 
     private HeaderDecoder decoder;
@@ -37,13 +36,5 @@ public class ResponseAttachment {
 
     public void setDecoder(HeaderDecoder decoder) {
         this.decoder = decoder;
-    }
-
-    public boolean isWs() {
-        return ws;
-    }
-
-    public void setWs(boolean ws) {
-        this.ws = ws;
     }
 }

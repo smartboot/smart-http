@@ -8,8 +8,6 @@
 
 package org.smartboot.http.server;
 
-import org.smartboot.socket.util.Attachment;
-
 import java.net.InetSocketAddress;
 import java.util.Map;
 
@@ -42,21 +40,6 @@ public interface WebSocketRequest {
      */
     InetSocketAddress getLocalAddress();
 
-    /**
-     * 获取附件对象
-     *
-     * @param <A> 附件对象类型
-     * @return 附件
-     */
-    Attachment getAttachment();
-
-    /**
-     * 存放附件，支持任意类型
-     *
-     * @param <A>        附件对象类型
-     * @param attachment 附件对象
-     */
-    void setAttachment(Attachment attachment);
 
     /**
      * 是否启动安全通信

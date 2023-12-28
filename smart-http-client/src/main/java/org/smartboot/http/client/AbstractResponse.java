@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 public abstract class AbstractResponse implements Response, Reset {
 
@@ -51,9 +52,12 @@ public abstract class AbstractResponse implements Response, Reset {
     private String reasonPhrase;
     private String encoding;
     private DecodePartEnum decodePartEnum = DecodePartEnum.HEADER_FINISH;
+    private ResponseHandler responseHandler;
+    private final CompletableFuture<AbstractResponse> future;
 
-    public AbstractResponse(AioSession session) {
+    public AbstractResponse(AioSession session, CompletableFuture<AbstractResponse> future) {
         this.session = session;
+        this.future = future;
     }
 
     public AioSession getSession() {
@@ -170,5 +174,17 @@ public abstract class AbstractResponse implements Response, Reset {
 
     public void setReasonPhrase(String reasonPhrase) {
         this.reasonPhrase = reasonPhrase;
+    }
+
+    public ResponseHandler getResponseHandler() {
+        return responseHandler;
+    }
+
+    public void setResponseHandler(ResponseHandler responseHandler) {
+        this.responseHandler = responseHandler;
+    }
+
+    public CompletableFuture<AbstractResponse> getFuture() {
+        return future;
     }
 }
