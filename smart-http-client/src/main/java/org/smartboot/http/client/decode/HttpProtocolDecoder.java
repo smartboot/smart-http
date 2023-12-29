@@ -24,11 +24,11 @@ public class HttpProtocolDecoder implements HeaderDecoder {
     private final HttpStatusCodeDecoder decoder = new HttpStatusCodeDecoder();
 
     @Override
-    public HeaderDecoder decode(ByteBuffer byteBuffer, AioSession aioSession, AbstractResponse request) {
+    public HeaderDecoder decode(ByteBuffer byteBuffer, AioSession aioSession, AbstractResponse response) {
         int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.SP);
         if (length > 0) {
-            request.setProtocol(StringUtils.convertToString(byteBuffer, byteBuffer.position() - length - 1, length, StringUtils.String_CACHE_COMMON));
-            return decoder.decode(byteBuffer, aioSession, request);
+            response.setProtocol(StringUtils.convertToString(byteBuffer, byteBuffer.position() - length - 1, length, StringUtils.String_CACHE_COMMON));
+            return decoder.decode(byteBuffer, aioSession, response);
         } else {
             return this;
         }

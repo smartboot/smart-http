@@ -11,6 +11,7 @@ package org.smartboot.http.client;
 import org.smartboot.http.client.impl.DefaultHttpResponseHandler;
 import org.smartboot.http.client.impl.HttpRequestImpl;
 import org.smartboot.http.client.impl.HttpResponseImpl;
+import org.smartboot.http.client.impl.ResponseAttachment;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.socket.transport.AioSession;
 
@@ -64,7 +65,17 @@ public class HttpRest {
             request.addHeader(HeaderNameEnum.USER_AGENT.getName(), DEFAULT_USER_AGENT);
         }
         response.setResponseHandler(responseHandler);
-        queue.offer(response);
+        AioSession session = response.getSession();
+        ResponseAttachment attachment = session.getAttachment();
+        synchronized (session) {
+            if (attachment.getResponse() == null) {
+                attachment.setResponse(response);
+                System.out.println("aaaa");
+            } else {
+                System.out.println("bbb");
+                queue.offer(response);
+            }
+        }
     }
 
     private void resetUri() {

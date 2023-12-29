@@ -154,14 +154,17 @@ public final class HttpClient {
         httpRest.completableFuture.thenAccept(httpResponse -> {
             AioSession session = client.getSession();
             ResponseAttachment attachment = session.getAttachment();
-            attachment.setDecoder(null);
-            attachment.setResponse(queue.poll());
+            //重置附件，为下一个响应作准备
+            synchronized (session) {
+                attachment.setDecoder(null);
+                attachment.setResponse(queue.poll());
+            }
             //request标注为keep-alive，response不包含该header,默认保持连接.
             if (HeaderValueEnum.KEEPALIVE.getName().equalsIgnoreCase(httpRest.request.getHeader(HeaderNameEnum.CONNECTION.getName())) && httpResponse.getHeader(HeaderNameEnum.CONNECTION.getName()) == null) {
                 return;
             }
             //存在链路复用情况
-            if (!queue.isEmpty()) {
+            if (attachment.getResponse() != null || !queue.isEmpty()) {
                 return;
             }
             //非keep-alive,主动断开连接
