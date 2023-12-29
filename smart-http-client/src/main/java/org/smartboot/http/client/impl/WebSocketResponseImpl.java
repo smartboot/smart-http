@@ -27,7 +27,7 @@ import java.util.concurrent.CompletableFuture;
  * @version V1.0 , 2021/2/2
  */
 public class WebSocketResponseImpl extends AbstractResponse implements WebSocket, WebSocketResponse {
-    private final static Decoder basicFrameDecoder = new BasicFrameDecoder();
+    public final static Decoder basicFrameDecoder = new BasicFrameDecoder();
     private Decoder decoder = basicFrameDecoder;
     private final ByteArrayOutputStream payload = new ByteArrayOutputStream();
     private boolean frameFinalFlag;
@@ -42,9 +42,11 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
 
     private byte[] maskingKey;
     private SmartDecoder payloadDecoder;
+    private CompletableFuture<AbstractResponse> future;
 
     public WebSocketResponseImpl(AioSession session, CompletableFuture future) {
         super(session, future);
+        this.future = future;
     }
 
 
@@ -135,4 +137,12 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
         this.payloadDecoder = payloadDecoder;
     }
 
+    @Override
+    public CompletableFuture<AbstractResponse> getFuture() {
+        return future;
+    }
+
+    public void setFuture(CompletableFuture future) {
+        this.future = future;
+    }
 }

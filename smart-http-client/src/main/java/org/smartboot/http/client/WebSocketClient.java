@@ -34,6 +34,7 @@ import java.util.Base64;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class WebSocketClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketClient.class);
@@ -69,10 +70,7 @@ public class WebSocketClient {
 
     private final String uri;
     private WebSocketRequestImpl request;
-    protected final CompletableFuture<WebSocketResponseImpl> completableFuture = new CompletableFuture<>();
-    private WebSocketListener listener;
 
-    private WebSocketResponseImpl webSocketResponse;
 
     public static void main(String[] args) throws IOException {
         WebSocketClient client = new WebSocketClient("ws://localhost:8080");
@@ -145,7 +143,6 @@ public class WebSocketClient {
     }
 
     public void connect(WebSocketListener listener) throws IOException {
-        this.listener = listener;
         if (connected) {
             AioSession session = client.getSession();
             if (session == null || session.isInvalid()) {
@@ -186,8 +183,52 @@ public class WebSocketClient {
             throw new RuntimeException(e);
         }
         AioSession session = client.getSession();
-        webSocketResponse = new WebSocketResponseImpl(session,completableFuture);
-        webSocketResponse.setResponseHandler( new ResponseHandler() {
+        CompletableFuture<WebSocketResponseImpl> completableFuture = new CompletableFuture<>();
+        completableFuture.thenAccept(new Consumer<WebSocketResponseImpl>() {
+            @Override
+            public void accept(WebSocketResponseImpl webSocketResponse) {
+                try {
+                    switch (webSocketResponse.getFrameOpcode()) {
+                        case WebSocketUtil.OPCODE_TEXT:
+                            listener.onMessage(WebSocketClient.this, new String(webSocketResponse.getPayload(), StandardCharsets.UTF_8));
+                            break;
+                        case WebSocketUtil.OPCODE_BINARY:
+                            listener.onMessage(WebSocketClient.this, webSocketResponse.getPayload());
+                            break;
+                        case WebSocketUtil.OPCODE_CLOSE:
+                            try {
+                                listener.onClose(WebSocketClient.this, webSocketResponse);
+                            } finally {
+                                WebSocketClient.this.close();
+                            }
+                            break;
+                        case WebSocketUtil.OPCODE_PING:
+                            System.out.println("ping...");
+                            WebSocketUtil.send(request.getOutputStream(), WebSocketUtil.OPCODE_PONG, webSocketResponse.getPayload(), 0, webSocketResponse.getPayload().length);
+//                        webSocketResponse.pong(webSocketResponse.getPayload());
+                            break;
+                        case WebSocketUtil.OPCODE_PONG:
+//                                handlePong(request, response);
+                            break;
+                        case WebSocketUtil.OPCODE_CONTINUE:
+                            LOGGER.warn("unSupport OPCODE_CONTINUE now,ignore payload: {}", StringUtils.toHexString(webSocketResponse.getPayload()));
+                            break;
+                        default:
+                            throw new UnsupportedOperationException();
+                    }
+                } catch (Throwable throwable) {
+                    listener.onError(WebSocketClient.this, webSocketResponse, throwable);
+//                throw throwable;
+                } finally {
+                    CompletableFuture<WebSocketResponseImpl> completableFuture = new CompletableFuture<>();
+                    completableFuture.thenAccept(this);
+                    webSocketResponse.setFuture(completableFuture);
+                    webSocketResponse.reset();
+                }
+            }
+        });
+        WebSocketResponseImpl webSocketResponse = new WebSocketResponseImpl(session, completableFuture);
+        webSocketResponse.setResponseHandler(new ResponseHandler() {
             @Override
             public void onHeaderComplete(AbstractResponse abstractResponse) throws IOException {
                 WebSocketResponseImpl webSocketResponse = (WebSocketResponseImpl) abstractResponse;
@@ -204,44 +245,8 @@ public class WebSocketClient {
             public boolean onBodyStream(ByteBuffer buffer, AbstractResponse abstractResponse) {
                 WebSocketResponseImpl webSocketResponse = (WebSocketResponseImpl) abstractResponse;
                 Decoder decoder = webSocketResponse.getDecoder().decode(buffer, webSocketResponse);
-                if (decoder == WebSocket.PAYLOAD_FINISH) {
-                    try {
-                        switch (webSocketResponse.getFrameOpcode()) {
-                            case WebSocketUtil.OPCODE_TEXT:
-                                listener.onMessage(WebSocketClient.this, new String(webSocketResponse.getPayload(), StandardCharsets.UTF_8));
-                                break;
-                            case WebSocketUtil.OPCODE_BINARY:
-                                listener.onMessage(WebSocketClient.this, webSocketResponse.getPayload());
-                                break;
-                            case WebSocketUtil.OPCODE_CLOSE:
-                                try {
-                                    listener.onClose(WebSocketClient.this, webSocketResponse);
-                                } finally {
-                                    close();
-                                }
-                                break;
-                            case WebSocketUtil.OPCODE_PING:
-//                                handlePing(request, response);
-                                break;
-                            case WebSocketUtil.OPCODE_PONG:
-//                                handlePong(request, response);
-                                break;
-                            case WebSocketUtil.OPCODE_CONTINUE:
-                                LOGGER.warn("unSupport OPCODE_CONTINUE now,ignore payload: {}", StringUtils.toHexString(webSocketResponse.getPayload()));
-                                break;
-                            default:
-                                throw new UnsupportedOperationException();
-                        }
-                    } catch (Throwable throwable) {
-                        listener.onError(WebSocketClient.this, webSocketResponse, throwable);
-                        throw throwable;
-                    }
-                    return true;
-                } else {
-                    webSocketResponse.setDecoder(decoder);
-                    return false;
-                }
-
+                webSocketResponse.setDecoder(decoder);
+                return decoder == WebSocket.PAYLOAD_FINISH;
             }
 
         });
