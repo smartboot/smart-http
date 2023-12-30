@@ -2,17 +2,17 @@ package org.smartboot.http.client;
 
 public interface WebSocketListener {
 
-    default void onOpen(WebSocketClient client, WebSocketResponse session) {
+    default void onOpen(WebSocketClient client, WebSocketResponse response) {
         System.out.println("连接已打开");
     }
 
 
-    default void onClose(WebSocketClient client, WebSocketResponse session) {
+    default void onClose(WebSocketClient client, WebSocketResponse response) {
         System.out.println("连接已关闭");
     }
 
     //
-    default void onError(WebSocketClient client, WebSocketResponse session, Throwable throwable) {
+    default void onError(WebSocketClient client, WebSocketResponse response, Throwable throwable) {
         System.out.println("发生错误： " + throwable.getMessage());
     }
 

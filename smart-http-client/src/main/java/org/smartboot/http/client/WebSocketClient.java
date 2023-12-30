@@ -6,6 +6,7 @@ import org.smartboot.http.common.codec.websocket.Decoder;
 import org.smartboot.http.common.codec.websocket.WebSocket;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
+import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.logging.Logger;
@@ -107,10 +108,10 @@ public class WebSocketClient {
         String schema = url.substring(0, schemaIndex);
         int uriIndex = url.indexOf("/", schemaIndex + 3);
         int portIndex = url.indexOf(":", schemaIndex + 3);
-        boolean http = Constant.SCHEMA_WS.equals(schema);
-        boolean https = !http && Constant.SCHEMA_WSS.equals(schema);
+        boolean ws = Constant.SCHEMA_WS.equals(schema);
+        boolean wss = !ws && Constant.SCHEMA_WSS.equals(schema);
 
-        if (!http && !https) {
+        if (!ws && !wss) {
             throw new IllegalArgumentException("invalid url:" + url);
         }
         String host;
@@ -120,16 +121,16 @@ public class WebSocketClient {
             port = NumberUtils.toInt(uriIndex > 0 ? url.substring(portIndex + 1, uriIndex) : url.substring(portIndex + 1), -1);
         } else if (uriIndex > 0) {
             host = url.substring(schemaIndex + 3, uriIndex);
-            port = https ? 443 : 80;
+            port = wss ? 443 : 80;
         } else {
             host = url.substring(schemaIndex + 3);
-            port = https ? 443 : 80;
+            port = wss ? 443 : 80;
         }
         if (port == -1) {
             throw new IllegalArgumentException("invalid url:" + url);
         }
         this.configuration = new WebSocketConfiguration(host, port);
-        configuration.setHttps(https);
+        configuration.setWss(wss);
         hostHeader = configuration.getHost() + ":" + configuration.getPort();
         this.uri = uriIndex > 0 ? url.substring(uriIndex) : "/";
 
@@ -158,7 +159,7 @@ public class WebSocketClient {
                         noneSslPlugin = false;
                     }
                 }
-                if (noneSslPlugin && configuration.isHttps()) {
+                if (noneSslPlugin && configuration.isWss()) {
                     processor.addPlugin(new SslPlugin<>(new ClientSSLContextFactory()));
                 }
 
@@ -255,6 +256,7 @@ public class WebSocketClient {
     private void initRest() throws IOException {
         request = new WebSocketRequestImpl(client.getSession());
         request.setUri(uri);
+        request.setMethod(HttpMethodEnum.GET.getMethod());
         request.setProtocol(HttpProtocolEnum.HTTP_11.getProtocol());
         request.addHeader(HeaderNameEnum.HOST.getName(), hostHeader);
         request.addHeader(HeaderNameEnum.UPGRADE.getName(), HeaderValueEnum.WEBSOCKET.getName());
@@ -277,7 +279,7 @@ public class WebSocketClient {
 
     public void sendMessage(String message) throws IOException {
         // 发送消息到服务器
-        WebSocketUtil.send(request.getOutputStream(), WebSocketUtil.OPCODE_TEXT, message.getBytes(), 0, message.length());
+        WebSocketUtil.sendMask(request.getOutputStream(), WebSocketUtil.OPCODE_TEXT, message.getBytes(), 0, message.length());
         request.getOutputStream().flush();
     }
 
