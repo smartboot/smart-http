@@ -279,7 +279,8 @@ public class WebSocketClient {
 
     public void sendMessage(String message) throws IOException {
         // 发送消息到服务器
-        WebSocketUtil.sendMask(request.getOutputStream(), WebSocketUtil.OPCODE_TEXT, message.getBytes(), 0, message.length());
+        byte[] bytes = message.getBytes(StandardCharsets.UTF_8);
+        WebSocketUtil.sendMask(request.getOutputStream(), WebSocketUtil.OPCODE_TEXT, bytes, 0, bytes.length);
         request.getOutputStream().flush();
     }
 
