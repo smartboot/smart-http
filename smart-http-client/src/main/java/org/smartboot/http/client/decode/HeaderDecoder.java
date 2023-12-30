@@ -20,6 +20,9 @@ import java.nio.ByteBuffer;
  * @version V1.0 , 2020/3/30
  */
 public interface HeaderDecoder {
+    HeaderDecoder BODY_READY_DECODER = (byteBuffer, aioSession, response) -> null;
+    HeaderDecoder BODY_CONTINUE_DECODER = (byteBuffer, aioSession, response) -> null;
+
 
     HeaderDecoder decode(ByteBuffer byteBuffer, AioSession aioSession, AbstractResponse response);
 

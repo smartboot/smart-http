@@ -1,8 +1,5 @@
 package org.smartboot.http.client;
 
-import org.smartboot.http.client.impl.HttpMessageProcessor;
-import org.smartboot.http.client.impl.HttpResponseProtocol;
-import org.smartboot.http.client.impl.ResponseAttachment;
 import org.smartboot.http.client.impl.WebSocketRequestImpl;
 import org.smartboot.http.client.impl.WebSocketResponseImpl;
 import org.smartboot.http.common.codec.websocket.Decoder;

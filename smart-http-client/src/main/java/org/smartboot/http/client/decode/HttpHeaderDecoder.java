@@ -9,7 +9,6 @@
 package org.smartboot.http.client.decode;
 
 import org.smartboot.http.client.AbstractResponse;
-import org.smartboot.http.client.impl.HttpResponseProtocol;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.utils.Constant;
@@ -38,7 +37,7 @@ class HttpHeaderDecoder implements HeaderDecoder {
             }
             byteBuffer.position(byteBuffer.position() + 2);
 //            return decoder.decode(byteBuffer, aioSession, request);
-            return HttpResponseProtocol.BODY_READY_DECODER;
+            return HeaderDecoder.BODY_READY_DECODER;
         }
         //Header name解码
         int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.COLON);

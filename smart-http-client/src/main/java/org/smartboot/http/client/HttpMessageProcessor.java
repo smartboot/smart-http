@@ -6,10 +6,9 @@
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
-package org.smartboot.http.client.impl;
+package org.smartboot.http.client;
 
-import org.smartboot.http.client.AbstractResponse;
-import org.smartboot.http.client.ResponseHandler;
+import org.smartboot.http.client.decode.HeaderDecoder;
 import org.smartboot.http.common.enums.DecodePartEnum;
 import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.extension.processor.AbstractMessageProcessor;
@@ -23,7 +22,7 @@ import java.util.concurrent.ExecutorService;
  * @author 三刀
  * @version V1.0 , 2018/6/10
  */
-public class HttpMessageProcessor extends AbstractMessageProcessor<AbstractResponse> {
+final class HttpMessageProcessor extends AbstractMessageProcessor<AbstractResponse> {
     private final ExecutorService executorService;
 
     public HttpMessageProcessor() {
@@ -67,7 +66,7 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<AbstractRespo
             response.setDecodePartEnum(DecodePartEnum.FINISH);
         } else if (readBuffer.hasRemaining()) {
             //半包,继续读数据
-            responseAttachment.setDecoder(HttpResponseProtocol.BODY_CONTINUE_DECODER);
+            responseAttachment.setDecoder(HeaderDecoder.BODY_CONTINUE_DECODER);
         }
     }
 

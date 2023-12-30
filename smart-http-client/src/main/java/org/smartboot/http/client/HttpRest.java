@@ -11,7 +11,6 @@ package org.smartboot.http.client;
 import org.smartboot.http.client.impl.DefaultHttpResponseHandler;
 import org.smartboot.http.client.impl.HttpRequestImpl;
 import org.smartboot.http.client.impl.HttpResponseImpl;
-import org.smartboot.http.client.impl.ResponseAttachment;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.socket.transport.AioSession;
 

@@ -6,16 +6,15 @@
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
-package org.smartboot.http.client.impl;
+package org.smartboot.http.client;
 
-import org.smartboot.http.client.AbstractResponse;
 import org.smartboot.http.client.decode.HeaderDecoder;
 
 /**
  * @author 三刀（zhengjunweimail@163.com）
  * @version V1.0 , 2021/5/26
  */
-public class ResponseAttachment {
+class ResponseAttachment {
 
     private AbstractResponse response;
 

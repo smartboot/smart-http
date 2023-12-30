@@ -6,9 +6,8 @@
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
-package org.smartboot.http.client.impl;
+package org.smartboot.http.client;
 
-import org.smartboot.http.client.AbstractResponse;
 import org.smartboot.http.client.decode.HeaderDecoder;
 import org.smartboot.http.client.decode.HttpProtocolDecoder;
 import org.smartboot.socket.Protocol;
@@ -20,10 +19,8 @@ import java.nio.ByteBuffer;
  * @author 三刀（zhengjunweimail@163.com）
  * @version V1.0 , 2021/2/2
  */
-public class HttpResponseProtocol implements Protocol<AbstractResponse> {
+final class HttpResponseProtocol implements Protocol<AbstractResponse> {
     public static HttpResponseProtocol INSTANCE = new HttpResponseProtocol();
-    public static final HeaderDecoder BODY_READY_DECODER = (byteBuffer, aioSession, response) -> null;
-    public static final HeaderDecoder BODY_CONTINUE_DECODER = (byteBuffer, aioSession, response) -> null;
 
     private final HttpProtocolDecoder httpMethodDecoder = new HttpProtocolDecoder();
 
@@ -37,17 +34,17 @@ public class HttpResponseProtocol implements Protocol<AbstractResponse> {
         AbstractResponse response = attachment.getResponse();
 
         // 数据还未就绪，继续读
-        if (decodeChain == BODY_CONTINUE_DECODER) {
-            attachment.setDecoder(BODY_READY_DECODER);
+        if (decodeChain == HeaderDecoder.BODY_CONTINUE_DECODER) {
+            attachment.setDecoder(HeaderDecoder.BODY_READY_DECODER);
             return null;
-        } else if (decodeChain == BODY_READY_DECODER) {
+        } else if (decodeChain == HeaderDecoder.BODY_READY_DECODER) {
             return response;
         }
 
         decodeChain = decodeChain.decode(buffer, session, response);
         attachment.setDecoder(decodeChain);
         // 响应式流
-        if (decodeChain == BODY_READY_DECODER) {
+        if (decodeChain == HeaderDecoder.BODY_READY_DECODER) {
             return response;
         }
         if (buffer.remaining() == buffer.capacity()) {

@@ -8,9 +8,6 @@
 
 package org.smartboot.http.client;
 
-import org.smartboot.http.client.impl.HttpMessageProcessor;
-import org.smartboot.http.client.impl.HttpResponseProtocol;
-import org.smartboot.http.client.impl.ResponseAttachment;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
