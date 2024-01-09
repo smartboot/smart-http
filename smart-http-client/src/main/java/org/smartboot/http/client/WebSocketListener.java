@@ -1,7 +1,17 @@
 package org.smartboot.http.client;
 
+/**
+ * WebSocket 监听器
+ * @author 三刀
+ */
 public interface WebSocketListener {
 
+    /**
+     * 默认方法，当WebSocket连接成功建立时被调用
+     *
+     * @param client WebSocketClient对象
+     * @param response WebSocketResponse对象
+     */
     default void onOpen(WebSocketClient client, WebSocketResponse response) {
         System.out.println("连接已打开");
     }

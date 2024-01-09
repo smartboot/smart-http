@@ -40,7 +40,7 @@ class RunLogger implements org.smartboot.http.common.logging.Logger {
                 }
             }
 
-            logger.setLevel(Level.ALL);
+            logger.setLevel(Level.parse(System.getProperty("smarthttp.log.level", "INFO")));
 
 
             // 设置控制台日志Handler

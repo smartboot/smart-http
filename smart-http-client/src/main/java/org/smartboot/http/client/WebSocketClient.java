@@ -231,7 +231,6 @@ public class WebSocketClient {
             public void onHeaderComplete(AbstractResponse abstractResponse) throws IOException {
                 WebSocketResponseImpl webSocketResponse = (WebSocketResponseImpl) abstractResponse;
                 super.onHeaderComplete(webSocketResponse);
-                System.out.println(webSocketResponse.getStatus());
                 if (webSocketResponse.getStatus() != HttpStatus.SWITCHING_PROTOCOLS.value()) {
                     listener.onClose(WebSocketClient.this, webSocketResponse);
                     return;
