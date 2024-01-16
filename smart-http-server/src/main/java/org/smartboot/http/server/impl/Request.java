@@ -162,7 +162,7 @@ public final class Request implements HttpRequest, Reset {
                 if (System.currentTimeMillis() - latestIo > configuration.getWsIdleTimeout() && webSocketRequest != null) {
                     LOGGER.info("close ws connection by idle monitor");
                     try {
-                        webSocketRequest.getResponse().close();
+                        aioSession.close();
                     } finally {
                         cancelWsIdleTask();
                         cancelHttpIdleTask();
@@ -176,7 +176,7 @@ public final class Request implements HttpRequest, Reset {
                 if (System.currentTimeMillis() - latestIo > configuration.getHttpIdleTimeout() && webSocketRequest == null) {
                     LOGGER.info("close http connection by idle monitor");
                     try {
-                        httpRequest.getResponse().close();
+                        aioSession.close();
                     } finally {
                         cancelHttpIdleTask();
                         cancelWsIdleTask();
