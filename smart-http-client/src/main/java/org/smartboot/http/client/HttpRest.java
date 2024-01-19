@@ -69,9 +69,7 @@ public class HttpRest {
         synchronized (session) {
             if (attachment.getResponse() == null) {
                 attachment.setResponse(response);
-                System.out.println("aaaa");
             } else {
-                System.out.println("bbb");
                 queue.offer(response);
             }
         }
