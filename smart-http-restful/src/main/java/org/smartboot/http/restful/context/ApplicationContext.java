@@ -82,6 +82,7 @@ public class ApplicationContext {
         if (namedBeans.containsKey(name)) {
             throw new IllegalStateException("duplicated name[" + name + "] for " + object.getClass().getName());
         }
+        LOGGER.info("add bean:{} for class:{}", name, object);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("add bean:{} for class:{}", name, object);
         }
@@ -149,9 +150,29 @@ public class ApplicationContext {
             Autowired autowired = field.getAnnotation(Autowired.class);
             if (autowired != null) {
                 field.setAccessible(true);
-                Object value = namedBeans.get(field.getName());
+                //优先bean name匹配
+                Object value = getBean(field.getName());
+                // 尝试类名匹配
                 if (value == null) {
-                    throw new IllegalStateException("this field [" + field.getName() + "] bean of " + object.getClass().getSimpleName() + " is null");
+                    value = getBean(field.getType().getSimpleName().substring(0, 1).toLowerCase() + field.getType().getSimpleName().substring(1));
+                }
+                // 完整包路径匹配
+                if (value == null) {
+                    value = getBean(field.getType().getName());
+                }
+                // 类型推导
+                if (value == null) {
+                    for (Object o : namedBeans.values()) {
+                        if (field.getType().isAssignableFrom(o.getClass())) {
+                            if (value != null) {
+                                throw new IllegalStateException("match mutil bean for filed:" + field.getName() + " of" + object.getClass());
+                            }
+                            value = o;
+                        }
+                    }
+                }
+                if (value == null) {
+                    throw new IllegalStateException("this field [" + field.getName() + "] bean of " + object.getClass() + " is null");
                 }
                 if (field.getType().isAssignableFrom(value.getClass())) {
                     field.set(object, value);
