@@ -114,7 +114,7 @@ public class ApplicationContext {
             if (StringUtils.isNotBlank(bean.value())) {
                 addBean(bean.value(), object);
             } else {
-                addBean(clazz.getSimpleName().substring(0, 1).toLowerCase() + clazz.getSimpleName().substring(1), object);
+                addBean(clazz.getName(), object);
             }
             suc = true;
         }
