@@ -82,7 +82,6 @@ public class ApplicationContext {
         if (namedBeans.containsKey(name)) {
             throw new IllegalStateException("duplicated name[" + name + "] for " + object.getClass().getName());
         }
-        LOGGER.info("add bean:{} for class:{}", name, object);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("add bean:{} for class:{}", name, object);
         }
