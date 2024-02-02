@@ -16,6 +16,7 @@ import org.smartboot.socket.transport.AioSession;
 import java.net.URLEncoder;
 import java.util.AbstractQueue;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -62,6 +63,30 @@ public final class HttpPost extends HttpRest {
                     //输出数据
                     request.write(bytes);
                     request.getOutputStream().flush();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    completableFuture.completeExceptionally(e);
+                }
+                return HttpPost.this;
+            }
+
+            @Override
+            public HttpPost multipart(List<Multipart> multiparts) {
+//                if (params == null || params.isEmpty()) {
+//                    HttpPost.this.done();
+//                    return HttpPost.this;
+//                }
+                try {
+                    willSendRequest();
+
+                    String boundary = "---" + System.currentTimeMillis();
+
+                    request.addHeader(HeaderNameEnum.CONTENT_TYPE.getName(), HeaderValueEnum.MULTIPART_FORM_DATA.getName() + "; boundary=" + boundary);
+                    for (Multipart multipart : multiparts) {
+                        write("--" + boundary+"\r\n");
+                        multipart.write(this);
+                    }
+                    write("--"+boundary + "--\r\n");
                 } catch (Exception e) {
                     e.printStackTrace();
                     completableFuture.completeExceptionally(e);

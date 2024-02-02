@@ -2,7 +2,6 @@ package org.smartboot.http.client;
 
 import org.smartboot.socket.buffer.BufferPagePool;
 import org.smartboot.socket.extension.plugins.Plugin;
-import org.smartboot.socket.extension.plugins.StreamMonitorPlugin;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +51,8 @@ class ClientConfiguration<T> {
     private BufferPagePool readBufferPool;
 
     private boolean https = false;
+
+    private boolean debug = false;
 
     public ClientConfiguration(String host, int port) {
         this.host = host;
@@ -137,11 +138,12 @@ class ClientConfiguration<T> {
      * 启用 debug 模式后会打印码流
      */
     protected ClientConfiguration<T> debug(boolean debug) {
-        plugins.removeIf(plugin -> plugin instanceof StreamMonitorPlugin);
-        if (debug) {
-            addPlugin(new StreamMonitorPlugin<>(StreamMonitorPlugin.BLUE_TEXT_INPUT_STREAM, StreamMonitorPlugin.RED_TEXT_OUTPUT_STREAM));
-        }
+        this.debug = debug;
         return this;
+    }
+
+    boolean isDebug() {
+        return debug;
     }
 
     protected ClientConfiguration<T> addPlugin(Plugin<T> plugin) {

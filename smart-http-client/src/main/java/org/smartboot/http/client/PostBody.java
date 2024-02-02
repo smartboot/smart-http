@@ -1,5 +1,6 @@
 package org.smartboot.http.client;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -12,4 +13,6 @@ public abstract class PostBody extends CommonBody<HttpPost> {
     }
 
     public abstract HttpPost formUrlencoded(Map<String, String> params);
+
+    public abstract HttpPost multipart(List<Multipart> multiparts);
 }

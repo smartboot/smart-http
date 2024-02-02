@@ -26,6 +26,10 @@ public interface Body<T> {
         return this;
     }
 
+    default Body<T> write(String str) {
+        return write(str.getBytes());
+    }
+
     /**
      * 输出缓冲区的数据
      */

@@ -18,6 +18,7 @@ import org.smartboot.socket.buffer.BufferPagePool;
 import org.smartboot.socket.buffer.VirtualBuffer;
 import org.smartboot.socket.extension.plugins.Plugin;
 import org.smartboot.socket.extension.plugins.SslPlugin;
+import org.smartboot.socket.extension.plugins.StreamMonitorPlugin;
 import org.smartboot.socket.extension.ssl.factory.ClientSSLContextFactory;
 import org.smartboot.socket.transport.AioQuickClient;
 import org.smartboot.socket.transport.AioSession;
@@ -203,6 +204,9 @@ public final class HttpClient {
                 }
                 if (noneSslPlugin && configuration.isHttps()) {
                     processor.addPlugin(new SslPlugin<>(new ClientSSLContextFactory()));
+                }
+                if (configuration.isDebug()) {
+                    processor.addPlugin(new StreamMonitorPlugin<>(StreamMonitorPlugin.BLUE_TEXT_INPUT_STREAM, StreamMonitorPlugin.RED_TEXT_OUTPUT_STREAM));
                 }
 
                 firstConnected = false;
