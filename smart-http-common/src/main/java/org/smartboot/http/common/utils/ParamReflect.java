@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.util.Properties;
 import java.util.logging.Level;
 
@@ -63,19 +64,25 @@ public class ParamReflect {
                 if (StringUtils.isBlank(name)) {
                     name = f.getName();
                 }
-                String fieldType = f.getGenericType().toString();
+                Type fieldType = f.getGenericType();
                 String value = property.getProperty(name, "");
                 if ("".equals(value) && p.value() != null) {
                     value = p.value();
                 }
                 f.setAccessible(true);
-                if ("int".equals(fieldType)) {
-                    f.setInt(obj, Integer.parseInt(value));
-                } else if ("long".equals(fieldType)) {
-                    f.setLong(obj, Long.parseLong(value));
-                } else if ("boolean".equals(fieldType)) {
-                    f.setBoolean(obj, Boolean.parseBoolean(value));
-                } else if (f.getGenericType().equals(String.class)) {
+                if (int.class == fieldType) {
+                    if (StringUtils.isNotBlank(value)) {
+                        f.setInt(obj, Integer.parseInt(value));
+                    }
+                } else if (long.class == fieldType) {
+                    if (StringUtils.isNotBlank(value)) {
+                        f.setLong(obj, Long.parseLong(value));
+                    }
+                } else if (boolean.class == fieldType) {
+                    if (StringUtils.isNotBlank(value)) {
+                        f.setBoolean(obj, Boolean.parseBoolean(value));
+                    }
+                } else if (fieldType.equals(String.class)) {
                     f.set(obj, value);
                 }
                 // 字符串数组
@@ -86,8 +93,7 @@ public class ParamReflect {
                     f.set(obj, value.split(","));
                 } else if (Level.class.equals(f.getGenericType())) {
                     f.set(obj, Level.parse(value));
-                } else if (f.getType().isInterface()
-                        && !StringUtils.isBlank(value)) {
+                } else if (f.getType().isInterface() && !StringUtils.isBlank(value)) {
                     f.set(obj, Class.forName(value).newInstance());
                 }
                 // 返回表示数组组件类型的Class。如果此类不表示数组类，则此方法返回 null。
@@ -96,16 +102,13 @@ public class ParamReflect {
                         continue;
                     }
                     String[] vals = value.split(",");
-                    Object arryObj = Array.newInstance(f.getType()
-                            .getComponentType(), vals.length);
+                    Object arryObj = Array.newInstance(f.getType().getComponentType(), vals.length);
                     for (int i = 0; i < vals.length; i++) {
-                        Array.set(arryObj, i, Class.forName(vals[i])
-                                .newInstance());
+                        Array.set(arryObj, i, Class.forName(vals[i]).newInstance());
                     }
                     f.set(obj, arryObj);
                 } else {
-                    throw new RuntimeException("Unsupport Type "
-                            + f.getGenericType());
+                    throw new RuntimeException("Unsupport Type " + f.getGenericType());
                 }
             }
             flag = true;
