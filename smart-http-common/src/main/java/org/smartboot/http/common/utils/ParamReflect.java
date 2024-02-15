@@ -65,10 +65,15 @@ public class ParamReflect {
                     name = f.getName();
                 }
                 Type fieldType = f.getGenericType();
-                String value = property.getProperty(name, "");
-                if ("".equals(value) && p.value() != null) {
+                String value;
+                if (property.containsKey(name)) {
+                    value = property.getProperty(name);
+                } else if (StringUtils.isNotBlank(p.value())) {
                     value = p.value();
+                } else {
+                    continue;
                 }
+
                 f.setAccessible(true);
                 if (int.class == fieldType) {
                     if (StringUtils.isNotBlank(value)) {
@@ -82,7 +87,7 @@ public class ParamReflect {
                     if (StringUtils.isNotBlank(value)) {
                         f.setBoolean(obj, Boolean.parseBoolean(value));
                     }
-                } else if (fieldType.equals(String.class)) {
+                } else if (fieldType == String.class) {
                     f.set(obj, value);
                 }
                 // 字符串数组
