@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * @author 三刀（zhengjunweimail@163.com）
  * @version V1.0 , 2021/2/2
  */
-public final class HttpClient {
+public final class HttpClient implements AutoCloseable {
 
     private final HttpClientConfiguration configuration;
 
