@@ -28,7 +28,7 @@ import java.util.function.Function;
  * @version V1.0 , 2021/2/22
  */
 public class HttpServerConfiguration {
-    public static final String VERSION = "1.3.8";
+    public static final String VERSION = "1.3.9";
 
     /**
      * 缓存
