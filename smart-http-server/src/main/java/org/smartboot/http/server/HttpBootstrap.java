@@ -18,6 +18,7 @@ import org.smartboot.socket.buffer.BufferPagePool;
 import org.smartboot.socket.transport.AioQuickServer;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 public class HttpBootstrap {
 
@@ -127,29 +128,32 @@ public class HttpBootstrap {
         }
     }
 
-    private void updateHeaderNameByteTree() {
-        configuration.getHeaderNameByteTree().addNode(HeaderNameEnum.UPGRADE.getName(), upgrade -> {
-            // WebSocket
-            if (HeaderValueEnum.WEBSOCKET.getName().equals(upgrade)) {
-                return configuration.getWebSocketHandler();
-            }
-            // HTTP/2.0
-            else if (HeaderValueEnum.H2C.getName().equals(upgrade) || HeaderValueEnum.H2.getName().equals(upgrade)) {
-                return new Http2ServerHandler() {
-                    @Override
-                    public void handle(HttpRequest request, HttpResponse response) throws Throwable {
-                        configuration.getHttpServerHandler().handle(request, response);
-                    }
+    Function<String, ServerHandler<?, ?>> upgradeFunction = upgrade -> {
+        // WebSocket
+        if (HeaderValueEnum.WEBSOCKET.getName().equalsIgnoreCase(upgrade)) {
+            return configuration.getWebSocketHandler();
+        }
+        // HTTP/2.0
+        else if (HeaderValueEnum.H2C.getName().equals(upgrade) || HeaderValueEnum.H2.getName().equals(upgrade)) {
+            return new Http2ServerHandler() {
+                @Override
+                public void handle(HttpRequest request, HttpResponse response) throws Throwable {
+                    configuration.getHttpServerHandler().handle(request, response);
+                }
 
-                    @Override
-                    public void handle(HttpRequest request, HttpResponse response, CompletableFuture<Object> completableFuture) throws Throwable {
-                        configuration.getHttpServerHandler().handle(request, response, completableFuture);
-                    }
-                };
-            } else {
-                return null;
-            }
-        });
+                @Override
+                public void handle(HttpRequest request, HttpResponse response, CompletableFuture<Object> completableFuture) throws Throwable {
+                    configuration.getHttpServerHandler().handle(request, response, completableFuture);
+                }
+            };
+        } else {
+            return null;
+        }
+    };
+
+    private void updateHeaderNameByteTree() {
+        configuration.getHeaderNameByteTree().addNode(HeaderNameEnum.UPGRADE.getName(), upgradeFunction);
+        configuration.getHeaderNameByteTree().addNode(HeaderNameEnum.UPGRADE.getName().toLowerCase(), upgradeFunction);
     }
 
     private void initByteCache() {
