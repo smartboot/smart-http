@@ -8,8 +8,6 @@
 
 package org.smartboot.http.common.utils;
 
-import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -79,7 +77,6 @@ public class AntPathMatcher {
         this.tokenizedPatternCache.clear();
         this.stringMatcherCache.clear();
     }
-
 
 
     public boolean match(String pattern, String path) {
@@ -305,8 +302,6 @@ public class AntPathMatcher {
         }
         return matcher;
     }
-
-
 
 
     /**

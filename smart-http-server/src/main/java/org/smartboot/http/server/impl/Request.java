@@ -203,7 +203,7 @@ public final class Request implements HttpRequest, Reset {
         return aioSession;
     }
 
-    public final String getHost() {
+    public String getHost() {
         if (hostHeader == null) {
             hostHeader = getHeader(HeaderNameEnum.HOST.getName());
         }
@@ -218,7 +218,7 @@ public final class Request implements HttpRequest, Reset {
     }
 
     @Override
-    public final String getHeader(String headName) {
+    public String getHeader(String headName) {
         for (int i = 0; i < headerSize; i++) {
             HeaderValue headerValue = headers.get(i);
             if (headerValue.getName().equalsIgnoreCase(headName)) {
@@ -229,7 +229,7 @@ public final class Request implements HttpRequest, Reset {
     }
 
     @Override
-    public final Collection<String> getHeaders(String name) {
+    public Collection<String> getHeaders(String name) {
         List<String> value = new ArrayList<>(4);
         for (int i = 0; i < headerSize; i++) {
             HeaderValue headerValue = headers.get(i);
@@ -241,7 +241,7 @@ public final class Request implements HttpRequest, Reset {
     }
 
     @Override
-    public final Collection<String> getHeaderNames() {
+    public Collection<String> getHeaderNames() {
         Set<String> nameSet = new HashSet<>();
         for (int i = 0; i < headerSize; i++) {
             nameSet.add(headers.get(i).getName());
@@ -258,7 +258,7 @@ public final class Request implements HttpRequest, Reset {
         throw new UnsupportedOperationException();
     }
 
-    public final void setHeadValue(String value) {
+    public void setHeadValue(String value) {
         if (headerTemp.getAttach() != null) {
             ServerHandler replaceServerHandler = headerTemp.getAttach().apply(value);
             if (replaceServerHandler != null) {
@@ -268,7 +268,7 @@ public final class Request implements HttpRequest, Reset {
         setHeader(headerTemp.getStringValue(), value);
     }
 
-    public final void setHeader(String headerName, String value) {
+    public void setHeader(String headerName, String value) {
         if (headerSize < headers.size()) {
             HeaderValue headerValue = headers.get(headerSize);
             headerValue.setName(headerName);
@@ -302,24 +302,24 @@ public final class Request implements HttpRequest, Reset {
     }
 
     @Override
-    public final String getRequestURI() {
+    public String getRequestURI() {
         return requestUri;
     }
 
-    public final void setRequestURI(String uri) {
+    public void setRequestURI(String uri) {
         this.requestUri = uri;
     }
 
     @Override
-    public final String getProtocol() {
+    public String getProtocol() {
         return protocol;
     }
 
-    public final void setProtocol(String protocol) {
+    public void setProtocol(String protocol) {
         this.protocol = protocol;
     }
 
-    public final String getMethod() {
+    public String getMethod() {
         return method;
     }
 
@@ -336,7 +336,7 @@ public final class Request implements HttpRequest, Reset {
         return uri;
     }
 
-    public final void setUri(String uri) {
+    public void setUri(String uri) {
         this.uri = uri;
     }
 
@@ -345,7 +345,7 @@ public final class Request implements HttpRequest, Reset {
     }
 
     @Override
-    public final String getRequestURL() {
+    public String getRequestURL() {
         if (requestUrl != null) {
             return requestUrl;
         }
@@ -357,27 +357,27 @@ public final class Request implements HttpRequest, Reset {
         return requestUrl;
     }
 
-    public final String getScheme() {
+    public String getScheme() {
         if (scheme == null) {
             return configuration.isSecure() ? Constant.SCHEMA_HTTPS : Constant.SCHEMA_HTTP;
         }
         return scheme;
     }
 
-    public final void setScheme(String scheme) {
+    public void setScheme(String scheme) {
         this.scheme = scheme;
     }
 
-    public final String getQueryString() {
+    public String getQueryString() {
         return queryString;
     }
 
-    public final void setQueryString(String queryString) {
+    public void setQueryString(String queryString) {
         this.queryString = queryString;
     }
 
     @Override
-    public final String getContentType() {
+    public String getContentType() {
         if (contentType != null) {
             return contentType;
         }
@@ -386,7 +386,7 @@ public final class Request implements HttpRequest, Reset {
     }
 
     @Override
-    public final int getContentLength() {
+    public int getContentLength() {
         if (contentLength > INIT_CONTENT_LENGTH) {
             return contentLength;
         }
@@ -399,7 +399,7 @@ public final class Request implements HttpRequest, Reset {
     }
 
     @Override
-    public final String getParameter(String name) {
+    public String getParameter(String name) {
         String[] arr = (name != null ? getParameterValues(name) : null);
         return (arr != null && arr.length > 0 ? arr[0] : null);
     }
@@ -424,7 +424,7 @@ public final class Request implements HttpRequest, Reset {
     }
 
     @Override
-    public final Map<String, String[]> getParameters() {
+    public Map<String, String[]> getParameters() {
         if (parameters == null) {
             getParameter("");
         }
@@ -441,7 +441,7 @@ public final class Request implements HttpRequest, Reset {
      * IP address of the client that sent the request
      */
     @Override
-    public final String getRemoteAddr() {
+    public String getRemoteAddr() {
         if (remoteAddr != null) {
             return remoteAddr;
         }
@@ -460,7 +460,7 @@ public final class Request implements HttpRequest, Reset {
     }
 
     @Override
-    public final InetSocketAddress getRemoteAddress() {
+    public InetSocketAddress getRemoteAddress() {
         try {
             return aioSession.getRemoteAddress();
         } catch (IOException e) {
@@ -470,7 +470,7 @@ public final class Request implements HttpRequest, Reset {
     }
 
     @Override
-    public final InetSocketAddress getLocalAddress() {
+    public InetSocketAddress getLocalAddress() {
         try {
             return aioSession.getLocalAddress();
         } catch (IOException e) {
@@ -491,7 +491,7 @@ public final class Request implements HttpRequest, Reset {
      * qualified name of the client
      */
     @Override
-    public final String getRemoteHost() {
+    public String getRemoteHost() {
         if (remoteHost != null) {
             return remoteHost;
         }
@@ -504,17 +504,17 @@ public final class Request implements HttpRequest, Reset {
     }
 
     @Override
-    public final Locale getLocale() {
+    public Locale getLocale() {
         return defaultLocale;
     }
 
     @Override
-    public final Enumeration<Locale> getLocales() {
+    public Enumeration<Locale> getLocales() {
         return Collections.enumeration(Collections.singletonList(defaultLocale));
     }
 
     @Override
-    public final String getCharacterEncoding() {
+    public String getCharacterEncoding() {
         return "utf8";
     }
 

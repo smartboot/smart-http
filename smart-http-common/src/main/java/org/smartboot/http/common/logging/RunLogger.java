@@ -60,7 +60,8 @@ class RunLogger implements org.smartboot.http.common.logging.Logger {
 
     private void log(Level level, String msg, Object... arguments) {
         LogRecord record = new LogRecord(level, null);
-        record.setMessage(msg);
+        // 处理{}占位符并格式化消息
+        record.setMessage(format(msg, arguments));
 
         if (arguments != null && arguments.length > 0 && arguments[arguments.length - 1] instanceof Throwable) {
             record.setThrown((Throwable) arguments[arguments.length - 1]);
@@ -222,4 +223,34 @@ class RunLogger implements org.smartboot.http.common.logging.Logger {
     public void error(String msg, Throwable t) {
         log(Level.SEVERE, msg, t);
     }
+
+    private String format(String message, Object... params) {
+        if (params == null || params.length == 0) {
+            return message;
+        }
+
+        StringBuilder result = new StringBuilder();
+        int start = 0;
+        int paramIndex = 0;
+
+        for (int i = 0; i < message.length(); i++) {
+            if (message.charAt(i) == '{' && i + 1 < message.length() && message.charAt(i + 1) == '}') {
+                result.append(message, start, i);
+                if (paramIndex < params.length) {
+                    result.append(params[paramIndex++]);
+                } else {
+                    result.append("{}");
+                }
+                i++;
+                start = i + 1;
+            }
+        }
+
+        if (start < message.length()) {
+            result.append(message.substring(start));
+        }
+
+        return result.toString();
+    }
+
 }
