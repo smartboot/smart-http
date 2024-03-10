@@ -32,6 +32,6 @@ public class UriWafDecoder extends AbstractWafDecoder {
                 return null;
             }
         }
-        throw new HttpException(HttpStatus.BAD_REQUEST, WafConfiguration.DESC);
+        throw new WafException(HttpStatus.BAD_REQUEST, WafConfiguration.DESC);
     }
 }

@@ -38,9 +38,8 @@ public class HttpRequestProtocol implements Protocol<Request> {
 
     @Override
     public Request decode(ByteBuffer buffer, AioSession session) {
-        RequestAttachment attachment = session.getAttachment();
-        Request request = attachment.getRequest();
-        Decoder decodeChain = attachment.getDecoder();
+        Request request = session.getAttachment();
+        Decoder decodeChain = request.getDecoder();
         if (decodeChain == null) {
             decodeChain = httpMethodDecoder;
         }
@@ -50,7 +49,7 @@ public class HttpRequestProtocol implements Protocol<Request> {
 
         // 数据还未就绪，继续读
         if (decodeChain == BODY_CONTINUE_DECODER) {
-            attachment.setDecoder(BODY_READY_DECODER);
+            request.setDecoder(BODY_READY_DECODER);
             return null;
         } else if (decodeChain == BODY_READY_DECODER) {
             return request;
@@ -59,7 +58,7 @@ public class HttpRequestProtocol implements Protocol<Request> {
         int p = buffer.position();
         decodeChain = decodeChain.decode(buffer, request);
         request.decodeSize(buffer.position() - p);
-        attachment.setDecoder(decodeChain);
+        request.setDecoder(decodeChain);
         if (decodeChain == BODY_READY_DECODER) {
             return request;
         }

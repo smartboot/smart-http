@@ -45,7 +45,6 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
 
     @Override
     public void process0(AioSession session, Request request) {
-        RequestAttachment attachment = session.getAttachment();
         AbstractRequest abstractRequest = request.newAbstractRequest();
         AbstractResponse response = abstractRequest.getResponse();
         try {
@@ -60,7 +59,7 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
                         break;
                     }
                 case BODY:
-                    onHttpBody(request, session.readBuffer(), attachment);
+                    onHttpBody(request, session.readBuffer());
                     if (response.isClosed() || request.getDecodePartEnum() != DecodePartEnum.FINISH) {
                         break;
                     }
@@ -208,15 +207,15 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
     }
 
 
-    private void onHttpBody(Request request, ByteBuffer readBuffer, RequestAttachment attachment) {
+    private void onHttpBody(Request request, ByteBuffer readBuffer) {
         if (request.getServerHandler().onBodyStream(readBuffer, request)) {
             request.setDecodePartEnum(DecodePartEnum.FINISH);
             if (request.getRequestType() == HttpTypeEnum.HTTP) {
-                attachment.setDecoder(null);
+                request.setDecoder(null);
             }
         } else if (readBuffer.hasRemaining()) {
             //半包,继续读数据
-            attachment.setDecoder(HttpRequestProtocol.BODY_CONTINUE_DECODER);
+            request.setDecoder(HttpRequestProtocol.BODY_CONTINUE_DECODER);
         }
     }
 
@@ -231,8 +230,7 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
     public void stateEvent0(AioSession session, StateMachineEnum stateMachineEnum, Throwable throwable) {
         switch (stateMachineEnum) {
             case NEW_SESSION: {
-                RequestAttachment attachment = new RequestAttachment(new Request(configuration, session));
-                session.setAttachment(attachment);
+                session.setAttachment(new Request(configuration, session));
                 break;
             }
             case PROCESS_EXCEPTION:
@@ -240,21 +238,21 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
                 session.close();
                 break;
             case SESSION_CLOSED: {
-                RequestAttachment att = session.getAttachment();
+                Request request = session.getAttachment();
                 try {
-                    if (att.getRequest().getServerHandler() != null) {
-                        att.getRequest().getServerHandler().onClose(att.getRequest());
+                    if (request.getServerHandler() != null) {
+                        request.getServerHandler().onClose(request);
                     }
                 } finally {
-                    att.getRequest().cancelWsIdleTask();
-                    att.getRequest().cancelHttpIdleTask();
+                    request.cancelWsIdleTask();
+                    request.cancelHttpIdleTask();
                 }
                 break;
             }
             case DECODE_EXCEPTION: {
                 LOGGER.warn("http decode exception,", throwable);
-                RequestAttachment attachment = session.getAttachment();
-                AbstractRequest abstractRequest = attachment.getRequest().newAbstractRequest();
+                Request request = session.getAttachment();
+                AbstractRequest abstractRequest = request.newAbstractRequest();
                 AbstractResponse response = abstractRequest.getResponse();
                 responseError(response, throwable);
                 break;

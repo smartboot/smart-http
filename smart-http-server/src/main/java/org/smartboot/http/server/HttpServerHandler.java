@@ -16,7 +16,6 @@ import org.smartboot.http.common.utils.FixedLengthFrameDecoder;
 import org.smartboot.http.common.utils.SmartDecoder;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.impl.Request;
-import org.smartboot.http.server.impl.RequestAttachment;
 
 import java.nio.ByteBuffer;
 
@@ -43,16 +42,15 @@ public abstract class HttpServerHandler implements ServerHandler<HttpRequest, Ht
                 return true;
             }
 
-            RequestAttachment attachment = request.getAioSession().getAttachment();
-            SmartDecoder smartDecoder = attachment.getBodyDecoder();
+            SmartDecoder smartDecoder = request.getBodyDecoder();
             if (smartDecoder == null) {
                 smartDecoder = new FixedLengthFrameDecoder(postLength);
-                attachment.setBodyDecoder(smartDecoder);
+                request.setBodyDecoder(smartDecoder);
             }
 
             if (smartDecoder.decode(buffer)) {
                 request.setFormUrlencoded(new String(smartDecoder.getBuffer().array()));
-                attachment.setBodyDecoder(null);
+                request.setBodyDecoder(null);
                 return true;
             } else {
                 return false;
