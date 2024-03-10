@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -116,7 +117,7 @@ public final class Request implements HttpRequest, Reset {
     /**
      * Post表单
      */
-    private String formUrlencoded;
+    private ByteBuffer formUrlencoded;
     private Cookie[] cookies;
     /**
      * 附件对象
@@ -429,7 +430,7 @@ public final class Request implements HttpRequest, Reset {
         }
 
         if (formUrlencoded != null) {
-            HttpUtils.decodeParamString(formUrlencoded, parameters);
+            HttpUtils.decodeParamString(new String(formUrlencoded.array()), parameters);
         }
         return getParameterValues(name);
     }
@@ -599,11 +600,11 @@ public final class Request implements HttpRequest, Reset {
         return cookies;
     }
 
-    public String getFormUrlencoded() {
+    ByteBuffer getFormUrlencoded() {
         return formUrlencoded;
     }
 
-    public void setFormUrlencoded(String formUrlencoded) {
+    public void setFormUrlencoded(ByteBuffer formUrlencoded) {
         this.formUrlencoded = formUrlencoded;
     }
 

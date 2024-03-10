@@ -64,7 +64,7 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
 
             if (smartDecoder.decode(buffer)) {
                 bodyDecoderMap.remove(request);
-                request.setFormUrlencoded(new String(smartDecoder.getBuffer().array()));
+                request.setFormUrlencoded(smartDecoder.getBuffer());
                 return true;
             } else {
                 return false;

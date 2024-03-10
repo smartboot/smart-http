@@ -34,8 +34,7 @@ public abstract class HttpServerHandler implements ServerHandler<HttpRequest, Ht
         }
         int postLength = request.getContentLength();
         //Post请求
-        if (HttpMethodEnum.POST.getMethod().equals(request.getMethod())
-                && StringUtils.startsWith(request.getContentType(), HeaderValueEnum.X_WWW_FORM_URLENCODED.getName())) {
+        if (HttpMethodEnum.POST.getMethod().equals(request.getMethod()) && StringUtils.startsWith(request.getContentType(), HeaderValueEnum.X_WWW_FORM_URLENCODED.getName())) {
             if (postLength < 0) {
                 throw new HttpException(HttpStatus.LENGTH_REQUIRED);
             } else if (postLength == 0) {
@@ -49,7 +48,7 @@ public abstract class HttpServerHandler implements ServerHandler<HttpRequest, Ht
             }
 
             if (smartDecoder.decode(buffer)) {
-                request.setFormUrlencoded(new String(smartDecoder.getBuffer().array()));
+                request.setFormUrlencoded(smartDecoder.getBuffer());
                 request.setBodyDecoder(null);
                 return true;
             } else {
