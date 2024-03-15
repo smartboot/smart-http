@@ -30,8 +30,20 @@ public class ChunkedInputStream extends InputStream {
     }
 
     @Override
-    public int read() {
-        throw new UnsupportedOperationException("unsafe operation");
+    public int read() throws IOException {
+        readChunkedLength();
+        if (eof) {
+            return -1;
+        }
+        int i = inputStream.read();
+        if (i != -1) {
+            return i;
+        }
+        inputStream.close();
+        inputStream = session.getInputStream();
+        readCrlf();
+        readFlag = true;
+        return read();
     }
 
     @Override

@@ -26,6 +26,7 @@ import org.smartboot.http.server.impl.Request;
 import org.smartboot.socket.util.AttachKey;
 import org.smartboot.socket.util.Attachment;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -120,7 +121,42 @@ public class HttpPostTest {
             }
         });
 
+        routeHandle.route("/chunk", new HttpServerHandler() {
+            @Override
+            public void handle(HttpRequest request, HttpResponse response) throws Throwable {
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                InputStream inputStream = request.getInputStream();
+                int b;
+                while ((b = inputStream.read()) != -1) {
+                    byteArrayOutputStream.write(b);
+                    response.write(new byte[]{(byte) b});
+                }
+
+                System.out.println(byteArrayOutputStream.toString());
+            }
+        });
+
         httpBootstrap.httpHandler(routeHandle).setPort(8080).start();
+    }
+
+    @Test
+    public void testChunkedRequest() throws ExecutionException, InterruptedException {
+        HttpClient client = new HttpClient("127.0.0.1", 8080);
+        String body = "test a body string";
+        client.configuration().debug(true);
+        Future<org.smartboot.http.client.HttpResponse> future = client.post("/chunk")
+                .header().keepalive(true).done()
+                .body()
+                .write(body.getBytes()).write(body.getBytes())
+                .done()
+                .onSuccess(response -> {
+                    System.out.println(response.body());
+                })
+                .onFailure(t -> {
+                    System.out.println(t.getMessage());
+                }).done();
+//        JSONObject jsonObject = JSONObject.parseObject(future.get().body());
+        Assert.assertEquals(future.get().body(), body + body);
     }
 
     @Test
