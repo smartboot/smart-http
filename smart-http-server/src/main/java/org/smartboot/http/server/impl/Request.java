@@ -170,9 +170,9 @@ public final class Request implements HttpRequest, Reset {
         this.remainingThreshold = configuration.getMaxRequestSize();
         if (configuration.getWsIdleTimeout() > 0) {
             wsIdleTask = HashedWheelTimer.DEFAULT_TIMER.scheduleWithFixedDelay(() -> {
-                LOGGER.info("check wsIdle monitor");
+                LOGGER.debug("check wsIdle monitor");
                 if (System.currentTimeMillis() - latestIo > configuration.getWsIdleTimeout() && webSocketRequest != null) {
-                    LOGGER.info("close ws connection by idle monitor");
+                    LOGGER.debug("close ws connection by idle monitor");
                     try {
                         aioSession.close();
                     } finally {
@@ -184,9 +184,9 @@ public final class Request implements HttpRequest, Reset {
         }
         if (configuration.getHttpIdleTimeout() > 0) {
             httpIdleTask = HashedWheelTimer.DEFAULT_TIMER.scheduleWithFixedDelay(() -> {
-                LOGGER.info("check httpIdle monitor");
+                LOGGER.debug("check httpIdle monitor");
                 if (System.currentTimeMillis() - latestIo > configuration.getHttpIdleTimeout() && webSocketRequest == null) {
-                    LOGGER.info("close http connection by idle monitor");
+                    LOGGER.debug("close http connection by idle monitor");
                     try {
                         aioSession.close();
                     } finally {
