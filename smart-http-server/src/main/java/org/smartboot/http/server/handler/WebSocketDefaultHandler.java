@@ -8,6 +8,7 @@
 
 package org.smartboot.http.server.handler;
 
+import org.smartboot.http.common.codec.websocket.CloseReason;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
 import org.smartboot.http.common.utils.WebSocketUtil;
@@ -46,7 +47,7 @@ public class WebSocketDefaultHandler extends WebSocketHandler {
                     break;
                 case WebSocketUtil.OPCODE_CLOSE:
                     try {
-                        onClose(request, response);
+                        onClose(request, response, new CloseReason(request.getPayload()));
                     } finally {
                         response.close();
                     }
@@ -93,7 +94,7 @@ public class WebSocketDefaultHandler extends WebSocketHandler {
      * @param request
      * @param response
      */
-    public void onClose(WebSocketRequest request, WebSocketResponse response) {
+    public void onClose(WebSocketRequest request, WebSocketResponse response, CloseReason closeReason) {
         LOGGER.warn("close connection");
     }
 

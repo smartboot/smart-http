@@ -56,6 +56,8 @@ public interface WebSocketResponse {
      */
     void close();
 
+    void close(int code, String reason);
+
     /**
      * 输出数据
      */

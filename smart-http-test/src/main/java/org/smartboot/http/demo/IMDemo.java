@@ -10,6 +10,7 @@ package org.smartboot.http.demo;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import org.smartboot.http.common.codec.websocket.CloseReason;
 import org.smartboot.http.server.HttpBootstrap;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
@@ -72,7 +73,7 @@ public class IMDemo {
             }
 
             @Override
-            public void onClose(WebSocketRequest request, WebSocketResponse response) {
+            public void onClose(WebSocketRequest request, WebSocketResponse response, CloseReason closeReason) {
                 System.out.println("移除群组");
                 sessionMap.remove(request);
             }

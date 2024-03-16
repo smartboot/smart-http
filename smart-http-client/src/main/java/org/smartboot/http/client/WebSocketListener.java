@@ -1,5 +1,7 @@
 package org.smartboot.http.client;
 
+import org.smartboot.http.common.codec.websocket.CloseReason;
+
 /**
  * WebSocket 监听器
  * @author 三刀
@@ -17,7 +19,7 @@ public interface WebSocketListener {
     }
 
 
-    default void onClose(WebSocketClient client, WebSocketResponse response) {
+    default void onClose(WebSocketClient client, WebSocketResponse response, CloseReason reason) {
         System.out.println("连接已关闭");
     }
 

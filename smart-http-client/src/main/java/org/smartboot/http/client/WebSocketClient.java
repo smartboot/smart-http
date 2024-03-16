@@ -2,6 +2,7 @@ package org.smartboot.http.client;
 
 import org.smartboot.http.client.impl.WebSocketRequestImpl;
 import org.smartboot.http.client.impl.WebSocketResponseImpl;
+import org.smartboot.http.common.codec.websocket.CloseReason;
 import org.smartboot.http.common.codec.websocket.Decoder;
 import org.smartboot.http.common.codec.websocket.WebSocket;
 import org.smartboot.http.common.enums.HeaderNameEnum;
@@ -195,7 +196,7 @@ public class WebSocketClient {
                             break;
                         case WebSocketUtil.OPCODE_CLOSE:
                             try {
-                                listener.onClose(WebSocketClient.this, webSocketResponse);
+                                listener.onClose(WebSocketClient.this, webSocketResponse, new CloseReason(webSocketResponse.getPayload()));
                             } finally {
                                 WebSocketClient.this.close();
                             }
@@ -232,7 +233,7 @@ public class WebSocketClient {
                 WebSocketResponseImpl webSocketResponse = (WebSocketResponseImpl) abstractResponse;
                 super.onHeaderComplete(webSocketResponse);
                 if (webSocketResponse.getStatus() != HttpStatus.SWITCHING_PROTOCOLS.value()) {
-                    listener.onClose(WebSocketClient.this, webSocketResponse);
+                    listener.onClose(WebSocketClient.this, webSocketResponse, new CloseReason(CloseReason.WRONG_CODE, ""));
                     return;
                 }
                 listener.onOpen(WebSocketClient.this, webSocketResponse);
@@ -287,7 +288,8 @@ public class WebSocketClient {
         this.asynchronousChannelGroup = asynchronousChannelGroup;
     }
 
-    public void close() {
+    public void close() throws IOException {
+        WebSocketUtil.sendMask(request.getOutputStream(), WebSocketUtil.OPCODE_CLOSE, new CloseReason(CloseReason.NORMAL_CLOSURE, "").toBytes());
         connected = false;
         client.shutdownNow();
     }

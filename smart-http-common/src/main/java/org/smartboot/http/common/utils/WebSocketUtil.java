@@ -19,6 +19,10 @@ public class WebSocketUtil {
         secureRandom.nextBytes(maskKey);
     }
 
+    public static void send(OutputStream outputStream, byte opCode, byte[] bytes) throws IOException {
+        send(outputStream, opCode, bytes, 0, bytes.length);
+    }
+
     public static void send(OutputStream outputStream, byte opCode, byte[] bytes, int offset, int len) throws IOException {
         int maxlength;
         if (len < Constant.WS_PLAY_LOAD_126) {
@@ -51,6 +55,10 @@ public class WebSocketUtil {
             outputStream.write(writBytes, 0, payloadLength < Constant.WS_PLAY_LOAD_126 ? 2 + payloadLength : 4 + payloadLength);
             offset += payloadLength;
         } while (offset < len);
+    }
+
+    public static void sendMask(OutputStream outputStream, byte opCode, byte[] bytes) throws IOException {
+        sendMask(outputStream, opCode, bytes, 0, bytes.length);
     }
 
     public static void sendMask(OutputStream outputStream, byte opCode, byte[] bytes, int offset, int len) throws IOException {

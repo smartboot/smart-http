@@ -8,6 +8,7 @@
 
 package org.smartboot.http.server.impl;
 
+import org.smartboot.http.common.codec.websocket.CloseReason;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
 import org.smartboot.http.common.utils.WebSocketUtil;
@@ -23,6 +24,7 @@ import java.util.Arrays;
  */
 public class WebSocketResponseImpl extends AbstractResponse implements WebSocketResponse {
     private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketResponseImpl.class);
+    private boolean closed;
 
     public WebSocketResponseImpl(WebSocketRequestImpl webSocketRequest) {
         init(webSocketRequest, new WebSocketOutputStream(webSocketRequest, this));
@@ -68,13 +70,34 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
     }
 
     @Override
+    public void close() {
+        close(CloseReason.NORMAL_CLOSURE, "");
+    }
+
+    @Override
+    public void close(int code, String reason) {
+        if (closed) {
+            return;
+        }
+        closed = true;
+        try {
+            WebSocketUtil.send(getOutputStream(), WebSocketUtil.OPCODE_CLOSE, new CloseReason(code, reason).toBytes());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            super.close();
+        }
+    }
+
+    @Override
     public void ping(byte[] bytes) {
         try {
-            WebSocketUtil.send(getOutputStream(), WebSocketUtil.OPCODE_PING, bytes, 0, bytes.length);
+            WebSocketUtil.send(getOutputStream(), WebSocketUtil.OPCODE_PING, bytes);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
+
 
     @Override
     public void flush() {

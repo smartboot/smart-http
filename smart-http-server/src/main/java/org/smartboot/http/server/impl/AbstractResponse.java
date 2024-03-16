@@ -210,7 +210,7 @@ class AbstractResponse implements HttpResponse, Reset {
     }
 
     @Override
-    public final void close() {
+    public void close() {
         if (closed) {
             return;
         }
