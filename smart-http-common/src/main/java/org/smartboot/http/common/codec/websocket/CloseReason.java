@@ -33,11 +33,16 @@ public class CloseReason {
     }
 
     public CloseReason(byte[] payload) {
-        this.code = (payload[0] & 0xFF) << 8 | (payload[1] & 0xFF);
-        if (payload.length > 2) {
-            reason = new String(payload, 2, payload.length - 2, StandardCharsets.UTF_8);
-        } else {
+        if (payload.length == 0) {
+            this.code = NORMAL_CLOSURE;
             this.reason = "";
+        } else {
+            this.code = (payload[0] & 0xFF) << 8 | (payload[1] & 0xFF);
+            if (payload.length > 2) {
+                reason = new String(payload, 2, payload.length - 2, StandardCharsets.UTF_8);
+            } else {
+                this.reason = "";
+            }
         }
     }
 
