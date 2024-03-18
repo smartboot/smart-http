@@ -23,7 +23,6 @@ import java.util.logging.LogRecord;
  */
 class LogFormatter extends Formatter {
     private final static String format = "{0,date,yyyy-MM-dd} {0,time,HH:mm:ss.SS}";
-    private final String lineSeparator = System.getProperty("line.separator");
     Date dat = new Date();
     String logClassName = RunLogger.class.getName();
     private MessageFormat formatter;
@@ -73,7 +72,7 @@ class LogFormatter extends Formatter {
         sb.append(message);
         if (record.getThrown() != null) {
             try {
-                sb.append(lineSeparator);
+                sb.append(System.lineSeparator());
                 StringWriter sw = new StringWriter();
                 PrintWriter pw = new PrintWriter(sw);
                 record.getThrown().printStackTrace(pw);
@@ -82,7 +81,7 @@ class LogFormatter extends Formatter {
             } catch (Exception ex) {
             }
         }
-        sb.append(lineSeparator);
+        sb.append(System.lineSeparator());
         return sb.toString();
     }
 }

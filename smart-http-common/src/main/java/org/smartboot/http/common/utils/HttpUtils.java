@@ -10,8 +10,6 @@ package org.smartboot.http.common.utils;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 /**
@@ -52,22 +50,5 @@ public class HttpUtils {
                 e.printStackTrace();
             }
         }
-    }
-
-    public static String getString(ByteBuffer buffer, ByteTree.EndMatcher endMatcher) {
-        int position = buffer.position() + buffer.arrayOffset();
-        int limit = buffer.limit() + buffer.arrayOffset();
-        byte[] data = buffer.array();
-        for (int i = position; i < limit; i++) {
-            if (endMatcher.match(data[i])) {
-                String str = new String(data, position, i++ - position, StandardCharsets.US_ASCII);
-                while (data[i] == Constant.SP) {
-                    i++;
-                }
-                buffer.position(i - buffer.arrayOffset());
-                return str;
-            }
-        }
-        return null;
     }
 }
