@@ -19,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
+import java.util.function.Consumer;
 
 /**
  * @author 三刀
@@ -82,6 +83,18 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
             return;
         }
         writeBuffer.write(b, off, len);
+    }
+
+    public final void write(byte[] b, int off, int len, Consumer<BufferOutputStream> consumer) throws IOException {
+        writeHeader(HeaderWriteSource.WRITE);
+        if (chunked) {
+            byte[] start = (Integer.toHexString(len) + "\r\n").getBytes();
+            writeBuffer.write(start);
+            writeBuffer.write(b, off, len);
+            writeBuffer.write(Constant.CRLF_BYTES, 0, 2, writeBuffer -> consumer.accept(BufferOutputStream.this));
+        } else {
+            writeBuffer.write(b, off, len, writeBuffer -> consumer.accept(BufferOutputStream.this));
+        }
     }
 
 

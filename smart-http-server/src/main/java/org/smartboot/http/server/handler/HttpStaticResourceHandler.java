@@ -8,6 +8,7 @@
 
 package org.smartboot.http.server.handler;
 
+import org.smartboot.http.common.BufferOutputStream;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.enums.HttpStatus;
@@ -27,6 +28,9 @@ import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 
 /**
  * 静态资源加载Handle
@@ -50,7 +54,7 @@ public class HttpStaticResourceHandler extends HttpServerHandler {
     }
 
     @Override
-    public void handle(HttpRequest request, HttpResponse response) throws IOException {
+    public void handle(HttpRequest request, HttpResponse response, CompletableFuture<Object> completableFuture) throws IOException {
         String fileName = request.getRequestURI();
         String method = request.getMethod();
         if (StringUtils.endsWith(fileName, "/")) {
@@ -96,17 +100,31 @@ public class HttpStaticResourceHandler extends HttpServerHandler {
 
         try (FileInputStream fis = new FileInputStream(file)) {
             long fileSize = response.getContentLength();
-            long readPos = 0;
+            AtomicLong readPos = new AtomicLong(0);
             byte[] bytes = new byte[1024 * 1024];
             int len;
-            while (readPos < fileSize) {
-                len = fis.read(bytes);
-                if (len == -1) {
-                    throw new RuntimeException("EOF reached");
-                }
-                response.getOutputStream().write(bytes, 0, len);
-                readPos += len;
+            len = fis.read(bytes);
+            if (len == -1) {
+                throw new RuntimeException("EOF reached");
             }
+            readPos.addAndGet(len);
+            response.getOutputStream().write(bytes, 0, len, new Consumer<BufferOutputStream>() {
+                @Override
+                public void accept(BufferOutputStream bufferOutputStream) {
+                    if (readPos.get() >= fileSize) {
+                        completableFuture.complete(null);
+                        return;
+                    }
+                    try {
+                        int len = fis.read(bytes);
+                        readPos.addAndGet(len);
+                        response.getOutputStream().write(bytes, 0, len, this);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+
         }
     }
 }
