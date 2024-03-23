@@ -73,6 +73,7 @@ public class HttpStaticResourceHandler extends HttpServerHandler {
             if (!HttpMethodEnum.HEAD.getMethod().equals(method)) {
                 throw new HttpException(HttpStatus.NOT_FOUND);
             }
+            completableFuture.complete(null);
             return;
         }
         //304
@@ -81,50 +82,60 @@ public class HttpStaticResourceHandler extends HttpServerHandler {
             String requestModified = request.getHeader(HeaderNameEnum.IF_MODIFIED_SINCE.getName());
             if (StringUtils.isNotBlank(requestModified) && lastModifyDate.getTime() <= DateUtils.parseLastModified(requestModified).getTime()) {
                 response.setHttpStatus(HttpStatus.NOT_MODIFIED);
+                completableFuture.complete(null);
                 return;
             }
         } catch (Exception e) {
             LOGGER.error("exception", e);
         }
+
         response.setHeader(HeaderNameEnum.LAST_MODIFIED.getName(), DateUtils.formatLastModified(lastModifyDate));
-
-
-        String contentType = Mimetypes.getInstance().getMimetype(file);
-        response.setHeader(HeaderNameEnum.CONTENT_TYPE.getName(), contentType + "; charset=utf-8");
+        response.setHeader(HeaderNameEnum.CONTENT_TYPE.getName(), Mimetypes.getInstance().getMimetype(file) + "; charset=utf-8");
         //HEAD不输出内容
         if (HttpMethodEnum.HEAD.getMethod().equals(method)) {
+            completableFuture.complete(null);
             return;
         }
 
         response.setContentLength((int) file.length());
 
-        try (FileInputStream fis = new FileInputStream(file)) {
-            long fileSize = response.getContentLength();
-            AtomicLong readPos = new AtomicLong(0);
-            byte[] bytes = new byte[1024 * 1024];
-            int len;
-            len = fis.read(bytes);
-            if (len == -1) {
-                throw new RuntimeException("EOF reached");
+        FileInputStream fis = new FileInputStream(file);
+        completableFuture.whenComplete((o, throwable) -> {
+            try {
+                fis.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-            readPos.addAndGet(len);
+        });
+        long fileSize = response.getContentLength();
+        AtomicLong readPos = new AtomicLong(0);
+        byte[] bytes = new byte[1024 * 1024];
+        int len;
+        len = fis.read(bytes);
+        if (len == -1) {
+            completableFuture.completeExceptionally(new IOException("EOF"));
+        } else if (readPos.addAndGet(len) >= fileSize) {
+            response.getOutputStream().write(bytes, 0, len);
+            completableFuture.complete(null);
+        } else {
             response.getOutputStream().write(bytes, 0, len, new Consumer<BufferOutputStream>() {
                 @Override
-                public void accept(BufferOutputStream bufferOutputStream) {
-                    if (readPos.get() >= fileSize) {
-                        completableFuture.complete(null);
-                        return;
-                    }
+                public void accept(BufferOutputStream result) {
                     try {
                         int len = fis.read(bytes);
-                        readPos.addAndGet(len);
-                        response.getOutputStream().write(bytes, 0, len, this);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
+                        if (len == -1) {
+                            completableFuture.completeExceptionally(new IOException("EOF"));
+                        } else if (readPos.addAndGet(len) >= fileSize) {
+                            response.getOutputStream().write(bytes, 0, len);
+                            completableFuture.complete(null);
+                        } else {
+                            response.getOutputStream().write(bytes, 0, len, this);
+                        }
+                    } catch (Throwable throwable) {
+                        completableFuture.completeExceptionally(throwable);
                     }
                 }
             });
-
         }
     }
 }
