@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.smartboot.mqtt</groupId>
+    <artifactId>smart-http-native</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <!--    <parent>-->
+    <!--        <groupId>org.smartboot.http</groupId>-->
+    <!--        <artifactId>smart-http-parent</artifactId>-->
+    <!--        <version>1.4.1</version>-->
+    <!--    </parent>-->
+    <packaging>jar</packaging>
+    <properties>
+        <native.maven.plugin.version>0.10.1</native.maven.plugin.version>
+        <maven.compiler.source>${java.specification.version}</maven.compiler.source>
+        <maven.compiler.target>${java.specification.version}</maven.compiler.target>
+        <imageName>st</imageName>
+        <mainClass>org.smartboot.http.graal.Bootstrap</mainClass>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.smartboot.http</groupId>
+            <artifactId>smart-http-server</artifactId>
+            <version>1.4.1</version>
+        </dependency>
+    </dependencies>
+    <profiles>
+        <profile>
+            <id>native</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.graalvm.buildtools</groupId>
+                        <artifactId>native-maven-plugin</artifactId>
+                        <version>${native.maven.plugin.version}</version>
+                        <extensions>true</extensions>
+                        <executions>
+                            <execution>
+                                <id>build-native</id>
+                                <goals>
+                                    <goal>compile-no-fork</goal>
+                                </goals>
+                                <phase>package</phase>
+                            </execution>
+                            <execution>
+                                <id>test-native</id>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <phase>test</phase>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <buildArgs>
+                                --no-fallback
+                                --verbose
+                                --report-unsupported-elements-at-runtime
+                                -H:IncludeResources=META-INF/*.*|mime.types|License.shield
+                            </buildArgs>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
