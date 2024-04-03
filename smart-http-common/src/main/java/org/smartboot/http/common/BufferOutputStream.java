@@ -71,20 +71,6 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
         }
     }
 
-    /**
-     * 直接输出，不执行编码
-     *
-     * @param b
-     * @param off
-     * @param len
-     */
-    public final void directWrite(byte[] b, int off, int len) throws IOException {
-        if (len == 0) {
-            return;
-        }
-        writeBuffer.write(b, off, len);
-    }
-
     public final void write(byte[] b, int off, int len, Consumer<BufferOutputStream> consumer) throws IOException {
         writeHeader(HeaderWriteSource.WRITE);
         if (chunked) {
