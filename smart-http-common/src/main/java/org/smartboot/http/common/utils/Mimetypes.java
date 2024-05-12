@@ -56,18 +56,35 @@ public class Mimetypes {
     }
 
     public String getMimetype(String fileName) {
-        int lastPeriodIndex = fileName.lastIndexOf(".");
-        if (lastPeriodIndex > 0 && lastPeriodIndex + 1 < fileName.length()) {
-            String ext = fileName.substring(lastPeriodIndex + 1).toLowerCase();
-            if (extensionToMimetypeMap.containsKey(ext)) {
-                return extensionToMimetypeMap.get(ext);
-            }
-        }
-        return DEFAULT_MIMETYPE;
+        String ext = getFileExtension(fileName);
+        return getMimetypeByExtension(ext);
     }
 
     public String getMimetype(File file) {
         return getMimetype(file.getName());
+    }
+
+    public String getMimetypeByExtension(String ext) {
+        String type = extensionToMimetypeMap.get(ext);
+        if (type != null) {
+            return type;
+        }
+        return DEFAULT_MIMETYPE;
+    }
+
+    /**
+     * 获取文件后缀
+     *
+     * @param fileName
+     * @return
+     */
+    public static String getFileExtension(String fileName) {
+        int lastPeriodIndex = fileName.lastIndexOf(".");
+        if (lastPeriodIndex > 0 && lastPeriodIndex + 1 < fileName.length()) {
+            return fileName.substring(lastPeriodIndex + 1).toLowerCase();
+        } else {
+            return fileName;
+        }
     }
 
 }
