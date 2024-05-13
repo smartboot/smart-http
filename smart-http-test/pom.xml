@@ -16,7 +16,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <properties>
-        <smarthttp.version>1.4.1</smarthttp.version>
+        <smarthttp.version>1.4.2</smarthttp.version>
         <junit.version>4.13.1</junit.version>
         <json.version>1.2.83</json.version>
         <slf4j.version>1.7.30</slf4j.version>
