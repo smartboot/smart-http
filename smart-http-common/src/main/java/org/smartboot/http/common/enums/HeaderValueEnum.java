@@ -23,6 +23,7 @@ public enum HeaderValueEnum {
     keepalive("keep-alive"),
     CLOSE("close"),
     DEFAULT_CONTENT_TYPE("text/html; charset=utf-8"),
+    CONTENT_TYPE_EVENT_STREAM("text/event-stream"),
     CONTINUE("100-continue"),
     GZIP("gzip"),
     H2("h2"),
