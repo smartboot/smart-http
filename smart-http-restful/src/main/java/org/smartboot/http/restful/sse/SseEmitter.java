@@ -11,8 +11,8 @@ public class SseEmitter {
         this.outputStream = outputStream;
     }
 
-    public void send(String data) throws IOException {
-        outputStream.write(("data:" + data + "\n\n").getBytes());
+    public void send(SseEventBuilder builder) throws IOException {
+        outputStream.write(builder.build().getBytes());
         outputStream.flush();
     }
 
@@ -29,6 +29,10 @@ public class SseEmitter {
     }
 
     public void complete() {
+//        outputStream.close();
+    }
 
+    public static SseEventBuilder event() {
+        return new SseEventBuilderImpl();
     }
 }
