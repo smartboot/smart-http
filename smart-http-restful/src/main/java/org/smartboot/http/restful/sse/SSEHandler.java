@@ -32,7 +32,7 @@ public abstract class SSEHandler extends HttpServerHandler {
             attachment = new Attachment();
             request.setAttachment(attachment);
         }
-        SseEmitter sseEmitter = new SseEmitter(request.getAioSession().writeBuffer());
+        SseEmitter sseEmitter = new SseEmitter(request.getAioSession());
         attachment.put(SSE_EMITTER, sseEmitter);
         onOpen(sseEmitter);
     }

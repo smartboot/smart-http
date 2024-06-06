@@ -23,6 +23,9 @@ public class SSEDemo {
                     public void run() {
                         try {
                             sseEmitter.send(SseEmitter.event().name("update").comment("aaa").id(String.valueOf(i++)).data("hello world"));
+                            if (i == 10) {
+                                sseEmitter.complete();
+                            }
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }

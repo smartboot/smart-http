@@ -1,35 +1,33 @@
 package org.smartboot.http.restful.sse;
 
+import org.smartboot.socket.transport.AioSession;
+
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.function.Consumer;
 
 public class SseEmitter {
-    private final OutputStream outputStream;
+    private final AioSession aioSession;
 
-    public SseEmitter(OutputStream outputStream) {
-        this.outputStream = outputStream;
+    public SseEmitter(AioSession aioSession) {
+        this.aioSession = aioSession;
     }
 
     public void send(SseEventBuilder builder) throws IOException {
-        outputStream.write(builder.build().getBytes());
-        outputStream.flush();
+        aioSession.writeBuffer().write(builder.build().getBytes());
+        aioSession.writeBuffer().flush();
     }
 
     public synchronized void onTimeout(Runnable callback) {
-//        this.timeoutCallback.setDelegate(callback);
     }
 
     public synchronized void onError(Consumer<Throwable> callback) {
-//        this.errorCallback.setDelegate(callback);
     }
 
     public synchronized void onCompletion(Runnable callback) {
-//        this.completionCallback.setDelegate(callback);
     }
 
     public void complete() {
-//        outputStream.close();
+        aioSession.close();
     }
 
     public static SseEventBuilder event() {
