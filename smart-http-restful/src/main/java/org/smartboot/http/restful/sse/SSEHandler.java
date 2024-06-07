@@ -26,7 +26,7 @@ public abstract class SSEHandler extends HttpServerHandler {
 
 
     @Override
-    public void onHeaderComplete(Request request) throws IOException {
+    public final void onHeaderComplete(Request request) throws IOException {
         Attachment attachment = request.getAttachment();
         if (attachment == null) {
             attachment = new Attachment();
@@ -38,7 +38,7 @@ public abstract class SSEHandler extends HttpServerHandler {
     }
 
     @Override
-    public void onClose(Request request) {
+    public final void onClose(Request request) {
         Attachment attachment = request.getAttachment();
         SseEmitter sseEmitter = attachment.get(SSE_EMITTER);
         sseEmitter.complete();
