@@ -13,6 +13,7 @@ import org.smartboot.http.common.BufferOutputStream;
 import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.enums.HeaderNameEnum;
+import org.smartboot.http.common.enums.HttpProtocolEnum;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -188,6 +189,9 @@ class AbstractRequest implements HttpRequest {
 
     public void setContentLength(int contentLength) {
         this.contentLength = contentLength;
+        if (contentLength >= 0) {
+            outputStream.disableChunked();
+        }
     }
 
     public final String getContentType() {
@@ -222,5 +226,8 @@ class AbstractRequest implements HttpRequest {
 
     public void setProtocol(String protocol) {
         this.protocol = protocol;
+        if (!HttpProtocolEnum.HTTP_11.getProtocol().equals(protocol)) {
+            outputStream.disableChunked();
+        }
     }
 }

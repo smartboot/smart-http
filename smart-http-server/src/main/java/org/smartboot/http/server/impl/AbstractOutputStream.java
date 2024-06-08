@@ -12,14 +12,8 @@ import org.smartboot.http.common.BufferOutputStream;
 import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.enums.HeaderNameEnum;
-import org.smartboot.http.common.enums.HeaderValueEnum;
-import org.smartboot.http.common.enums.HttpMethodEnum;
-import org.smartboot.http.common.enums.HttpProtocolEnum;
-import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.utils.Constant;
-import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpServerConfiguration;
-import org.smartboot.http.server.WebSocketRequest;
 
 import java.io.IOException;
 import java.util.List;
@@ -54,7 +48,6 @@ abstract class AbstractOutputStream extends BufferOutputStream {
         if (committed) {
             return;
         }
-        chunked = supportChunked(request, response);
 
         //转换Cookie
         convertCookieToHeader();
@@ -101,25 +94,5 @@ abstract class AbstractOutputStream extends BufferOutputStream {
             }
         }
         writeBuffer.write(Constant.CRLF_BYTES);
-    }
-
-    /**
-     * 是否支持chunked输出
-     *
-     * @return
-     */
-    private boolean supportChunked(HttpRequest request, AbstractResponse response) {
-        if (request instanceof WebSocketRequest) {
-            return false;
-        }
-        if (HttpMethodEnum.HEAD.name().equals(request.getMethod())) {
-            return false;
-        }
-        if (response.getContentType().startsWith(HeaderValueEnum.CONTENT_TYPE_EVENT_STREAM.getName())) {
-            return false;
-        }
-
-        //去掉method的限制 by noear 2022/10/18
-        return response.getContentLength() < 0 && response.getHttpStatus() != HttpStatus.CONTINUE.value() && HttpProtocolEnum.HTTP_11.getProtocol().equals(request.getProtocol());
     }
 }

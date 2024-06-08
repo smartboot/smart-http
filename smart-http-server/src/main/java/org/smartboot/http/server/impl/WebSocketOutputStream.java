@@ -18,11 +18,12 @@ final class WebSocketOutputStream extends AbstractOutputStream {
 
     public WebSocketOutputStream(WebSocketRequestImpl webSocketRequest, WebSocketResponseImpl response) {
         super(webSocketRequest, response);
+        //ws不支持chunked
+        disableChunked();
     }
 
     protected byte[] getHeadPart(boolean hasHeader) {
-        return getBytes(request.getProtocol() + " " + response.getHttpStatus() + " " + response.getReasonPhrase() + "\r\n"
-                + HeaderNameEnum.CONTENT_TYPE.getName() + ":" + response.getContentType() + (hasHeader ? "\r\n" : "\r\n\r\n"));
+        return getBytes(request.getProtocol() + " " + response.getHttpStatus() + " " + response.getReasonPhrase() + "\r\n" + HeaderNameEnum.CONTENT_TYPE.getName() + ":" + response.getContentType() + (hasHeader ? "\r\n" : "\r\n\r\n"));
     }
 
 }

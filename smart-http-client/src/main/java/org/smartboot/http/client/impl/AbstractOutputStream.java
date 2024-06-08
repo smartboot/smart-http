@@ -44,9 +44,6 @@ abstract class AbstractOutputStream extends BufferOutputStream {
         if (committed) {
             return;
         }
-        if (source == HeaderWriteSource.WRITE) {
-            chunked = supportChunked(request);
-        }
 
         //输出http状态行、contentType,contentLength、Transfer-Encoding、server等信息
         String headLine = request.getMethod() + " " + request.getUri() + " " + request.getProtocol() + "\r\n";
@@ -64,7 +61,7 @@ abstract class AbstractOutputStream extends BufferOutputStream {
             writeBuffer.write(getHeaderNameBytes(HeaderNameEnum.CONTENT_LENGTH.getName()));
             writeBuffer.write(getBytes(String.valueOf(request.getContentLength())));
             writeBuffer.write(Constant.CRLF_BYTES);
-        } else if (chunked) {
+        } else if (chunkedSupport && source == HeaderWriteSource.WRITE) {
             request.addHeader(HeaderNameEnum.TRANSFER_ENCODING.getName(), HeaderValueEnum.CHUNKED.getName());
         }
 

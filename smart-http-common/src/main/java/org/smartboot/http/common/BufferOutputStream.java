@@ -30,7 +30,7 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
     protected final AioSession session;
     protected final WriteBuffer writeBuffer;
     protected boolean committed = false;
-    protected boolean chunked = false;
+    protected boolean chunkedSupport = true;
     /**
      * 当前流是否完结
      */
@@ -61,7 +61,7 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
             return;
         }
 
-        if (chunked) {
+        if (chunkedSupport) {
             byte[] start = (Integer.toHexString(len) + "\r\n").getBytes();
             writeBuffer.write(start);
             writeBuffer.write(b, off, len);
@@ -73,7 +73,7 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
 
     public final void write(byte[] b, int off, int len, Consumer<BufferOutputStream> consumer) throws IOException {
         writeHeader(HeaderWriteSource.WRITE);
-        if (chunked) {
+        if (chunkedSupport) {
             byte[] start = (Integer.toHexString(len) + "\r\n").getBytes();
             writeBuffer.write(start);
             writeBuffer.write(b, off, len);
@@ -97,7 +97,7 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
         }
         writeHeader(HeaderWriteSource.CLOSE);
 
-        if (chunked) {
+        if (chunkedSupport) {
             writeBuffer.write(Constant.CHUNKED_END_BYTES);
         }
         closed = true;
@@ -127,7 +127,8 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
     }
 
     public final void reset() {
-        committed = closed = chunked = false;
+        committed = closed = false;
+        chunkedSupport = true;
     }
 
 
@@ -160,6 +161,10 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
             return cacheData;
         }
 
+    }
+
+    public void disableChunked() {
+        this.chunkedSupport = false;
     }
 
     protected enum HeaderWriteSource {

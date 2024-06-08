@@ -10,6 +10,8 @@ package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
+import org.smartboot.http.common.enums.HttpMethodEnum;
+import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.TimerUtils;
 
@@ -46,6 +48,9 @@ final class HttpOutputStream extends AbstractOutputStream {
 
     public HttpOutputStream(HttpRequestImpl httpRequest, HttpResponseImpl response) {
         super(httpRequest, response);
+        if (HttpMethodEnum.HEAD.name().equals(request.getMethod()) || !HttpProtocolEnum.HTTP_11.getProtocol().equals(request.getProtocol())) {
+            disableChunked();
+        }
     }
 
     private static long flushDate() {
@@ -92,7 +97,7 @@ final class HttpOutputStream extends AbstractOutputStream {
         }
         if (contentLength >= 0) {
             sb.append(HeaderNameEnum.CONTENT_LENGTH.getName()).append(Constant.COLON_CHAR).append(contentLength).append(Constant.CRLF);
-        } else if (chunked) {
+        } else if (chunkedSupport) {
             sb.append(HeaderNameEnum.TRANSFER_ENCODING.getName()).append(Constant.COLON_CHAR).append(HeaderValueEnum.CHUNKED.getName()).append(Constant.CRLF);
         }
 
