@@ -48,9 +48,6 @@ final class HttpOutputStream extends AbstractOutputStream {
 
     public HttpOutputStream(HttpRequestImpl httpRequest, HttpResponseImpl response) {
         super(httpRequest, response);
-        if (HttpMethodEnum.HEAD.name().equals(request.getMethod()) || !HttpProtocolEnum.HTTP_11.getProtocol().equals(request.getProtocol())) {
-            disableChunked();
-        }
     }
 
     private static long flushDate() {
@@ -69,6 +66,11 @@ final class HttpOutputStream extends AbstractOutputStream {
     }
 
     protected byte[] getHeadPart(boolean hasHeader) {
+        if (chunkedSupport) {
+            if (HttpMethodEnum.HEAD.name().equals(request.getMethod()) || !HttpProtocolEnum.HTTP_11.getProtocol().equals(request.getProtocol())) {
+                disableChunked();
+            }
+        }
         long currentTime = flushDate();
         int contentLength = response.getContentLength();
         String contentType = response.getContentType();

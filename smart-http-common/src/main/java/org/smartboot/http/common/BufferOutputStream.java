@@ -167,6 +167,10 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
         this.chunkedSupport = false;
     }
 
+    public boolean isChunkedSupport() {
+        return chunkedSupport;
+    }
+
     protected enum HeaderWriteSource {
         WRITE, FLUSH, CLOSE
     }

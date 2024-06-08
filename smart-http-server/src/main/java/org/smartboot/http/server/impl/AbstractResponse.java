@@ -250,7 +250,7 @@ class AbstractResponse implements HttpResponse, Reset {
     @Override
     public void setContentLength(int contentLength) {
         this.contentLength = contentLength;
-        if (contentLength > 0) {
+        if (contentLength >= 0) {
             outputStream.disableChunked();
         }
     }
@@ -263,7 +263,8 @@ class AbstractResponse implements HttpResponse, Reset {
     @Override
     public final void setContentType(String contentType) {
         this.contentType = Objects.requireNonNull(contentType);
-        if (contentType.startsWith(HeaderValueEnum.CONTENT_TYPE_EVENT_STREAM.getName())) {
+        //若已处于disable，无需再做判断，降低性能损耗
+        if (outputStream.isChunkedSupport() && contentType.startsWith(HeaderValueEnum.CONTENT_TYPE_EVENT_STREAM.getName())) {
             outputStream.disableChunked();
         }
     }
