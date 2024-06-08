@@ -110,10 +110,6 @@ class AbstractResponse implements HttpResponse, Reset {
         this.httpStatus = value;
         this.reasonPhrase = Objects.requireNonNull(reasonPhrase);
         defaultStatus = httpStatus == HttpStatus.OK.value() && HttpStatus.OK.getReasonPhrase().equals(reasonPhrase);
-
-        if (httpStatus == HttpStatus.CONTINUE.value()) {
-            outputStream.disableChunked();
-        }
     }
 
     public boolean isDefaultStatus() {
@@ -250,9 +246,6 @@ class AbstractResponse implements HttpResponse, Reset {
     @Override
     public void setContentLength(int contentLength) {
         this.contentLength = contentLength;
-        if (contentLength >= 0) {
-            outputStream.disableChunked();
-        }
     }
 
     @Override
@@ -263,10 +256,6 @@ class AbstractResponse implements HttpResponse, Reset {
     @Override
     public final void setContentType(String contentType) {
         this.contentType = Objects.requireNonNull(contentType);
-        //若已处于disable，无需再做判断，降低性能损耗
-        if (outputStream.isChunkedSupport() && contentType.startsWith(HeaderValueEnum.CONTENT_TYPE_EVENT_STREAM.getName())) {
-            outputStream.disableChunked();
-        }
     }
 
     /**

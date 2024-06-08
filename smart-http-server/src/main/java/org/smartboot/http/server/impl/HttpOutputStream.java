@@ -12,6 +12,7 @@ import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
+import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.TimerUtils;
 
@@ -66,11 +67,7 @@ final class HttpOutputStream extends AbstractOutputStream {
     }
 
     protected byte[] getHeadPart(boolean hasHeader) {
-        if (chunkedSupport) {
-            if (HttpMethodEnum.HEAD.name().equals(request.getMethod()) || !HttpProtocolEnum.HTTP_11.getProtocol().equals(request.getProtocol())) {
-                disableChunked();
-            }
-        }
+        checkChunked();
         long currentTime = flushDate();
         int contentLength = response.getContentLength();
         String contentType = response.getContentType();
@@ -116,5 +113,22 @@ final class HttpOutputStream extends AbstractOutputStream {
             return writeCache.getCacheData();
         }
         return hasHeader ? sb.toString().getBytes() : sb.append(Constant.CRLF).toString().getBytes();
+    }
+
+    private void checkChunked() {
+        if (!chunkedSupport) {
+            return;
+        }
+        if (response.getContentLength() >= 0) {
+            disableChunked();
+        } else if (response.getHttpStatus() == HttpStatus.CONTINUE.value()) {
+            disableChunked();
+        } else if (HttpMethodEnum.HEAD.name().equals(request.getMethod())) {
+            disableChunked();
+        } else if (!HttpProtocolEnum.HTTP_11.getProtocol().equals(request.getProtocol())) {
+            disableChunked();
+        } else if (response.getContentType().startsWith(HeaderValueEnum.CONTENT_TYPE_EVENT_STREAM.getName())) {
+            disableChunked();
+        }
     }
 }
