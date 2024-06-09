@@ -18,6 +18,9 @@ import java.util.Date;
  * @version V1.0 , 2018/8/31
  */
 public class Cookie {
+    public static final String DOMAIN = "$Domain";
+    public static final String VERSION = "$Version";
+    public static final String PATH = "$Path";
 
     private final String name;
     private String value;

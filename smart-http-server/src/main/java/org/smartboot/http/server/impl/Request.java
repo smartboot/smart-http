@@ -517,12 +517,22 @@ public final class Request implements HttpRequest, Reset {
 
     @Override
     public Locale getLocale() {
-        return defaultLocale;
+        return getLocales().nextElement();
     }
 
     @Override
     public Enumeration<Locale> getLocales() {
-        return Collections.enumeration(Collections.singletonList(defaultLocale));
+        Collection<String> acceptLanguage = getHeaders(HeaderNameEnum.ACCEPT_LANGUAGE.getName());
+        if (acceptLanguage.isEmpty()) {
+            return Collections.enumeration(Collections.singletonList(defaultLocale));
+        }
+        List<Locale> locales = new ArrayList<>();
+        for (String language : acceptLanguage) {
+            for (String lan : language.split(",")) {
+                locales.add(Locale.forLanguageTag(lan));
+            }
+        }
+        return Collections.enumeration(locales);
     }
 
     @Override
@@ -535,68 +545,15 @@ public final class Request implements HttpRequest, Reset {
         if (cookies != null) {
             return cookies;
         }
-        String cookieValue = getHeader(HeaderNameEnum.COOKIE.getName());
-        if (StringUtils.isBlank(cookieValue)) {
-            return new Cookie[0];
-        }
-        List<Cookie> cookieList = new ArrayList<>();
-
-        int state = 1;// 1:name ,2:value
-        int startIndex = 0;
-        int endIndex = 0;
-        String name = null;
-        String value;
-        for (int i = 0; i < cookieValue.length(); i++) {
-            switch (state) {
-                case 1:
-                    //查找name
-                    if (cookieValue.charAt(i) == '=') {
-                        endIndex = i;
-                        while (cookieValue.charAt(startIndex) == ' ' && startIndex < i) {
-                            startIndex++;
-                        }
-                        while (cookieValue.charAt(endIndex - 1) == ' ' && endIndex > startIndex) {
-                            endIndex--;
-                        }
-                        name = cookieValue.substring(startIndex, endIndex);
-                        startIndex = i + 1;
-                        state = 2;
-                    }
-                    break;
-                case 2:
-                    //查找value
-                    if (cookieValue.charAt(i) == ';') {
-                        endIndex = i;
-                        while (cookieValue.charAt(startIndex) == ' ' && startIndex < i) {
-                            startIndex++;
-                        }
-                        while (cookieValue.charAt(endIndex - 1) == ' ' && endIndex > startIndex) {
-                            endIndex--;
-                        }
-                        value = cookieValue.substring(startIndex, endIndex);
-                        cookieList.add(new Cookie(name, value));
-                        startIndex = i + 1;
-                        state = 1;
-                    }
-                    break;
+        final Map<String, Cookie> parsedCookies = new HashMap<>();
+        for (int i = 0; i < headerSize; i++) {
+            HeaderValue headerValue = headers.get(i);
+            if (headerValue.getName().equalsIgnoreCase(HeaderNameEnum.COOKIE.getName())) {
+                HttpUtils.parseCookie(headerValue.getValue(), parsedCookies);
             }
         }
-        //最后一个value为空字符串情况
-        if (startIndex == cookieValue.length()) {
-            cookieList.add(new Cookie(name, ""));
-        } else if (endIndex < startIndex) {
-            endIndex = cookieValue.length();
-            while (cookieValue.charAt(startIndex) == ' ') {
-                startIndex++;
-            }
-            while (cookieValue.charAt(endIndex - 1) == ' ' && endIndex > startIndex) {
-                endIndex--;
-            }
-            value = cookieValue.substring(startIndex, endIndex);
-            cookieList.add(new Cookie(name, value));
-        }
-        cookies = new Cookie[cookieList.size()];
-        cookieList.toArray(cookies);
+        cookies = new Cookie[parsedCookies.size()];
+        parsedCookies.values().toArray(cookies);
         return cookies;
     }
 
