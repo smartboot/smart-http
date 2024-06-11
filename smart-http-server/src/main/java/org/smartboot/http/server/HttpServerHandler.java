@@ -8,6 +8,7 @@
 
 package org.smartboot.http.server;
 
+import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.enums.HttpStatus;
@@ -34,7 +35,9 @@ public abstract class HttpServerHandler implements ServerHandler<HttpRequest, Ht
         }
         int postLength = request.getContentLength();
         //Post请求
-        if (HttpMethodEnum.POST.getMethod().equals(request.getMethod()) && StringUtils.startsWith(request.getContentType(), HeaderValueEnum.X_WWW_FORM_URLENCODED.getName())) {
+        if (HttpMethodEnum.POST.getMethod().equals(request.getMethod())
+                && StringUtils.startsWith(request.getContentType(), HeaderValueEnum.X_WWW_FORM_URLENCODED.getName())
+                && !request.getHeader(HeaderNameEnum.CONNECTION.getName()).equals(HeaderValueEnum.UPGRADE.getName())) {
             if (postLength < 0) {
                 throw new HttpException(HttpStatus.LENGTH_REQUIRED);
             } else if (postLength == 0) {
