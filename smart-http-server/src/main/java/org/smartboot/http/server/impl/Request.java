@@ -545,15 +545,15 @@ public final class Request implements HttpRequest, Reset {
         if (cookies != null) {
             return cookies;
         }
-        final Map<String, Cookie> parsedCookies = new HashMap<>();
+        final List<Cookie> parsedCookies = new ArrayList<>();
         for (int i = 0; i < headerSize; i++) {
             HeaderValue headerValue = headers.get(i);
             if (headerValue.getName().equalsIgnoreCase(HeaderNameEnum.COOKIE.getName())) {
-                HttpUtils.parseCookie(headerValue.getValue(), parsedCookies);
+                parsedCookies.addAll(HttpUtils.decodeCookies(headerValue.getValue()));
             }
         }
         cookies = new Cookie[parsedCookies.size()];
-        parsedCookies.values().toArray(cookies);
+        parsedCookies.toArray(cookies);
         return cookies;
     }
 
