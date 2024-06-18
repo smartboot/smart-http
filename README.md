@@ -16,9 +16,9 @@ smart-http 是一款可编程的 Http 应用微内核，方便用户根据自身
 1. 在您的Maven工程中引入smart-http依赖。
     ```xml
     <dependency>
-        <groupId>org.smartboot.http</groupId>
+        <groupId>io.github.smartboot.http</groupId>
         <artifactId>smart-http-server</artifactId>
-        <version>1.4.3</version>
+        <version>1.4.4</version>
     </dependency>
     ```
 2. 拷贝以下代码并启动。
@@ -42,9 +42,9 @@ smart-http 是一款可编程的 Http 应用微内核，方便用户根据自身
 1. 在您的Maven工程中引入smart-http依赖。
     ```xml
     <dependency>
-        <groupId>org.smartboot.http</groupId>
+        <groupId>io.github.smartboot.http</groupId>
         <artifactId>smart-http-client</artifactId>
-        <version>1.4.3</version>
+        <version>1.4.4</version>
     </dependency>
     ```
 2. 拷贝以下代码并启动。

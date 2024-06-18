@@ -10,13 +10,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <groupId>org.smartboot.http</groupId>
+    <groupId>io.github.smartboot.http</groupId>
     <artifactId>smart-http-test</artifactId>
     <version>1.0.0</version>
     <modelVersion>4.0.0</modelVersion>
 
     <properties>
-        <smarthttp.version>1.4.3</smarthttp.version>
+        <smarthttp.version>1.4.4</smarthttp.version>
         <junit.version>4.13.1</junit.version>
         <json.version>1.2.83</json.version>
         <slf4j.version>1.7.30</slf4j.version>
@@ -34,12 +34,12 @@
             <version>1.21</version>
         </dependency>
         <dependency>
-            <groupId>org.smartboot.http</groupId>
+            <groupId>io.github.smartboot.http</groupId>
             <artifactId>smart-http-restful</artifactId>
             <version>${smarthttp.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.smartboot.http</groupId>
+            <groupId>io.github.smartboot.http</groupId>
             <artifactId>smart-http-client</artifactId>
             <version>${smarthttp.version}</version>
         </dependency>

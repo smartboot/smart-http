@@ -4,8 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>smart-http-parent</artifactId>
-        <groupId>org.smartboot.http</groupId>
-        <version>1.4.3</version>
+        <groupId>io.github.smartboot.http</groupId>
+        <version>1.4.4</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -17,7 +17,7 @@
     </properties>
     <dependencies>
         <dependency>
-            <groupId>org.smartboot.http</groupId>
+            <groupId>io.github.smartboot.http</groupId>
             <artifactId>smart-http-server</artifactId>
         </dependency>
         <dependency>

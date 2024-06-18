@@ -12,14 +12,14 @@
     <description>smart-http服务端应用</description>
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.smartboot.http</groupId>
+        <groupId>io.github.smartboot.http</groupId>
         <artifactId>smart-http-parent</artifactId>
-        <version>1.4.3</version>
+        <version>1.4.4</version>
     </parent>
     <artifactId>smart-http-server</artifactId>
     <dependencies>
         <dependency>
-            <groupId>org.smartboot.http</groupId>
+            <groupId>io.github.smartboot.http</groupId>
             <artifactId>smart-http-common</artifactId>
         </dependency>
     </dependencies>
