@@ -12,6 +12,7 @@ import org.smartboot.http.client.impl.DefaultHttpResponseHandler;
 import org.smartboot.http.client.impl.HttpRequestImpl;
 import org.smartboot.http.client.impl.HttpResponseImpl;
 import org.smartboot.http.common.enums.HeaderNameEnum;
+import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
@@ -25,6 +26,7 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
@@ -33,7 +35,7 @@ import java.util.function.Consumer;
  * @author 三刀（zhengjunweimail@163.com）
  * @version V1.0 , 2021/2/3
  */
-public class HttpRest {
+public class HttpRest implements IHttpRest {
     private final static String DEFAULT_USER_AGENT = "smart-http";
     protected final HttpRequestImpl request;
     protected final CompletableFuture<HttpResponseImpl> completableFuture = new CompletableFuture<>();
@@ -46,11 +48,13 @@ public class HttpRest {
      */
     private ResponseHandler responseHandler = new DefaultHttpResponseHandler();
     private final HttpResponseImpl response;
+    private final Semaphore semaphore;
 
-    HttpRest(AioSession session, AbstractQueue<AbstractResponse> queue) {
+    HttpRest(AioSession session, AbstractQueue<AbstractResponse> queue, Semaphore semaphore) {
         this.request = new HttpRequestImpl(session);
         this.queue = queue;
         this.response = new HttpResponseImpl(session, completableFuture);
+        this.semaphore = semaphore;
     }
 
     protected final void willSendRequest() {
@@ -148,33 +152,39 @@ public class HttpRest {
         } catch (Throwable e) {
             completableFuture.completeExceptionally(e);
         }
-        return new Future<HttpResponse>() {
-            @Override
-            public boolean cancel(boolean mayInterruptIfRunning) {
-                return completableFuture.cancel(mayInterruptIfRunning);
-            }
+        try {
+            return new Future<HttpResponse>() {
+                @Override
+                public boolean cancel(boolean mayInterruptIfRunning) {
+                    return completableFuture.cancel(mayInterruptIfRunning);
+                }
 
-            @Override
-            public boolean isCancelled() {
-                return completableFuture.isCancelled();
-            }
+                @Override
+                public boolean isCancelled() {
+                    return completableFuture.isCancelled();
+                }
 
-            @Override
-            public boolean isDone() {
-                return completableFuture.isDone();
-            }
+                @Override
+                public boolean isDone() {
+                    return completableFuture.isDone();
+                }
 
-            @Override
-            public HttpResponse get() throws InterruptedException, ExecutionException {
-                return completableFuture.get();
-            }
+                @Override
+                public HttpResponse get() throws InterruptedException, ExecutionException {
+                    return completableFuture.get();
+                }
 
-            @Override
-            public HttpResponse get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                return completableFuture.get(timeout, unit);
-            }
+                @Override
+                public HttpResponse get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+                    return completableFuture.get(timeout, unit);
+                }
 
-        };
+            };
+        } finally {
+            if (!HeaderValueEnum.CLOSE.getName().equals(request.getHeader(HeaderNameEnum.CONNECTION.getName()))) {
+                semaphore.release();
+            }
+        }
     }
 
     public HttpRest onSuccess(Consumer<HttpResponse> consumer) {

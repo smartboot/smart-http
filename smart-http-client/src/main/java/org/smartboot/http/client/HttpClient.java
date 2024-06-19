@@ -27,6 +27,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.util.Base64;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Semaphore;
 
 /**
  * @author 三刀（zhengjunweimail@163.com）
@@ -64,6 +65,7 @@ public final class HttpClient implements AutoCloseable {
     private final HttpMessageProcessor processor = new HttpMessageProcessor();
     private final ConcurrentLinkedQueue<AbstractResponse> queue = new ConcurrentLinkedQueue<>();
     private final String uri;
+    private final Semaphore semaphore = new Semaphore(1);
 
     public HttpClient(String url) {
         int schemaIndex = url.indexOf("://");
@@ -107,31 +109,29 @@ public final class HttpClient implements AutoCloseable {
     }
 
     public HttpGet get() {
-        connect();
-        HttpGet httpGet = new HttpGet(client.getSession(), queue);
-        initRest(httpGet, uri);
-        return httpGet;
+        if (uri == null) {
+            throw new UnsupportedOperationException("this method only support on constructor: HttpClient(String url)");
+        }
+        HttpRest rest = rest(uri);
+        return new HttpGet(rest);
     }
 
     public HttpGet get(String uri) {
-        connect();
-        HttpGet httpGet = new HttpGet(client.getSession(), queue);
-        initRest(httpGet, uri);
-        return httpGet;
+        HttpRest rest = rest(uri);
+        return new HttpGet(rest);
     }
+
 
     public HttpRest rest(String uri) {
         connect();
-        HttpRest httpRest = new HttpRest(client.getSession(), queue);
-        initRest(httpRest, uri);
-        return httpRest;
+        HttpRest httpRestImpl = new HttpRest(client.getSession(), queue, semaphore);
+        initRest(httpRestImpl, uri);
+        return httpRestImpl;
     }
 
     public HttpPost post(String uri) {
-        connect();
-        HttpPost httpRest = new HttpPost(client.getSession(), queue);
-        initRest(httpRest, uri);
-        return httpRest;
+        HttpRest rest = rest(uri);
+        return new HttpPost(rest);
     }
 
     public HttpPost post() {
@@ -141,15 +141,15 @@ public final class HttpClient implements AutoCloseable {
         return post(uri);
     }
 
-    private void initRest(HttpRest httpRest, String uri) {
+    private void initRest(HttpRest httpRestImpl, String uri) {
         if (configuration.getProxy() != null && StringUtils.isNotBlank(configuration.getProxy().getProxyUserName())) {
-            httpRest.request.addHeader(HeaderNameEnum.PROXY_AUTHORIZATION.getName(), "Basic " + Base64.getEncoder().encodeToString((configuration.getProxy().getProxyUserName() + ":" + configuration.getProxy().getProxyPassword()).getBytes()));
+            httpRestImpl.request.addHeader(HeaderNameEnum.PROXY_AUTHORIZATION.getName(), "Basic " + Base64.getEncoder().encodeToString((configuration.getProxy().getProxyUserName() + ":" + configuration.getProxy().getProxyPassword()).getBytes()));
         }
-        httpRest.request.setUri(uri);
-        httpRest.request.addHeader(HeaderNameEnum.HOST.getName(), hostHeader);
-        httpRest.request.setProtocol(HttpProtocolEnum.HTTP_11.getProtocol());
+        httpRestImpl.request.setUri(uri);
+        httpRestImpl.request.addHeader(HeaderNameEnum.HOST.getName(), hostHeader);
+        httpRestImpl.request.setProtocol(HttpProtocolEnum.HTTP_11.getProtocol());
 
-        httpRest.completableFuture.thenAccept(httpResponse -> {
+        httpRestImpl.completableFuture.thenAccept(httpResponse -> {
             AioSession session = client.getSession();
             ResponseAttachment attachment = session.getAttachment();
             //重置附件，为下一个响应作准备
@@ -158,7 +158,7 @@ public final class HttpClient implements AutoCloseable {
                 attachment.setResponse(queue.poll());
             }
             //request标注为keep-alive，response不包含该header,默认保持连接.
-            if (HeaderValueEnum.KEEPALIVE.getName().equalsIgnoreCase(httpRest.request.getHeader(HeaderNameEnum.CONNECTION.getName())) && httpResponse.getHeader(HeaderNameEnum.CONNECTION.getName()) == null) {
+            if (HeaderValueEnum.KEEPALIVE.getName().equalsIgnoreCase(httpRestImpl.request.getHeader(HeaderNameEnum.CONNECTION.getName())) && httpResponse.getHeader(HeaderNameEnum.CONNECTION.getName()) == null) {
                 return;
             }
             //存在链路复用情况
@@ -168,11 +168,11 @@ public final class HttpClient implements AutoCloseable {
             //非keep-alive,主动断开连接
             if (!HeaderValueEnum.KEEPALIVE.getName().equalsIgnoreCase(httpResponse.getHeader(HeaderNameEnum.CONNECTION.getName()))) {
                 close();
-            } else if (!HeaderValueEnum.KEEPALIVE.getName().equalsIgnoreCase(httpRest.request.getHeader(HeaderNameEnum.CONNECTION.getName()))) {
+            } else if (!HeaderValueEnum.KEEPALIVE.getName().equalsIgnoreCase(httpRestImpl.request.getHeader(HeaderNameEnum.CONNECTION.getName()))) {
                 close();
             }
         });
-        httpRest.completableFuture.exceptionally(throwable -> {
+        httpRestImpl.completableFuture.exceptionally(throwable -> {
             close();
             return null;
         });
@@ -184,6 +184,11 @@ public final class HttpClient implements AutoCloseable {
     }
 
     private void connect() {
+        try {
+            semaphore.acquire();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         if (connected) {
             AioSession session = client.getSession();
             if (session == null || session.isInvalid()) {
@@ -236,6 +241,9 @@ public final class HttpClient implements AutoCloseable {
     public void close() {
         connected = false;
         client.shutdownNow();
+        if (semaphore.availablePermits() == 0) {
+            semaphore.release();
+        }
     }
 
 }

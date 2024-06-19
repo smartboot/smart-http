@@ -9,26 +9,20 @@
 package org.smartboot.http.client;
 
 import org.smartboot.http.common.enums.HttpMethodEnum;
-import org.smartboot.socket.transport.AioSession;
 
-import java.util.AbstractQueue;
 import java.util.function.Consumer;
 
 /**
  * @author 三刀（zhengjunweimail@163.com）
  * @version V1.0 , 2021/2/3
  */
-public class HttpGet extends HttpRest {
+public class HttpGet extends HttpRestWrapper {
 
-    HttpGet(AioSession session, AbstractQueue<AbstractResponse> queue) {
-        super(session, queue);
-        request.setMethod(HttpMethodEnum.GET.getMethod());
+    HttpGet(HttpRest rest) {
+        super(rest);
+        rest.setMethod(HttpMethodEnum.GET.getMethod());
     }
 
-    @Override
-    public HttpGet setMethod(String method) throws UnsupportedOperationException {
-        throw new UnsupportedOperationException();
-    }
 
     @Override
     public HttpGet onSuccess(Consumer<HttpResponse> consumer) {
@@ -44,6 +38,6 @@ public class HttpGet extends HttpRest {
 
     @Override
     public Header<HttpGet> header() {
-        return new HeaderWrapper<>(this, super.header());
+        return new HeaderWrapper<>(this, rest.header());
     }
 }

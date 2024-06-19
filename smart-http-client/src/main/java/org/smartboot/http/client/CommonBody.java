@@ -4,12 +4,12 @@ package org.smartboot.http.client;
  * @author 三刀（zhengjunweimail@163.com）
  * @version V1.0 , 2023/2/13
  */
-class CommonBody<T extends HttpRest> implements Body<T> {
-    private final Body<? extends HttpRest> body;
+class CommonBody<T extends IHttpRest> implements Body<T> {
+    private final Body<? extends IHttpRest> body;
     private final T rest;
 
 
-    public CommonBody(Body<? extends HttpRest> body, T rest) {
+    public CommonBody(Body<? extends IHttpRest> body, T rest) {
         this.body = body;
         this.rest = rest;
     }

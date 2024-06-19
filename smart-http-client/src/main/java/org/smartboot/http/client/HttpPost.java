@@ -11,10 +11,8 @@ package org.smartboot.http.client;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
-import org.smartboot.socket.transport.AioSession;
 
 import java.net.URLEncoder;
-import java.util.AbstractQueue;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -24,21 +22,17 @@ import java.util.function.Consumer;
  * @author 三刀（zhengjunweimail@163.com）
  * @version V1.0 , 2021/2/4
  */
-public final class HttpPost extends HttpRest {
+public final class HttpPost extends HttpRestWrapper {
 
-    HttpPost(AioSession session, AbstractQueue<AbstractResponse> queue) {
-        super(session, queue);
-        request.setMethod(HttpMethodEnum.POST.getMethod());
+    HttpPost(HttpRest rest) {
+        super(rest);
+        rest.setMethod(HttpMethodEnum.POST.getMethod());
     }
 
-    @Override
-    public HttpRest setMethod(String method) throws UnsupportedOperationException {
-        throw new UnsupportedOperationException();
-    }
 
     @Override
     public PostBody body() {
-        return new PostBody(super.body(), this) {
+        return new PostBody(rest.body(), this) {
             @Override
             public HttpPost formUrlencoded(Map<String, String> params) {
                 if (params == null || params.isEmpty()) {
@@ -46,7 +40,7 @@ public final class HttpPost extends HttpRest {
                     return HttpPost.this;
                 }
                 try {
-                    willSendRequest();
+                    rest.willSendRequest();
                     //编码Post表单
                     Iterator<Map.Entry<String, String>> iterator = params.entrySet().iterator();
                     Map.Entry<String, String> entry = iterator.next();
@@ -58,14 +52,14 @@ public final class HttpPost extends HttpRest {
                     }
                     byte[] bytes = sb.toString().getBytes();
                     // 设置 Header
-                    request.setContentLength(bytes.length);
-                    request.addHeader(HeaderNameEnum.CONTENT_TYPE.getName(), HeaderValueEnum.X_WWW_FORM_URLENCODED.getName());
+                    rest.request.setContentLength(bytes.length);
+                    rest.request.addHeader(HeaderNameEnum.CONTENT_TYPE.getName(), HeaderValueEnum.X_WWW_FORM_URLENCODED.getName());
                     //输出数据
-                    request.write(bytes);
-                    request.getOutputStream().flush();
+                    rest.request.write(bytes);
+                    rest.request.getOutputStream().flush();
                 } catch (Exception e) {
                     e.printStackTrace();
-                    completableFuture.completeExceptionally(e);
+                    rest.completableFuture.completeExceptionally(e);
                 }
                 return HttpPost.this;
             }
@@ -77,19 +71,19 @@ public final class HttpPost extends HttpRest {
 //                    return HttpPost.this;
 //                }
                 try {
-                    willSendRequest();
+                    rest.willSendRequest();
 
                     String boundary = "---" + System.currentTimeMillis();
 
-                    request.addHeader(HeaderNameEnum.CONTENT_TYPE.getName(), HeaderValueEnum.MULTIPART_FORM_DATA.getName() + "; boundary=" + boundary);
+                    rest.request.addHeader(HeaderNameEnum.CONTENT_TYPE.getName(), HeaderValueEnum.MULTIPART_FORM_DATA.getName() + "; boundary=" + boundary);
                     for (Multipart multipart : multiparts) {
-                        write("--" + boundary+"\r\n");
+                        write("--" + boundary + "\r\n");
                         multipart.write(this);
                     }
-                    write("--"+boundary + "--\r\n");
+                    write("--" + boundary + "--\r\n");
                 } catch (Exception e) {
                     e.printStackTrace();
-                    completableFuture.completeExceptionally(e);
+                    rest.completableFuture.completeExceptionally(e);
                 }
                 return HttpPost.this;
             }
@@ -110,6 +104,6 @@ public final class HttpPost extends HttpRest {
 
     @Override
     public Header<HttpPost> header() {
-        return new HeaderWrapper<>(this, super.header());
+        return new HeaderWrapper<>(this, rest.header());
     }
 }
