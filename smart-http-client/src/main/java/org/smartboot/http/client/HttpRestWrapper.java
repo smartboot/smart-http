@@ -3,15 +3,20 @@ package org.smartboot.http.client;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
-class HttpRestWrapper implements IHttpRest {
-    protected final HttpRest rest;
+class HttpRestWrapper implements HttpRest {
+    protected final HttpRestImpl rest;
 
-    public HttpRestWrapper(HttpRest rest) {
+    public HttpRestWrapper(HttpRestImpl rest) {
         this.rest = rest;
     }
 
     @Override
-    public Body<? extends IHttpRest> body() {
+    public HttpRest setMethod(String method) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Body<? extends HttpRest> body() {
         return rest.body();
     }
 
@@ -21,27 +26,27 @@ class HttpRestWrapper implements IHttpRest {
     }
 
     @Override
-    public IHttpRest onSuccess(Consumer<HttpResponse> consumer) {
+    public HttpRest onSuccess(Consumer<HttpResponse> consumer) {
         return rest.onSuccess(consumer);
     }
 
     @Override
-    public IHttpRest onFailure(Consumer<Throwable> consumer) {
+    public HttpRest onFailure(Consumer<Throwable> consumer) {
         return rest.onFailure(consumer);
     }
 
     @Override
-    public Header<? extends IHttpRest> header() {
+    public Header<? extends HttpRest> header() {
         return rest.header();
     }
 
     @Override
-    public IHttpRest addQueryParam(String name, String value) {
+    public HttpRest addQueryParam(String name, String value) {
         return rest.addQueryParam(name, value);
     }
 
     @Override
-    public IHttpRest onResponse(ResponseHandler responseHandler) {
+    public HttpRest onResponse(ResponseHandler responseHandler) {
         return rest.onResponse(responseHandler);
     }
 }

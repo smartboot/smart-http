@@ -24,7 +24,7 @@ import java.util.function.Consumer;
  */
 public final class HttpPost extends HttpRestWrapper {
 
-    HttpPost(HttpRest rest) {
+    HttpPost(HttpRestImpl rest) {
         super(rest);
         rest.setMethod(HttpMethodEnum.POST.getMethod());
     }

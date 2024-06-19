@@ -18,7 +18,7 @@ import java.util.function.Consumer;
  */
 public class HttpGet extends HttpRestWrapper {
 
-    HttpGet(HttpRest rest) {
+    HttpGet(HttpRestImpl rest) {
         super(rest);
         rest.setMethod(HttpMethodEnum.GET.getMethod());
     }

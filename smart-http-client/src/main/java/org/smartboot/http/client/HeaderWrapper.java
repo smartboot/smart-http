@@ -4,7 +4,7 @@ package org.smartboot.http.client;
  * @author 三刀（zhengjunweimail@163.com）
  * @version V1.0 , 2023/2/13
  */
-class HeaderWrapper<T extends IHttpRest> implements Header<T> {
+class HeaderWrapper<T extends HttpRest> implements Header<T> {
     private final T rest;
 
     private final Header<? extends HttpRest> header;

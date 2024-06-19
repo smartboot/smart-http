@@ -112,25 +112,29 @@ public final class HttpClient implements AutoCloseable {
         if (uri == null) {
             throw new UnsupportedOperationException("this method only support on constructor: HttpClient(String url)");
         }
-        HttpRest rest = rest(uri);
+        HttpRestImpl rest = rest0(uri);
         return new HttpGet(rest);
     }
 
     public HttpGet get(String uri) {
-        HttpRest rest = rest(uri);
+        HttpRestImpl rest = rest0(uri);
         return new HttpGet(rest);
     }
 
 
     public HttpRest rest(String uri) {
+        return rest0(uri);
+    }
+
+    private HttpRestImpl rest0(String uri) {
         connect();
-        HttpRest httpRestImpl = new HttpRest(client.getSession(), queue, semaphore);
+        HttpRestImpl httpRestImpl = new HttpRestImpl(client.getSession(), queue, semaphore);
         initRest(httpRestImpl, uri);
         return httpRestImpl;
     }
 
     public HttpPost post(String uri) {
-        HttpRest rest = rest(uri);
+        HttpRestImpl rest = rest0(uri);
         return new HttpPost(rest);
     }
 
@@ -141,7 +145,7 @@ public final class HttpClient implements AutoCloseable {
         return post(uri);
     }
 
-    private void initRest(HttpRest httpRestImpl, String uri) {
+    private void initRest(HttpRestImpl httpRestImpl, String uri) {
         if (configuration.getProxy() != null && StringUtils.isNotBlank(configuration.getProxy().getProxyUserName())) {
             httpRestImpl.request.addHeader(HeaderNameEnum.PROXY_AUTHORIZATION.getName(), "Basic " + Base64.getEncoder().encodeToString((configuration.getProxy().getProxyUserName() + ":" + configuration.getProxy().getProxyPassword()).getBytes()));
         }
