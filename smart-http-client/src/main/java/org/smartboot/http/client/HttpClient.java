@@ -8,6 +8,7 @@
 
 package org.smartboot.http.client;
 
+import org.smartboot.http.client.impl.HttpRequestImpl;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
@@ -27,6 +28,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.util.Base64;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -128,7 +130,18 @@ public final class HttpClient implements AutoCloseable {
 
     private HttpRestImpl rest0(String uri) {
         connect();
-        HttpRestImpl httpRestImpl = new HttpRestImpl(client.getSession(), queue, semaphore);
+        HttpRestImpl httpRestImpl = new HttpRestImpl(client.getSession(), queue) {
+            @Override
+            public Future<HttpResponse> done() {
+                try {
+                    return super.done();
+                } finally {
+                    if (HeaderValueEnum.KEEPALIVE.getName().equals(getRequest().getHeader(HeaderNameEnum.CONNECTION.getName()))) {
+                        semaphore.release();
+                    }
+                }
+            }
+        };
         initRest(httpRestImpl, uri);
         return httpRestImpl;
     }
@@ -146,14 +159,15 @@ public final class HttpClient implements AutoCloseable {
     }
 
     private void initRest(HttpRestImpl httpRestImpl, String uri) {
+        HttpRequestImpl request = httpRestImpl.getRequest();
         if (configuration.getProxy() != null && StringUtils.isNotBlank(configuration.getProxy().getProxyUserName())) {
-            httpRestImpl.request.addHeader(HeaderNameEnum.PROXY_AUTHORIZATION.getName(), "Basic " + Base64.getEncoder().encodeToString((configuration.getProxy().getProxyUserName() + ":" + configuration.getProxy().getProxyPassword()).getBytes()));
+            request.addHeader(HeaderNameEnum.PROXY_AUTHORIZATION.getName(), "Basic " + Base64.getEncoder().encodeToString((configuration.getProxy().getProxyUserName() + ":" + configuration.getProxy().getProxyPassword()).getBytes()));
         }
-        httpRestImpl.request.setUri(uri);
-        httpRestImpl.request.addHeader(HeaderNameEnum.HOST.getName(), hostHeader);
-        httpRestImpl.request.setProtocol(HttpProtocolEnum.HTTP_11.getProtocol());
+        request.setUri(uri);
+        request.addHeader(HeaderNameEnum.HOST.getName(), hostHeader);
+        request.setProtocol(HttpProtocolEnum.HTTP_11.getProtocol());
 
-        httpRestImpl.completableFuture.thenAccept(httpResponse -> {
+        httpRestImpl.getCompletableFuture().thenAccept(httpResponse -> {
             AioSession session = client.getSession();
             ResponseAttachment attachment = session.getAttachment();
             //重置附件，为下一个响应作准备
@@ -162,7 +176,7 @@ public final class HttpClient implements AutoCloseable {
                 attachment.setResponse(queue.poll());
             }
             //request标注为keep-alive，response不包含该header,默认保持连接.
-            if (HeaderValueEnum.KEEPALIVE.getName().equalsIgnoreCase(httpRestImpl.request.getHeader(HeaderNameEnum.CONNECTION.getName())) && httpResponse.getHeader(HeaderNameEnum.CONNECTION.getName()) == null) {
+            if (HeaderValueEnum.KEEPALIVE.getName().equalsIgnoreCase(request.getHeader(HeaderNameEnum.CONNECTION.getName())) && httpResponse.getHeader(HeaderNameEnum.CONNECTION.getName()) == null) {
                 return;
             }
             //存在链路复用情况
@@ -172,11 +186,11 @@ public final class HttpClient implements AutoCloseable {
             //非keep-alive,主动断开连接
             if (!HeaderValueEnum.KEEPALIVE.getName().equalsIgnoreCase(httpResponse.getHeader(HeaderNameEnum.CONNECTION.getName()))) {
                 close();
-            } else if (!HeaderValueEnum.KEEPALIVE.getName().equalsIgnoreCase(httpRestImpl.request.getHeader(HeaderNameEnum.CONNECTION.getName()))) {
+            } else if (!HeaderValueEnum.KEEPALIVE.getName().equalsIgnoreCase(request.getHeader(HeaderNameEnum.CONNECTION.getName()))) {
                 close();
             }
         });
-        httpRestImpl.completableFuture.exceptionally(throwable -> {
+        httpRestImpl.getCompletableFuture().exceptionally(throwable -> {
             close();
             return null;
         });

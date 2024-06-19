@@ -12,7 +12,6 @@ import org.smartboot.http.client.impl.DefaultHttpResponseHandler;
 import org.smartboot.http.client.impl.HttpRequestImpl;
 import org.smartboot.http.client.impl.HttpResponseImpl;
 import org.smartboot.http.common.enums.HeaderNameEnum;
-import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
@@ -26,7 +25,6 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
@@ -37,8 +35,8 @@ import java.util.function.Consumer;
  */
 class HttpRestImpl implements HttpRest {
     private final static String DEFAULT_USER_AGENT = "smart-http";
-    protected final HttpRequestImpl request;
-    protected final CompletableFuture<HttpResponseImpl> completableFuture = new CompletableFuture<>();
+    private final HttpRequestImpl request;
+    private final CompletableFuture<HttpResponseImpl> completableFuture = new CompletableFuture<>();
     private final AbstractQueue<AbstractResponse> queue;
     private Map<String, String> queryParams = null;
     private boolean commit = false;
@@ -48,13 +46,11 @@ class HttpRestImpl implements HttpRest {
      */
     private ResponseHandler responseHandler = new DefaultHttpResponseHandler();
     private final HttpResponseImpl response;
-    private final Semaphore semaphore;
 
-    HttpRestImpl(AioSession session, AbstractQueue<AbstractResponse> queue, Semaphore semaphore) {
+    HttpRestImpl(AioSession session, AbstractQueue<AbstractResponse> queue) {
         this.request = new HttpRequestImpl(session);
         this.queue = queue;
         this.response = new HttpResponseImpl(session, completableFuture);
-        this.semaphore = semaphore;
     }
 
     protected final void willSendRequest() {
@@ -144,7 +140,7 @@ class HttpRestImpl implements HttpRest {
         return body;
     }
 
-    public final Future<HttpResponse> done() {
+    public Future<HttpResponse> done() {
         try {
             willSendRequest();
             request.getOutputStream().close();
@@ -152,39 +148,34 @@ class HttpRestImpl implements HttpRest {
         } catch (Throwable e) {
             completableFuture.completeExceptionally(e);
         }
-        try {
-            return new Future<HttpResponse>() {
-                @Override
-                public boolean cancel(boolean mayInterruptIfRunning) {
-                    return completableFuture.cancel(mayInterruptIfRunning);
-                }
-
-                @Override
-                public boolean isCancelled() {
-                    return completableFuture.isCancelled();
-                }
-
-                @Override
-                public boolean isDone() {
-                    return completableFuture.isDone();
-                }
-
-                @Override
-                public HttpResponse get() throws InterruptedException, ExecutionException {
-                    return completableFuture.get();
-                }
-
-                @Override
-                public HttpResponse get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                    return completableFuture.get(timeout, unit);
-                }
-
-            };
-        } finally {
-            if (HeaderValueEnum.KEEPALIVE.getName().equals(request.getHeader(HeaderNameEnum.CONNECTION.getName()))) {
-                semaphore.release();
+        return new Future<HttpResponse>() {
+            @Override
+            public boolean cancel(boolean mayInterruptIfRunning) {
+                return completableFuture.cancel(mayInterruptIfRunning);
             }
-        }
+
+            @Override
+            public boolean isCancelled() {
+                return completableFuture.isCancelled();
+            }
+
+            @Override
+            public boolean isDone() {
+                return completableFuture.isDone();
+            }
+
+            @Override
+            public HttpResponse get() throws InterruptedException, ExecutionException {
+                return completableFuture.get();
+            }
+
+            @Override
+            public HttpResponse get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+                return completableFuture.get(timeout, unit);
+            }
+
+        };
+
     }
 
     public HttpRestImpl onSuccess(Consumer<HttpResponse> consumer) {
@@ -259,5 +250,13 @@ class HttpRestImpl implements HttpRest {
     public HttpRestImpl onResponse(ResponseHandler responseHandler) {
         this.responseHandler = Objects.requireNonNull(responseHandler);
         return this;
+    }
+
+    public HttpRequestImpl getRequest() {
+        return request;
+    }
+
+    public CompletableFuture<HttpResponseImpl> getCompletableFuture() {
+        return completableFuture;
     }
 }

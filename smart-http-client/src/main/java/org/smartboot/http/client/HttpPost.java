@@ -8,6 +8,7 @@
 
 package org.smartboot.http.client;
 
+import org.smartboot.http.client.impl.HttpRequestImpl;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
@@ -52,14 +53,15 @@ public final class HttpPost extends HttpRestWrapper {
                     }
                     byte[] bytes = sb.toString().getBytes();
                     // 设置 Header
-                    rest.request.setContentLength(bytes.length);
-                    rest.request.addHeader(HeaderNameEnum.CONTENT_TYPE.getName(), HeaderValueEnum.X_WWW_FORM_URLENCODED.getName());
+                    HttpRequestImpl request = rest.getRequest();
+                    request.setContentLength(bytes.length);
+                    request.addHeader(HeaderNameEnum.CONTENT_TYPE.getName(), HeaderValueEnum.X_WWW_FORM_URLENCODED.getName());
                     //输出数据
-                    rest.request.write(bytes);
-                    rest.request.getOutputStream().flush();
+                    request.write(bytes);
+                    request.getOutputStream().flush();
                 } catch (Exception e) {
                     e.printStackTrace();
-                    rest.completableFuture.completeExceptionally(e);
+                    rest.getCompletableFuture().completeExceptionally(e);
                 }
                 return HttpPost.this;
             }
@@ -75,7 +77,7 @@ public final class HttpPost extends HttpRestWrapper {
 
                     String boundary = "---" + System.currentTimeMillis();
 
-                    rest.request.addHeader(HeaderNameEnum.CONTENT_TYPE.getName(), HeaderValueEnum.MULTIPART_FORM_DATA.getName() + "; boundary=" + boundary);
+                    rest.getRequest().addHeader(HeaderNameEnum.CONTENT_TYPE.getName(), HeaderValueEnum.MULTIPART_FORM_DATA.getName() + "; boundary=" + boundary);
                     for (Multipart multipart : multiparts) {
                         write("--" + boundary + "\r\n");
                         multipart.write(this);
@@ -83,7 +85,7 @@ public final class HttpPost extends HttpRestWrapper {
                     write("--" + boundary + "--\r\n");
                 } catch (Exception e) {
                     e.printStackTrace();
-                    rest.completableFuture.completeExceptionally(e);
+                    rest.getCompletableFuture().completeExceptionally(e);
                 }
                 return HttpPost.this;
             }
