@@ -13,6 +13,7 @@ import org.smartboot.http.common.Cookie;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -58,11 +59,11 @@ public class HttpUtils {
 
     public static List<Cookie> decodeCookies(String cookieStr) {
         List<Cookie> cookies = new ArrayList<>();
-        decode(cookies, cookieStr, 0);
+        decode(cookies, cookieStr, 0, new HashMap<String, String>());
         return cookies;
     }
 
-    private static void decode(List<Cookie> cookies, String cookieStr, int offset) {
+    private static void decode(List<Cookie> cookies, String cookieStr, int offset, Map<String, String> cache) {
         while (offset < cookieStr.length() && cookieStr.charAt(offset) == ' ') {
             offset++;
         }
@@ -85,23 +86,44 @@ public class HttpUtils {
         String value = cookieStr.substring(index + 1, trimEnd);
 
         if (name.charAt(0) == '$') {
-            Cookie cookie = cookies.get(cookies.size() - 1);
-            switch (name) {
-                case Cookie.DOMAIN:
-                    cookie.setDomain(value);
-                    break;
-                case Cookie.VERSION:
-                    cookie.setVersion(Integer.parseInt(value));
-                    break;
-                case Cookie.PATH:
-                    cookie.setPath(value);
-                    break;
+            if (cookies.isEmpty()) {
+                cache.put(name, value);
+            } else {
+                Cookie cookie = cookies.get(cookies.size() - 1);
+                switch (name) {
+                    case Cookie.DOMAIN:
+                        cookie.setDomain(value);
+                        break;
+                    case Cookie.VERSION:
+                        cookie.setVersion(Integer.parseInt(value));
+                        break;
+                    case Cookie.PATH:
+                        cookie.setPath(value);
+                        break;
+                }
             }
         } else {
-            cookies.add(new Cookie(name, value));
+            Cookie cookie = new Cookie(name, value);
+            if (!cache.isEmpty()) {
+                cache.forEach((key, v) -> {
+                    switch (key) {
+                        case Cookie.DOMAIN:
+                            cookie.setDomain(v);
+                            break;
+                        case Cookie.VERSION:
+                            cookie.setVersion(Integer.parseInt(v));
+                            break;
+                        case Cookie.PATH:
+                            cookie.setPath(v);
+                            break;
+                    }
+                });
+                cache.clear();
+            }
+            cookies.add(cookie);
         }
         if (end != -1) {
-            decode(cookies, cookieStr, end + 1);
+            decode(cookies, cookieStr, end + 1, cache);
         }
     }
 
