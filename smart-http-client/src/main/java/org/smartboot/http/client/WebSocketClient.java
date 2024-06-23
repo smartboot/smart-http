@@ -288,10 +288,15 @@ public class WebSocketClient {
         this.asynchronousChannelGroup = asynchronousChannelGroup;
     }
 
-    public void close() throws IOException {
-        WebSocketUtil.sendMask(request.getOutputStream(), WebSocketUtil.OPCODE_CLOSE, new CloseReason(CloseReason.NORMAL_CLOSURE, "").toBytes());
-        connected = false;
-        client.shutdownNow();
+    public void close() {
+        try {
+            WebSocketUtil.sendMask(request.getOutputStream(), WebSocketUtil.OPCODE_CLOSE, new CloseReason(CloseReason.NORMAL_CLOSURE, "").toBytes());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            connected = false;
+            client.shutdownNow();
+        }
     }
 
 }
