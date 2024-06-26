@@ -104,7 +104,7 @@ public class HttpServerConfiguration {
     };
     private WebSocketHandler webSocketHandler;
 
-    private WafConfiguration wafConfiguration = new WafConfiguration();
+    private final WafConfiguration wafConfiguration = new WafConfiguration();
 
     public HttpServerConfiguration readMemoryPool(int totalBytes) {
         this.readPageSize = totalBytes;

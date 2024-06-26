@@ -42,7 +42,9 @@ public class HttpBootstrap {
      * Http服务端口号
      */
     private int port = 8080;
-
+    private BufferPagePool readBufferPool;
+    private BufferPagePool writeBufferPool;
+    private boolean started = false;
 
     public HttpBootstrap() {
         this(new HttpMessageProcessor());
@@ -96,17 +98,23 @@ public class HttpBootstrap {
      *
      * @throws RuntimeException
      */
-    public void start() {
+    public synchronized void start() {
+        if (started) {
+            throw new RuntimeException("server is running");
+        }
+        started = true;
         initByteCache();
-        BufferPagePool readBufferPool = new BufferPagePool(configuration.getReadPageSize(), 1, false);
+        if (configuration.getReadPageSize() > 0) {
+            readBufferPool = new BufferPagePool(configuration.getReadPageSize(), 1, false);
+        }
+        if (configuration.getWritePageSize() > 0 && configuration.getWritePageNum() > 0) {
+            writeBufferPool = new BufferPagePool(configuration.getWritePageSize(), configuration.getWritePageNum(), true);
+        }
+
         configuration.getPlugins().forEach(processor::addPlugin);
 
         server = new AioQuickServer(configuration.getHost(), port, new HttpRequestProtocol(configuration), processor);
-        server.setThreadNum(configuration.getThreadNum())
-                .setBannerEnabled(false)
-                .setBufferFactory(() -> new BufferPagePool(configuration.getWritePageSize(), configuration.getWritePageNum(), true))
-                .setReadBufferFactory(bufferPage -> readBufferPool.allocateBufferPage().allocate(configuration.getReadBufferSize()))
-                .setWriteBuffer(configuration.getWriteBufferSize(), 16);
+        server.setThreadNum(configuration.getThreadNum()).setBannerEnabled(false).setBufferPagePool(readBufferPool, writeBufferPool).setWriteBuffer(configuration.getWriteBufferSize(), 16);
         try {
             if (configuration.group() == null) {
                 server.start();
@@ -180,6 +188,12 @@ public class HttpBootstrap {
         if (server != null) {
             server.shutdown();
             server = null;
+        }
+        if (readBufferPool != null) {
+            readBufferPool.release();
+        }
+        if (writeBufferPool != null) {
+            writeBufferPool.release();
         }
     }
 }
