@@ -114,7 +114,11 @@ public class HttpBootstrap {
         configuration.getPlugins().forEach(processor::addPlugin);
 
         server = new AioQuickServer(configuration.getHost(), port, new HttpRequestProtocol(configuration), processor);
-        server.setThreadNum(configuration.getThreadNum()).setBannerEnabled(false).setBufferPagePool(readBufferPool, writeBufferPool).setWriteBuffer(configuration.getWriteBufferSize(), 16);
+        server.setThreadNum(configuration.getThreadNum())
+                .setBannerEnabled(false)
+                .setReadBufferSize(configuration.getReadBufferSize())
+                .setBufferPagePool(readBufferPool, writeBufferPool)
+                .setWriteBuffer(configuration.getWriteBufferSize(), 16);
         try {
             if (configuration.group() == null) {
                 server.start();
