@@ -15,8 +15,6 @@ import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.NumberUtils;
 import org.smartboot.http.common.utils.StringUtils;
-import org.smartboot.socket.buffer.BufferPagePool;
-import org.smartboot.socket.buffer.VirtualBuffer;
 import org.smartboot.socket.extension.plugins.Plugin;
 import org.smartboot.socket.extension.plugins.SslPlugin;
 import org.smartboot.socket.extension.plugins.StreamMonitorPlugin;
@@ -24,7 +22,6 @@ import org.smartboot.socket.extension.ssl.factory.ClientSSLContextFactory;
 import org.smartboot.socket.transport.AioQuickClient;
 import org.smartboot.socket.transport.AioSession;
 
-import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.util.Base64;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -236,8 +233,7 @@ public final class HttpClient implements AutoCloseable {
             }
             connected = true;
             client = configuration.getProxy() == null ? new AioQuickClient(configuration.getHost(), configuration.getPort(), protocol, processor) : new AioQuickClient(configuration.getProxy().getProxyHost(), configuration.getProxy().getProxyPort(), protocol, processor);
-            BufferPagePool readPool = configuration.getReadBufferPool();
-            client.setBufferPagePool(configuration.getWriteBufferPool()).setReadBufferFactory(bufferPage -> readPool == null ? VirtualBuffer.wrap(ByteBuffer.allocate(configuration.readBufferSize())) : readPool.allocateBufferPage().allocate(configuration.readBufferSize()));
+            client.setBufferPagePool(configuration.getReadBufferPool(), configuration.getWriteBufferPool()).setReadBufferSize(configuration.readBufferSize());
             if (configuration.getConnectTimeout() > 0) {
                 client.connectTimeout(configuration.getConnectTimeout());
             }

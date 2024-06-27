@@ -62,10 +62,10 @@ public class HttpServerConfiguration {
      * 服务线程数
      */
     private int threadNum = Math.max(Runtime.getRuntime().availableProcessors(), 2);
-    private int writePageSize = 1024 * 1024;
+    private int writePageSize;
     private int writePageNum = threadNum;
     private String host;
-    private int readPageSize = 1024 * 1024;
+    private int readPageSize;
     /**
      * 解析的header数量上限
      */
