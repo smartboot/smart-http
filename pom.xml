@@ -5,12 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.smartboot.http</groupId>
     <artifactId>smart-http-parent</artifactId>
-    <version>1.5.1</version>
+    <version>1.5.2</version>
     <packaging>pom</packaging>
 
     <properties>
         <smartsocket.version>1.5.46</smartsocket.version>
-        <smarthttp.version>1.5.1</smarthttp.version>
+        <smarthttp.version>1.5.2</smarthttp.version>
     </properties>
 
     <dependencyManagement>
