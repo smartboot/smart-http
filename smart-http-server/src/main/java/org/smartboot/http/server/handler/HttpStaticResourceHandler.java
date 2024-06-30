@@ -25,6 +25,7 @@ import org.smartboot.http.server.HttpServerHandler;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
@@ -66,13 +67,7 @@ public class HttpStaticResourceHandler extends HttpServerHandler {
         File file = new File(baseDir, URLDecoder.decode(fileName, StandardCharsets.UTF_8.name()));
         //404
         if (!file.isFile()) {
-            LOGGER.warn("file: {} not found!", request.getRequestURI());
-            response.setHttpStatus(HttpStatus.NOT_FOUND);
-            response.setHeader(HeaderNameEnum.CONTENT_TYPE.getName(), "text/html; charset=utf-8");
-
-            if (!HttpMethodEnum.HEAD.getMethod().equals(method)) {
-                throw new HttpException(HttpStatus.NOT_FOUND);
-            }
+            fileNotFound(request, response, completableFuture, method);
             completableFuture.complete(null);
             return;
         }
@@ -136,6 +131,32 @@ public class HttpStaticResourceHandler extends HttpServerHandler {
                     }
                 }
             });
+        }
+    }
+
+    private void fileNotFound(HttpRequest request, HttpResponse response, CompletableFuture<Object> completableFuture, String method) throws IOException {
+        if (request.getRequestURI().equals("/favicon.ico")) {
+            try (InputStream inputStream = HttpStaticResourceHandler.class.getClassLoader().getResourceAsStream("favicon.ico")) {
+                if (inputStream == null) {
+                    response.setHttpStatus(HttpStatus.NOT_FOUND);
+                    return;
+                }
+                String contentType = Mimetypes.getInstance().getMimetype("favicon.ico");
+                response.setHeader(HeaderNameEnum.CONTENT_TYPE.getName(), contentType + "; charset=utf-8");
+                byte[] bytes = new byte[4094];
+                int length;
+                while ((length = inputStream.read(bytes)) != -1) {
+                    response.getOutputStream().write(bytes, 0, length);
+                }
+            }
+            return;
+        }
+        LOGGER.warn("file: {} not found!", request.getRequestURI());
+        response.setHttpStatus(HttpStatus.NOT_FOUND);
+        response.setHeader(HeaderNameEnum.CONTENT_TYPE.getName(), "text/html; charset=utf-8");
+
+        if (!HttpMethodEnum.HEAD.getMethod().equals(method)) {
+            throw new HttpException(HttpStatus.NOT_FOUND);
         }
     }
 }

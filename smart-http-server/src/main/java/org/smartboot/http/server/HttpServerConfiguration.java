@@ -94,6 +94,8 @@ public class HttpServerConfiguration {
      */
     private int maxRequestSize = Integer.MAX_VALUE;
 
+    private boolean lowMemory = false;
+
     private AsynchronousChannelGroup group;
 
     private HttpServerHandler httpServerHandler = new HttpServerHandler() {
@@ -308,5 +310,13 @@ public class HttpServerConfiguration {
     public HttpServerConfiguration setWsIdleTimeout(int wsIdleTimeout) {
         this.wsIdleTimeout = wsIdleTimeout;
         return this;
+    }
+
+    boolean isLowMemory() {
+        return lowMemory;
+    }
+
+    public void setLowMemory(boolean lowMemory) {
+        this.lowMemory = lowMemory;
     }
 }

@@ -119,6 +119,9 @@ public class HttpBootstrap {
                 .setReadBufferSize(configuration.getReadBufferSize())
                 .setBufferPagePool(readBufferPool, writeBufferPool)
                 .setWriteBuffer(configuration.getWriteBufferSize(), 16);
+        if (!configuration.isLowMemory()) {
+            server.disableLowMemory();
+        }
         try {
             if (configuration.group() == null) {
                 server.start();
