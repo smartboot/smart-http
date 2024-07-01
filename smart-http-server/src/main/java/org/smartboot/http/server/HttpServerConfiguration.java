@@ -316,7 +316,8 @@ public class HttpServerConfiguration {
         return lowMemory;
     }
 
-    public void setLowMemory(boolean lowMemory) {
+    public HttpServerConfiguration setLowMemory(boolean lowMemory) {
         this.lowMemory = lowMemory;
+        return this;
     }
 }

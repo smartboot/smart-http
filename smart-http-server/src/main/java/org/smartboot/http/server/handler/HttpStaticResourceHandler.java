@@ -65,6 +65,9 @@ public class HttpStaticResourceHandler extends HttpServerHandler {
             LOGGER.info("请求URL: " + fileName);
         }
         File file = new File(baseDir, URLDecoder.decode(fileName, StandardCharsets.UTF_8.name()));
+        if (file.isDirectory()) {
+            file = new File(file, "index.html");
+        }
         //404
         if (!file.isFile()) {
             fileNotFound(request, response, completableFuture, method);

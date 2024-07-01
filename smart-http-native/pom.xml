@@ -22,6 +22,16 @@
     </properties>
     <dependencies>
         <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>2.2</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.smartboot.socket</groupId>
+            <artifactId>aio-pro</artifactId>
+            <version>1.6.46</version>
+        </dependency>
+        <dependency>
             <groupId>io.github.smartboot.http</groupId>
             <artifactId>smart-http-server</artifactId>
             <version>1.5.2</version>
@@ -58,6 +68,7 @@
                                 --no-fallback
                                 --verbose
                                 --report-unsupported-elements-at-runtime
+                                -H:ReflectionConfigurationFiles=reflection-config.json
                                 -H:IncludeResources=META-INF/*.*|mime.types|License.shield
                             </buildArgs>
                         </configuration>
