@@ -1,5 +1,7 @@
 package org.smartboot.http.client;
 
+import java.util.function.Consumer;
+
 /**
  * @author 三刀（zhengjunweimail@163.com）
  * @version V1.0 , 2023/2/13
@@ -18,6 +20,11 @@ class CommonBody<T extends HttpRest> implements Body<T> {
     public Body<T> write(byte[] bytes, int offset, int len) {
         body.write(bytes, offset, len);
         return this;
+    }
+
+    @Override
+    public void write(byte[] bytes, int offset, int len, Consumer<Body<T>> consumer) {
+        body.write(bytes, offset, len, (b) -> consumer.accept(this));
     }
 
     @Override

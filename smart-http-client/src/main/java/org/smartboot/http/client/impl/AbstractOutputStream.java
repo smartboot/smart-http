@@ -81,14 +81,6 @@ abstract class AbstractOutputStream extends BufferOutputStream {
         committed = true;
     }
 
-    /**
-     * 是否支持chunked输出
-     *
-     * @return
-     */
-    private boolean supportChunked(AbstractRequest request) {
-        return request.getContentLength() < 0 && HttpProtocolEnum.HTTP_11.getProtocol().equals(request.getProtocol());
-    }
 
     private void convertCookieToHeader(AbstractRequest request) {
         List<Cookie> cookies = request.getCookies();

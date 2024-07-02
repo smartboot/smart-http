@@ -120,6 +120,17 @@ class HttpRestImpl implements HttpRest {
                 }
 
                 @Override
+                public void write(byte[] bytes, int offset, int len, Consumer<Body<HttpRestImpl>> consumer) {
+                    try {
+                        willSendRequest();
+                        request.getOutputStream().write(bytes, offset, len, bufferOutputStream -> consumer.accept(HttpRestImpl.this.body));
+                    } catch (IOException e) {
+                        System.out.println("body stream write error! " + e.getMessage());
+                        completableFuture.completeExceptionally(e);
+                    }
+                }
+
+                @Override
                 public Body<HttpRestImpl> flush() {
                     try {
                         request.getOutputStream().flush();

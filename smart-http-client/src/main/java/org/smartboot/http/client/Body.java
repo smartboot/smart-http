@@ -8,6 +8,8 @@
 
 package org.smartboot.http.client;
 
+import java.util.function.Consumer;
+
 /**
  * @author 三刀（zhengjunweimail@163.com）
  * @version V1.0 , 2021/7/17
@@ -17,6 +19,11 @@ public interface Body<T> {
      * 往缓冲区中写入数据
      */
     Body<T> write(byte[] bytes, int offset, int len);
+
+    /**
+     * 往缓冲区中写入数据
+     */
+    void write(byte[] bytes, int offset, int len, Consumer<Body<T>> consumer);
 
     /**
      * 往缓冲区中写入数据

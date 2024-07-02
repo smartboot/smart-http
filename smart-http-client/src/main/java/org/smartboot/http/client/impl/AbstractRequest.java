@@ -13,6 +13,7 @@ import org.smartboot.http.common.BufferOutputStream;
 import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.enums.HeaderNameEnum;
+import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
 
 import java.io.IOException;
@@ -208,6 +209,9 @@ class AbstractRequest implements HttpRequest {
 
     public void setMethod(String method) {
         this.method = method;
+        if (HttpMethodEnum.GET.name().equals(method)) {
+            outputStream.disableChunked();
+        }
     }
 
     @Override
