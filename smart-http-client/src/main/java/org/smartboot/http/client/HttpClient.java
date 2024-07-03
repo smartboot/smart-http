@@ -233,7 +233,7 @@ public final class HttpClient implements AutoCloseable {
             }
             connected = true;
             client = configuration.getProxy() == null ? new AioQuickClient(configuration.getHost(), configuration.getPort(), protocol, processor) : new AioQuickClient(configuration.getProxy().getProxyHost(), configuration.getProxy().getProxyPort(), protocol, processor);
-            client.setBufferPagePool(configuration.getReadBufferPool(), configuration.getWriteBufferPool()).setReadBufferSize(configuration.readBufferSize());
+            client.setBufferPagePool(configuration.getReadBufferPool(), configuration.getWriteBufferPool()).setWriteBuffer(configuration.getWriteBufferSize(), 2).setReadBufferSize(configuration.readBufferSize());
             if (configuration.getConnectTimeout() > 0) {
                 client.connectTimeout(configuration.getConnectTimeout());
             }

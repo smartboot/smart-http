@@ -39,6 +39,11 @@ class ClientConfiguration<T> {
      */
     private int readBufferSize = 1024;
 
+    /**
+     * read缓冲区大小
+     */
+    private int writeBufferSize = 1024;
+
 
     /**
      * 缓冲池
@@ -118,6 +123,15 @@ class ClientConfiguration<T> {
 
     protected ClientConfiguration<T> readBufferPool(BufferPagePool readBufferPool) {
         this.readBufferPool = readBufferPool;
+        return this;
+    }
+
+    public int getWriteBufferSize() {
+        return writeBufferSize;
+    }
+
+    public ClientConfiguration<T> setWriteBufferSize(int writeBufferSize) {
+        this.writeBufferSize = writeBufferSize;
         return this;
     }
 
