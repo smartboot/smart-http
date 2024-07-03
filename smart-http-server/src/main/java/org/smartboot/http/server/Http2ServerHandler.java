@@ -8,6 +8,7 @@
 
 package org.smartboot.http.server;
 
+import org.smartboot.http.common.enums.BodyStreamStatus;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
@@ -37,7 +38,7 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
 
     @Override
     public void onHeaderComplete(Request request) throws IOException {
-        String htt2Settings=request.getHeader(HeaderNameEnum.HTTP2_SETTINGS.getName());
+        String htt2Settings = request.getHeader(HeaderNameEnum.HTTP2_SETTINGS.getName());
         WebSocketResponseImpl response = request.newWebsocketRequest().getResponse();
         response.setHttpStatus(HttpStatus.SWITCHING_PROTOCOLS);
         response.setHeader(HeaderNameEnum.UPGRADE.getName(), HeaderValueEnum.H2C.getName());
@@ -47,9 +48,9 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
     }
 
     @Override
-    public boolean onBodyStream(ByteBuffer buffer, Request request) {
+    public BodyStreamStatus onBodyStream(ByteBuffer buffer, Request request) {
         if (HttpMethodEnum.GET.getMethod().equals(request.getMethod())) {
-            return true;
+            return BodyStreamStatus.Finish;
         }
         //Post请求
         if (HttpMethodEnum.POST.getMethod().equals(request.getMethod())
@@ -65,12 +66,12 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
             if (smartDecoder.decode(buffer)) {
                 bodyDecoderMap.remove(request);
                 request.setFormUrlencoded(smartDecoder.getBuffer());
-                return true;
+                return BodyStreamStatus.Finish;
             } else {
-                return false;
+                return BodyStreamStatus.Continue;
             }
         } else {
-            return true;
+            return BodyStreamStatus.Finish;
         }
     }
 

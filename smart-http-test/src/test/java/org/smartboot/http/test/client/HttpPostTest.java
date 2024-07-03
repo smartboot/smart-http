@@ -14,6 +14,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.smartboot.http.client.HttpClient;
+import org.smartboot.http.common.enums.BodyStreamStatus;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.utils.StringUtils;
@@ -63,7 +64,7 @@ public class HttpPostTest {
             private AttachKey<ByteBuffer> bodyKey = AttachKey.valueOf("bodyKey");
 
             @Override
-            public boolean onBodyStream(ByteBuffer buffer, Request request) {
+            public BodyStreamStatus onBodyStream(ByteBuffer buffer, Request request) {
                 Attachment attachment = request.getAttachment();
                 ByteBuffer bodyBuffer = null;
                 if (attachment != null) {
@@ -85,7 +86,7 @@ public class HttpPostTest {
                     bodyBuffer.put(buffer);
                     buffer.limit(limit);
                 }
-                return !bodyBuffer.hasRemaining();
+                return bodyBuffer.hasRemaining() ? BodyStreamStatus.Continue : BodyStreamStatus.Finish;
             }
 
             @Override

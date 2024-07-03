@@ -9,6 +9,7 @@
 package org.smartboot.http.client;
 
 import org.smartboot.http.client.decode.HeaderDecoder;
+import org.smartboot.http.common.enums.BodyStreamStatus;
 import org.smartboot.http.common.enums.DecodePartEnum;
 import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.extension.processor.AbstractMessageProcessor;
@@ -62,9 +63,10 @@ final class HttpMessageProcessor extends AbstractMessageProcessor<AbstractRespon
     }
 
     private void doHttpBody(AbstractResponse response, ByteBuffer readBuffer, ResponseAttachment responseAttachment, ResponseHandler responseHandler) {
-        if (responseHandler.onBodyStream(readBuffer, response)) {
+        BodyStreamStatus status = responseHandler.onBodyStream(readBuffer, response);
+        if (status == BodyStreamStatus.Finish) {
             response.setDecodePartEnum(DecodePartEnum.FINISH);
-        } else if (readBuffer.hasRemaining()) {
+        } else if (status == BodyStreamStatus.Continue && readBuffer.hasRemaining()) {
             //半包,继续读数据
             responseAttachment.setDecoder(HeaderDecoder.BODY_CONTINUE_DECODER);
         }

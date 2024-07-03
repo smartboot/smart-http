@@ -8,6 +8,7 @@
 
 package org.smartboot.http.server.handler;
 
+import org.smartboot.http.common.enums.BodyStreamStatus;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.utils.StringUtils;
@@ -47,7 +48,7 @@ public final class BasicAuthServerHandler extends HttpServerHandler {
     }
 
     @Override
-    public boolean onBodyStream(ByteBuffer buffer, Request request) {
+    public BodyStreamStatus onBodyStream(ByteBuffer buffer, Request request) {
         return httpServerHandler.onBodyStream(buffer, request);
     }
 

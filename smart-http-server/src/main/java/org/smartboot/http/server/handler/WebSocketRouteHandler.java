@@ -8,6 +8,7 @@
 
 package org.smartboot.http.server.handler;
 
+import org.smartboot.http.common.enums.BodyStreamStatus;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
 import org.smartboot.http.common.utils.AntPathMatcher;
@@ -72,7 +73,7 @@ public final class WebSocketRouteHandler extends WebSocketHandler {
     }
 
     @Override
-    public boolean onBodyStream(ByteBuffer byteBuffer, Request request) {
+    public BodyStreamStatus onBodyStream(ByteBuffer byteBuffer, Request request) {
         return handlerMap.get(request.getRequestURI()).onBodyStream(byteBuffer, request);
     }
 

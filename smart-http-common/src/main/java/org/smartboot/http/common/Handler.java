@@ -8,6 +8,8 @@
 
 package org.smartboot.http.common;
 
+import org.smartboot.http.common.enums.BodyStreamStatus;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -26,7 +28,7 @@ public interface Handler<T> {
      * @param request
      * @return
      */
-    boolean onBodyStream(ByteBuffer buffer, T request);
+    BodyStreamStatus onBodyStream(ByteBuffer buffer, T request);
 
 
     /**

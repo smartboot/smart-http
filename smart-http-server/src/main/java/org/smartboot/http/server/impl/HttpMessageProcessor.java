@@ -8,6 +8,7 @@
 
 package org.smartboot.http.server.impl;
 
+import org.smartboot.http.common.enums.BodyStreamStatus;
 import org.smartboot.http.common.enums.DecodePartEnum;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
@@ -208,12 +209,13 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
 
 
     private void onHttpBody(Request request, ByteBuffer readBuffer) {
-        if (request.getServerHandler().onBodyStream(readBuffer, request)) {
+        BodyStreamStatus status = request.getServerHandler().onBodyStream(readBuffer, request);
+        if (status == BodyStreamStatus.Finish) {
             request.setDecodePartEnum(DecodePartEnum.FINISH);
             if (request.getRequestType() == HttpTypeEnum.HTTP) {
                 request.setDecoder(null);
             }
-        } else if (readBuffer.hasRemaining()) {
+        } else if (status == BodyStreamStatus.Continue && readBuffer.hasRemaining()) {
             //半包,继续读数据
             request.setDecoder(HttpRequestProtocol.BODY_CONTINUE_DECODER);
         }

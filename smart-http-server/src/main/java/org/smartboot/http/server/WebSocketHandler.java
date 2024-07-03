@@ -11,6 +11,7 @@ package org.smartboot.http.server;
 import org.smartboot.http.common.codec.websocket.BasicFrameDecoder;
 import org.smartboot.http.common.codec.websocket.Decoder;
 import org.smartboot.http.common.codec.websocket.WebSocket;
+import org.smartboot.http.common.enums.BodyStreamStatus;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpStatus;
@@ -75,15 +76,15 @@ public abstract class WebSocketHandler implements ServerHandler<WebSocketRequest
     }
 
     @Override
-    public boolean onBodyStream(ByteBuffer byteBuffer, Request request) {
+    public BodyStreamStatus onBodyStream(ByteBuffer byteBuffer, Request request) {
         Attachment attachment = request.newWebsocketRequest().getAttachment();
         Decoder decoder = attachment.get(FRAME_DECODER_KEY).decode(byteBuffer, request.newWebsocketRequest());
         if (decoder == WebSocket.PAYLOAD_FINISH) {
             attachment.put(FRAME_DECODER_KEY, basicFrameDecoder);
-            return true;
+            return BodyStreamStatus.Finish;
         } else {
             attachment.put(FRAME_DECODER_KEY, decoder);
-            return false;
+            return BodyStreamStatus.Continue;
         }
     }
 

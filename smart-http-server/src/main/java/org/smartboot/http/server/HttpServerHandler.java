@@ -8,6 +8,7 @@
 
 package org.smartboot.http.server;
 
+import org.smartboot.http.common.enums.BodyStreamStatus;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
@@ -29,9 +30,9 @@ import java.nio.ByteBuffer;
 public abstract class HttpServerHandler implements ServerHandler<HttpRequest, HttpResponse> {
 
     @Override
-    public boolean onBodyStream(ByteBuffer buffer, Request request) {
+    public BodyStreamStatus onBodyStream(ByteBuffer buffer, Request request) {
         if (HttpMethodEnum.GET.getMethod().equals(request.getMethod())) {
-            return true;
+            return BodyStreamStatus.Finish;
         }
         int postLength = request.getContentLength();
         //Post请求
@@ -41,7 +42,7 @@ public abstract class HttpServerHandler implements ServerHandler<HttpRequest, Ht
             if (postLength < 0) {
                 throw new HttpException(HttpStatus.LENGTH_REQUIRED);
             } else if (postLength == 0) {
-                return true;
+                return BodyStreamStatus.Finish;
             }
 
             SmartDecoder smartDecoder = request.getBodyDecoder();
@@ -53,12 +54,12 @@ public abstract class HttpServerHandler implements ServerHandler<HttpRequest, Ht
             if (smartDecoder.decode(buffer)) {
                 request.setFormUrlencoded(smartDecoder.getBuffer());
                 request.setBodyDecoder(null);
-                return true;
+                return BodyStreamStatus.Finish;
             } else {
-                return false;
+                return BodyStreamStatus.Continue;
             }
         } else {
-            return true;
+            return BodyStreamStatus.Finish;
         }
     }
 
