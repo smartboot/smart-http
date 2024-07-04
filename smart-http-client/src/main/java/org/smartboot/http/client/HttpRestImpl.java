@@ -17,6 +17,7 @@ import org.smartboot.socket.transport.AioSession;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.ByteBuffer;
 import java.util.AbstractQueue;
 import java.util.Collection;
 import java.util.HashMap;
@@ -119,11 +120,22 @@ class HttpRestImpl implements HttpRest {
                     return this;
                 }
 
+//                @Override
+//                public void write(byte[] bytes, int offset, int len, Consumer<Body<HttpRestImpl>> consumer) {
+//                    try {
+//                        willSendRequest();
+//                        request.getOutputStream().write(bytes, offset, len, bufferOutputStream -> consumer.accept(HttpRestImpl.this.body));
+//                    } catch (IOException e) {
+//                        System.out.println("body stream write error! " + e.getMessage());
+//                        completableFuture.completeExceptionally(e);
+//                    }
+//                }
+
                 @Override
-                public void write(byte[] bytes, int offset, int len, Consumer<Body<HttpRestImpl>> consumer) {
+                public void transferFrom(ByteBuffer buffer, Consumer<Body<HttpRestImpl>> consumer) {
                     try {
                         willSendRequest();
-                        request.getOutputStream().write(bytes, offset, len, bufferOutputStream -> consumer.accept(HttpRestImpl.this.body));
+                        request.getOutputStream().transferFrom(buffer, bufferOutputStream -> consumer.accept(HttpRestImpl.this.body));
                     } catch (IOException e) {
                         System.out.println("body stream write error! " + e.getMessage());
                         completableFuture.completeExceptionally(e);
@@ -133,6 +145,7 @@ class HttpRestImpl implements HttpRest {
                 @Override
                 public Body<HttpRestImpl> flush() {
                     try {
+                        willSendRequest();
                         request.getOutputStream().flush();
                     } catch (IOException e) {
                         System.out.println("body stream flush error! " + e.getMessage());

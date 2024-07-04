@@ -1,5 +1,6 @@
 package org.smartboot.http.client;
 
+import java.nio.ByteBuffer;
 import java.util.function.Consumer;
 
 /**
@@ -22,9 +23,14 @@ class CommonBody<T extends HttpRest> implements Body<T> {
         return this;
     }
 
+//    @Override
+//    public void write(byte[] bytes, int offset, int len, Consumer<Body<T>> consumer) {
+//        body.write(bytes, offset, len, (b) -> consumer.accept(this));
+//    }
+
     @Override
-    public void write(byte[] bytes, int offset, int len, Consumer<Body<T>> consumer) {
-        body.write(bytes, offset, len, (b) -> consumer.accept(this));
+    public void transferFrom(ByteBuffer buffer, Consumer<Body<T>> consumer) {
+        body.transferFrom(buffer, (b) -> consumer.accept(this));
     }
 
     @Override

@@ -15,6 +15,7 @@ import org.smartboot.socket.transport.WriteBuffer;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -80,6 +81,34 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
             writeBuffer.write(Constant.CRLF_BYTES, 0, 2, writeBuffer -> consumer.accept(BufferOutputStream.this));
         } else {
             writeBuffer.write(b, off, len, writeBuffer -> consumer.accept(BufferOutputStream.this));
+        }
+    }
+
+    public final void transferFrom(ByteBuffer buffer, Consumer<BufferOutputStream> consumer) throws IOException {
+        writeHeader(HeaderWriteSource.WRITE);
+        if (!chunkedSupport) {
+            writeBuffer.transferFrom(buffer, writeBuffer -> consumer.accept(BufferOutputStream.this));
+            return;
+        }
+        byte[] start = (Integer.toHexString(buffer.remaining()) + "\r\n").getBytes();
+        if (buffer.position() >= start.length) {
+            buffer.put(start, buffer.position() - start.length, start.length);
+            buffer.position(buffer.position() - start.length);
+        } else {
+            writeBuffer.write(start);
+        }
+        if (buffer.capacity() - buffer.limit() >= Constant.CRLF_BYTES.length) {
+            buffer.put(Constant.CRLF_BYTES, buffer.limit(), Constant.CRLF_BYTES.length);
+            buffer.limit(buffer.limit() + Constant.CRLF_BYTES.length);
+            writeBuffer.transferFrom(buffer, writeBuffer -> consumer.accept(BufferOutputStream.this));
+        } else {
+            writeBuffer.transferFrom(buffer, writeBuffer -> {
+                try {
+                    writeBuffer.write(Constant.CRLF_BYTES, 0, 2, buffer1 -> consumer.accept(BufferOutputStream.this));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
         }
     }
 
