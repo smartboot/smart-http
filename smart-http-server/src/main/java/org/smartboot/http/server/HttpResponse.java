@@ -106,9 +106,9 @@ public interface HttpResponse {
      */
     public Collection<String> getHeaderNames();
 
-    void setContentLength(int contentLength);
+    void setContentLength(long contentLength);
 
-    int getContentLength();
+    long getContentLength();
 
     void setContentType(String contentType);
 

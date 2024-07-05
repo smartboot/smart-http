@@ -55,7 +55,7 @@ class AbstractResponse implements HttpResponse, Reset {
     /**
      * 响应正文长度
      */
-    private int contentLength = -1;
+    private long contentLength = -1;
 
     /**
      * 正文编码方式
@@ -239,12 +239,12 @@ class AbstractResponse implements HttpResponse, Reset {
     }
 
     @Override
-    public int getContentLength() {
+    public long getContentLength() {
         return contentLength;
     }
 
     @Override
-    public void setContentLength(int contentLength) {
+    public void setContentLength(long contentLength) {
         this.contentLength = contentLength;
     }
 

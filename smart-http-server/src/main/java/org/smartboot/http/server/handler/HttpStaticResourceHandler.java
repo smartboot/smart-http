@@ -27,6 +27,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLDecoder;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.concurrent.CompletableFuture;
@@ -107,27 +109,31 @@ public class HttpStaticResourceHandler extends HttpServerHandler {
         });
         long fileSize = response.getContentLength();
         AtomicLong readPos = new AtomicLong(0);
-        byte[] bytes = new byte[1024 * 1024];
+        FileChannel fileChannel = fis.getChannel();
+        ByteBuffer buffer = ByteBuffer.allocate(8192);
         int len;
-        len = fis.read(bytes);
+        len = fileChannel.read(buffer);
+        buffer.flip();
         if (len == -1) {
             completableFuture.completeExceptionally(new IOException("EOF"));
         } else if (readPos.addAndGet(len) >= fileSize) {
-            response.getOutputStream().write(bytes, 0, len);
-            completableFuture.complete(null);
+            response.getOutputStream().transferFrom(buffer, bufferOutputStream -> completableFuture.complete(null));
+
         } else {
-            response.getOutputStream().write(bytes, 0, len, new Consumer<BufferOutputStream>() {
+            response.getOutputStream().transferFrom(buffer, new Consumer<BufferOutputStream>() {
                 @Override
                 public void accept(BufferOutputStream result) {
                     try {
-                        int len = fis.read(bytes);
+                        buffer.compact();
+                        int len = fileChannel.read(buffer);
+                        buffer.flip();
                         if (len == -1) {
                             completableFuture.completeExceptionally(new IOException("EOF"));
                         } else if (readPos.addAndGet(len) >= fileSize) {
-                            response.getOutputStream().write(bytes, 0, len);
-                            completableFuture.complete(null);
+                            response.getOutputStream().transferFrom(buffer, bufferOutputStream -> completableFuture.complete(null));
+
                         } else {
-                            response.getOutputStream().write(bytes, 0, len, this);
+                            response.getOutputStream().transferFrom(buffer, this);
                         }
                     } catch (Throwable throwable) {
                         completableFuture.completeExceptionally(throwable);

@@ -69,13 +69,13 @@ final class HttpOutputStream extends AbstractOutputStream {
     protected byte[] getHeadPart(boolean hasHeader) {
         checkChunked();
         long currentTime = flushDate();
-        int contentLength = response.getContentLength();
+        long contentLength = response.getContentLength();
         String contentType = response.getContentType();
         //成功消息优先从缓存中加载。启用缓存的条件：Http_200, contentLength<512,未设置过Header,Http/1.1
         boolean cache = response.isDefaultStatus() && contentLength > 0 && contentLength < CACHE_LIMIT && !hasHeader;
 
         if (cache) {
-            WriteCache data = CACHE_CONTENT_TYPE_AND_LENGTH[contentLength].get(contentType);
+            WriteCache data = CACHE_CONTENT_TYPE_AND_LENGTH[(int) contentLength].get(contentType);
             if (data != null) {
                 if (currentTime > data.getExpireTime() && data.getSemaphore().tryAcquire()) {
                     try {
@@ -109,7 +109,7 @@ final class HttpOutputStream extends AbstractOutputStream {
         if (cache) {
             sb.append(Constant.CRLF);
             WriteCache writeCache = new WriteCache(currentTime + 1000, sb.toString().getBytes());
-            CACHE_CONTENT_TYPE_AND_LENGTH[contentLength].put(contentType, writeCache);
+            CACHE_CONTENT_TYPE_AND_LENGTH[(int) contentLength].put(contentType, writeCache);
             return writeCache.getCacheData();
         }
         return hasHeader ? sb.toString().getBytes() : sb.append(Constant.CRLF).toString().getBytes();
