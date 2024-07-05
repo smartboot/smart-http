@@ -26,7 +26,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -48,11 +47,7 @@ public class HttpStaticResourceHandler extends HttpServerHandler {
     private final File baseDir;
 
     public HttpStaticResourceHandler(String baseDir) {
-        this(new File(baseDir).toURI());
-    }
-
-    public HttpStaticResourceHandler(URI baseURI) {
-        this.baseDir = new File(baseURI);
+        this.baseDir = new File(new File(baseDir).getAbsolutePath());
         if (!this.baseDir.isDirectory()) {
             throw new RuntimeException(baseDir + " is not a directory");
         }
