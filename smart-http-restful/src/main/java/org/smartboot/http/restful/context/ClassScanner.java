@@ -1,5 +1,8 @@
 package org.smartboot.http.restful.context;
 
+import org.smartboot.http.common.logging.Logger;
+import org.smartboot.http.common.logging.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -19,6 +22,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 class ClassScanner {
+    private static final Logger logger = LoggerFactory.getLogger(ClassScanner.class);
 
     public static Map<Class<? extends Annotation>, List<Class<?>>> findClassesWithAnnotation(List<Class<? extends Annotation>> annotations, String packageName) throws Exception {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -31,6 +35,8 @@ class ClassScanner {
                 classes.addAll(findClasses(new File(resource.getFile()), packageName));
             } else if ("jar".equals(resource.getProtocol())) {
                 classes.addAll(scanClassesInJar(resource, path));
+            } else if ("resource".equals(resource.getProtocol())) {
+                classes.addAll(scanClassesInResource(resource, path));
             } else {
                 System.out.println(resource.getProtocol());
             }
@@ -72,6 +78,39 @@ class ClassScanner {
                                     .replace("/", ".")
                                     .replace(".class", "");
                             try {
+                                classNames.add(Class.forName(className));
+                            } catch (ClassNotFoundException e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+            }
+        }
+
+        return classNames;
+    }
+
+    /**
+     * 扫描指定jar包中的子目录
+     */
+    private static List<Class<?>> scanClassesInResource(URL url, String packagePath) throws IOException, URISyntaxException {
+        List<Class<?>> classNames = new ArrayList<>();
+
+        URI uri = url.toURI();
+        try (FileSystem fileSystem = FileSystems.newFileSystem(uri, Collections.emptyMap())) {
+            Path basePath = fileSystem.getPath(packagePath);
+            if (!Files.exists(basePath)) {
+                return classNames;
+            }
+
+            try (Stream<Path> walk = Files.walk(basePath)) {
+                walk.filter(Files::isRegularFile)
+                        .filter(path -> path.toString().endsWith(".class") && !path.toString().contains("$"))
+                        .forEach(path -> {
+                            String className = path.toString()
+                                    .replace("/", ".")
+                                    .replace(".class", "");
+                            try {
+                                logger.info("load class: {}", className);
                                 classNames.add(Class.forName(className));
                             } catch (ClassNotFoundException e) {
                                 throw new RuntimeException(e);
