@@ -42,9 +42,21 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
         this.writeBuffer = session.writeBuffer();
     }
 
+    /**
+     * 不推荐使用该方法，此方法性能不佳
+     * @param b   the <code>byte</code>.
+     * @throws IOException
+     */
     @Override
-    public final void write(int b) {
-        throw new UnsupportedOperationException();
+    public final void write(int b) throws IOException {
+        writeHeader(HeaderWriteSource.WRITE);
+        if (chunkedSupport) {
+            writeBuffer.write((Integer.toHexString(1) + "\r\n").getBytes());
+            writeBuffer.write(b);
+            writeBuffer.write(Constant.CRLF_BYTES);
+        } else {
+            writeBuffer.write(b);
+        }
     }
 
     /**
