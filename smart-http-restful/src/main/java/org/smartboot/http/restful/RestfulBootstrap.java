@@ -73,8 +73,12 @@ public class RestfulBootstrap {
     }
 
     public RestfulBootstrap scan(String... packageName) throws Exception {
-        applicationContext.scan(Arrays.asList(packageName));
+        getApplicationContext().scan(Arrays.asList(packageName));
         return this;
+    }
+
+    public ApplicationContext getApplicationContext() {
+        return applicationContext;
     }
 
     public RestfulBootstrap controller(Class<?>... classes) throws Exception {

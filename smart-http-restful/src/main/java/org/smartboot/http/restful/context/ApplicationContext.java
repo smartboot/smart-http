@@ -44,6 +44,11 @@ public class ApplicationContext {
         for (Map.Entry<Expand, List<Class<?>>> entry : expandListMap.entrySet()) {
             Expand key = entry.getKey();
             List<Class<?>> value = entry.getValue();
+            for (Class clazz : value) {
+                if (clazz.getAnnotation(key.expandAnnotation()) == null) {
+                    throw new IllegalAccessException("@" + key.expandAnnotation().getName() + " annotation must be added to the class: " + clazz.getName());
+                }
+            }
             key.initializeBean(this, value);
         }
         //依赖注入
