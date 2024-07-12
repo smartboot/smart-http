@@ -10,6 +10,8 @@ package org.smartboot.http.server.handler;
 
 import org.smartboot.http.common.enums.BodyStreamStatus;
 import org.smartboot.http.common.enums.HttpStatus;
+import org.smartboot.http.common.logging.Logger;
+import org.smartboot.http.common.logging.LoggerFactory;
 import org.smartboot.http.common.utils.AntPathMatcher;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
@@ -28,6 +30,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version V1.0 , 2018/3/24
  */
 public final class HttpRouteHandler extends HttpServerHandler {
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(HttpRouteHandler.class);
     private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
     /**
      * 默认404
@@ -65,7 +69,8 @@ public final class HttpRouteHandler extends HttpServerHandler {
 
     @Override
     public void onClose(Request request) {
-        throw new UnsupportedOperationException();
+        LOGGER.warn("connection is closed before route match.");
+        defaultHandler.onClose(request);
     }
 
     @Override
