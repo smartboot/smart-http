@@ -9,7 +9,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <smartsocket.version>1.5.48</smartsocket.version>
+        <smartsocket.version>1.5.49</smartsocket.version>
         <smarthttp.version>1.5.3</smarthttp.version>
     </properties>
 
@@ -150,9 +150,7 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
                     <!--<links>https://docs.oracle.com/javase/7/docs/api/</links>-->
-                    <aggregate>true</aggregate>
                     <show>public</show>
-                    <additionalparam>-Xdoclint:none</additionalparam>
                     <failOnError>false</failOnError>
                 </configuration>
                 <executions>
