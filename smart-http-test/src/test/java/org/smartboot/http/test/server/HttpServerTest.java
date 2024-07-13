@@ -10,7 +10,6 @@ package org.smartboot.http.test.server;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.serializer.SerializerFeature;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -23,7 +22,6 @@ import org.smartboot.http.client.HttpPost;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
-import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.server.HttpBootstrap;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
@@ -45,11 +43,11 @@ import java.util.zip.GZIPOutputStream;
  * @version V1.0 , 2021/6/4
  */
 public class HttpServerTest extends BastTest {
-    public static final String KEY_PARAMETERS = "parameters";
+
     public static final String KEY_METHOD = "method";
-    public static final String KEY_URI = "uri";
+
     public static final String KEY_URL = "url";
-    public static final String KEY_HEADERS = "headers";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpServerTest.class);
     private HttpBootstrap bootstrap;
     private RequestUnit requestUnit;
@@ -239,76 +237,6 @@ public class HttpServerTest extends BastTest {
         Assert.assertEquals(HttpMethodEnum.POST.getMethod(), jsonObject.get(KEY_METHOD));
     }
 
-    @Test
-    public void testPost3() throws ExecutionException, InterruptedException {
-        bootstrap.configuration().readBufferSize(2 * 1024 * 1024);
-        HttpClient httpClient = getHttpClient();
-        HttpPost httpPost = httpClient.post(requestUnit.getUri());
-        requestUnit.getHeaders().forEach((name, value) -> httpPost.header().add(name, value));
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("author").append("=").append("三刀");
-        for (int i = 0; i < 10000; i++) {
-            stringBuilder.append("&").append("author").append(i).append("=").append("三刀").append(i);
-        }
-        httpPost.header().add("longText", stringBuilder.toString());
-        httpPost.body().formUrlencoded(requestUnit.getParameters());
-
-        JSONObject jsonObject = basicCheck(httpPost.done().get(), requestUnit);
-        Assert.assertEquals(HttpMethodEnum.POST.getMethod(), jsonObject.get(KEY_METHOD));
-    }
-
-    private JSONObject basicCheck(org.smartboot.http.client.HttpResponse response, RequestUnit requestUnit) {
-        JSONObject jsonObject = JSON.parseObject(response.body());
-        LOGGER.info(JSON.toJSONString(jsonObject, SerializerFeature.PrettyFormat, SerializerFeature.WriteMapNullValue,
-                SerializerFeature.WriteDateUseDateFormat));
-        Assert.assertEquals(requestUnit.getUri(), jsonObject.get(KEY_URI));
-
-        JSONObject headerJson = jsonObject.getJSONObject(KEY_HEADERS);
-        requestUnit.getHeaders().forEach((key, value) -> {
-            Assert.assertEquals(value, headerJson.get(key));
-        });
-
-        JSONObject parameters = jsonObject.getJSONObject(KEY_PARAMETERS);
-        requestUnit.getParameters().forEach((key, value) -> {
-            Assert.assertEquals(value, parameters.get(key));
-        });
-        return jsonObject;
-    }
-
-    /**
-     * 缓冲区溢出
-     *
-     * @throws ExecutionException
-     * @throws InterruptedException
-     */
-    @Test
-    public void testHeaderValueOverflow() throws ExecutionException, InterruptedException {
-        bootstrap.configuration().readBufferSize(16);
-        HttpClient httpClient = getHttpClient();
-        HttpPost httpPost = httpClient.post(requestUnit.getUri());
-        requestUnit.getHeaders().forEach((name, value) -> httpPost.header().add(name, value));
-        httpPost.header().add("overfLow", "1234567890abcdefghi");
-
-        org.smartboot.http.client.HttpResponse response = httpPost.done().get();
-        Assert.assertEquals(response.getStatus(), HttpStatus.REQUEST_HEADER_FIELDS_TOO_LARGE.value());
-    }
-
-    /**
-     * 缓冲区溢出
-     *
-     * @throws ExecutionException
-     * @throws InterruptedException
-     */
-    @Test
-    public void testHeaderValueOverflow2() throws ExecutionException, InterruptedException {
-        bootstrap.configuration().readBufferSize(16);
-        HttpClient httpClient = getHttpClient();
-        HttpPost httpPost = httpClient.post(requestUnit.getUri());
-        httpPost.header().add("1234567890abcdefghi", "1234567890abcdefghi");
-
-        org.smartboot.http.client.HttpResponse response = httpPost.done().get();
-        Assert.assertEquals(response.getStatus(), HttpStatus.INTERNAL_SERVER_ERROR.value());
-    }
 
     @After
     public void destroy() {

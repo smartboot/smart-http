@@ -8,12 +8,15 @@
  */
 package org.smartboot.http.test;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smartboot.http.client.HttpClient;
 import org.smartboot.http.client.HttpResponse;
+import org.smartboot.http.test.server.RequestUnit;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -26,11 +29,32 @@ public class BastTest {
     protected static final int SERVER_PORT = 8080;
     private static final Logger LOGGER = LoggerFactory.getLogger(BastTest.class);
     private static final String CONTENT_PATH = "/demo";
+    public static final String KEY_URI = "uri";
+    public static final String KEY_PARAMETERS = "parameters";
+    public static final String KEY_HEADERS = "headers";
 
     protected HttpClient getHttpClient() {
         return new HttpClient("127.0.0.1", SERVER_PORT);
     }
 
+    protected JSONObject basicCheck(org.smartboot.http.client.HttpResponse response,
+                                    RequestUnit requestUnit) {
+        JSONObject jsonObject = JSON.parseObject(response.body());
+        LOGGER.info(JSON.toJSONString(jsonObject, SerializerFeature.PrettyFormat, SerializerFeature.WriteMapNullValue,
+                SerializerFeature.WriteDateUseDateFormat));
+        Assert.assertEquals(requestUnit.getUri(), jsonObject.get(KEY_URI));
+
+        JSONObject headerJson = jsonObject.getJSONObject(KEY_HEADERS);
+        requestUnit.getHeaders().forEach((key, value) -> {
+            Assert.assertEquals(value, headerJson.get(key));
+        });
+
+        JSONObject parameters = jsonObject.getJSONObject(KEY_PARAMETERS);
+        requestUnit.getParameters().forEach((key, value) -> {
+            Assert.assertEquals(value, parameters.get(key));
+        });
+        return jsonObject;
+    }
 
     protected void checkPath(String path, HttpClient smartClient, HttpClient tomcatClient) {
         Future<HttpResponse> smartFuture = smartClient.get(CONTENT_PATH + path).onSuccess(resp -> {
