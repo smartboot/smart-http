@@ -14,6 +14,8 @@ import org.smartboot.http.common.enums.HttpStatus;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * Http消息响应接口
@@ -124,5 +126,54 @@ public interface HttpResponse {
      * @param cookie
      */
     void addCookie(Cookie cookie);
+
+    /**
+     * Sets the supplier of trailer headers.
+     *
+     * <p>
+     * The trailer header field value is defined as a comma-separated list (see Section 3.2.2 and Section 4.1.2 of RFC
+     * 7230).
+     * </p>
+     *
+     * <p>
+     * The supplier will be called within the scope of whatever thread/call causes the response content to be completed.
+     * Typically this will be any thread calling close() on the output stream or writer.
+     * </p>
+     *
+     * <p>
+     * The trailers that run afoul of the provisions of section 4.1.2 of RFC 7230 are ignored.
+     * </p>
+     *
+     * <p>
+     * The RFC requires the name of every key that is to be in the supplied Map is included in the comma separated list that
+     * is the value of the "Trailer" response header. The application is responsible for ensuring this requirement is met.
+     * Failure to do so may lead to interoperability failures.
+     * </p>
+     *
+     * @implSpec The default implementation is a no-op.
+     *
+     * @param supplier the supplier of trailer headers
+     *
+     * @exception IllegalStateException if it is invoked after the response has has been committed, or the trailer is not
+     * supported in the request, for instance, the underlying protocol is HTTP 1.0, or the response is not in chunked
+     * encoding in HTTP 1.1.
+     *
+     * @since Servlet 4.0
+     */
+    default public void setTrailerFields(Supplier<Map<String, String>> supplier) {
+    }
+
+    /**
+     * Gets the supplier of trailer headers.
+     *
+     * @implSpec The default implememtation return null.
+     *
+     * @return <code>Supplier</code> of trailer headers
+     *
+     * @since Servlet 4.0
+     */
+    default public Supplier<Map<String, String>> getTrailerFields() {
+        return null;
+    }
 
 }

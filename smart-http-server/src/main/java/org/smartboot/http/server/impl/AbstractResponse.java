@@ -13,6 +13,7 @@ import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.Reset;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
+import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.server.HttpResponse;
 
@@ -25,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Vector;
+import java.util.function.Supplier;
 
 /**
  * @author 三刀
@@ -70,6 +72,8 @@ class AbstractResponse implements HttpResponse, Reset {
     private boolean closed = false;
 
     private List<Cookie> cookies = Collections.emptyList();
+
+    private Supplier<Map<String, String>> trailerSupplier;
 
     protected void init(AbstractRequest request, AbstractOutputStream outputStream) {
         this.request = request;
@@ -267,4 +271,21 @@ class AbstractResponse implements HttpResponse, Reset {
         return closed;
     }
 
+    @Override
+    public void setTrailerFields(Supplier<Map<String, String>> supplier) {
+        if (outputStream.isCommitted()) {
+            throw new IllegalStateException();
+        }
+        if (Objects.equals(request.getProtocol(), HttpProtocolEnum.HTTP_10.getProtocol())) {
+            throw new IllegalStateException("HTTP/1.0 request");
+        } else if (Objects.equals(request.getProtocol(), HttpProtocolEnum.HTTP_11.getProtocol()) && !outputStream.isChunkedSupport()) {
+            throw new IllegalStateException("unSupport trailer");
+        }
+        this.trailerSupplier = supplier;
+    }
+
+    @Override
+    public Supplier<Map<String, String>> getTrailerFields() {
+        return trailerSupplier;
+    }
 }

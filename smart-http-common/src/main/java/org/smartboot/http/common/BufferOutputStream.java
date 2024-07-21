@@ -35,7 +35,7 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
     /**
      * 当前流是否完结
      */
-    private boolean closed = false;
+    protected boolean closed = false;
 
     public BufferOutputStream(AioSession session) {
         this.session = session;
@@ -132,7 +132,7 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
     }
 
     @Override
-    public final void close() throws IOException {
+    public void close() throws IOException {
         if (closed) {
             throw new IOException("outputStream has already closed");
         }
@@ -206,6 +206,14 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
 
     public void disableChunked() {
         this.chunkedSupport = false;
+    }
+
+    public boolean isCommitted() {
+        return committed;
+    }
+
+    public boolean isChunkedSupport() {
+        return chunkedSupport;
     }
 
     protected enum HeaderWriteSource {

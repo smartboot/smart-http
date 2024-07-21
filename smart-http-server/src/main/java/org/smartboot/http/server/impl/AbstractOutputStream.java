@@ -95,4 +95,27 @@ abstract class AbstractOutputStream extends BufferOutputStream {
         }
         writeBuffer.write(Constant.CRLF_BYTES);
     }
+
+    @Override
+    public void close() throws IOException {
+        if (closed) {
+            throw new IOException("outputStream has already closed");
+        }
+        writeHeader(HeaderWriteSource.CLOSE);
+
+        if (chunkedSupport) {
+            if (response.getTrailerFields() != null) {
+                writeBuffer.write("0\r\n".getBytes());
+                Map<String, String> map = response.getTrailerFields().get();
+                for (String key : map.keySet()) {
+                    writeBuffer.write((key + ":" + map.get(key) + "\r\n").getBytes());
+                }
+                writeBuffer.write("\r\n".getBytes());
+            } else {
+                writeBuffer.write(Constant.CHUNKED_END_BYTES);
+            }
+
+        }
+        closed = true;
+    }
 }
