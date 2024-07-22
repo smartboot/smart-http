@@ -281,11 +281,11 @@ class AbstractResponse implements HttpResponse, Reset {
         } else if (Objects.equals(request.getProtocol(), HttpProtocolEnum.HTTP_11.getProtocol()) && !outputStream.isChunkedSupport()) {
             throw new IllegalStateException("unSupport trailer");
         }
-        this.trailerSupplier = supplier;
+        outputStream.setTrailerFields(supplier);
     }
 
     @Override
     public Supplier<Map<String, String>> getTrailerFields() {
-        return trailerSupplier;
+        return outputStream.getTrailerFields();
     }
 }

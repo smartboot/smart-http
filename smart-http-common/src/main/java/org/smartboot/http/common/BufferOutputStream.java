@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * @author 三刀
@@ -36,6 +37,8 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
      * 当前流是否完结
      */
     protected boolean closed = false;
+
+    private Supplier<Map<String, String>> trailerSupplier;
 
     public BufferOutputStream(AioSession session) {
         this.session = session;
@@ -132,14 +135,23 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
     }
 
     @Override
-    public void close() throws IOException {
+    public final void close() throws IOException {
         if (closed) {
             throw new IOException("outputStream has already closed");
         }
         writeHeader(HeaderWriteSource.CLOSE);
 
         if (chunkedSupport) {
-            writeBuffer.write(Constant.CHUNKED_END_BYTES);
+            if (trailerSupplier != null) {
+                writeBuffer.write("0\r\n".getBytes());
+                Map<String, String> map = trailerSupplier.get();
+                for (String key : map.keySet()) {
+                    writeBuffer.write((key + ":" + map.get(key) + "\r\n").getBytes());
+                }
+                writeBuffer.write(Constant.CRLF_BYTES);
+            } else {
+                writeBuffer.write(Constant.CHUNKED_END_BYTES);
+            }
         }
         closed = true;
     }
@@ -218,5 +230,13 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
 
     protected enum HeaderWriteSource {
         WRITE, FLUSH, CLOSE
+    }
+
+    public void setTrailerFields(Supplier<Map<String, String>> supplier) {
+        this.trailerSupplier = supplier;
+    }
+
+    public Supplier<Map<String, String>> getTrailerFields() {
+        return trailerSupplier;
     }
 }
