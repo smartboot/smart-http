@@ -8,6 +8,7 @@
 
 package org.smartboot.http.server;
 
+import org.smartboot.http.common.ChunkedFrameDecoder;
 import org.smartboot.http.common.enums.BodyStreamStatus;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
@@ -39,15 +40,19 @@ public abstract class HttpServerHandler implements ServerHandler<HttpRequest, Ht
         if (HttpMethodEnum.POST.getMethod().equals(request.getMethod())
                 && StringUtils.startsWith(request.getContentType(), HeaderValueEnum.X_WWW_FORM_URLENCODED.getName())
                 && !HeaderValueEnum.UPGRADE.getName().equals(request.getHeader(HeaderNameEnum.CONNECTION.getName()))) {
-            if (postLength < 0) {
-                throw new HttpException(HttpStatus.LENGTH_REQUIRED);
-            } else if (postLength == 0) {
+            if (postLength == 0) {
                 return BodyStreamStatus.Finish;
             }
 
             SmartDecoder smartDecoder = request.getBodyDecoder();
             if (smartDecoder == null) {
-                smartDecoder = new FixedLengthFrameDecoder(postLength);
+                if (postLength > 0) {
+                    smartDecoder = new FixedLengthFrameDecoder(postLength);
+                } else if (HeaderValueEnum.CHUNKED.getName().equals(request.getHeader(HeaderNameEnum.TRANSFER_ENCODING.getName()))) {
+                    smartDecoder = new ChunkedFrameDecoder();
+                } else {
+                    throw new HttpException(HttpStatus.LENGTH_REQUIRED);
+                }
                 request.setBodyDecoder(smartDecoder);
             }
 
