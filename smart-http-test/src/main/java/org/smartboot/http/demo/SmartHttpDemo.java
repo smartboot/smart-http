@@ -113,6 +113,14 @@ public class SmartHttpDemo {
                             response.write((headerName + ": " + request.getHeaders(headerName) + "</br>").getBytes());
                         }
                     }
+                }).route("/post_param", new HttpServerHandler() {
+                    @Override
+                    public void handle(HttpRequest request, HttpResponse response) throws IOException {
+                        //curl -X POST -H "Transfer-Encoding: chunked" -H "Content-Type: application/x-www-form-urlencoded" --data "field1=value1&field2=value2" http://localhost:8080/post_param
+                        for (String parameter : request.getParameters().keySet()) {
+                            response.write((parameter + ": " + request.getParameter(parameter) + "</br>").getBytes());
+                        }
+                    }
                 });
 
 
@@ -140,7 +148,7 @@ public class SmartHttpDemo {
             }
         });
         bootstrap.webSocketHandler(wsRouteHandle);
-
+bootstrap.configuration().debug(true);
         //设定服务器配置并启动
         bootstrap.start();
     }
