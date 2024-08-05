@@ -8,14 +8,7 @@
 
 package org.smartboot.http.server.impl;
 
-import org.smartboot.http.common.enums.BodyStreamStatus;
-import org.smartboot.http.common.enums.DecodePartEnum;
-import org.smartboot.http.common.enums.HeaderNameEnum;
-import org.smartboot.http.common.enums.HeaderValueEnum;
-import org.smartboot.http.common.enums.HttpMethodEnum;
-import org.smartboot.http.common.enums.HttpProtocolEnum;
-import org.smartboot.http.common.enums.HttpStatus;
-import org.smartboot.http.common.enums.HttpTypeEnum;
+import org.smartboot.http.common.enums.*;
 import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
@@ -36,6 +29,7 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * http消息处理器
+ *
  * @author 三刀
  * @version V1.0 , 2018/6/10
  */
@@ -190,7 +184,7 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
 
     private boolean keepConnection(HttpRequestImpl request) throws IOException {
         //非keepAlive或者 body部分未读取完毕,释放连接资源
-        if (!request.isKeepAlive() || !HttpMethodEnum.GET.getMethod().equals(request.getMethod()) && request.getContentLength() > 0 && request.getInputStream().available() > 0) {
+        if (!request.isKeepAlive() || (request.getResponse().getContentLength() == -1) || (!HttpMethodEnum.GET.getMethod().equals(request.getMethod()) && request.getContentLength() > 0 && request.getInputStream().available() > 0)) {
             request.getResponse().close();
             return false;
         }

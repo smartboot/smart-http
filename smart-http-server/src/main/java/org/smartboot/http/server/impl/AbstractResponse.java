@@ -73,8 +73,6 @@ class AbstractResponse implements HttpResponse, Reset {
 
     private List<Cookie> cookies = Collections.emptyList();
 
-    private Supplier<Map<String, String>> trailerSupplier;
-
     protected void init(AbstractRequest request, AbstractOutputStream outputStream) {
         this.request = request;
         this.outputStream = outputStream;
