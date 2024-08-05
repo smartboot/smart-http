@@ -8,6 +8,9 @@ import org.smartboot.socket.transport.AioSession;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * @author 三刀（zhengjunweimail@163.com）
@@ -19,14 +22,18 @@ public class ChunkedInputStream extends InputStream {
     private final AioSession session;
     private InputStream inputStream;
     private boolean eof = false;
+    private Map<String, String> trailerFields;
     /**
      * 剩余可读字节数
      */
     private int remainingThreshold;
+    private final Consumer<Map<String, String>> consumer;
+    private String trailerName;
 
-    public ChunkedInputStream(AioSession session, int maxPayload) {
+    public ChunkedInputStream(AioSession session, int maxPayload, Consumer<Map<String, String>> consumer) {
         this.session = session;
         this.remainingThreshold = maxPayload;
+        this.consumer = consumer;
     }
 
     @Override
@@ -79,7 +86,9 @@ public class ChunkedInputStream extends InputStream {
                 buffer.reset();
                 if (length == 0) {
                     eof = true;
-                    readCrlf();
+                    //trailerFields
+                    parseTrailerFields();
+//                    readCrlf();
                     break;
                 }
                 inputStream.close();
@@ -97,6 +106,28 @@ public class ChunkedInputStream extends InputStream {
         }
         if (inputStream.read() != Constant.LF) {
             throw new HttpException(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    private void parseTrailerFields() throws IOException {
+        while (true) {
+            int b = inputStream.read();
+            if (b == Constant.LF) {
+                if (buffer.size() == 0) {
+                    consumer.accept(trailerFields);
+                    return;
+                }
+                trailerFields.put(trailerName, buffer.toString());
+                buffer.reset();
+            } else if (b == ':') {
+                trailerName = buffer.toString();
+                buffer.reset();
+            } else if (b != Constant.CR) {
+                if (trailerFields == null) {
+                    trailerFields = new HashMap<>();
+                }
+                buffer.write(b);
+            }
         }
     }
 

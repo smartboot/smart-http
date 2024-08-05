@@ -15,6 +15,7 @@ import org.smartboot.http.common.io.PostInputStream;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 /**
  * @author 三刀
@@ -36,6 +37,7 @@ public class HttpRequestImpl extends AbstractRequest {
     };
     private final HttpResponseImpl response;
     private InputStream inputStream;
+    private Map<String, String> trailerFields;
 
     HttpRequestImpl(Request request) {
         init(request);
@@ -62,7 +64,7 @@ public class HttpRequestImpl extends AbstractRequest {
 
         //如果一个消息即存在传输译码（Transfer-Encoding）头域并且也 Content-Length 头域，后者会被忽略。
         if (HeaderValueEnum.CHUNKED.getName().equalsIgnoreCase(request.getHeader(HeaderNameEnum.TRANSFER_ENCODING.getName()))) {
-            inputStream = new ChunkedInputStream(request.getAioSession(), request.getRemainingThreshold());
+            inputStream = new ChunkedInputStream(request.getAioSession(), request.getRemainingThreshold(), stringStringMap -> HttpRequestImpl.this.trailerFields = stringStringMap);
         } else {
             int contentLength = getContentLength();
             if (contentLength > 0 && request.getFormUrlencoded() == null) {
@@ -74,10 +76,20 @@ public class HttpRequestImpl extends AbstractRequest {
         return inputStream;
     }
 
+    @Override
+    public Map<String, String> getTrailerFields() {
+        return trailerFields == null ? super.getTrailerFields() : trailerFields;
+    }
+
+    @Override
+    public boolean isTrailerFieldsReady() {
+        return trailerFields != null;
+    }
 
     public void reset() {
         request.reset();
         response.reset();
+        trailerFields = null;
         if (inputStream != null) {
             try {
                 inputStream.close();

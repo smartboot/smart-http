@@ -14,10 +14,7 @@ import org.smartboot.socket.util.Attachment;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Http消息请求接口
@@ -78,6 +75,14 @@ public interface HttpRequest {
     String[] getParameterValues(String name);
 
     Map<String, String[]> getParameters();
+
+    default Map<String, String> getTrailerFields() {
+        return Collections.emptyMap();
+    }
+
+    default boolean isTrailerFieldsReady() {
+        return false;
+    }
 
     /**
      * Returns the Internet Protocol (IP) address of the client
