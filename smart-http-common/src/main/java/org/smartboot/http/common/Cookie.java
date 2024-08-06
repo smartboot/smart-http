@@ -167,8 +167,9 @@ public class Cookie {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getName()).append('=').append(getValue()).append(";");
+        sb.append(getName()).append('=').append(getValue());
         if (attributes != null) {
+            sb.append(";");
             attributes.forEach((key, val) -> {
                 if (MAX_AGE.equals(key)) {
                     int maxAge = getMaxAge();
