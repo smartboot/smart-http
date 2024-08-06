@@ -9,30 +9,44 @@
 package org.smartboot.http.common;
 
 import org.smartboot.http.common.utils.DateUtils;
-import org.smartboot.http.common.utils.StringUtils;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Date;
+import java.util.Locale;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * @author 三刀
  * @version V1.0 , 2018/8/31
  */
 public class Cookie {
-    public static final String DOMAIN = "$Domain";
-    public static final String VERSION = "$Version";
-    public static final String PATH = "$Path";
+    private static final String TSPECIALS;
+    private static final String DOMAIN = "Domain"; // ;Domain=VALUE ... domain that sees cookie
+    private static final String MAX_AGE = "Max-Age"; // ;Max-Age=VALUE ... cookies auto-expire
+    private static final String PATH = "Path"; // ;Path=VALUE ... URLs that see the cookie
+    private static final String SECURE = "Secure"; // ;Secure ... e.g. use SSL
+    private static final String HTTP_ONLY = "HttpOnly";
+    private static final String EMPTY_STRING = "";
 
     private final String name;
     private String value;
-    private String path;
-    private String domain;
-    private int maxAge = -1;
-    private Date expires;
-    private boolean secure;
-    private boolean httpOnly;
-    private int version = 0;
-    private String comment;
+    private Map<String, String> attributes = null;
 
+    static {
+        boolean enforced = AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
+            @Override
+            public Boolean run() {
+                return Boolean.valueOf(System.getProperty("org.glassfish.web.rfc2109_cookie_names_enforced", "true"));
+            }
+        });
+        if (enforced) {
+            TSPECIALS = "/()<>@,;:\\\"[]?={} \t";
+        } else {
+            TSPECIALS = ",; ";
+        }
+    }
 
     public Cookie(final String name, final String value) {
         this.name = name;
@@ -57,103 +71,120 @@ public class Cookie {
     }
 
     public String getPath() {
-        return path;
+        return getAttribute(PATH);
     }
 
-    public Cookie setPath(final String path) {
-        this.path = path;
-        return this;
+    public void setPath(final String uri) {
+        putAttribute(PATH, uri);
     }
 
     public String getDomain() {
-        return domain;
+        return getAttribute(DOMAIN);
     }
 
-    public Cookie setDomain(final String domain) {
-        this.domain = domain;
-        return this;
+    public String getAttribute(String name) {
+        return attributes == null ? null : attributes.get(name);
     }
 
-    public Integer getMaxAge() {
-        return maxAge;
+    public void setDomain(final String domain) {
+        putAttribute(DOMAIN, domain != null ? domain.toLowerCase(Locale.ENGLISH) : null); // IE allegedly needs this
     }
 
-    public Cookie setMaxAge(final Integer maxAge) {
-        this.maxAge = maxAge;
-        return this;
+    public void setAttribute(String name, String value) {
+        if (name == null || name.isEmpty()) {
+            throw new IllegalArgumentException("name is blank");
+        }
+
+        if (hasReservedCharacters(name)) {
+            throw new IllegalArgumentException("name is invalid");
+        }
+
+        if (MAX_AGE.equalsIgnoreCase(name) && value != null) {
+            setMaxAge(Integer.parseInt(value));
+        } else {
+            putAttribute(name, value);
+        }
+    }
+
+    private static boolean hasReservedCharacters(String value) {
+        int len = value.length();
+        for (int i = 0; i < len; i++) {
+            char c = value.charAt(i);
+            if (c < 0x20 || c >= 0x7f || TSPECIALS.indexOf(c) != -1) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void putAttribute(String name, String value) {
+        if (attributes == null) {
+            attributes = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        }
+
+        if (value == null) {
+            attributes.remove(name);
+        } else {
+            attributes.put(name, value);
+        }
+    }
+
+    public int getMaxAge() {
+        String maxAge = getAttribute(MAX_AGE);
+        return maxAge == null ? -1 : Integer.parseInt(maxAge);
+    }
+
+    public void setMaxAge(final int expiry) {
+        putAttribute(MAX_AGE, expiry < 0 ? null : String.valueOf(expiry));
     }
 
     public boolean isSecure() {
-        return secure;
+        return EMPTY_STRING.equals(getAttribute(SECURE));
     }
 
-    public Cookie setSecure(final boolean secure) {
-        this.secure = secure;
-        return this;
-    }
-
-    public int getVersion() {
-        return version;
-    }
-
-    public Cookie setVersion(final int version) {
-        this.version = version;
-        return this;
+    public void setSecure(final boolean flag) {
+        if (flag) {
+            putAttribute(SECURE, EMPTY_STRING);
+        } else {
+            putAttribute(SECURE, null);
+        }
     }
 
     public boolean isHttpOnly() {
-        return httpOnly;
+        return EMPTY_STRING.equals(getAttribute(HTTP_ONLY));
     }
 
-    public Cookie setHttpOnly(final boolean httpOnly) {
-        this.httpOnly = httpOnly;
-        return this;
+    public void setHttpOnly(final boolean httpOnly) {
+        if (httpOnly) {
+            putAttribute(HTTP_ONLY, EMPTY_STRING);
+        } else {
+            putAttribute(HTTP_ONLY, null);
+        }
     }
 
-    public Date getExpires() {
-        return expires;
-    }
-
-    public Cookie setExpires(final Date expires) {
-        this.expires = expires;
-        return this;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public Cookie setComment(final String comment) {
-        this.comment = comment;
-        return this;
-    }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getName()).append('=').append(getValue());
-        if (StringUtils.isNotBlank(getPath())) {
-            sb.append("; Path=").append(getPath());
-        }
-        if (StringUtils.isNotBlank(this.domain)) {
-            sb.append("; Domain=").append(this.domain);
-        }
-        if (this.expires != null) {
-            sb.append("; Expires=");
-            sb.append(DateUtils.formatCookieExpire(expires));
-        } else if (this.maxAge >= 0) {
-            sb.append("; Max-Age=").append(this.maxAge);
-            Date expires = new Date();
-            expires.setTime(expires.getTime() + maxAge * 1000L);
-            sb.append("; Expires=");
-            sb.append(DateUtils.formatCookieExpire(expires));
-        }
-
-        if (this.secure) {
-            sb.append("; Secure");
-        }
-        if (this.httpOnly) {
-            sb.append("; HttpOnly");
+        sb.append(getName()).append('=').append(getValue()).append(";");
+        if (attributes != null) {
+            attributes.forEach((key, val) -> {
+                if (MAX_AGE.equals(key)) {
+                    int maxAge = getMaxAge();
+                    if (maxAge >= 0) {
+                        Date expires = new Date();
+                        expires.setTime(expires.getTime() + maxAge * 1000L);
+                        sb.append("Expires=").append(DateUtils.formatCookieExpire(expires)).append(";");
+                    }
+                    return;
+                }
+                sb.append(key);
+                if (!EMPTY_STRING.equals(val)) {
+                    sb.append("=").append(val);
+                }
+                sb.append(";");
+            });
         }
         return sb.toString();
     }

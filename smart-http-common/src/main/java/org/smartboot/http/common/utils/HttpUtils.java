@@ -22,6 +22,10 @@ import java.util.Map;
  * @version V1.0 , 2020/11/22
  */
 public class HttpUtils {
+    private static final String DOMAIN = "$Domain";
+    private static final String VERSION = "$Version";
+    private static final String PATH = "$Path";
+
     /**
      * 解码URI中的参数
      *
@@ -91,13 +95,10 @@ public class HttpUtils {
             } else {
                 Cookie cookie = cookies.get(cookies.size() - 1);
                 switch (name) {
-                    case Cookie.DOMAIN:
+                    case DOMAIN:
                         cookie.setDomain(value);
                         break;
-                    case Cookie.VERSION:
-                        cookie.setVersion(Integer.parseInt(value));
-                        break;
-                    case Cookie.PATH:
+                    case PATH:
                         cookie.setPath(value);
                         break;
                 }
@@ -107,13 +108,10 @@ public class HttpUtils {
             if (!cache.isEmpty()) {
                 cache.forEach((key, v) -> {
                     switch (key) {
-                        case Cookie.DOMAIN:
+                        case DOMAIN:
                             cookie.setDomain(v);
                             break;
-                        case Cookie.VERSION:
-                            cookie.setVersion(Integer.parseInt(v));
-                            break;
-                        case Cookie.PATH:
+                        case PATH:
                             cookie.setPath(v);
                             break;
                     }
