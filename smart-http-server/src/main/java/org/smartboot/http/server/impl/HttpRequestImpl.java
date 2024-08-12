@@ -61,13 +61,15 @@ public class HttpRequestImpl extends AbstractRequest {
         if (inputStream != null) {
             return inputStream;
         }
-
+        if (request.getFormUrlencoded() != null) {
+            inputStream = EMPTY_INPUT_STREAM;
+        }
         //如果一个消息即存在传输译码（Transfer-Encoding）头域并且也 Content-Length 头域，后者会被忽略。
-        if (HeaderValueEnum.CHUNKED.getName().equalsIgnoreCase(request.getHeader(HeaderNameEnum.TRANSFER_ENCODING.getName()))) {
+        else if (HeaderValueEnum.CHUNKED.getName().equalsIgnoreCase(request.getHeader(HeaderNameEnum.TRANSFER_ENCODING.getName()))) {
             inputStream = new ChunkedInputStream(request.getAioSession(), request.getRemainingThreshold(), stringStringMap -> HttpRequestImpl.this.trailerFields = stringStringMap);
         } else {
             int contentLength = getContentLength();
-            if (contentLength > 0 && request.getFormUrlencoded() == null) {
+            if (contentLength > 0) {
                 inputStream = new PostInputStream(request.getAioSession().getInputStream(contentLength), contentLength);
             } else {
                 inputStream = EMPTY_INPUT_STREAM;
