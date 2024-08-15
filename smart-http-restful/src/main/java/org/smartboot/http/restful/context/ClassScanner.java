@@ -74,6 +74,7 @@ class ClassScanner {
                         .filter(path -> path.toString().endsWith(".class"))
                         .forEach(path -> {
                             String className = path.toString()
+                                    .substring(1)
                                     .replace("/", ".")
                                     .replace(".class", "");
                             try {

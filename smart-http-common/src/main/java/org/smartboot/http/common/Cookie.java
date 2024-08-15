@@ -174,6 +174,7 @@ public class Cookie {
                 if (MAX_AGE.equals(key)) {
                     int maxAge = getMaxAge();
                     if (maxAge >= 0) {
+                        sb.append("Max-Age=").append(maxAge).append(";");
                         Date expires = new Date();
                         expires.setTime(expires.getTime() + maxAge * 1000L);
                         sb.append("Expires=").append(DateUtils.formatCookieExpire(expires)).append(";");
