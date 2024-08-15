@@ -8,7 +8,14 @@
 
 package org.smartboot.http.server.impl;
 
-import org.smartboot.http.common.enums.*;
+import org.smartboot.http.common.enums.BodyStreamStatus;
+import org.smartboot.http.common.enums.DecodePartEnum;
+import org.smartboot.http.common.enums.HeaderNameEnum;
+import org.smartboot.http.common.enums.HeaderValueEnum;
+import org.smartboot.http.common.enums.HttpMethodEnum;
+import org.smartboot.http.common.enums.HttpProtocolEnum;
+import org.smartboot.http.common.enums.HttpStatus;
+import org.smartboot.http.common.enums.HttpTypeEnum;
 import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
@@ -114,9 +121,9 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
     }
 
     private boolean isKeepAlive(AbstractRequest abstractRequest, AbstractResponse response) {
-        boolean keepAlive = true;
+        boolean keepAlive = !HeaderValueEnum.CLOSE.getName().equals(abstractRequest.getRequest().getConnection());
         // http/1.0默认短连接，http/1.1默认长连接。此处用 == 性能更高
-        if (HttpProtocolEnum.HTTP_10.getProtocol() == abstractRequest.getProtocol()) {
+        if (keepAlive && HttpProtocolEnum.HTTP_10.getProtocol() == abstractRequest.getProtocol()) {
             keepAlive = HeaderValueEnum.KEEPALIVE.getName().equalsIgnoreCase(abstractRequest.getHeader(HeaderNameEnum.CONNECTION.getName()));
             if (keepAlive) {
                 response.setHeader(HeaderNameEnum.CONNECTION.getName(), HeaderValueEnum.KEEPALIVE.getName());

@@ -39,7 +39,7 @@ public abstract class HttpServerHandler implements ServerHandler<HttpRequest, Ht
         //Post请求
         if (HttpMethodEnum.POST.getMethod().equals(request.getMethod())
                 && StringUtils.startsWith(request.getContentType(), HeaderValueEnum.X_WWW_FORM_URLENCODED.getName())
-                && !HeaderValueEnum.UPGRADE.getName().equals(request.getHeader(HeaderNameEnum.CONNECTION.getName()))) {
+                && !HeaderValueEnum.UPGRADE.getName().equals(request.getConnection())) {
             if (postLength == 0) {
                 return BodyStreamStatus.Finish;
             }

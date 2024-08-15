@@ -98,6 +98,7 @@ public final class Request implements HttpRequest, Reset {
     private String requestUri;
     private String requestUrl;
     private String contentType;
+    private String connection;
     /**
      * 跟在URL后面的请求信息
      */
@@ -395,6 +396,14 @@ public final class Request implements HttpRequest, Reset {
         }
         contentType = getHeader(HeaderNameEnum.CONTENT_TYPE.getName());
         return contentType;
+    }
+
+    public String getConnection() {
+        if (connection != null) {
+            return connection;
+        }
+        connection = getHeader(HeaderNameEnum.CONNECTION.getName());
+        return connection;
     }
 
     @Override
