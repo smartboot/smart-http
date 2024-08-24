@@ -8,9 +8,7 @@
 
 package org.smartboot.http.server.impl;
 
-import org.smartboot.http.common.Cookie;
-import org.smartboot.http.common.HeaderValue;
-import org.smartboot.http.common.Reset;
+import org.smartboot.http.common.*;
 import org.smartboot.http.common.enums.DecodePartEnum;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HttpStatus;
@@ -120,6 +118,15 @@ public final class Request implements HttpRequest, Reset {
      */
     private ByteBuffer formUrlencoded;
     private Cookie[] cookies;
+    /**
+     * form-data解码器
+     */
+    private Decoder multipartDecoder;
+
+    private List<Part> parts;
+
+    private Multipart multipart;
+
     /**
      * 附件对象
      */
@@ -452,6 +459,34 @@ public final class Request implements HttpRequest, Reset {
         return parameters;
     }
 
+    @Override
+    public List<Part> getParts() {
+        if (parts == null) {
+            parts = new ArrayList<>();
+        }
+        return parts;
+    }
+
+    public void setParts(List<Part> parts) {
+        this.parts = parts;
+    }
+
+    public void setPart(Part part) {
+        if (parts == null) {
+            parts = new ArrayList<>();
+        }
+        this.parts.add(part);
+    }
+
+    public Multipart getMultipart() {
+        return multipart;
+    }
+
+    public void setMultipart(Multipart multipart) {
+        this.multipart = multipart;
+    }
+
+
     /**
      * Returns the Internet Protocol (IP) address of the client
      * or last proxy that sent the request.
@@ -642,6 +677,14 @@ public final class Request implements HttpRequest, Reset {
 
     public void setBodyDecoder(SmartDecoder bodyDecoder) {
         this.bodyDecoder = bodyDecoder;
+    }
+
+    public Decoder getMultipartDecoder() {
+        return multipartDecoder;
+    }
+
+    public void setMultipartDecoder(Decoder multipartDecoder) {
+        this.multipartDecoder = multipartDecoder;
     }
 
     public void reset() {

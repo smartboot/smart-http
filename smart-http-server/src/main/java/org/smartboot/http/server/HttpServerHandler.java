@@ -9,6 +9,7 @@
 package org.smartboot.http.server;
 
 import org.smartboot.http.common.ChunkedFrameDecoder;
+import org.smartboot.http.common.Multipart;
 import org.smartboot.http.common.enums.BodyStreamStatus;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
@@ -18,7 +19,11 @@ import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.utils.FixedLengthFrameDecoder;
 import org.smartboot.http.common.utils.SmartDecoder;
 import org.smartboot.http.common.utils.StringUtils;
+import org.smartboot.http.server.decode.Decoder;
+import org.smartboot.http.server.decode.multipart.BoundaryDecoder;
 import org.smartboot.http.server.impl.Request;
+import org.smartboot.socket.util.AttachKey;
+import org.smartboot.socket.util.Attachment;
 
 import java.nio.ByteBuffer;
 
@@ -61,6 +66,35 @@ public abstract class HttpServerHandler implements ServerHandler<HttpRequest, Ht
                 request.setBodyDecoder(null);
                 return BodyStreamStatus.Finish;
             } else {
+                return BodyStreamStatus.Continue;
+            }
+        } else if (HttpMethodEnum.POST.getMethod().equals(request.getMethod())
+                && StringUtils.startsWith(request.getContentType(), HeaderValueEnum.MULTIPART_FORM_DATA.getName())
+                && !HeaderValueEnum.UPGRADE.getName().equals(request.getHeader(HeaderNameEnum.CONNECTION.getName()))) {
+            if (postLength < 0) {
+                throw new HttpException(HttpStatus.LENGTH_REQUIRED);
+            } else if (postLength == 0) {
+                return BodyStreamStatus.Finish;
+            }else if(buffer.position() == buffer.limit()){
+                return BodyStreamStatus.Continue;
+            }
+
+            //form data 请求
+            Decoder multipartDecoder = request.getMultipartDecoder();
+            if (multipartDecoder == null) {
+                multipartDecoder = BoundaryDecoder.getInstance(request.getConfiguration());
+                String boundary = BoundaryDecoder.getBoundary(request.getContentType());
+                Multipart multipart = new Multipart(boundary.getBytes());
+                multipart.setBodyLength(postLength);
+                request.setMultipart(multipart);
+                request.setMultipartDecoder(multipartDecoder);
+            }
+
+            Decoder decode = multipartDecoder.decode(buffer, request);
+            if (decode == null){
+                return BodyStreamStatus.Finish;
+            }else {
+                request.setMultipartDecoder(decode);
                 return BodyStreamStatus.Continue;
             }
         } else {

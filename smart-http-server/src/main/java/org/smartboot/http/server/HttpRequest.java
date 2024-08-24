@@ -9,6 +9,7 @@
 package org.smartboot.http.server;
 
 import org.smartboot.http.common.Cookie;
+import org.smartboot.http.common.Part;
 import org.smartboot.socket.util.Attachment;
 
 import java.io.IOException;
@@ -75,6 +76,8 @@ public interface HttpRequest {
     String[] getParameterValues(String name);
 
     Map<String, String[]> getParameters();
+
+    Collection<Part> getParts() throws IOException;
 
     default Map<String, String> getTrailerFields() {
         return Collections.emptyMap();
