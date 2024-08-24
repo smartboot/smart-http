@@ -45,6 +45,11 @@ public interface Constant {
      */
     byte COLON = 58;
 
+    /**
+     * Dash '-'
+     */
+    byte DASH = 45;
+
 
     /**
      * Horizontal space
