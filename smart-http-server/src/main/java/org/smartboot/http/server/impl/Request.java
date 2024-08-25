@@ -127,6 +127,7 @@ public final class Request implements HttpRequest, Reset {
     private Decoder multipartDecoder;
 
     private List<Part> parts;
+    private boolean multipartParsed;
 
     private Multipart multipart;
 
@@ -470,15 +471,20 @@ public final class Request implements HttpRequest, Reset {
         return parts;
     }
 
-    public void setParts(List<Part> parts) {
-        this.parts = parts;
-    }
 
     public void setPart(Part part) {
         if (parts == null) {
             parts = new ArrayList<>();
         }
         this.parts.add(part);
+    }
+
+    public void multipartParsed() {
+        multipartParsed = true;
+    }
+
+    public boolean isMultipartParsed() {
+        return multipartParsed;
     }
 
     public Multipart getMultipart() {

@@ -57,11 +57,12 @@ public class MultipartFormDecoder extends AbstractDecoder {
         }
         for (byte b : boundary) {
             if (byteBuffer.get() != b) {
-                throw new RuntimeException();
+                throw new HttpException(HttpStatus.BAD_REQUEST);
             }
         }
         byte b = byteBuffer.get();
         if (b == '-' && byteBuffer.get() == '-') {
+            request.multipartParsed();
             return HttpRequestProtocol.BODY_READY_DECODER;
         } else {
             currentPart = new PartImpl();
@@ -111,7 +112,7 @@ public class MultipartFormDecoder extends AbstractDecoder {
             if (HeaderNameEnum.CONTENT_DISPOSITION.getName().equals(name.getStringValue())) {
                 return contentDispositionDecoder.decode(byteBuffer, request);
             }
-//            request.setHeaderTemp(name);
+            currentPart.setHeaderTemp(name.getStringValue());
             return headerValueDecoder.decode(byteBuffer, request);
         }
 
@@ -138,6 +139,7 @@ public class MultipartFormDecoder extends AbstractDecoder {
                 return this;
             }
             System.out.println("value: " + value.getStringValue());
+            currentPart.setHeadValue(value.getStringValue());
             return nextDecoder.decode(byteBuffer, request);
         }
     }
@@ -188,6 +190,8 @@ public class MultipartFormDecoder extends AbstractDecoder {
             }
             System.out.println("value:" + value.getStringValue());
             currentPart.setInputStream(new ByteArrayInputStream(value.getStringValue().getBytes()));
+            request.setPart(currentPart);
+            currentPart = null;
             return lfDecoder.decode(byteBuffer, request);
         }
 
@@ -236,6 +240,8 @@ public class MultipartFormDecoder extends AbstractDecoder {
                     }
                     currentPart.getDiskOutputStream().flush();
                     currentPart.getDiskOutputStream().close();
+                    request.setPart(currentPart);
+                    currentPart = null;
                     return lfDecoder.decode(byteBuffer, request);
                 } else {
                     return this;

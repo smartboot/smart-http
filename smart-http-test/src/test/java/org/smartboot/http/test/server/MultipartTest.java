@@ -188,7 +188,7 @@ public class MultipartTest {
                         "\r\n" +
                         largeContent + "\r\n" +
                         "------WebKitFormBoundary7MA4YWxkTrZu0gW--\r\n";
-        client.configuration().debug(true);
+        client.configuration().debug(false);
         Future<org.smartboot.http.client.HttpResponse> future = client.post("/formdata")
                 .header().keepalive(true).setContentLength(body.getBytes().length).setContentType("multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW").done()
                 .body()
@@ -248,7 +248,7 @@ public class MultipartTest {
                         "\r\n" +
                         "\r\n" +
                         "------WebKitFormBoundary7MA4YWxkTrZu0gW--\r\n";
-        client.configuration().debug(true);
+        client.configuration().debug(false);
         Future<org.smartboot.http.client.HttpResponse> future = client.post("/formdata")
                 .header().keepalive(true).setContentLength(body.getBytes().length).setContentType("multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW").done()
                 .body()
@@ -277,25 +277,21 @@ public class MultipartTest {
                         "Content-Disposition: form-data; name=\"file\"; filename=\"bar.txt\"\r\n" +
                         "Content-Type: text/plain\r\n" +
                         "\r\n" +
-                        "This is some content in the file\n" +
-                        "\r\n" +
+                        "This is some content in the file\r\n" +"\r\n" +
                         "------WebKitFormBoundary7MA4YWxkTrZu0gW\r\n" +
-                        "Content-Disposition: form-data;\r\n" +
-                        "\tname=\"textField\"\r\n" +
+                        "Content-Disposition: form-data; name=\"textField\"\r\n" +
                         "\r\n" +
                         "textValue\r\n" +
                         "------WebKitFormBoundary7MA4YWxkTrZu0gW\r\n" +
-                        "Content-Disposition: form-data; \r\n" +
-                        "     name=\"multiField\"\r\n" +
+                        "Content-Disposition: form-data; name=\"multiField\"\r\n" +
                         "\r\n" +
                         "multiValue1\r\n" +
                         "------WebKitFormBoundary7MA4YWxkTrZu0gW\r\n" +
-                        "Content-Disposition: form-data; \r\n" +
-                        "\tname=\"multiField\"\r\n" +
+                        "Content-Disposition: form-data; name=\"multiField\"\r\n" +
                         "\r\n" +
                         "multiValue2\r\n" +
                         "------WebKitFormBoundary7MA4YWxkTrZu0gW--\r\n";
-        client.configuration().debug(true);
+        client.configuration().debug(false);
         Future<org.smartboot.http.client.HttpResponse> future = client.post("/formdata")
                 .header().keepalive(true).setContentLength(body.getBytes().length).setContentType("multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW").done()
                 .body()

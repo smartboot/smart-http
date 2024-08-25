@@ -74,7 +74,7 @@ public class HttpPostTest {
                     bodyBuffer = attachment.get(bodyKey);
                 }
                 if (bodyBuffer == null) {
-                    bodyBuffer = ByteBuffer.allocate(request.getContentLength());
+                    bodyBuffer = ByteBuffer.allocate((int) request.getContentLength());
                     if (attachment == null) {
                         attachment = new Attachment();
                         request.setAttachment(attachment);

@@ -71,13 +71,13 @@ public abstract class HttpServerHandler implements ServerHandler<HttpRequest, Ht
                 && !HeaderValueEnum.UPGRADE.getName().equals(request.getConnection())) {
             if (postLength < 0) {
                 throw new HttpException(HttpStatus.LENGTH_REQUIRED);
-            } else if (postLength == 0) {
+            } else if (postLength == 0 || request.isMultipartParsed()) {
                 return BodyStreamStatus.Finish;
             } else if (buffer.position() == buffer.limit()) {
                 return BodyStreamStatus.Continue;
             }
             Decoder decoder = new MultipartFormDecoder(request).decode(buffer, request);
-            if (decoder == HttpRequestProtocol.BODY_READY_DECODER) {
+            if (decoder != HttpRequestProtocol.BODY_READY_DECODER) {
                 request.setDecoder(decoder);
                 return BodyStreamStatus.OnAsync;
             } else {
