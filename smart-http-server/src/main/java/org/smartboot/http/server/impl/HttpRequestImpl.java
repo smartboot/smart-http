@@ -61,7 +61,7 @@ public class HttpRequestImpl extends AbstractRequest {
         if (inputStream != null) {
             return inputStream;
         }
-        if (request.getFormUrlencoded() != null) {
+        if (request.getFormUrlencoded() != null || request.isMultipartParsed()) {
             inputStream = EMPTY_INPUT_STREAM;
         }
         //如果一个消息即存在传输译码（Transfer-Encoding）头域并且也 Content-Length 头域，后者会被忽略。
