@@ -35,7 +35,7 @@ public class PostInputStream extends InputStream {
 
     @Override
     public int available() throws IOException {
-        return inputStream.available();
+        return (int) remaining;
     }
 
     @Override
