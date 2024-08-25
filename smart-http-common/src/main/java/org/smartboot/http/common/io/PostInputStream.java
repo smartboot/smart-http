@@ -17,9 +17,9 @@ import java.io.InputStream;
  */
 public class PostInputStream extends InputStream {
     private InputStream inputStream;
-    private int remaining;
+    private long remaining;
 
-    public PostInputStream(InputStream inputStream, int contentLength) {
+    public PostInputStream(InputStream inputStream, long contentLength) {
         this.inputStream = inputStream;
         this.remaining = contentLength;
     }
@@ -34,8 +34,8 @@ public class PostInputStream extends InputStream {
     }
 
     @Override
-    public int available() {
-        return remaining;
+    public int available() throws IOException {
+        return inputStream.available();
     }
 
     @Override

@@ -68,9 +68,9 @@ public class HttpRequestImpl extends AbstractRequest {
         else if (HeaderValueEnum.CHUNKED.getName().equalsIgnoreCase(request.getHeader(HeaderNameEnum.TRANSFER_ENCODING.getName()))) {
             inputStream = new ChunkedInputStream(request.getAioSession(), request.getRemainingThreshold(), stringStringMap -> HttpRequestImpl.this.trailerFields = stringStringMap);
         } else {
-            int contentLength = getContentLength();
+            long contentLength = getContentLength();
             if (contentLength > 0) {
-                inputStream = new PostInputStream(request.getAioSession().getInputStream(contentLength), contentLength);
+                inputStream = new PostInputStream(request.getAioSession().getInputStream(), contentLength);
             } else {
                 inputStream = EMPTY_INPUT_STREAM;
             }

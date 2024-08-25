@@ -9,13 +9,17 @@
 package org.smartboot.http.server;
 
 import org.smartboot.http.common.Cookie;
-import org.smartboot.http.common.Part;
+import org.smartboot.http.common.multipart.Part;
 import org.smartboot.socket.util.Attachment;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * Http消息请求接口
@@ -69,7 +73,7 @@ public interface HttpRequest {
 
     String getContentType();
 
-    int getContentLength();
+    long getContentLength();
 
     String getParameter(String name);
 

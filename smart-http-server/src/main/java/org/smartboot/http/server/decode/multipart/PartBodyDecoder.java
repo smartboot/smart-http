@@ -32,13 +32,13 @@ public class PartBodyDecoder extends AbstractDecoder {
 
         Multipart multipart = request.getMultipart();
 
-        List<Part> parts = request.getParts();
-        Part part = parts.get(parts.size() - 1);
-
-        int i = readBodyData(byteBuffer, multipart, part);
-        if (i == 1) {
-            return BoundaryDecoder.getInstance(getConfiguration()).decode(byteBuffer, request);
-        }
+//        List<Part> parts = request.getParts();
+//        Part part = parts.get(parts.size() - 1);
+//
+//        int i = readBodyData(byteBuffer, multipart, part);
+//        if (i == 1) {
+//            return BoundaryDecoder.getInstance(getConfiguration()).decode(byteBuffer, request);
+//        }
         return this;
     }
 

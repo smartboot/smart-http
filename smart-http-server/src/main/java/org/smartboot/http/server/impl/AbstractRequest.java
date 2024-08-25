@@ -9,12 +9,11 @@
 package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.Cookie;
-import org.smartboot.http.common.Part;
 import org.smartboot.http.common.Reset;
+import org.smartboot.http.common.multipart.Part;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.socket.util.Attachment;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -86,7 +85,7 @@ abstract class AbstractRequest implements HttpRequest, Reset {
     }
 
     @Override
-    public final int getContentLength() {
+    public final long getContentLength() {
         return request.getContentLength();
     }
 

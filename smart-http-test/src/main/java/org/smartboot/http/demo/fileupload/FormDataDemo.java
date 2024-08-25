@@ -1,6 +1,6 @@
 package org.smartboot.http.demo.fileupload;
 
-import org.smartboot.http.common.Part;
+import org.smartboot.http.common.multipart.Part;
 import org.smartboot.http.server.HttpBootstrap;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
@@ -45,15 +45,14 @@ public class FormDataDemo {
                     @Override
                     public void handle(HttpRequest request, HttpResponse response) {
                         try {
-                            Collection<Part> parts = request.getParts();
-                            for (Part item : parts) {
+                            for (Part item : request.getParts()) {
                                 String name = item.getName();
                                 System.out.println("name = " + name);
                                 InputStream inputStream = item.getInputStream();
-                                if (item.isFile()){
-                                    System.out.println("filename = " + item.getFileName());
+                                if (!item.isFormField()){
+                                    System.out.println("filename = " + item.getSubmittedFileName());
                                     //保存到指定路径
-                                    Path filePath = Paths.get("smart-http-test","src", "main", "resources").resolve(item.getFileName());
+                                    Path filePath = Paths.get("smart-http-test","src", "main", "resources").resolve(item.getSubmittedFileName());
                                     Files.createDirectories(filePath.getParent());
                                     Files.copy(inputStream, filePath);
                                     item.delete();

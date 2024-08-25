@@ -42,7 +42,7 @@ public class PartHeaderDecoder extends AbstractDecoder {
             List<HeaderValue> parsedHeaders = getParsedHeaders(header);
             part.setHeaders(parsedHeaders);
             fillHeaders(parsedHeaders, part);
-            request.setPart(part);
+//            request.setPart(part);
             return PartBodyDecoder.getInstance(getConfiguration()).decode(byteBuffer, request);
         }
         return this;

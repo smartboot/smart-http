@@ -8,9 +8,7 @@
 
 package org.smartboot.http.demo.fileupload;
 
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileItemStream;
-import org.apache.commons.fileupload.util.Streams;
+import org.smartboot.http.common.multipart.Part;
 import org.smartboot.http.server.HttpBootstrap;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
@@ -29,37 +27,34 @@ public class FileUploadDemo {
 
         HttpRouteHandler routeHandler = new HttpRouteHandler();
         routeHandler.route("/", new HttpServerHandler() {
-            byte[] body = ("<html>" +
-                    "<head><title>smart-http demo</title></head>" +
-                    "<body>" +
-                    "GET 表单提交<form action='/get' method='get'><input type='text' name='text'/><input type='submit'/></form></br>" +
-                    "POST 表单提交<form action='/post' method='post'><input type='text' name='text'/><input type='submit'/></form></br>" +
-                    "文件上传<form action='/upload' method='post' enctype='multipart/form-data'><input type='file' name='text'/><input type='submit'/></form></br>" +
-                    "</body></html>").getBytes();
+                    byte[] body = ("<html>" +
+                            "<head><title>smart-http demo</title></head>" +
+                            "<body>" +
+                            "GET 表单提交<form action='/get' method='get'><input type='text' name='text'/><input type='submit'/></form></br>" +
+                            "POST 表单提交<form action='/post' method='post'><input type='text' name='text'/><input type='submit'/></form></br>" +
+                            "文件上传<form action='/upload' method='post' enctype='multipart/form-data'><input type='file' name='text'/><input type='submit'/></form></br>" +
+                            "</body></html>").getBytes();
 
-            @Override
-            public void handle(HttpRequest request, HttpResponse response) throws IOException {
+                    @Override
+                    public void handle(HttpRequest request, HttpResponse response) throws IOException {
 
-                response.setContentLength(body.length);
-                response.getOutputStream().write(body);
-            }
-        })
+                        response.setContentLength(body.length);
+                        response.getOutputStream().write(body);
+                    }
+                })
                 .route("/upload", new HttpServerHandler() {
                     @Override
                     public void handle(HttpRequest request, HttpResponse response) throws IOException {
                         try {
-                            SmartHttpFileUpload upload = new SmartHttpFileUpload();
-                            FileItemIterator iterator = upload.getItemIterator(request);
-                            while (iterator.hasNext()) {
-                                FileItemStream item = iterator.next();
-                                String name = item.getFieldName();
-                                InputStream stream = item.openStream();
-                                if (item.isFormField()) {
+                            for (Part part : request.getParts()) {
+                                String name = part.getName();
+                                InputStream stream = part.getInputStream();
+                                if (part.isFormField()) {
                                     System.out.println("Form field " + name + " with value "
-                                            + Streams.asString(stream) + " detected.");
+                                            + stream + " detected.");
                                 } else {
                                     System.out.println("File field " + name + " with file name "
-                                            + item.getName() + " detected.");
+                                            + part.getName() + " detected.");
                                     // Process the input stream
                                 }
                             }

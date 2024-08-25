@@ -20,6 +20,7 @@ import java.nio.ByteBuffer;
  * @version V1.0 , 2021/6/10
  */
 public abstract class AbstractDecoder implements Decoder {
+    protected static final ByteTree.EndMatcher COLON_END_MATCHER = endByte -> endByte == Constant.COLON;
     protected static final ByteTree.EndMatcher CR_END_MATCHER = endByte -> endByte == Constant.CR;
     protected static final ByteTree.EndMatcher SP_END_MATCHER = endByte -> endByte == Constant.SP;
     private final HttpServerConfiguration configuration;

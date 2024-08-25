@@ -8,7 +8,10 @@
 
 package org.smartboot.http.server.impl;
 
-import org.smartboot.http.common.*;
+import org.smartboot.http.common.Cookie;
+import org.smartboot.http.common.HeaderValue;
+import org.smartboot.http.common.Multipart;
+import org.smartboot.http.common.Reset;
 import org.smartboot.http.common.enums.DecodePartEnum;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HttpStatus;
@@ -16,13 +19,13 @@ import org.smartboot.http.common.enums.HttpTypeEnum;
 import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
+import org.smartboot.http.common.multipart.Part;
 import org.smartboot.http.common.utils.ByteTree;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.HttpUtils;
 import org.smartboot.http.common.utils.NumberUtils;
 import org.smartboot.http.common.utils.SmartDecoder;
 import org.smartboot.http.common.utils.StringUtils;
-import org.smartboot.http.server.Http2ServerHandler;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.ServerHandler;
@@ -105,7 +108,7 @@ public final class Request implements HttpRequest, Reset {
      * 协议
      */
     private String scheme;
-    private int contentLength = INIT_CONTENT_LENGTH;
+    private long contentLength = INIT_CONTENT_LENGTH;
     private String remoteAddr;
     private String remoteHost;
     private String hostHeader;
@@ -305,8 +308,8 @@ public final class Request implements HttpRequest, Reset {
         }
         if (serverHandler instanceof WebSocketHandler) {
             type = HttpTypeEnum.WEBSOCKET;
-        } else if (serverHandler instanceof Http2ServerHandler) {
-            type = HttpTypeEnum.HTTP_2;
+//        } else if (serverHandler instanceof Http2ServerHandler) {
+//            type = HttpTypeEnum.HTTP_2;
         } else {
             type = HttpTypeEnum.HTTP;
         }
@@ -414,12 +417,12 @@ public final class Request implements HttpRequest, Reset {
     }
 
     @Override
-    public int getContentLength() {
+    public long getContentLength() {
         if (contentLength > INIT_CONTENT_LENGTH) {
             return contentLength;
         }
         //不包含content-length,则为：-1
-        contentLength = NumberUtils.toInt(getHeader(HeaderNameEnum.CONTENT_LENGTH.getName()), NONE_CONTENT_LENGTH);
+        contentLength = NumberUtils.toLong(getHeader(HeaderNameEnum.CONTENT_LENGTH.getName()), NONE_CONTENT_LENGTH);
         if (contentLength >= remainingThreshold) {
             throw new HttpException(HttpStatus.PAYLOAD_TOO_LARGE);
         }

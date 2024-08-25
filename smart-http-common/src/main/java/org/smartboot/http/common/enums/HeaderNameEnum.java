@@ -69,7 +69,8 @@ public enum HeaderNameEnum {
     Sec_WebSocket_Key("Sec-WebSocket-Key"),
     Sec_WebSocket_Protocol("Sec-WebSocket-Protocol"),
     Sec_WebSocket_Version("Sec-WebSocket-Version"),
-    HTTP2_SETTINGS("HTTP2-Settings");
+    HTTP2_SETTINGS("HTTP2-Settings"),
+    CONTENT_DISPOSITION("Content-Disposition");
     public static final Map<String, HeaderNameEnum> HEADER_NAME_ENUM_MAP = new HashMap<>();
 
     static {

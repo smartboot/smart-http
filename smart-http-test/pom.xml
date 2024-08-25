@@ -20,7 +20,6 @@
         <junit.version>4.13.1</junit.version>
         <json.version>1.2.83</json.version>
         <slf4j.version>1.7.30</slf4j.version>
-        <commons.fileupload.version>1.4</commons.fileupload.version>
     </properties>
     <dependencies>
         <dependency>
@@ -63,12 +62,6 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
             <version>${slf4j.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-fileupload</groupId>
-            <artifactId>commons-fileupload</artifactId>
-<!--            <scope>provided</scope>-->
-            <version>${commons.fileupload.version}</version>
         </dependency>
     </dependencies>
     <build>

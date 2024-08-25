@@ -26,7 +26,7 @@ import java.util.function.Function;
  * @version V1.0 , 2020/3/30
  */
 class HttpHeaderDecoder extends AbstractDecoder {
-    private static final ByteTree.EndMatcher COLON_END_MATCHER = endByte -> endByte == Constant.COLON;
+
 
     private final HeaderValueDecoder headerValueDecoder = new HeaderValueDecoder();
     private final IgnoreHeaderDecoder ignoreHeaderDecoder = new IgnoreHeaderDecoder();

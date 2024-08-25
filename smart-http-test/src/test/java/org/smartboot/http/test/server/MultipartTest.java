@@ -6,7 +6,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.smartboot.http.client.HttpClient;
-import org.smartboot.http.common.Part;
+import org.smartboot.http.common.multipart.Part;
 import org.smartboot.http.server.HttpBootstrap;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
@@ -16,7 +16,6 @@ import org.smartboot.http.server.handler.HttpRouteHandler;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collection;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -35,18 +34,17 @@ public class MultipartTest {
         bootstrap = new HttpBootstrap();
         bootstrap.configuration().debug(true);
         HttpRouteHandler routeHandle = new HttpRouteHandler();
-        routeHandle.route("/formdata",new HttpServerHandler() {
+        routeHandle.route("/formdata", new HttpServerHandler() {
             @Override
             public void handle(HttpRequest request, HttpResponse response) throws IOException {
                 try {
-                    Collection<Part> parts = request.getParts();
                     JSONObject jsonObject = new JSONObject();
                     int i = 0;
-                    for (Part part : parts) {
+                    for (Part part : request.getParts()) {
                         String name = part.getName();
                         JSONObject jsonObject2 = new JSONObject();
                         InputStream inputStream = part.getInputStream();
-                        jsonObject2.put("header",part.getHeaders());
+                        jsonObject2.put("header", part.getHeaderNames());
                         // 非文件处理
                         int contentLength = 0;
                         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -54,13 +52,13 @@ public class MultipartTest {
                         int bytesRead;
 
                         while ((bytesRead = inputStream.read(buffer)) != -1) {
-                            if(!part.isFile())outputStream.write(buffer, 0, bytesRead);
+                            if (part.isFormField()) outputStream.write(buffer, 0, bytesRead);
                             contentLength += bytesRead;
                         }
 
-                        if (part.isFile()) {
+                        if (!part.isFormField()) {
                             // 文件处理
-                            jsonObject2.put("filename", part.getFileName());
+                            jsonObject2.put("filename", part.getSubmittedFileName());
                             part.delete();
                         } else {
                             String value = outputStream.toString();
@@ -70,7 +68,7 @@ public class MultipartTest {
                         // 添加公共字段
                         jsonObject2.put("fieldName", name);
                         jsonObject2.put("contentLength", contentLength);
-                        jsonObject.put(++i+"", jsonObject2);
+                        jsonObject.put(++i + "", jsonObject2);
                     }
 
                     response.write(jsonObject.toJSONString().getBytes());
@@ -124,13 +122,13 @@ public class MultipartTest {
                         "Content-Type: text/plain\r\n" +
                         "\r\n" +
                         "This is the content of the encoded file.\r\n" +
-                        "------WebKitFormBoundary7MA4YWxkTr11111\r\n"+
-                        "------WebKitFormBoundary7MA4YWxkTrZu0gW\r\n"+
+                        "------WebKitFormBoundary7MA4YWxkTr11111\r\n" +
+                        "------WebKitFormBoundary7MA4YWxkTrZu0gW\r\n" +
                         "Content-Disposition: form-data; name=\"FiLe2\"; filename=\"testFILE.txt\"\r\n" +
                         "Content-Type: text/plain\r\n" +
                         "\r\n" +
                         "This is the content of the encoded file.\r\n" +
-                        "------WebKitFormBoundary7MA4YWxkTr11111--\r\n"+
+                        "------WebKitFormBoundary7MA4YWxkTr11111--\r\n" +
                         "------WebKitFormBoundary7MA4YWxkTrZu0gW--\r\n";
 
         client.configuration().debug(true);
@@ -239,7 +237,7 @@ public class MultipartTest {
     }
 
     /**
-     *  没有选择文件时，上传空文件
+     * 没有选择文件时，上传空文件
      */
     @Test
     public void testFormDataWithTextInEmptyFileField() throws InterruptedException, ExecutionException {
