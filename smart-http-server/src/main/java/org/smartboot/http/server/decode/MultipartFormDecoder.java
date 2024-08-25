@@ -21,7 +21,6 @@ import org.smartboot.http.server.ServerHandler;
 import org.smartboot.http.server.impl.HttpRequestProtocol;
 import org.smartboot.http.server.impl.Request;
 
-import java.io.ByteArrayInputStream;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.function.Function;
@@ -109,10 +108,10 @@ public class MultipartFormDecoder extends AbstractDecoder {
                 return this;
             }
             System.out.println("headerName: " + name.getStringValue());
+            currentPart.setHeaderTemp(name.getStringValue());
             if (HeaderNameEnum.CONTENT_DISPOSITION.getName().equals(name.getStringValue())) {
                 return contentDispositionDecoder.decode(byteBuffer, request);
             }
-            currentPart.setHeaderTemp(name.getStringValue());
             return headerValueDecoder.decode(byteBuffer, request);
         }
 
@@ -163,13 +162,14 @@ public class MultipartFormDecoder extends AbstractDecoder {
                 }
                 return this;
             }
+            currentPart.setHeadValue(value.getStringValue());
             System.out.println("value: " + value.getStringValue());
             for (String part : value.getStringValue().split(";")) {
                 part = part.trim();
                 if (StringUtils.startsWith(part, "filename")) {
                     currentPart.setFileName(StringUtils.substring(part, part.indexOf("=\"") + 2, part.length() - 1));
                 } else if (StringUtils.startsWith(part, "name")) {
-                    currentPart.setName(StringUtils.substring(part, part.indexOf('=') + 1));
+                    currentPart.setName(StringUtils.substring(part, part.indexOf("=\"") + 2, part.length() - 1));
                 }
             }
             return nextDecoder.decode(byteBuffer, request);
@@ -189,7 +189,7 @@ public class MultipartFormDecoder extends AbstractDecoder {
                 return this;
             }
             System.out.println("value:" + value.getStringValue());
-            currentPart.setInputStream(new ByteArrayInputStream(value.getStringValue().getBytes()));
+            currentPart.setFormData(value.getStringValue());
             request.setPart(currentPart);
             currentPart = null;
             return lfDecoder.decode(byteBuffer, request);

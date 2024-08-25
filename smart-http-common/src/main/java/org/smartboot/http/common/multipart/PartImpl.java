@@ -19,6 +19,7 @@ public class PartImpl implements Part {
     private String fileName;
     private InputStream inputStream;
     private OutputStream diskOutputStream;
+    private String formData;
     private File diskFile;
     private final List<HeaderValue> headers = new ArrayList<>(8);
     private int headerSize = 0;
@@ -60,7 +61,7 @@ public class PartImpl implements Part {
         if (diskFile != null) {
             return diskFile.length();
         } else {
-            return 0;
+            return formData.getBytes().length;
         }
     }
 
@@ -157,5 +158,13 @@ public class PartImpl implements Part {
 
     private File getFile() throws IOException {
         return File.createTempFile("multipart" + this.hashCode() + "_", fileName);
+    }
+
+    public String getFormData() {
+        return formData;
+    }
+
+    public void setFormData(String formData) {
+        this.formData = formData;
     }
 }
