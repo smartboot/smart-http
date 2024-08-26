@@ -22,6 +22,8 @@ import org.smartboot.http.server.impl.HttpRequestProtocol;
 import org.smartboot.http.server.impl.Request;
 
 import java.io.ByteArrayInputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.function.Function;
@@ -165,12 +167,26 @@ public class MultipartFormDecoder extends AbstractDecoder {
             }
             currentPart.setHeadValue(value.getStringValue());
             System.out.println("value: " + value.getStringValue());
-            for (String part : value.getStringValue().split(";")) {
-                part = part.trim();
-                if (StringUtils.startsWith(part, "filename")) {
-                    currentPart.setFileName(StringUtils.substring(part, part.indexOf("=\"") + 2, part.length() - 1));
-                } else if (StringUtils.startsWith(part, "name")) {
-                    currentPart.setName(StringUtils.substring(part, part.indexOf("=\"") + 2, part.length() - 1));
+            for (String partVal : value.getStringValue().split(";")) {
+                partVal = partVal.trim();
+                if (StringUtils.startsWith(partVal, "filename")) {
+                    if (partVal.charAt(8) == '=') {
+                        currentPart.setFileName(StringUtils.substring(partVal, 10, partVal.length() - 1));
+                    } else if (partVal.charAt(8) == '*' && partVal.charAt(9) == '=') {
+                        int characterSetIndex = partVal.indexOf('\'', 10);
+                        int languageIndex = partVal.indexOf('\'', characterSetIndex + 1);
+                        String characterSet = partVal.substring(10, characterSetIndex);
+                        try {
+                            String fileNameURLEncoded = partVal.substring(languageIndex + 1);
+                            currentPart.setFileName(URLDecoder.decode(fileNameURLEncoded, characterSet));
+                        } catch (UnsupportedEncodingException e) {
+                            throw new RuntimeException(e);
+                        }
+                    } else {
+                        throw new HttpException(HttpStatus.BAD_REQUEST);
+                    }
+                } else if (StringUtils.startsWith(partVal, "name")) {
+                    currentPart.setName(StringUtils.substring(partVal, partVal.indexOf("=\"") + 2, partVal.length() - 1));
                 }
             }
             return nextDecoder.decode(byteBuffer, request);

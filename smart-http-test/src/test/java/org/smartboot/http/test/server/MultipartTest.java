@@ -214,7 +214,7 @@ public class MultipartTest {
         HttpClient client = new HttpClient("127.0.0.1", 8080);
         String body =
                 "------WebKitFormBoundary7MA4YWxkTrZu0gW\r\n" +
-                        "Content-Disposition: form-data; name=\"field\"; filename*=\"us-ascii'en-us'This%20is%20%2A%2A%2Afun%2A%2A%2A\"\r\n" +
+                        "Content-Disposition: form-data; name=\"field\"; filename*=us-ascii'en-us'This%20is%20%2A%2A%2Afun%2A%2A%2A\r\n" +
                         "Content-Type: text/plain\r\n" +
                         "\r\n" +
                         "This is the content of the encoded file.\r\n" +
