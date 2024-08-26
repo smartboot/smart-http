@@ -36,7 +36,4 @@ public interface Part {
 
     public Collection<String> getHeaderNames();
 
-    public boolean isFormField();
-
-    public String getFormData();
 }

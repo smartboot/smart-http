@@ -12,7 +12,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
 import java.util.Scanner;
 
 /**
@@ -49,14 +48,14 @@ public class FormDataDemo {
                                 String name = item.getName();
                                 System.out.println("name = " + name);
                                 InputStream inputStream = item.getInputStream();
-                                if (!item.isFormField()){
+                                if (item.getSubmittedFileName() != null) {
                                     System.out.println("filename = " + item.getSubmittedFileName());
                                     //保存到指定路径
-                                    Path filePath = Paths.get("smart-http-test","src", "main", "resources").resolve(item.getSubmittedFileName());
+                                    Path filePath = Paths.get("smart-http-test", "src", "main", "resources").resolve(item.getSubmittedFileName());
                                     Files.createDirectories(filePath.getParent());
                                     Files.copy(inputStream, filePath);
                                     item.delete();
-                                }else {
+                                } else {
                                     //打印inputStream
                                     try (Scanner scanner = new Scanner(inputStream)) {
                                         while (scanner.hasNextLine()) {

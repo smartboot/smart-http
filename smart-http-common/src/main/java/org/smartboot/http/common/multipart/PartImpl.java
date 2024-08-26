@@ -126,11 +126,6 @@ public class PartImpl implements Part {
         return nameSet;
     }
 
-    @Override
-    public boolean isFormField() {
-        return fileName == null;
-    }
-
     public void setName(String name) {
         this.name = name;
     }
@@ -160,11 +155,4 @@ public class PartImpl implements Part {
         return File.createTempFile("multipart" + this.hashCode() + "_", fileName);
     }
 
-    public String getFormData() {
-        return formData;
-    }
-
-    public void setFormData(String formData) {
-        this.formData = formData;
-    }
 }

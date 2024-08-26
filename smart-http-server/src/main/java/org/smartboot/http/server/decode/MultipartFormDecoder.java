@@ -21,6 +21,7 @@ import org.smartboot.http.server.ServerHandler;
 import org.smartboot.http.server.impl.HttpRequestProtocol;
 import org.smartboot.http.server.impl.Request;
 
+import java.io.ByteArrayInputStream;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.function.Function;
@@ -181,17 +182,43 @@ public class MultipartFormDecoder extends AbstractDecoder {
 
         @Override
         public Decoder decode(ByteBuffer byteBuffer, Request request) {
-            ByteTree<?> value = StringUtils.scanByteTree(byteBuffer, CR_END_MATCHER, getConfiguration().getByteCache());
-            if (value == null) {
+            // 判断是否是结束标记
+            byteBuffer.mark();
+            boolean match = true;
+            while (byteBuffer.hasRemaining()) {
+                match = true;
+                for (int i = 0; i < boundary.length; i++) {
+                    byte b = byteBuffer.get();
+                    if (boundary[i] != b) {
+                        match = false;
+                        if (i > 0) {
+                            byteBuffer.position(byteBuffer.position() - i);
+                        }
+                        break;
+                    }
+                }
+                //完成匹配，跳出
+                if (match) {
+                    break;
+                }
+            }
+            if (!match) {
+                byteBuffer.reset();
                 if (byteBuffer.remaining() == byteBuffer.capacity()) {
                     throw new HttpException(HttpStatus.REQUEST_HEADER_FIELDS_TOO_LARGE);
                 }
                 return this;
             }
-            System.out.println("value:" + value.getStringValue());
-            currentPart.setFormData(value.getStringValue());
+            int position = byteBuffer.position();
+            byteBuffer.reset();
+            byte[] bytes = new byte[position - byteBuffer.position() - boundary.length - 2];
+            byteBuffer.get(bytes);
+            currentPart.setInputStream(new ByteArrayInputStream(bytes));
             request.setPart(currentPart);
             currentPart = null;
+            if (byteBuffer.get() != Constant.CR) {
+                throw new HttpException(HttpStatus.BAD_REQUEST);
+            }
             return lfDecoder.decode(byteBuffer, request);
         }
 

@@ -52,11 +52,11 @@ public class MultipartTest {
                         int bytesRead;
 
                         while ((bytesRead = inputStream.read(buffer)) != -1) {
-                            if (part.isFormField()) outputStream.write(buffer, 0, bytesRead);
+                            if (part.getSubmittedFileName() == null) outputStream.write(buffer, 0, bytesRead);
                             contentLength += bytesRead;
                         }
 
-                        if (!part.isFormField()) {
+                        if (part.getSubmittedFileName() != null) {
                             // 文件处理
                             jsonObject2.put("filename", part.getSubmittedFileName());
                             part.delete();
@@ -277,7 +277,7 @@ public class MultipartTest {
                         "Content-Disposition: form-data; name=\"file\"; filename=\"bar.txt\"\r\n" +
                         "Content-Type: text/plain\r\n" +
                         "\r\n" +
-                        "This is some content in the file\r\n" +"\r\n" +
+                        "This is some content in the file\r\n" + "\r\n" +
                         "------WebKitFormBoundary7MA4YWxkTrZu0gW\r\n" +
                         "Content-Disposition: form-data; name=\"textField\"\r\n" +
                         "\r\n" +

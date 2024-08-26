@@ -49,7 +49,7 @@ public class FileUploadDemo {
                             for (Part part : request.getParts()) {
                                 String name = part.getName();
                                 InputStream stream = part.getInputStream();
-                                if (part.isFormField()) {
+                                if (part.getSubmittedFileName() == null) {
                                     System.out.println("Form field " + name + " with value "
                                             + stream + " detected.");
                                 } else {
@@ -66,6 +66,7 @@ public class FileUploadDemo {
 
 
         HttpBootstrap bootstrap = new HttpBootstrap();
+        bootstrap.configuration().readBufferSize(1024 * 1024).debug(true);
         //配置HTTP消息处理管道
         bootstrap.httpHandler(routeHandler);
 
