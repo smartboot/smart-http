@@ -230,6 +230,7 @@ public class MultipartFormDecoder extends AbstractDecoder {
             byte[] bytes = new byte[position - byteBuffer.position() - boundary.length - 2];
             byteBuffer.get(bytes);
             currentPart.setInputStream(new ByteArrayInputStream(bytes));
+            currentPart.setFormSize(bytes.length);
             request.setPart(currentPart);
             currentPart = null;
             if (byteBuffer.get() != Constant.CR) {

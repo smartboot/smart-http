@@ -219,7 +219,7 @@ public class MultipartTest {
                         "\r\n" +
                         "This is the content of the encoded file.\r\n" +
                         "------WebKitFormBoundary7MA4YWxkTrZu0gW--\r\n";
-        client.configuration().debug(true);
+        client.configuration().debug(false);
         Future<org.smartboot.http.client.HttpResponse> future = client.post("/formdata")
                 .header().keepalive(true).setContentLength(body.getBytes().length).setContentType("multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW").done()
                 .body()

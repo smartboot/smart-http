@@ -15,11 +15,27 @@ import java.util.List;
 import java.util.Set;
 
 public class PartImpl implements Part {
+    /**
+     * 表单域名称
+     */
     private String name;
+    /**
+     * 文件名称
+     */
     private String fileName;
+
+
     private InputStream inputStream;
     private OutputStream diskOutputStream;
-    private String formData;
+
+    /**
+     * 表单域大小
+     */
+    private int formSize;
+
+    /**
+     * 磁盘文件
+     */
     private File diskFile;
     private final List<HeaderValue> headers = new ArrayList<>(8);
     private int headerSize = 0;
@@ -61,7 +77,7 @@ public class PartImpl implements Part {
         if (diskFile != null) {
             return diskFile.length();
         } else {
-            return formData.getBytes().length;
+            return formSize;
         }
     }
 
@@ -136,6 +152,10 @@ public class PartImpl implements Part {
 
     public void setInputStream(InputStream inputStream) {
         this.inputStream = inputStream;
+    }
+
+    public void setFormSize(int formSize) {
+        this.formSize = formSize;
     }
 
     public OutputStream getDiskOutputStream() throws IOException {
