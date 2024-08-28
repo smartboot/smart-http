@@ -470,7 +470,7 @@ public final class Request implements HttpRequest, Reset {
         if (!multipartParsed) {
             Decoder multipartFormDecoder = new MultipartFormDecoder(this, configElement);
             while ((multipartFormDecoder = multipartFormDecoder.decode(aioSession.readBuffer(), this)) != HttpRequestProtocol.BODY_READY_DECODER) {
-                aioSession.syncRead();
+                aioSession.read();
             }
         }
         if (parts == null) {

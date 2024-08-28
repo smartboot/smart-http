@@ -36,7 +36,7 @@ public class PostInputStream extends AbstractInputStream {
 
         ByteBuffer byteBuffer = session.readBuffer();
         if (remaining > 0 && !byteBuffer.hasRemaining()) {
-            session.syncRead();
+            session.read();
         }
         int readLength = Math.min(len, byteBuffer.remaining());
         if (remaining < readLength) {

@@ -62,7 +62,7 @@ public class ChunkedInputStream extends AbstractInputStream {
 
         ByteBuffer byteBuffer = session.readBuffer();
         if (chunkedRemaining > 0 && !byteBuffer.hasRemaining()) {
-            session.syncRead();
+            session.read();
         }
         int readLength = Math.min(len, byteBuffer.remaining());
         readLength = Math.min(readLength, chunkedRemaining);

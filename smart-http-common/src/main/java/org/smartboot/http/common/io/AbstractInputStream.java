@@ -18,7 +18,7 @@ public abstract class AbstractInputStream extends InputStream {
     protected byte readByte() throws IOException {
         ByteBuffer byteBuffer = session.readBuffer();
         if (!byteBuffer.hasRemaining()) {
-            int i = session.syncRead();
+            int i = session.read();
             if (i == -1) {
                 throw new IOException("inputStream is closed");
             }
