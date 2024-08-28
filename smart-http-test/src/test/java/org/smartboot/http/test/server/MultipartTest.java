@@ -1,5 +1,6 @@
 package org.smartboot.http.test.server;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.junit.After;
 import org.junit.Assert;
@@ -44,7 +45,14 @@ public class MultipartTest {
                         String name = part.getName();
                         JSONObject jsonObject2 = new JSONObject();
                         InputStream inputStream = part.getInputStream();
-                        jsonObject2.put("header", part.getHeaderNames());
+                        JSONArray headers = new JSONArray();
+                        for (String headerName : part.getHeaderNames()) {
+                            JSONObject j = new JSONObject();
+                            j.put("name", headerName);
+                            j.put("value", part.getHeader(headerName));
+                            headers.add(j);
+                        }
+                        jsonObject2.put("header", headers);
                         // 非文件处理
                         int contentLength = 0;
                         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -73,6 +81,7 @@ public class MultipartTest {
 
                     response.write(jsonObject.toJSONString().getBytes());
                 } catch (Exception e) {
+                    e.printStackTrace();
                     throw new RuntimeException(e);
                 }
             }
@@ -382,7 +391,7 @@ public class MultipartTest {
                         "\r\n" +
                         "This is the content of the encoded file.\r\n" +
                         "------WebKitFormBoundary7MA4YWxkTrZu0gW--\r\n";
-        client.configuration().debug(true);
+        client.configuration().debug(false);
         Future<org.smartboot.http.client.HttpResponse> future = client.post("/formdata")
                 .header().keepalive(true).setContentLength(body.getBytes().length).setContentType("multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW").done()
                 .body()

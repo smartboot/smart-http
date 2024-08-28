@@ -9,6 +9,7 @@
 package org.smartboot.http.server;
 
 import org.smartboot.http.common.Cookie;
+import org.smartboot.http.common.multipart.MultipartConfig;
 import org.smartboot.http.common.multipart.Part;
 import org.smartboot.socket.util.Attachment;
 
@@ -81,7 +82,11 @@ public interface HttpRequest {
 
     Map<String, String[]> getParameters();
 
-    Collection<Part> getParts() throws IOException;
+    default Collection<Part> getParts() throws IOException {
+        return getParts(new MultipartConfig());
+    }
+
+    Collection<Part> getParts(MultipartConfig configElement) throws IOException;
 
     default Map<String, String> getTrailerFields() {
         return Collections.emptyMap();

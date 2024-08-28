@@ -19,6 +19,7 @@ import org.smartboot.http.common.enums.HttpTypeEnum;
 import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
+import org.smartboot.http.common.multipart.MultipartConfig;
 import org.smartboot.http.common.multipart.Part;
 import org.smartboot.http.common.utils.ByteTree;
 import org.smartboot.http.common.utils.Constant;
@@ -31,6 +32,7 @@ import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.ServerHandler;
 import org.smartboot.http.server.WebSocketHandler;
 import org.smartboot.http.server.decode.Decoder;
+import org.smartboot.http.server.decode.MultipartFormDecoder;
 import org.smartboot.socket.timer.HashedWheelTimer;
 import org.smartboot.socket.timer.TimerTask;
 import org.smartboot.socket.transport.AioSession;
@@ -464,13 +466,18 @@ public final class Request implements HttpRequest, Reset {
     }
 
     @Override
-    public List<Part> getParts() {
+    public Collection<Part> getParts(MultipartConfig configElement) throws IOException {
+        if (!multipartParsed) {
+            Decoder multipartFormDecoder = new MultipartFormDecoder(this, configElement);
+            while ((multipartFormDecoder = multipartFormDecoder.decode(aioSession.readBuffer(), this)) != HttpRequestProtocol.BODY_READY_DECODER) {
+                aioSession.syncRead();
+            }
+        }
         if (parts == null) {
             parts = new ArrayList<>();
         }
         return parts;
     }
-
 
     public void setPart(Part part) {
         if (parts == null) {

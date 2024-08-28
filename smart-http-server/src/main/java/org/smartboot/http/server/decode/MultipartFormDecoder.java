@@ -11,7 +11,7 @@ package org.smartboot.http.server.decode;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.exception.HttpException;
-import org.smartboot.http.common.multipart.Part;
+import org.smartboot.http.common.multipart.MultipartConfig;
 import org.smartboot.http.common.multipart.PartImpl;
 import org.smartboot.http.common.utils.ByteTree;
 import org.smartboot.http.common.utils.Constant;
@@ -25,7 +25,6 @@ import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.ByteBuffer;
-import java.util.List;
 import java.util.function.Function;
 
 /**
@@ -36,10 +35,8 @@ import java.util.function.Function;
  */
 public class MultipartFormDecoder extends AbstractDecoder {
     private final LfDecoder lfDecoder;
-    private boolean finishRead;
-    private List<Part> parts;
     private long remaining;
-    private byte[] boundary;
+    private final byte[] boundary;
 
     private PartImpl currentPart;
 
@@ -47,9 +44,12 @@ public class MultipartFormDecoder extends AbstractDecoder {
         super(request.getConfiguration());
         this.remaining = request.getContentLength();
         this.boundary = ("--" + request.getContentType().substring(request.getContentType().indexOf("boundary=") + 9)).getBytes();
-        System.out.println("boundary: " + new String(this.boundary));
         MultipartHeaderDecoder multipartHeaderDecoder = new MultipartHeaderDecoder(request.getConfiguration());
         lfDecoder = new LfDecoder(multipartHeaderDecoder, multipartHeaderDecoder.getConfiguration());
+    }
+
+    public MultipartFormDecoder(Request request, MultipartConfig configElement) {
+        this(request);
     }
 
     @Override
@@ -140,7 +140,6 @@ public class MultipartFormDecoder extends AbstractDecoder {
                 }
                 return this;
             }
-            System.out.println("value: " + value.getStringValue());
             currentPart.setHeadValue(value.getStringValue());
             return nextDecoder.decode(byteBuffer, request);
         }
@@ -166,7 +165,6 @@ public class MultipartFormDecoder extends AbstractDecoder {
                 return this;
             }
             currentPart.setHeadValue(value.getStringValue());
-            System.out.println("value: " + value.getStringValue());
             for (String partVal : value.getStringValue().split(";")) {
                 partVal = partVal.trim();
                 if (StringUtils.startsWith(partVal, "filename")) {
@@ -293,10 +291,6 @@ public class MultipartFormDecoder extends AbstractDecoder {
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-
-
         }
-
-
     }
 }

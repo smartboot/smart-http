@@ -10,10 +10,12 @@ package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.Reset;
+import org.smartboot.http.common.multipart.MultipartConfig;
 import org.smartboot.http.common.multipart.Part;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.socket.util.Attachment;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -166,7 +168,12 @@ abstract class AbstractRequest implements HttpRequest, Reset {
     }
 
     @Override
-    public Collection<Part> getParts() {
+    public Collection<Part> getParts() throws IOException {
         return request.getParts();
+    }
+
+    @Override
+    public Collection<Part> getParts(MultipartConfig configElement) throws IOException {
+        return request.getParts(configElement);
     }
 }

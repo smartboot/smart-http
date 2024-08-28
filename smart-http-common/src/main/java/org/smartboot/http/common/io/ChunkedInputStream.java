@@ -7,7 +7,7 @@ import org.smartboot.socket.transport.AioSession;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -16,12 +16,9 @@ import java.util.function.Consumer;
  * @author 三刀（zhengjunweimail@163.com）
  * @version V1.0 , 2022/12/6
  */
-public class ChunkedInputStream extends InputStream {
+public class ChunkedInputStream extends AbstractInputStream {
     private final ByteArrayOutputStream buffer = new ByteArrayOutputStream(8);
-    private boolean readFlag = true;
-    private final AioSession session;
-    private InputStream inputStream;
-    private boolean eof = false;
+
     private Map<String, String> trailerFields;
     /**
      * 剩余可读字节数
@@ -29,9 +26,10 @@ public class ChunkedInputStream extends InputStream {
     private int remainingThreshold;
     private final Consumer<Map<String, String>> consumer;
     private String trailerName;
+    private int chunkedRemaining;
 
     public ChunkedInputStream(AioSession session, int maxPayload, Consumer<Map<String, String>> consumer) {
-        this.session = session;
+        super(session);
         this.remainingThreshold = maxPayload;
         this.consumer = consumer;
     }
@@ -42,15 +40,14 @@ public class ChunkedInputStream extends InputStream {
         if (eof) {
             return -1;
         }
-        int i = inputStream.read();
-        if (i != -1) {
-            return i;
+        if (chunkedRemaining > 0) {
+            chunkedRemaining--;
+            return readByte();
+        } else {
+            readCrlf();
+            readFlag = true;
+            return read();
         }
-        inputStream.close();
-        inputStream = session.getInputStream();
-        readCrlf();
-        readFlag = true;
-        return read();
     }
 
     @Override
@@ -59,41 +56,50 @@ public class ChunkedInputStream extends InputStream {
         if (eof) {
             return -1;
         }
-        int i = inputStream.read(data, off, len);
-        if (i == -1) {
-            inputStream.close();
-            inputStream = session.getInputStream();
-            readCrlf();
-            readFlag = true;
-            return read(data, off, len);
+        if (len == 0) {
+            return 0;
         }
-        return i;
+
+        ByteBuffer byteBuffer = session.readBuffer();
+        if (chunkedRemaining > 0 && !byteBuffer.hasRemaining()) {
+            session.syncRead();
+        }
+        int readLength = Math.min(len, byteBuffer.remaining());
+        readLength = Math.min(readLength, chunkedRemaining);
+        byteBuffer.get(data, off, readLength);
+        chunkedRemaining = chunkedRemaining - readLength;
+
+        if (chunkedRemaining > 0) {
+            return readLength + read(data, off + readLength, len - readLength);
+        }
+        readCrlf();
+        readFlag = true;
+        readChunkedLength();
+        if (eof) {
+            return readLength;
+        } else {
+            return readLength + read(data, off + readLength, len - readLength);
+        }
     }
 
     private void readChunkedLength() throws IOException {
         while (readFlag) {
-            inputStream = session.getInputStream();
-            int b = inputStream.read();
-            if (b == -1) {
-                throw new IOException("inputStream is closed");
-            }
+            byte b = readByte();
             if (b == Constant.LF) {
-                int length = Integer.parseInt(buffer.toString(), 16);
-                remainingThreshold = remainingThreshold - 2 - buffer.size() - length;
+                chunkedRemaining = Integer.parseInt(buffer.toString(), 16);
+                remainingThreshold = remainingThreshold - 2 - buffer.size() - chunkedRemaining;
                 if (remainingThreshold < 0) {
                     throw new HttpException(HttpStatus.PAYLOAD_TOO_LARGE);
                 }
                 buffer.reset();
-                if (length == 0) {
+                readFlag = false;
+                if (chunkedRemaining == 0) {
                     eof = true;
                     //trailerFields
                     parseTrailerFields();
 //                    readCrlf();
                     break;
                 }
-                inputStream.close();
-                inputStream = session.getInputStream(length);
-                readFlag = false;
             } else if (b != Constant.CR) {
                 buffer.write(b);
             }
@@ -101,17 +107,17 @@ public class ChunkedInputStream extends InputStream {
     }
 
     private void readCrlf() throws IOException {
-        if (inputStream.read() != Constant.CR) {
+        if (readByte() != Constant.CR) {
             throw new HttpException(HttpStatus.BAD_REQUEST);
         }
-        if (inputStream.read() != Constant.LF) {
+        if (readByte() != Constant.LF) {
             throw new HttpException(HttpStatus.BAD_REQUEST);
         }
     }
 
     private void parseTrailerFields() throws IOException {
         while (true) {
-            int b = inputStream.read();
+            byte b = readByte();
             if (b == Constant.LF) {
                 if (buffer.size() == 0) {
                     consumer.accept(trailerFields);
@@ -131,11 +137,5 @@ public class ChunkedInputStream extends InputStream {
         }
     }
 
-    @Override
-    public void close() throws IOException {
-        if (inputStream != null) {
-            inputStream.close();
-            inputStream = null;
-        }
-    }
+
 }

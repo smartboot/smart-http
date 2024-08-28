@@ -70,7 +70,7 @@ public class HttpRequestImpl extends AbstractRequest {
         } else {
             long contentLength = getContentLength();
             if (contentLength > 0) {
-                inputStream = new PostInputStream(request.getAioSession().getInputStream((int) contentLength), contentLength);
+                inputStream = new PostInputStream(request.getAioSession(), contentLength);
             } else {
                 inputStream = EMPTY_INPUT_STREAM;
             }

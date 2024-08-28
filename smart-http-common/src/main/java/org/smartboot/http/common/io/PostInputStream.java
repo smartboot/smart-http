@@ -8,52 +8,64 @@
 
 package org.smartboot.http.common.io;
 
+import org.smartboot.socket.transport.AioSession;
+
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.ByteBuffer;
 
 /**
  * @author 三刀
  * @version V1.0 , 2019/12/1
  */
-public class PostInputStream extends InputStream {
-    private InputStream inputStream;
+public class PostInputStream extends AbstractInputStream {
     private long remaining;
 
-    public PostInputStream(InputStream inputStream, long contentLength) {
-        this.inputStream = inputStream;
+    public PostInputStream(AioSession session, long contentLength) {
+        super(session);
         this.remaining = contentLength;
     }
 
     @Override
-    public int read(byte[] b, int off, int len) throws IOException {
-        int size = inputStream.read(b, off, len);
-        if (size > 0) {
-            remaining -= size;
+    public int read(byte[] data, int off, int len) throws IOException {
+        if (eof) {
+            return -1;
         }
-        return size;
+        if (len == 0) {
+            return 0;
+        }
+
+        ByteBuffer byteBuffer = session.readBuffer();
+        if (remaining > 0 && !byteBuffer.hasRemaining()) {
+            session.syncRead();
+        }
+        int readLength = Math.min(len, byteBuffer.remaining());
+        if (remaining < readLength) {
+            readLength = (int) remaining;
+        }
+        byteBuffer.get(data, off, readLength);
+        remaining = remaining - readLength;
+
+        if (remaining > 0) {
+            return readLength + read(data, off + readLength, len - readLength);
+        } else {
+            eof = true;
+            return readLength;
+        }
     }
 
     @Override
-    public int available() throws IOException {
-        return (int) remaining;
+    public int available() {
+        return Math.min((int) remaining, session.readBuffer().remaining());
     }
 
-    @Override
-    public void close() throws IOException {
-        if (inputStream != null) {
-            inputStream.close();
-            inputStream = null;
-        }
-    }
 
     @Override
     public int read() throws IOException {
-        if (remaining > 0) {
-            remaining--;
-            return inputStream.read();
-        } else {
+        if (eof) {
             return -1;
         }
-//        throw new UnsupportedOperationException("unSupport because of the value byte is returned as an int in the range 0 to 255");
+        remaining--;
+        eof = remaining == 0;
+        return readByte();
     }
 }
