@@ -35,21 +35,31 @@ import java.util.function.Function;
  */
 public class MultipartFormDecoder extends AbstractDecoder {
     private final LfDecoder lfDecoder;
-    private long remaining;
     private final byte[] boundary;
 
     private PartImpl currentPart;
+    private final MultipartConfig multipartConfig;
+    private long writeFileSize;
+    private final Decoder endDecoder = new Decoder() {
+        @Override
+        public Decoder decode(ByteBuffer byteBuffer, Request request) {
+            if (byteBuffer.remaining() < 2) {
+                return this;
+            }
+            if (byteBuffer.get() == Constant.CR && byteBuffer.get() == Constant.LF) {
+                request.multipartParsed();
+                return HttpRequestProtocol.BODY_READY_DECODER;
+            }
+            throw new HttpException(HttpStatus.BAD_REQUEST);
+        }
+    };
 
-    public MultipartFormDecoder(Request request) {
+    public MultipartFormDecoder(Request request, MultipartConfig configElement) {
         super(request.getConfiguration());
-        this.remaining = request.getContentLength();
         this.boundary = ("--" + request.getContentType().substring(request.getContentType().indexOf("boundary=") + 9)).getBytes();
         MultipartHeaderDecoder multipartHeaderDecoder = new MultipartHeaderDecoder(request.getConfiguration());
         lfDecoder = new LfDecoder(multipartHeaderDecoder, multipartHeaderDecoder.getConfiguration());
-    }
-
-    public MultipartFormDecoder(Request request, MultipartConfig configElement) {
-        this(request);
+        this.multipartConfig = configElement;
     }
 
     @Override
@@ -64,10 +74,9 @@ public class MultipartFormDecoder extends AbstractDecoder {
         }
         byte b = byteBuffer.get();
         if (b == '-' && byteBuffer.get() == '-') {
-            request.multipartParsed();
-            return HttpRequestProtocol.BODY_READY_DECODER;
+            return endDecoder.decode(byteBuffer, request);
         } else {
-            currentPart = new PartImpl();
+            currentPart = new PartImpl(multipartConfig);
             return lfDecoder.decode0(byteBuffer, request);
         }
     }
@@ -274,6 +283,12 @@ public class MultipartFormDecoder extends AbstractDecoder {
             byteBuffer.reset();
             byte[] bytes = new byte[position - byteBuffer.position() - boundary.length - 2];
             byteBuffer.get(bytes);
+            if (multipartConfig.getMaxFileSize() > 0) {
+                writeFileSize += bytes.length;
+                if (writeFileSize > multipartConfig.getMaxFileSize()) {
+                    throw new HttpException(HttpStatus.PAYLOAD_TOO_LARGE);
+                }
+            }
             try {
                 currentPart.getDiskOutputStream().write(bytes);
                 if (match) {

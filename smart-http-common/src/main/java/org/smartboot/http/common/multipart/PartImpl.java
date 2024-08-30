@@ -2,6 +2,7 @@ package org.smartboot.http.common.multipart;
 
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.enums.HeaderNameEnum;
+import org.smartboot.http.common.utils.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,6 +42,11 @@ public class PartImpl implements Part {
     private int headerSize = 0;
     private String headerTemp;
     private String contentType;
+    private final MultipartConfig multipartConfig;
+
+    public PartImpl(MultipartConfig multipartConfig) {
+        this.multipartConfig = multipartConfig;
+    }
 
     @Override
     public InputStream getInputStream() throws IOException {
@@ -172,7 +178,12 @@ public class PartImpl implements Part {
     }
 
     private File getFile() throws IOException {
-        return File.createTempFile("multipart" + this.hashCode() + "_", fileName);
+        if (StringUtils.isNotBlank(multipartConfig.getLocation())) {
+            File location = new File(multipartConfig.getLocation());
+            if (location.isDirectory()) {
+                return new File(location, this.hashCode() + "_" + fileName);
+            }
+        }
+        return File.createTempFile("smart-http_" + this.hashCode() + "_", fileName);
     }
-
 }

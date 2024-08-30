@@ -29,7 +29,7 @@ public class HttpRequestProtocol implements Protocol<Request> {
      */
     private final HttpMethodDecoder httpMethodDecoder;
 
-    private HttpServerConfiguration configuration;
+    private final HttpServerConfiguration configuration;
 
     public HttpRequestProtocol(HttpServerConfiguration configuration) {
         httpMethodDecoder = new HttpMethodDecoder(configuration);

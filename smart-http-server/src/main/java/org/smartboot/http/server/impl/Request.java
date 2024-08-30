@@ -469,8 +469,22 @@ public final class Request implements HttpRequest, Reset {
     public Collection<Part> getParts(MultipartConfig configElement) throws IOException {
         if (!multipartParsed) {
             Decoder multipartFormDecoder = new MultipartFormDecoder(this, configElement);
+            long remaining = getContentLength();
+            if (configElement.getMaxRequestSize() > 0 && configElement.getMaxRequestSize() < remaining) {
+                throw new HttpException(HttpStatus.PAYLOAD_TOO_LARGE);
+            }
+            int p = aioSession.readBuffer().position();
             while ((multipartFormDecoder = multipartFormDecoder.decode(aioSession.readBuffer(), this)) != HttpRequestProtocol.BODY_READY_DECODER) {
-                aioSession.read();
+                remaining -= aioSession.readBuffer().position() - p;
+                int readSize = aioSession.read();
+                p = aioSession.readBuffer().position();
+                if (readSize == -1) {
+                    break;
+                }
+            }
+            remaining -= aioSession.readBuffer().position() - p;
+            if (remaining != 0) {
+                throw new HttpException(HttpStatus.BAD_REQUEST);
             }
         }
         if (parts == null) {
