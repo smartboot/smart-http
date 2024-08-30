@@ -18,7 +18,7 @@ smart-http 是一款可编程的 Http 应用微内核，方便用户根据自身
     <dependency>
         <groupId>io.github.smartboot.http</groupId>
         <artifactId>smart-http-server</artifactId>
-        <version>1.5.9</version>
+        <version>1.6.0</version>
     </dependency>
     ```
 2. 拷贝以下代码并启动。
@@ -44,7 +44,7 @@ smart-http 是一款可编程的 Http 应用微内核，方便用户根据自身
     <dependency>
         <groupId>io.github.smartboot.http</groupId>
         <artifactId>smart-http-client</artifactId>
-        <version>1.5.9</version>
+        <version>1.6.0</version>
     </dependency>
     ```
 2. 拷贝以下代码并启动。
