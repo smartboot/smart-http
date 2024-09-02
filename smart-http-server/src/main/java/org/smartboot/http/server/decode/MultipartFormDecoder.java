@@ -77,6 +77,7 @@ public class MultipartFormDecoder extends AbstractDecoder {
             return endDecoder.decode(byteBuffer, request);
         } else {
             currentPart = new PartImpl(multipartConfig);
+            request.setPart(currentPart);
             return lfDecoder.decode0(byteBuffer, request);
         }
     }
@@ -238,7 +239,6 @@ public class MultipartFormDecoder extends AbstractDecoder {
             byteBuffer.get(bytes);
             currentPart.setInputStream(new ByteArrayInputStream(bytes));
             currentPart.setFormSize(bytes.length);
-            request.setPart(currentPart);
             currentPart = null;
             if (byteBuffer.get() != Constant.CR) {
                 throw new HttpException(HttpStatus.BAD_REQUEST);
@@ -297,7 +297,7 @@ public class MultipartFormDecoder extends AbstractDecoder {
                     }
                     currentPart.getDiskOutputStream().flush();
                     currentPart.getDiskOutputStream().close();
-                    request.setPart(currentPart);
+
                     currentPart = null;
                     return lfDecoder.decode(byteBuffer, request);
                 } else {

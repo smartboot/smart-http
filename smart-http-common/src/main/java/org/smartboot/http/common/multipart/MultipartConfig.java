@@ -1,7 +1,9 @@
 package org.smartboot.http.common.multipart;
 
 
-import java.io.File;
+import org.smartboot.http.common.utils.StringUtils;
+
+import java.nio.file.Paths;
 
 public class MultipartConfig {
 
@@ -11,17 +13,6 @@ public class MultipartConfig {
     private int fileSizeThreshold;
 
     public MultipartConfig() {
-
-    }
-    public MultipartConfig(File direct) {
-        if (location == null) {
-            this.location = "";
-        } else {
-            this.location = location;
-        }
-        this.maxFileSize = -1L;
-        this.maxRequestSize = -1L;
-        this.fileSizeThreshold = 0;
     }
 
     /**
@@ -38,6 +29,10 @@ public class MultipartConfig {
         } else {
             this.location = location;
         }
+        if (StringUtils.isNotBlank(this.location) && !Paths.get(this.location).isAbsolute()) {
+            throw new IllegalStateException("location must be absolute");
+        }
+
         this.maxFileSize = maxFileSize;
         this.maxRequestSize = maxRequestSize;
         this.fileSizeThreshold = fileSizeThreshold;

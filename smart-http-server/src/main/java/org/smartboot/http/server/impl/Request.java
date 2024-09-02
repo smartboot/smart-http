@@ -734,5 +734,13 @@ public final class Request implements HttpRequest, Reset {
         type = null;
         decodePartEnum = DecodePartEnum.HEADER_FINISH;
         scheme = null;
+        if (parts != null) {
+            for (Part part : parts) {
+                try {
+                    part.delete();
+                } catch (IOException ignore) {
+                }
+            }
+        }
     }
 }

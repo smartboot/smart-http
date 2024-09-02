@@ -9,6 +9,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -89,12 +92,40 @@ public class PartImpl implements Part {
 
     @Override
     public void write(String fileName) throws IOException {
-
+        if (this.diskFile == null) {
+            return;
+        }
+        Path target = Paths.get(fileName);
+        if (!target.isAbsolute()) {
+            if (StringUtils.isNotBlank(multipartConfig.getLocation())) {
+                target = Paths.get(multipartConfig.getLocation(), fileName);
+            } else {
+                target = File.createTempFile("smart-http_" + this.hashCode(), fileName).toPath();
+            }
+        }
+        Files.move(diskFile.toPath(), target, StandardCopyOption.REPLACE_EXISTING);
     }
 
     @Override
     public void delete() throws IOException {
+        if (inputStream != null) {
+            try {
+                inputStream.close();
+            } catch (Exception ignore) {
 
+            }
+
+            inputStream = null;
+        }
+        if (diskFile != null) {
+            try {
+                diskFile.delete();
+            } catch (Exception ignore) {
+
+            }
+
+            diskFile = null;
+        }
     }
 
     @Override
