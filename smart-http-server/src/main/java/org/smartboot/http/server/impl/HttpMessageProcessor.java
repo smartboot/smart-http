@@ -223,6 +223,9 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
     }
 
     private boolean keepConnection(HttpRequestImpl request) throws IOException {
+        if (request.getResponse().isClosed()) {
+            return false;
+        }
         //非keepAlive或者 body部分未读取完毕,释放连接资源
         if (!request.isKeepAlive() || (!HttpMethodEnum.GET.getMethod().equals(request.getMethod()) && request.getContentLength() > 0 && request.getInputStream().available() > 0)) {
             request.getResponse().close();
