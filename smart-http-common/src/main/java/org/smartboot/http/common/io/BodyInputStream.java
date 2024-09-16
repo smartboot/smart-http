@@ -8,7 +8,6 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 public abstract class BodyInputStream extends InputStream {
     protected final AioSession session;
-    protected boolean eof = false;
     protected ReadListener readListener;
     protected volatile int state;
     protected static final int FLAG_READY = 1;
@@ -28,7 +27,7 @@ public abstract class BodyInputStream extends InputStream {
 
     @Override
     public void close() throws IOException {
-        eof = true;
+        setFlags(FLAG_CLOSED | FLAG_FINISHED);
     }
 
     @Override

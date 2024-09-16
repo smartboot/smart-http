@@ -75,7 +75,7 @@ public class PostInputStream extends BodyInputStream {
                 return readLength;
             }
         } else {
-            eof = true;
+            setFlags(FLAG_FINISHED);
             return readLength;
         }
     }
