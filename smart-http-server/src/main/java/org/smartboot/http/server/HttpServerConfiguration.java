@@ -74,7 +74,7 @@ public class HttpServerConfiguration {
     /**
      * 闲置超时时间，默认：1分钟
      */
-    private int httpIdleTimeout = 60000;
+    private long httpIdleTimeout = 60000;
 
     /**
      * 闲置超时时间，默认：1分钟
@@ -294,11 +294,11 @@ public class HttpServerConfiguration {
         return wafConfiguration;
     }
 
-    public int getHttpIdleTimeout() {
+    public long getHttpIdleTimeout() {
         return httpIdleTimeout;
     }
 
-    public HttpServerConfiguration setHttpIdleTimeout(int httpIdleTimeout) {
+    public HttpServerConfiguration setHttpIdleTimeout(long httpIdleTimeout) {
         this.httpIdleTimeout = httpIdleTimeout;
         return this;
     }
