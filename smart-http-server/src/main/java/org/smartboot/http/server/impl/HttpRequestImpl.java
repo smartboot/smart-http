@@ -35,6 +35,11 @@ public class HttpRequestImpl extends AbstractRequest {
         public void setReadListener(ReadListener listener) {
             throw new IllegalStateException();
         }
+
+        @Override
+        public int read(byte[] b, int off, int len) throws IOException {
+            return -1;
+        }
     };
     private final HttpResponseImpl response;
     private BodyInputStream inputStream;
