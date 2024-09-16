@@ -13,11 +13,12 @@ public abstract class BodyInputStream extends InputStream {
     protected volatile int state;
     protected static final int FLAG_READY = 1;
     protected static final int FLAG_FINISHED = 1 << 1;
-    protected static final int FLAG_IS_READY_CALLED = 1 << 2;
-    protected static final int FLAG_CHUNKED_TRAILER = 1 << 3;
-    protected static final int FLAG_EXPECT_CR_LF = 1 << 4;
+    protected static final int FLAG_CLOSED = 1 << 2;
+    protected static final int FLAG_IS_READY_CALLED = 1 << 3;
+    protected static final int FLAG_CHUNKED_TRAILER = 1 << 4;
+    protected static final int FLAG_EXPECT_CR_LF = 1 << 5;
     //需要解析chunked长度
-    protected static final int FLAG_READ_CHUNKED_LENGTH = 1 << 5;
+    protected static final int FLAG_READ_CHUNKED_LENGTH = 1 << 6;
     protected static final AtomicIntegerFieldUpdater<BodyInputStream> stateUpdater = AtomicIntegerFieldUpdater.newUpdater(BodyInputStream.class, "state");
 
     public BodyInputStream(AioSession session) {

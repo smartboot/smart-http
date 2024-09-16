@@ -27,7 +27,13 @@ public class PostInputStream extends BodyInputStream {
 
     @Override
     public int read(byte[] data, int off, int len) throws IOException {
-        if (eof) {
+        if (anyAreSet(state, FLAG_CLOSED)) {
+            throw new IOException("stream closed");
+        }
+        if (data == null) {
+            throw new NullPointerException();
+        }
+        if (isFinished()) {
             return -1;
         }
         if (len == 0) {
@@ -70,9 +76,6 @@ public class PostInputStream extends BodyInputStream {
             }
         } else {
             eof = true;
-            if (readListener != null) {
-                readListener.onAllDataRead();
-            }
             return readLength;
         }
     }
@@ -95,6 +98,10 @@ public class PostInputStream extends BodyInputStream {
             public void onDataAvailable() throws IOException {
                 setFlags(FLAG_READY);
                 listener.onDataAvailable();
+                clearFlags(FLAG_READY);
+                if (remaining == 0) {
+                    listener.onAllDataRead();
+                }
             }
 
             @Override
