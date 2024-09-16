@@ -71,6 +71,9 @@ final class HttpOutputStream extends AbstractOutputStream {
         long currentTime = flushDate();
         long contentLength = response.getContentLength();
         String contentType = response.getContentType();
+        if (contentLength > 0) {
+            remaining = contentLength;
+        }
         //成功消息优先从缓存中加载。启用缓存的条件：Http_200, contentLength<512,未设置过Header,Http/1.1
         boolean cache = response.isDefaultStatus() && contentLength > 0 && contentLength < CACHE_LIMIT && !hasHeader;
 

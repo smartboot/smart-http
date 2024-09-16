@@ -39,6 +39,7 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
     protected boolean closed = false;
 
     private Supplier<Map<String, String>> trailerSupplier;
+    protected long remaining = -1;
 
     public BufferOutputStream(AioSession session) {
         this.session = session;
@@ -47,19 +48,15 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
 
     /**
      * 不推荐使用该方法，此方法性能不佳
-     * @param b   the <code>byte</code>.
+     *
+     * @param b the <code>byte</code>.
      * @throws IOException
      */
     @Override
     public final void write(int b) throws IOException {
-        writeHeader(HeaderWriteSource.WRITE);
-        if (chunkedSupport) {
-            writeBuffer.write((Integer.toHexString(1) + "\r\n").getBytes());
-            writeBuffer.write(b);
-            writeBuffer.write(Constant.CRLF_BYTES);
-        } else {
-            writeBuffer.write(b);
-        }
+        byte[] bytes = new byte[1];
+        bytes[0] = (byte) b;
+        write(bytes);
     }
 
     /**
@@ -83,6 +80,12 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
             writeBuffer.write(b, off, len);
             writeBuffer.write(Constant.CRLF_BYTES);
         } else {
+            if (remaining >= 0) {
+                remaining -= len;
+                if (remaining < 0) {
+                    throw new IOException("");
+                }
+            }
             writeBuffer.write(b, off, len);
         }
     }
