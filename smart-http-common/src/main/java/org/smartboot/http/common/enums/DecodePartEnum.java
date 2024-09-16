@@ -15,5 +15,6 @@ package org.smartboot.http.common.enums;
 public enum DecodePartEnum {
     HEADER_FINISH,
     BODY,
+    BODY_ReadListener,
     FINISH;
 }

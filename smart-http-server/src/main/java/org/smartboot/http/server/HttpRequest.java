@@ -9,12 +9,12 @@
 package org.smartboot.http.server;
 
 import org.smartboot.http.common.Cookie;
+import org.smartboot.http.common.io.BodyInputStream;
 import org.smartboot.http.common.multipart.MultipartConfig;
 import org.smartboot.http.common.multipart.Part;
 import org.smartboot.socket.util.Attachment;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.Collections;
@@ -43,7 +43,7 @@ public interface HttpRequest {
 
     Collection<String> getHeaderNames();
 
-    InputStream getInputStream() throws IOException;
+    BodyInputStream getInputStream() throws IOException;
 
     String getRequestURI();
 

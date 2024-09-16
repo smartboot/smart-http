@@ -17,6 +17,7 @@ import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.enums.HttpTypeEnum;
 import org.smartboot.http.common.exception.HttpException;
+import org.smartboot.http.common.io.BodyInputStream;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
 import org.smartboot.http.common.multipart.MultipartConfig;
@@ -39,7 +40,6 @@ import org.smartboot.socket.transport.AioSession;
 import org.smartboot.socket.util.Attachment;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -280,7 +280,7 @@ public final class Request implements HttpRequest, Reset {
     }
 
     @Override
-    public InputStream getInputStream() {
+    public BodyInputStream getInputStream() {
         throw new UnsupportedOperationException();
     }
 
@@ -733,6 +733,7 @@ public final class Request implements HttpRequest, Reset {
         webSocketRequest = null;
         type = null;
         decodePartEnum = DecodePartEnum.HEADER_FINISH;
+        decoder = null;
         scheme = null;
         if (parts != null) {
             for (Part part : parts) {

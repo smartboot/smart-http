@@ -10,13 +10,13 @@ package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.codec.websocket.WebSocket;
 import org.smartboot.http.common.enums.DecodePartEnum;
+import org.smartboot.http.common.io.BodyInputStream;
 import org.smartboot.http.common.utils.SmartDecoder;
 import org.smartboot.http.common.utils.WebSocketUtil;
 import org.smartboot.http.server.WebSocketRequest;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * @author 三刀
@@ -47,7 +47,7 @@ public class WebSocketRequestImpl extends AbstractRequest implements WebSocketRe
         return response;
     }
 
-    public InputStream getInputStream() {
+    public BodyInputStream getInputStream() {
         throw new UnsupportedOperationException();
     }
 

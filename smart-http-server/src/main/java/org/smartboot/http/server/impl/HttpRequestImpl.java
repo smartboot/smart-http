@@ -10,11 +10,12 @@ package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
+import org.smartboot.http.common.io.BodyInputStream;
 import org.smartboot.http.common.io.ChunkedInputStream;
 import org.smartboot.http.common.io.PostInputStream;
+import org.smartboot.http.common.io.ReadListener;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Map;
 
 /**
@@ -29,14 +30,14 @@ public class HttpRequestImpl extends AbstractRequest {
     /**
      * 空流
      */
-    protected static final InputStream EMPTY_INPUT_STREAM = new InputStream() {
+    protected static final BodyInputStream EMPTY_INPUT_STREAM = new BodyInputStream(null) {
         @Override
-        public int read() {
-            return -1;
+        public void setReadListener(ReadListener listener) {
+            throw new IllegalStateException();
         }
     };
     private final HttpResponseImpl response;
-    private InputStream inputStream;
+    private BodyInputStream inputStream;
     private Map<String, String> trailerFields;
 
     HttpRequestImpl(Request request) {
@@ -57,7 +58,7 @@ public class HttpRequestImpl extends AbstractRequest {
     }
 
     @Override
-    public InputStream getInputStream() throws IOException {
+    public BodyInputStream getInputStream() throws IOException {
         if (inputStream != null) {
             return inputStream;
         }

@@ -17,6 +17,7 @@ import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.enums.HttpTypeEnum;
 import org.smartboot.http.common.exception.HttpException;
+import org.smartboot.http.common.io.ReadListener;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
 import org.smartboot.http.common.utils.StringUtils;
@@ -75,7 +76,13 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
                             handleHttpRequest(request.newHttpRequest());
                             break;
                     }
+                    break;
                 }
+                case BODY_ReadListener:
+                    request.newHttpRequest().getInputStream().getReadListener().onDataAvailable();
+                    if (!abstractRequest.getInputStream().isFinished()) {
+                        abstractRequest.request.setDecoder(HttpRequestProtocol.BODY_CONTINUE_DECODER);
+                    }
             }
         } catch (Throwable e) {
             throw new RuntimeException(e);
@@ -162,7 +169,29 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
             }
         } else {
             AioSession session = abstractRequest.request.getAioSession();
-            session.awaitRead();
+            ReadListener readListener = abstractRequest.getInputStream().getReadListener();
+            if (readListener == null) {
+                session.awaitRead();
+            } else {
+                abstractRequest.request.setDecodePartEnum(DecodePartEnum.BODY_ReadListener);
+                if (abstractRequest.request.getAioSession().readBuffer().hasRemaining()) {
+                    abstractRequest.getInputStream().getReadListener().onDataAvailable();
+                    if (!abstractRequest.getInputStream().isFinished()) {
+                        if (session.readBuffer().hasRemaining()) {
+                            abstractRequest.request.setDecoder(HttpRequestProtocol.BODY_CONTINUE_DECODER);
+                        } else {
+                            abstractRequest.request.setDecoder(HttpRequestProtocol.BODY_READY_DECODER);
+                        }
+
+                    }
+                } else {
+                    if (session.readBuffer().hasRemaining()) {
+                        abstractRequest.request.setDecoder(HttpRequestProtocol.BODY_CONTINUE_DECODER);
+                    } else {
+                        abstractRequest.request.setDecoder(HttpRequestProtocol.BODY_READY_DECODER);
+                    }
+                }
+            }
             Thread thread = Thread.currentThread();
             AbstractResponse response = abstractRequest.getResponse();
             future.thenRun(() -> {
@@ -176,13 +205,17 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
                 } catch (Exception e) {
                     responseError(response, e);
                 } finally {
-                    session.signalRead();
+                    if (readListener == null) {
+                        session.signalRead();
+                    }
                 }
             }).exceptionally(throwable -> {
                 try {
                     responseError(response, throwable);
                 } finally {
-                    session.signalRead();
+                    if (readListener == null) {
+                        session.signalRead();
+                    }
                 }
                 return null;
             });
