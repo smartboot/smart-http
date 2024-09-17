@@ -38,9 +38,7 @@ public class ChunkedInputStream extends BodyInputStream {
 
     @Override
     public int read(byte[] data, int off, int len) throws IOException {
-        if (anyAreSet(state, FLAG_CLOSED)) {
-            throw new IOException("stream closed");
-        }
+        checkState();
         if (data == null) {
             throw new NullPointerException();
         }

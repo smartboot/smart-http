@@ -55,21 +55,23 @@ public abstract class BodyInputStream extends InputStream {
         return anyAreSet(state, FLAG_FINISHED);
     }
 
+    protected void checkState() throws IOException {
+        if (anyAreSet(state, FLAG_CLOSED)) {
+            throw new IOException("stream closed");
+        }
+    }
+
     public boolean isReady() {
         if (readListener == null) {
             return true;
         }
-//        boolean finished = anyAreSet(state, FLAG_FINISHED);
-//        if (finished) {
-//            if (anyAreClear(state, FLAG_ON_DATA_READ_CALLED)) {
-//                if (allAreClear(state, FLAG_BEING_INVOKED_IN_IO_THREAD)) {
-//                    setFlags(FLAG_ON_DATA_READ_CALLED);
-//                } else {
-//                    setFlags(FLAG_CALL_ON_ALL_DATA_READ);
-//                }
-//            }
-//        }
         return anyAreSet(state, FLAG_READY) && session.readBuffer().hasRemaining();
+    }
+
+    @Override
+    public final int available() throws IOException {
+        checkState();
+        return session.readBuffer().remaining();
     }
 
     protected static boolean anyAreClear(int var, int flags) {
@@ -92,9 +94,5 @@ public abstract class BodyInputStream extends InputStream {
 
     protected boolean anyAreSet(int var, int flags) {
         return (var & flags) != 0;
-    }
-
-    protected boolean allAreClear(int var, int flags) {
-        return (var & flags) == 0;
     }
 }
