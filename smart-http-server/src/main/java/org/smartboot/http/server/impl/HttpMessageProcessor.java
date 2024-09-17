@@ -167,59 +167,45 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
             if (keepConnection(abstractRequest)) {
                 finishResponse(abstractRequest);
             }
-        } else {
-            AioSession session = abstractRequest.request.getAioSession();
-            ReadListener readListener = abstractRequest.getInputStream().getReadListener();
-            if (readListener == null) {
-                session.awaitRead();
-            } else {
-                abstractRequest.request.setDecodePartEnum(DecodePartEnum.BODY_ReadListener);
-                if (abstractRequest.request.getAioSession().readBuffer().hasRemaining()) {
-                    abstractRequest.getInputStream().getReadListener().onDataAvailable();
-                    if (!abstractRequest.getInputStream().isFinished()) {
-                        if (session.readBuffer().hasRemaining()) {
-                            abstractRequest.request.setDecoder(HttpRequestProtocol.BODY_CONTINUE_DECODER);
-                        } else {
-                            abstractRequest.request.setDecoder(HttpRequestProtocol.BODY_READY_DECODER);
-                        }
+            return;
+        }
 
+        AioSession session = abstractRequest.request.getAioSession();
+        ReadListener readListener = abstractRequest.getInputStream().getReadListener();
+        if (readListener == null) {
+            session.awaitRead();
+        } else {
+            abstractRequest.request.setDecodePartEnum(DecodePartEnum.BODY_ReadListener);
+            abstractRequest.request.setDecoder(session.readBuffer().hasRemaining() ? HttpRequestProtocol.BODY_CONTINUE_DECODER : HttpRequestProtocol.BODY_READY_DECODER);
+        }
+
+        Thread thread = Thread.currentThread();
+        AbstractResponse response = abstractRequest.getResponse();
+        future.thenRun(() -> {
+            try {
+                if (keepConnection(abstractRequest)) {
+                    finishResponse(abstractRequest);
+                    if (thread != Thread.currentThread()) {
+                        session.writeBuffer().flush();
                     }
-                } else {
-                    if (session.readBuffer().hasRemaining()) {
-                        abstractRequest.request.setDecoder(HttpRequestProtocol.BODY_CONTINUE_DECODER);
-                    } else {
-                        abstractRequest.request.setDecoder(HttpRequestProtocol.BODY_READY_DECODER);
-                    }
+                }
+            } catch (Exception e) {
+                responseError(response, e);
+            } finally {
+                if (readListener == null) {
+                    session.signalRead();
                 }
             }
-            Thread thread = Thread.currentThread();
-            AbstractResponse response = abstractRequest.getResponse();
-            future.thenRun(() -> {
-                try {
-                    if (keepConnection(abstractRequest)) {
-                        finishResponse(abstractRequest);
-                        if (thread != Thread.currentThread()) {
-                            session.writeBuffer().flush();
-                        }
-                    }
-                } catch (Exception e) {
-                    responseError(response, e);
-                } finally {
-                    if (readListener == null) {
-                        session.signalRead();
-                    }
+        }).exceptionally(throwable -> {
+            try {
+                responseError(response, throwable);
+            } finally {
+                if (readListener == null) {
+                    session.signalRead();
                 }
-            }).exceptionally(throwable -> {
-                try {
-                    responseError(response, throwable);
-                } finally {
-                    if (readListener == null) {
-                        session.signalRead();
-                    }
-                }
-                return null;
-            });
-        }
+            }
+            return null;
+        });
     }
 
     private boolean keepConnection(HttpRequestImpl request) throws IOException {
