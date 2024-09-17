@@ -176,7 +176,7 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
             session.awaitRead();
         } else {
             abstractRequest.request.setDecodePartEnum(DecodePartEnum.BODY_ReadListener);
-            abstractRequest.request.setDecoder(session.readBuffer().hasRemaining() ? HttpRequestProtocol.BODY_CONTINUE_DECODER : HttpRequestProtocol.BODY_READY_DECODER);
+            abstractRequest.request.setDecoder(session.readBuffer().hasRemaining() ? HttpRequestProtocol.BODY_READY_DECODER : HttpRequestProtocol.BODY_CONTINUE_DECODER);
         }
 
         Thread thread = Thread.currentThread();
