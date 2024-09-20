@@ -8,7 +8,7 @@
 
 package org.smartboot.http.server.impl;
 
-import org.smartboot.http.common.BufferOutputStream;
+import org.smartboot.http.common.io.BufferOutputStream;
 import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.enums.HeaderNameEnum;

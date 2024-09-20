@@ -8,7 +8,7 @@
 
 package org.smartboot.http.server.handler;
 
-import org.smartboot.http.common.BufferOutputStream;
+import org.smartboot.http.common.io.BufferOutputStream;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.enums.HttpStatus;

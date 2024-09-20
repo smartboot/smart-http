@@ -6,8 +6,9 @@
  * Author: sandao (zhengjunweimail@163.com)
  ******************************************************************************/
 
-package org.smartboot.http.common;
+package org.smartboot.http.common.io;
 
+import org.smartboot.http.common.Reset;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.socket.transport.AioSession;
@@ -40,6 +41,7 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
 
     private Supplier<Map<String, String>> trailerSupplier;
     protected long remaining = -1;
+    private WriteListener writeListener;
 
     public BufferOutputStream(AioSession session) {
         this.session = session;
