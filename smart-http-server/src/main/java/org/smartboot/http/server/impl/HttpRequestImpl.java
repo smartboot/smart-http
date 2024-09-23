@@ -30,15 +30,25 @@ public class HttpRequestImpl extends AbstractRequest {
     /**
      * 空流
      */
-    protected static final BodyInputStream EMPTY_INPUT_STREAM = new BodyInputStream(null) {
+    private static final BodyInputStream EMPTY_INPUT_STREAM = new BodyInputStream(null) {
         @Override
         public void setReadListener(ReadListener listener) {
             throw new IllegalStateException();
         }
 
         @Override
-        public int read(byte[] b, int off, int len) throws IOException {
+        public int read(byte[] b, int off, int len) {
             return -1;
+        }
+
+        @Override
+        public int available() {
+            return 0;
+        }
+
+        @Override
+        public void close() {
+
         }
     };
     private final HttpResponseImpl response;

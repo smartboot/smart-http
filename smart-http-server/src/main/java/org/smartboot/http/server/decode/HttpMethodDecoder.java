@@ -30,7 +30,7 @@ public class HttpMethodDecoder extends AbstractDecoder {
 
     @Override
     public Decoder decode0(ByteBuffer byteBuffer, Request request) {
-        ByteTree<?> method = StringUtils.scanByteTree(byteBuffer, SP_END_MATCHER, getConfiguration().getByteCache());
+        ByteTree<?> method = StringUtils.scanByteTree(byteBuffer, ByteTree.SP_END_MATCHER, getConfiguration().getByteCache());
         if (method != null) {
             request.setMethod(method.getStringValue());
             return decoder.decode(byteBuffer, request);

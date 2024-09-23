@@ -11,6 +11,7 @@ package org.smartboot.http.client.decode;
 import org.smartboot.http.client.AbstractResponse;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.exception.HttpException;
+import org.smartboot.http.common.utils.ByteTree;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.socket.transport.AioSession;
@@ -24,28 +25,30 @@ import java.nio.ByteBuffer;
 class HttpHeaderDecoder implements HeaderDecoder {
 
     private final HeaderValueDecoder headerValueDecoder = new HeaderValueDecoder();
+    private final LfDecoder lfDecoder = new LfDecoder(this);
 
     @Override
     public HeaderDecoder decode(ByteBuffer byteBuffer, AioSession aioSession, AbstractResponse request) {
         if (byteBuffer.remaining() < 2) {
             return this;
         }
+
         //header解码结束
-        if (byteBuffer.get(byteBuffer.position()) == Constant.CR) {
-            if (byteBuffer.get(byteBuffer.position() + 1) != Constant.LF) {
+        byteBuffer.mark();
+        if (byteBuffer.get() == Constant.CR) {
+            if (byteBuffer.get() != Constant.LF) {
                 throw new HttpException(HttpStatus.BAD_REQUEST);
             }
-            byteBuffer.position(byteBuffer.position() + 2);
-//            return decoder.decode(byteBuffer, aioSession, request);
             return HeaderDecoder.BODY_READY_DECODER;
         }
+        byteBuffer.reset();
         //Header name解码
-        int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.COLON);
-        if (length < 0) {
+        ByteTree<?> name = StringUtils.scanByteTree(byteBuffer, ByteTree.COLON_END_MATCHER, ByteTree.DEFAULT);
+        if (name == null) {
             return this;
         }
-        String name = StringUtils.convertToString(byteBuffer, byteBuffer.position() - length - 1, length, StringUtils.String_CACHE_HEADER_NAME);
-        request.setHeaderTemp(name);
+//        System.out.println("headerName: " + name);
+        request.setHeaderTemp(name.getStringValue());
         return headerValueDecoder.decode(byteBuffer, aioSession, request);
     }
 
@@ -55,12 +58,16 @@ class HttpHeaderDecoder implements HeaderDecoder {
     class HeaderValueDecoder implements HeaderDecoder {
         @Override
         public HeaderDecoder decode(ByteBuffer byteBuffer, AioSession aioSession, AbstractResponse request) {
-            int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.LF);
-            if (length == -1) {
+            ByteTree<?> value = StringUtils.scanByteTree(byteBuffer, ByteTree.CR_END_MATCHER, ByteTree.DEFAULT);
+            if (value == null) {
+                if (byteBuffer.remaining() == byteBuffer.capacity()) {
+                    throw new HttpException(HttpStatus.REQUEST_HEADER_FIELDS_TOO_LARGE);
+                }
                 return this;
             }
-            request.setHeadValue(StringUtils.convertToString(byteBuffer, byteBuffer.position() - 1 - length, length - 1));
-            return HttpHeaderDecoder.this.decode(byteBuffer, aioSession, request);
+//            System.out.println("value: " + value);
+            request.setHeadValue(value.getStringValue());
+            return lfDecoder.decode(byteBuffer, aioSession, request);
         }
     }
 }

@@ -9,7 +9,7 @@
 package org.smartboot.http.client.decode;
 
 import org.smartboot.http.client.AbstractResponse;
-import org.smartboot.http.common.utils.Constant;
+import org.smartboot.http.common.utils.ByteTree;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.socket.transport.AioSession;
 
@@ -22,14 +22,14 @@ import java.nio.ByteBuffer;
 class HttpStatusDescDecoder implements HeaderDecoder {
 
     private final HttpHeaderDecoder decoder = new HttpHeaderDecoder();
+    private final LfDecoder lfDecoder = new LfDecoder(decoder);
 
     @Override
     public HeaderDecoder decode(ByteBuffer byteBuffer, AioSession aioSession, AbstractResponse request) {
-        int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.LF);
-        if (length > 0) {
-            String protocol = StringUtils.convertToString(byteBuffer, byteBuffer.position() - length - 1, length - 1, StringUtils.String_CACHE_EMPTY);
-            request.setReasonPhrase(protocol);
-            return decoder.decode(byteBuffer, aioSession, request);
+        ByteTree<?> byteTree = StringUtils.scanByteTree(byteBuffer, ByteTree.CR_END_MATCHER, ByteTree.DEFAULT);
+        if (byteTree != null) {
+            request.setReasonPhrase(byteTree.getStringValue());
+            return lfDecoder.decode(byteBuffer, aioSession, request);
         } else {
             return this;
         }

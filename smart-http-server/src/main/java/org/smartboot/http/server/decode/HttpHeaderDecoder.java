@@ -54,7 +54,7 @@ class HttpHeaderDecoder extends AbstractDecoder {
         }
         byteBuffer.reset();
         //Header name解码
-        ByteTree<Function<String, ServerHandler<?, ?>>> name = StringUtils.scanByteTree(byteBuffer, COLON_END_MATCHER, getConfiguration().getHeaderNameByteTree());
+        ByteTree<Function<String, ServerHandler<?, ?>>> name = StringUtils.scanByteTree(byteBuffer, ByteTree.COLON_END_MATCHER, getConfiguration().getHeaderNameByteTree());
         if (name == null) {
             return this;
         }
@@ -69,7 +69,7 @@ class HttpHeaderDecoder extends AbstractDecoder {
     class HeaderValueDecoder implements Decoder {
         @Override
         public Decoder decode(ByteBuffer byteBuffer, Request request) {
-            ByteTree<?> value = StringUtils.scanByteTree(byteBuffer, CR_END_MATCHER, getConfiguration().getByteCache());
+            ByteTree<?> value = StringUtils.scanByteTree(byteBuffer, ByteTree.CR_END_MATCHER, getConfiguration().getByteCache());
             if (value == null) {
                 if (byteBuffer.remaining() == byteBuffer.capacity()) {
                     throw new HttpException(HttpStatus.REQUEST_HEADER_FIELDS_TOO_LARGE);

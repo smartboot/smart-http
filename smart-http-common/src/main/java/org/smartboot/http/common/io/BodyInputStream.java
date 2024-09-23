@@ -69,7 +69,7 @@ public abstract class BodyInputStream extends InputStream {
     }
 
     @Override
-    public final int available() throws IOException {
+    public int available() throws IOException {
         checkState();
         return session.readBuffer().remaining();
     }

@@ -9,7 +9,7 @@
 package org.smartboot.http.client.decode;
 
 import org.smartboot.http.client.AbstractResponse;
-import org.smartboot.http.common.utils.Constant;
+import org.smartboot.http.common.utils.ByteTree;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.socket.transport.AioSession;
 
@@ -25,9 +25,9 @@ public class HttpProtocolDecoder implements HeaderDecoder {
 
     @Override
     public HeaderDecoder decode(ByteBuffer byteBuffer, AioSession aioSession, AbstractResponse response) {
-        int length = StringUtils.scanUntilAndTrim(byteBuffer, Constant.SP);
-        if (length > 0) {
-            response.setProtocol(StringUtils.convertToString(byteBuffer, byteBuffer.position() - length - 1, length, StringUtils.String_CACHE_COMMON));
+        ByteTree<?> method = StringUtils.scanByteTree(byteBuffer, ByteTree.SP_END_MATCHER, ByteTree.DEFAULT);
+        if (method != null) {
+            response.setProtocol(method.getStringValue());
             return decoder.decode(byteBuffer, aioSession, response);
         } else {
             return this;

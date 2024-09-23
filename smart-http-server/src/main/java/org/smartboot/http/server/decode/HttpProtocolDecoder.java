@@ -31,7 +31,7 @@ class HttpProtocolDecoder extends AbstractDecoder {
 
     @Override
     public Decoder decode0(ByteBuffer byteBuffer, Request request) {
-        ByteTree<?> protocol = StringUtils.scanByteTree(byteBuffer, CR_END_MATCHER, getConfiguration().getByteCache());
+        ByteTree<?> protocol = StringUtils.scanByteTree(byteBuffer, ByteTree.CR_END_MATCHER, getConfiguration().getByteCache());
         if (protocol != null) {
             request.setProtocol(protocol.getStringValue());
             return lfDecoder.decode(byteBuffer, request);

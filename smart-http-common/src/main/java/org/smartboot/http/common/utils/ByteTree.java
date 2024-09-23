@@ -13,6 +13,10 @@ package org.smartboot.http.common.utils;
  * @version V1.0 , 2022/1/2
  */
 public class ByteTree<T> {
+    public final static ByteTree<?> DEFAULT = new ByteTree<>();
+    public final static ByteTree.EndMatcher SP_END_MATCHER = endByte -> endByte == Constant.SP;
+    public final static ByteTree.EndMatcher COLON_END_MATCHER = endByte -> endByte == Constant.COLON;
+    public final static ByteTree.EndMatcher CR_END_MATCHER = endByte -> endByte == Constant.CR;
     private static final int MAX_DEPTH = 128;
     private static final EndMatcher NULL_END_MATCHER = endByte -> false;
     private final byte value;
@@ -144,7 +148,7 @@ public class ByteTree<T> {
     private void increase(int size) {
         if (size == 0)
             size = -1;
-       if (size < 0) {
+        if (size < 0) {
             ByteTree<T>[] temp = new ByteTree[nodes.length - size];
             System.arraycopy(nodes, 0, temp, -size, nodes.length);
             nodes = temp;
