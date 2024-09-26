@@ -28,6 +28,7 @@ import org.smartboot.http.common.utils.HttpUtils;
 import org.smartboot.http.common.utils.NumberUtils;
 import org.smartboot.http.common.utils.SmartDecoder;
 import org.smartboot.http.common.utils.StringUtils;
+import org.smartboot.http.server.Http2ServerHandler;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.ServerHandler;
@@ -139,6 +140,7 @@ public final class Request implements HttpRequest, Reset {
     private Attachment attachment;
     private DecodePartEnum decodePartEnum = DecodePartEnum.HEADER_FINISH;
     private HttpRequestImpl httpRequest;
+    private Http2RequestImpl http2Request;
     private WebSocketRequestImpl webSocketRequest;
     private ServerHandler serverHandler;
 
@@ -311,8 +313,8 @@ public final class Request implements HttpRequest, Reset {
         }
         if (serverHandler instanceof WebSocketHandler) {
             type = HttpTypeEnum.WEBSOCKET;
-//        } else if (serverHandler instanceof Http2ServerHandler) {
-//            type = HttpTypeEnum.HTTP_2;
+        } else if (serverHandler instanceof Http2ServerHandler) {
+            type = HttpTypeEnum.HTTP_2;
         } else {
             type = HttpTypeEnum.HTTP;
         }
@@ -664,6 +666,8 @@ public final class Request implements HttpRequest, Reset {
                 return newWebsocketRequest();
             case HTTP:
                 return newHttpRequest();
+            case HTTP_2:
+                return newHttp2Request();
             default:
                 return null;
         }
@@ -675,6 +679,14 @@ public final class Request implements HttpRequest, Reset {
             cancelWsIdleTask();
         }
         return httpRequest;
+    }
+
+    public Http2RequestImpl newHttp2Request() {
+        if (http2Request == null) {
+            http2Request = new Http2RequestImpl(this);
+            cancelWsIdleTask();
+        }
+        return http2Request;
     }
 
     public WebSocketRequestImpl newWebsocketRequest() {
