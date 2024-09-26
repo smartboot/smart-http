@@ -20,7 +20,7 @@ public enum HeaderNameEnum {
     ACCEPT_CHARSET("Accept-Charset"),
     ACCEPT_ENCODING("Accept-Encoding"),
     ACCEPT_LANGUAGE("Accept-Language"),
-    ACCEPT_RANGE("Accept-Range"),
+    ACCEPT_RANGES("Accept-Ranges"),
     AGE("Age"),
     ALLOW("Allow"),
     AUTHORIZATION("Authorization"),
