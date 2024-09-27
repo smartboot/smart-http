@@ -754,6 +754,8 @@ public final class Request implements HttpRequest, Reset {
                 } catch (IOException ignore) {
                 }
             }
+            parts = null;
         }
+        multipartParsed = false;
     }
 }

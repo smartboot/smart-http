@@ -208,34 +208,16 @@ public class MultipartFormDecoder extends AbstractDecoder {
         public Decoder decode(ByteBuffer byteBuffer, Request request) {
             // 判断是否是结束标记
             byteBuffer.mark();
-            boolean match = true;
-            while (byteBuffer.hasRemaining()) {
-                match = true;
-                for (int i = 0; i < boundary.length; i++) {
-                    byte b = byteBuffer.get();
-                    if (boundary[i] != b) {
-                        match = false;
-                        if (i > 0) {
-                            byteBuffer.position(byteBuffer.position() - i);
-                        }
-                        break;
-                    }
-                }
-                //完成匹配，跳出
-                if (match) {
-                    break;
-                }
-            }
-            if (!match) {
-                byteBuffer.reset();
+            int boundaryLimit = findBoundary(byteBuffer);
+            byteBuffer.reset();
+
+            if (boundaryLimit < 0) {
                 if (byteBuffer.remaining() == byteBuffer.capacity()) {
                     throw new HttpException(HttpStatus.REQUEST_HEADER_FIELDS_TOO_LARGE);
                 }
                 return this;
             }
-            int position = byteBuffer.position();
-            byteBuffer.reset();
-            byte[] bytes = new byte[position - byteBuffer.position() - boundary.length - 2];
+            byte[] bytes = new byte[boundaryLimit];
             byteBuffer.get(bytes);
             currentPart.setInputStream(new ByteArrayInputStream(bytes));
             currentPart.setFormSize(bytes.length);
@@ -261,27 +243,10 @@ public class MultipartFormDecoder extends AbstractDecoder {
 
             // 判断是否是结束标记
             byteBuffer.mark();
-            boolean match = true;
-            while (byteBuffer.hasRemaining()) {
-                match = true;
-                for (int i = 0; i < boundary.length; i++) {
-                    byte b = byteBuffer.get();
-                    if (boundary[i] != b) {
-                        match = false;
-                        if (i > 0) {
-                            byteBuffer.position(byteBuffer.position() - i);
-                        }
-                        break;
-                    }
-                }
-                //完成匹配，跳出
-                if (match) {
-                    break;
-                }
-            }
-            int position = byteBuffer.position();
+            int boundaryLimit = findBoundary(byteBuffer);
             byteBuffer.reset();
-            byte[] bytes = new byte[position - byteBuffer.position() - boundary.length - 2];
+
+            byte[] bytes = boundaryLimit >= 0 ? new byte[boundaryLimit] : new byte[byteBuffer.remaining() - boundary.length - 2];
             byteBuffer.get(bytes);
             if (multipartConfig.getMaxFileSize() > 0) {
                 writeFileSize += bytes.length;
@@ -291,7 +256,7 @@ public class MultipartFormDecoder extends AbstractDecoder {
             }
             try {
                 currentPart.getDiskOutputStream().write(bytes);
-                if (match) {
+                if (boundaryLimit >= 0) {
                     if (byteBuffer.get() != Constant.CR) {
                         throw new RuntimeException();
                     }
@@ -307,5 +272,26 @@ public class MultipartFormDecoder extends AbstractDecoder {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    private int findBoundary(ByteBuffer byteBuffer) {
+        int position = byteBuffer.position();
+        while (byteBuffer.remaining() >= boundary.length + 2) {
+            boolean match = true;
+            for (int i = 0; i < boundary.length; i++) {
+                if (boundary[i] != byteBuffer.get()) {
+                    match = false;
+                    if (i > 0) {
+                        byteBuffer.position(byteBuffer.position() - i);
+                    }
+                    break;
+                }
+            }
+            //完成匹配，跳出
+            if (match) {
+                return byteBuffer.position() - position - boundary.length - 2;
+            }
+        }
+        return -1;
     }
 }
