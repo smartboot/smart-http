@@ -275,12 +275,32 @@ public class WebSocketClient {
     }
 
 
+    /**
+     * 发送消息
+     *
+     * @param message 消息内容
+     * @throws IOException 如果在发送消息过程中发生I/O错误
+     */
     public void sendMessage(String message) throws IOException {
         // 发送消息到服务器
         byte[] bytes = message.getBytes(StandardCharsets.UTF_8);
         WebSocketUtil.sendMask(request.getOutputStream(), WebSocketUtil.OPCODE_TEXT, bytes, 0, bytes.length);
         request.getOutputStream().flush();
     }
+
+    /**
+     * 发送二进制消息
+     *
+     * @param bytes 二进制消息内容
+     * @throws IOException 如果在发送过程中发生I/O错误
+     */
+    public void sendBinary(byte[] bytes) throws IOException {
+        // 发送二进制消息到服务器
+        WebSocketUtil.sendMask(request.getOutputStream(), WebSocketUtil.OPCODE_BINARY, bytes, 0, bytes.length);
+        request.getOutputStream().flush();
+    }
+
+
 
     public void setAsynchronousChannelGroup(AsynchronousChannelGroup asynchronousChannelGroup) {
         this.asynchronousChannelGroup = asynchronousChannelGroup;
