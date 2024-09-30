@@ -58,10 +58,6 @@ public class WebSocketClient {
     private boolean firstConnected = true;
 
     /**
-     * Http 解码协议
-     */
-    private final HttpResponseProtocol protocol = HttpResponseProtocol.INSTANCE;
-    /**
      * 消息处理器
      */
     private final HttpMessageProcessor processor = new HttpMessageProcessor();
@@ -166,7 +162,7 @@ public class WebSocketClient {
                 firstConnected = false;
             }
             connected = true;
-            client = configuration.getProxy() == null ? new AioQuickClient(configuration.getHost(), configuration.getPort(), protocol, processor) : new AioQuickClient(configuration.getProxy().getProxyHost(), configuration.getProxy().getProxyPort(), protocol, processor);
+            client = configuration.getProxy() == null ? new AioQuickClient(configuration.getHost(), configuration.getPort(), processor, processor) : new AioQuickClient(configuration.getProxy().getProxyHost(), configuration.getProxy().getProxyPort(), processor, processor);
             client.setBufferPagePool(configuration.getReadBufferPool(), configuration.getWriteBufferPool()).setReadBufferSize(configuration.readBufferSize());
             if (configuration.getConnectTimeout() > 0) {
                 client.connectTimeout(configuration.getConnectTimeout());
@@ -180,6 +176,7 @@ public class WebSocketClient {
             throw new RuntimeException(e);
         }
         AioSession session = client.getSession();
+        DecoderUnit attachment = session.getAttachment();
         CompletableFuture<WebSocketResponseImpl> completableFuture = new CompletableFuture<>();
         completableFuture.thenAccept(new Consumer<WebSocketResponseImpl>() {
             @Override
@@ -221,6 +218,7 @@ public class WebSocketClient {
                     completableFuture.thenAccept(this);
                     webSocketResponse.setFuture(completableFuture);
                     webSocketResponse.reset();
+                    attachment.setState(DecoderUnit.STATE_BODY);
                 }
             }
         });
@@ -246,7 +244,7 @@ public class WebSocketClient {
             }
 
         });
-        ResponseAttachment attachment = session.getAttachment();
+
         attachment.setResponse(webSocketResponse);
         initRest();
     }
@@ -299,7 +297,6 @@ public class WebSocketClient {
         WebSocketUtil.sendMask(request.getOutputStream(), WebSocketUtil.OPCODE_BINARY, bytes, 0, bytes.length);
         request.getOutputStream().flush();
     }
-
 
 
     public void setAsynchronousChannelGroup(AsynchronousChannelGroup asynchronousChannelGroup) {

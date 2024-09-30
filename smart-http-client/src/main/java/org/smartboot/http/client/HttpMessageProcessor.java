@@ -8,9 +8,13 @@
 
 package org.smartboot.http.client;
 
-import org.smartboot.http.client.decode.HeaderDecoder;
 import org.smartboot.http.common.enums.BodyStreamStatus;
-import org.smartboot.http.common.enums.DecodePartEnum;
+import org.smartboot.http.common.enums.HttpStatus;
+import org.smartboot.http.common.exception.HttpException;
+import org.smartboot.http.common.utils.ByteTree;
+import org.smartboot.http.common.utils.Constant;
+import org.smartboot.http.common.utils.StringUtils;
+import org.smartboot.socket.Protocol;
 import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.extension.processor.AbstractMessageProcessor;
 import org.smartboot.socket.transport.AioSession;
@@ -23,7 +27,7 @@ import java.util.concurrent.ExecutorService;
  * @author 三刀
  * @version V1.0 , 2018/6/10
  */
-final class HttpMessageProcessor extends AbstractMessageProcessor<AbstractResponse> {
+final class HttpMessageProcessor extends AbstractMessageProcessor<AbstractResponse> implements Protocol<AbstractResponse> {
     private final ExecutorService executorService;
 
     public HttpMessageProcessor() {
@@ -35,19 +39,120 @@ final class HttpMessageProcessor extends AbstractMessageProcessor<AbstractRespon
     }
 
     @Override
+    public AbstractResponse decode(ByteBuffer buffer, AioSession session) {
+        DecoderUnit attachment = session.getAttachment();
+        AbstractResponse response = attachment.getResponse();
+        switch (attachment.getState()) {
+            // 协议解析
+            case DecoderUnit.STATE_PROTOCOL_DECODE: {
+                ByteTree<?> method = StringUtils.scanByteTree(buffer, ByteTree.SP_END_MATCHER, ByteTree.DEFAULT);
+                if (method == null) {
+                    return null;
+                }
+                response.setProtocol(method.getStringValue());
+                attachment.setState(DecoderUnit.STATE_STATUS_CODE);
+            }
+            // 状态码解析
+            case DecoderUnit.STATE_STATUS_CODE: {
+                ByteTree<?> byteTree = StringUtils.scanByteTree(buffer, ByteTree.SP_END_MATCHER, ByteTree.DEFAULT);
+                if (byteTree == null) {
+                    return null;
+                }
+                int statusCode = Integer.parseInt(byteTree.getStringValue());
+                response.setStatus(statusCode);
+                attachment.setState(DecoderUnit.STATE_STATUS_DESC);
+            }
+            // 状态码描述解析
+            case DecoderUnit.STATE_STATUS_DESC: {
+                ByteTree<?> byteTree = StringUtils.scanByteTree(buffer, ByteTree.CR_END_MATCHER, ByteTree.DEFAULT);
+                if (byteTree == null) {
+                    return null;
+                }
+                response.setReasonPhrase(byteTree.getStringValue());
+                attachment.setState(DecoderUnit.STATE_STATUS_END);
+            }
+            // 状态码结束
+            case DecoderUnit.STATE_STATUS_END: {
+                if (buffer.remaining() == 0) {
+                    return null;
+                }
+                if (buffer.get() != Constant.LF) {
+                    throw new HttpException(HttpStatus.BAD_REQUEST);
+                }
+                attachment.setState(DecoderUnit.STATE_HEADER_END_CHECK);
+            }
+            // header结束判断
+            case DecoderUnit.STATE_HEADER_END_CHECK: {
+                //header解码结束
+                buffer.mark();
+                if (buffer.get() == Constant.CR) {
+                    if (buffer.get() != Constant.LF) {
+                        throw new HttpException(HttpStatus.BAD_REQUEST);
+                    }
+                    attachment.setState(DecoderUnit.STATE_HEADER_CALLBACK);
+                    return response;
+                } else {
+                    buffer.reset();
+                    attachment.setState(DecoderUnit.STATE_HEADER_NAME);
+                }
+            }
+            // header name解析
+            case DecoderUnit.STATE_HEADER_NAME: {
+                ByteTree<?> name = StringUtils.scanByteTree(buffer, ByteTree.COLON_END_MATCHER, ByteTree.DEFAULT);
+                if (name == null) {
+                    return null;
+                }
+                attachment.setDecodeHeaderName(name.getStringValue());
+                attachment.setState(DecoderUnit.STATE_HEADER_VALUE);
+            }
+            // header value解析
+            case DecoderUnit.STATE_HEADER_VALUE: {
+                ByteTree<?> value = StringUtils.scanByteTree(buffer, ByteTree.CR_END_MATCHER, ByteTree.DEFAULT);
+                if (value == null) {
+                    if (buffer.remaining() == buffer.capacity()) {
+                        throw new HttpException(HttpStatus.REQUEST_HEADER_FIELDS_TOO_LARGE);
+                    }
+                    return null;
+                }
+                response.setHeader(attachment.getDecodeHeaderName(), value.getStringValue());
+                attachment.setState(DecoderUnit.STATE_HEADER_LINE_END);
+            }
+            // header line结束
+            case DecoderUnit.STATE_HEADER_LINE_END: {
+                if (buffer.get() != Constant.LF) {
+                    throw new HttpException(HttpStatus.BAD_REQUEST);
+                }
+                attachment.setState(DecoderUnit.STATE_HEADER_END_CHECK);
+                return decode(buffer, session);
+            }
+            //
+            case DecoderUnit.STATE_BODY: {
+                BodyStreamStatus bodyStreamStatus = response.getResponseHandler().onBodyStream(buffer, response);
+                if (bodyStreamStatus == BodyStreamStatus.Finish) {
+                    attachment.setState(DecoderUnit.STATE_FINISH);
+                    return response;
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
     public void process0(AioSession session, AbstractResponse response) {
-        ResponseAttachment responseAttachment = session.getAttachment();
+        DecoderUnit decoderUnit = session.getAttachment();
         ResponseHandler responseHandler = response.getResponseHandler();
 
-        switch (response.getDecodePartEnum()) {
-            case HEADER_FINISH:
-                doHttpHeader(response, responseHandler);
-            case BODY:
-                doHttpBody(response, session.readBuffer(), responseAttachment, responseHandler);
-                if (response.getDecodePartEnum() != DecodePartEnum.FINISH) {
-                    break;
+        switch (decoderUnit.getState()) {
+            case DecoderUnit.STATE_HEADER_CALLBACK:
+                try {
+                    responseHandler.onHeaderComplete(response);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    throw new RuntimeException(e);
                 }
-            case FINISH:
+                decoderUnit.setState(DecoderUnit.STATE_BODY);
+                return;
+            case DecoderUnit.STATE_FINISH:
                 if (executorService == null) {
                     response.getFuture().complete(response);
                 } else {
@@ -59,37 +164,19 @@ final class HttpMessageProcessor extends AbstractMessageProcessor<AbstractRespon
                 }
                 break;
             default:
+                throw new RuntimeException("unreachable");
         }
     }
 
-    private void doHttpBody(AbstractResponse response, ByteBuffer readBuffer, ResponseAttachment responseAttachment, ResponseHandler responseHandler) {
-        BodyStreamStatus status = responseHandler.onBodyStream(readBuffer, response);
-        if (status == BodyStreamStatus.Finish) {
-            response.setDecodePartEnum(DecodePartEnum.FINISH);
-        } else if (status == BodyStreamStatus.Continue && readBuffer.hasRemaining()) {
-            //半包,继续读数据
-            responseAttachment.setDecoder(HeaderDecoder.BODY_CONTINUE_DECODER);
-        }
-    }
-
-    private void doHttpHeader(AbstractResponse response, ResponseHandler responseHandler) {
-        response.setDecodePartEnum(DecodePartEnum.BODY);
-        try {
-            responseHandler.onHeaderComplete(response);
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
-    }
 
     @Override
     public void stateEvent0(AioSession session, StateMachineEnum stateMachineEnum, Throwable throwable) {
-
         switch (stateMachineEnum) {
-            case NEW_SESSION:
-                ResponseAttachment attachment = new ResponseAttachment();
+            case NEW_SESSION: {
+                DecoderUnit attachment = new DecoderUnit();
                 session.setAttachment(attachment);
-                break;
+            }
+            break;
             case PROCESS_EXCEPTION:
                 if (throwable != null) {
                     throwable.printStackTrace();
@@ -100,6 +187,9 @@ final class HttpMessageProcessor extends AbstractMessageProcessor<AbstractRespon
                 throwable.printStackTrace();
                 break;
             case SESSION_CLOSED:
+//                ResponseAttachment attachment = session.getAttachment();
+//                attachment.getResponse().getFuture().is
+                System.out.println("closed");
                 break;
         }
     }

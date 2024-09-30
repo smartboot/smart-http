@@ -51,7 +51,6 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
 
 
     public void reset() {
-        setDecodePartEnum(DecodePartEnum.BODY);
         if (frameOpcode != WebSocketUtil.OPCODE_CONTINUE) {
             payload.reset();
         }

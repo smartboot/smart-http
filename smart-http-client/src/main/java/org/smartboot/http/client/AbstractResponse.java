@@ -10,7 +10,6 @@ package org.smartboot.http.client;
 
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.Reset;
-import org.smartboot.http.common.enums.DecodePartEnum;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.utils.NumberUtils;
 import org.smartboot.http.common.utils.StringUtils;
@@ -33,7 +32,6 @@ public abstract class AbstractResponse implements Response, Reset {
      */
     private final List<HeaderValue> headers = new ArrayList<>(8);
     private final AioSession session;
-    private String headerTemp;
     private int headerSize = 0;
     /**
      * Http协议版本
@@ -51,7 +49,6 @@ public abstract class AbstractResponse implements Response, Reset {
      */
     private String reasonPhrase;
     private String encoding;
-    private DecodePartEnum decodePartEnum = DecodePartEnum.HEADER_FINISH;
     private ResponseHandler responseHandler;
     private final CompletableFuture<AbstractResponse> future;
 
@@ -93,10 +90,6 @@ public abstract class AbstractResponse implements Response, Reset {
         return nameSet;
     }
 
-    public final void setHeadValue(String value) {
-        setHeader(headerTemp, value);
-    }
-
     public final void setHeader(String headerName, String value) {
         if (headerSize < headers.size()) {
             HeaderValue headerValue = headers.get(headerSize);
@@ -108,24 +101,12 @@ public abstract class AbstractResponse implements Response, Reset {
         headerSize++;
     }
 
-    public DecodePartEnum getDecodePartEnum() {
-        return decodePartEnum;
-    }
-
-    public void setDecodePartEnum(DecodePartEnum decodePartEnum) {
-        this.decodePartEnum = decodePartEnum;
-    }
-
     public final String getProtocol() {
         return protocol;
     }
 
     public final void setProtocol(String protocol) {
         this.protocol = protocol;
-    }
-
-    public void setHeaderTemp(String headerTemp) {
-        this.headerTemp = headerTemp;
     }
 
     public final String getContentType() {

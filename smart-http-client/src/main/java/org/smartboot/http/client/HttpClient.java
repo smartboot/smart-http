@@ -55,10 +55,6 @@ public final class HttpClient implements AutoCloseable {
     private boolean firstConnected = true;
 
     /**
-     * Http 解码协议
-     */
-    private final HttpResponseProtocol protocol = HttpResponseProtocol.INSTANCE;
-    /**
      * 消息处理器
      */
     private final HttpMessageProcessor processor = new HttpMessageProcessor();
@@ -166,10 +162,10 @@ public final class HttpClient implements AutoCloseable {
 
         httpRestImpl.getCompletableFuture().thenAccept(httpResponse -> {
             AioSession session = client.getSession();
-            ResponseAttachment attachment = session.getAttachment();
+            DecoderUnit attachment = session.getAttachment();
             //重置附件，为下一个响应作准备
             synchronized (session) {
-                attachment.setDecoder(null);
+                attachment.setState(DecoderUnit.STATE_PROTOCOL_DECODE);
                 attachment.setResponse(queue.poll());
             }
             //request标注为keep-alive，response不包含该header,默认保持连接.
@@ -232,7 +228,7 @@ public final class HttpClient implements AutoCloseable {
                 firstConnected = false;
             }
             connected = true;
-            client = configuration.getProxy() == null ? new AioQuickClient(configuration.getHost(), configuration.getPort(), protocol, processor) : new AioQuickClient(configuration.getProxy().getProxyHost(), configuration.getProxy().getProxyPort(), protocol, processor);
+            client = configuration.getProxy() == null ? new AioQuickClient(configuration.getHost(), configuration.getPort(), processor, processor) : new AioQuickClient(configuration.getProxy().getProxyHost(), configuration.getProxy().getProxyPort(), processor, processor);
             client.setBufferPagePool(configuration.getReadBufferPool(), configuration.getWriteBufferPool()).setWriteBuffer(configuration.getWriteBufferSize(), 2).setReadBufferSize(configuration.readBufferSize());
             if (configuration.getConnectTimeout() > 0) {
                 client.connectTimeout(configuration.getConnectTimeout());

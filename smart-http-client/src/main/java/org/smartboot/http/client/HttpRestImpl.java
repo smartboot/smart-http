@@ -66,7 +66,7 @@ class HttpRestImpl implements HttpRest {
         }
         response.setResponseHandler(responseHandler);
         AioSession session = response.getSession();
-        ResponseAttachment attachment = session.getAttachment();
+        DecoderUnit attachment = session.getAttachment();
         synchronized (session) {
             if (attachment.getResponse() == null) {
                 attachment.setResponse(response);
@@ -170,7 +170,7 @@ class HttpRestImpl implements HttpRest {
             request.getOutputStream().close();
             request.getOutputStream().flush();
         } catch (Throwable e) {
-            completableFuture.completeExceptionally(e);
+//            completableFuture.completeExceptionally(e);
         }
         return new Future<HttpResponse>() {
             @Override
