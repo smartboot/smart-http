@@ -8,6 +8,7 @@
 
 package org.smartboot.http.client;
 
+import org.smartboot.http.common.DecodeState;
 import org.smartboot.http.common.enums.BodyStreamStatus;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.exception.HttpException;
@@ -44,69 +45,69 @@ final class HttpMessageProcessor extends AbstractMessageProcessor<AbstractRespon
         AbstractResponse response = attachment.getResponse();
         switch (attachment.getState()) {
             // 协议解析
-            case DecoderUnit.STATE_PROTOCOL_DECODE: {
+            case DecodeState.STATE_PROTOCOL_DECODE: {
                 ByteTree<?> method = StringUtils.scanByteTree(buffer, ByteTree.SP_END_MATCHER, ByteTree.DEFAULT);
                 if (method == null) {
                     return null;
                 }
                 response.setProtocol(method.getStringValue());
-                attachment.setState(DecoderUnit.STATE_STATUS_CODE);
+                attachment.setState(DecodeState.STATE_STATUS_CODE);
             }
             // 状态码解析
-            case DecoderUnit.STATE_STATUS_CODE: {
+            case DecodeState.STATE_STATUS_CODE: {
                 ByteTree<?> byteTree = StringUtils.scanByteTree(buffer, ByteTree.SP_END_MATCHER, ByteTree.DEFAULT);
                 if (byteTree == null) {
                     return null;
                 }
                 int statusCode = Integer.parseInt(byteTree.getStringValue());
                 response.setStatus(statusCode);
-                attachment.setState(DecoderUnit.STATE_STATUS_DESC);
+                attachment.setState(DecodeState.STATE_STATUS_DESC);
             }
             // 状态码描述解析
-            case DecoderUnit.STATE_STATUS_DESC: {
+            case DecodeState.STATE_STATUS_DESC: {
                 ByteTree<?> byteTree = StringUtils.scanByteTree(buffer, ByteTree.CR_END_MATCHER, ByteTree.DEFAULT);
                 if (byteTree == null) {
                     return null;
                 }
                 response.setReasonPhrase(byteTree.getStringValue());
-                attachment.setState(DecoderUnit.STATE_STATUS_END);
+                attachment.setState(DecodeState.STATE_STATUS_END);
             }
             // 状态码结束
-            case DecoderUnit.STATE_STATUS_END: {
+            case DecodeState.STATE_STATUS_END: {
                 if (buffer.remaining() == 0) {
                     return null;
                 }
                 if (buffer.get() != Constant.LF) {
                     throw new HttpException(HttpStatus.BAD_REQUEST);
                 }
-                attachment.setState(DecoderUnit.STATE_HEADER_END_CHECK);
+                attachment.setState(DecodeState.STATE_HEADER_END_CHECK);
             }
             // header结束判断
-            case DecoderUnit.STATE_HEADER_END_CHECK: {
+            case DecodeState.STATE_HEADER_END_CHECK: {
                 //header解码结束
                 buffer.mark();
                 if (buffer.get() == Constant.CR) {
                     if (buffer.get() != Constant.LF) {
                         throw new HttpException(HttpStatus.BAD_REQUEST);
                     }
-                    attachment.setState(DecoderUnit.STATE_HEADER_CALLBACK);
+                    attachment.setState(DecodeState.STATE_HEADER_CALLBACK);
                     return response;
                 } else {
                     buffer.reset();
-                    attachment.setState(DecoderUnit.STATE_HEADER_NAME);
+                    attachment.setState(DecodeState.STATE_HEADER_NAME);
                 }
             }
             // header name解析
-            case DecoderUnit.STATE_HEADER_NAME: {
+            case DecodeState.STATE_HEADER_NAME: {
                 ByteTree<?> name = StringUtils.scanByteTree(buffer, ByteTree.COLON_END_MATCHER, ByteTree.DEFAULT);
                 if (name == null) {
                     return null;
                 }
                 attachment.setDecodeHeaderName(name.getStringValue());
-                attachment.setState(DecoderUnit.STATE_HEADER_VALUE);
+                attachment.setState(DecodeState.STATE_HEADER_VALUE);
             }
             // header value解析
-            case DecoderUnit.STATE_HEADER_VALUE: {
+            case DecodeState.STATE_HEADER_VALUE: {
                 ByteTree<?> value = StringUtils.scanByteTree(buffer, ByteTree.CR_END_MATCHER, ByteTree.DEFAULT);
                 if (value == null) {
                     if (buffer.remaining() == buffer.capacity()) {
@@ -115,21 +116,21 @@ final class HttpMessageProcessor extends AbstractMessageProcessor<AbstractRespon
                     return null;
                 }
                 response.setHeader(attachment.getDecodeHeaderName(), value.getStringValue());
-                attachment.setState(DecoderUnit.STATE_HEADER_LINE_END);
+                attachment.setState(DecodeState.STATE_HEADER_LINE_END);
             }
             // header line结束
-            case DecoderUnit.STATE_HEADER_LINE_END: {
+            case DecodeState.STATE_HEADER_LINE_END: {
                 if (buffer.get() != Constant.LF) {
                     throw new HttpException(HttpStatus.BAD_REQUEST);
                 }
-                attachment.setState(DecoderUnit.STATE_HEADER_END_CHECK);
+                attachment.setState(DecodeState.STATE_HEADER_END_CHECK);
                 return decode(buffer, session);
             }
             //
-            case DecoderUnit.STATE_BODY: {
+            case DecodeState.STATE_BODY: {
                 BodyStreamStatus bodyStreamStatus = response.getResponseHandler().onBodyStream(buffer, response);
                 if (bodyStreamStatus == BodyStreamStatus.Finish) {
-                    attachment.setState(DecoderUnit.STATE_FINISH);
+                    attachment.setState(DecodeState.STATE_FINISH);
                     return response;
                 }
             }
