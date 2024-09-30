@@ -92,7 +92,7 @@ public class HttpServerConfiguration {
     /**
      * 最大请求报文
      */
-    private int maxRequestSize = Integer.MAX_VALUE;
+    private long maxRequestSize = Integer.MAX_VALUE;
 
     private boolean lowMemory = false;
 
@@ -264,7 +264,7 @@ public class HttpServerConfiguration {
         return secure;
     }
 
-    public int getMaxRequestSize() {
+    public long getMaxRequestSize() {
         return maxRequestSize;
     }
 

@@ -23,12 +23,12 @@ public class ChunkedInputStream extends BodyInputStream {
     /**
      * 剩余可读字节数
      */
-    private int remainingThreshold;
+    private long remainingThreshold;
     private final Consumer<Map<String, String>> consumer;
     private String trailerName;
     private int chunkedRemaining;
 
-    public ChunkedInputStream(AioSession session, int maxPayload, Consumer<Map<String, String>> consumer) {
+    public ChunkedInputStream(AioSession session, long maxPayload, Consumer<Map<String, String>> consumer) {
         super(session);
         this.remainingThreshold = maxPayload;
         this.consumer = consumer;

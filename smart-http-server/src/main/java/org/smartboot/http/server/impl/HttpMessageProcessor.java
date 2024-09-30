@@ -84,6 +84,8 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
                         abstractRequest.request.setDecoder(HttpRequestProtocol.BODY_CONTINUE_DECODER);
                     }
             }
+        } catch (HttpException e) {
+            responseError(response, e);
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }

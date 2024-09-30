@@ -147,7 +147,7 @@ public final class Request implements HttpRequest, Reset {
     /**
      * 剩余可读字节数
      */
-    private int remainingThreshold;
+    private long remainingThreshold;
 
     /**
      * 最近一次IO时间
@@ -214,7 +214,7 @@ public final class Request implements HttpRequest, Reset {
         }
     }
 
-    int getRemainingThreshold() {
+    long getRemainingThreshold() {
         return remainingThreshold;
     }
 
