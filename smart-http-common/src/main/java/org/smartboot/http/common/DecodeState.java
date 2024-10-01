@@ -4,7 +4,7 @@ public class DecodeState {
     public static final int STATE_PROTOCOL_DECODE = 0;
     public static final int STATE_STATUS_CODE = 1;
     public static final int STATE_STATUS_DESC = 1 << 1;
-    public static final int STATE_FIRST_HEAD_END = 1 << 2;
+    public static final int STATE_START_LINE_END = 1 << 2;
     public static final int STATE_HEADER_END_CHECK = 1 << 3;
     public static final int STATE_HEADER_NAME = 1 << 4;
     public static final int STATE_HEADER_VALUE = 1 << 5;

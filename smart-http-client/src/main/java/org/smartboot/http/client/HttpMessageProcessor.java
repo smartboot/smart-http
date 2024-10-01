@@ -70,10 +70,10 @@ final class HttpMessageProcessor extends AbstractMessageProcessor<AbstractRespon
                     return null;
                 }
                 response.setReasonPhrase(byteTree.getStringValue());
-                attachment.setState(DecodeState.STATE_FIRST_HEAD_END);
+                attachment.setState(DecodeState.STATE_START_LINE_END);
             }
             // 状态码结束
-            case DecodeState.STATE_FIRST_HEAD_END: {
+            case DecodeState.STATE_START_LINE_END: {
                 if (buffer.remaining() == 0) {
                     return null;
                 }

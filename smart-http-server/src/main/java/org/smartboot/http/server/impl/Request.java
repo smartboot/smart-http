@@ -83,7 +83,7 @@ public final class Request implements HttpRequest, Reset {
     private final List<HeaderValue> headers = new ArrayList<>(8);
     private final HttpServerConfiguration configuration;
     private ByteTree<Function<String, ServerHandler>> headerTemp;
-    private DecodeState decodeState = new DecodeState(DecodeState.STATE_METHOD);
+    private DecoderUnit decodeState = new DecoderUnit();
     private ReadListener listener;
     /**
      * 请求参数
@@ -722,7 +722,7 @@ public final class Request implements HttpRequest, Reset {
         this.multipartDecoder = multipartDecoder;
     }
 
-    public DecodeState getDecodeState() {
+    public DecoderUnit getDecodeState() {
         return decodeState;
     }
 

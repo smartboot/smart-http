@@ -149,19 +149,19 @@ public class HttpBootstrap {
             return configuration.getWebSocketHandler();
         }
         // HTTP/2.0
-//        else if (HeaderValueEnum.H2C.getName().equals(upgrade) || HeaderValueEnum.H2.getName().equals(upgrade)) {
-//            return new Http2ServerHandler() {
-//                @Override
-//                public void handle(HttpRequest request, HttpResponse response) throws Throwable {
-//                    configuration.getHttpServerHandler().handle(request, response);
-//                }
-//
-//                @Override
-//                public void handle(HttpRequest request, HttpResponse response, CompletableFuture<Object> completableFuture) throws Throwable {
-//                    configuration.getHttpServerHandler().handle(request, response, completableFuture);
-//                }
-//            };
-//        }
+        else if (HeaderValueEnum.H2C.getName().equals(upgrade) || HeaderValueEnum.H2.getName().equals(upgrade)) {
+            return new Http2ServerHandler() {
+                @Override
+                public void handle(HttpRequest request, HttpResponse response) throws Throwable {
+                    configuration.getHttpServerHandler().handle(request, response);
+                }
+
+                @Override
+                public void handle(HttpRequest request, HttpResponse response, CompletableFuture<Object> completableFuture) throws Throwable {
+                    configuration.getHttpServerHandler().handle(request, response, completableFuture);
+                }
+            };
+        }
         else {
             return null;
         }

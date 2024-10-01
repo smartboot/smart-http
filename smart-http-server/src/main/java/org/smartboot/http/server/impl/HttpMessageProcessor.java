@@ -38,6 +38,7 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 /**
  * http消息处理器
@@ -53,7 +54,7 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> impl
     @Override
     public Request decode(ByteBuffer byteBuffer, AioSession session) {
         Request request = session.getAttachment();
-        DecodeState decodeState = request.getDecodeState();
+        DecoderUnit decodeState = request.getDecodeState();
         switch (decodeState.getState()) {
             case DecodeState.STATE_METHOD: {
                 ByteTree<?> method = StringUtils.scanByteTree(byteBuffer, ByteTree.SP_END_MATCHER, configuration.getByteCache());
@@ -103,9 +104,9 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> impl
                     return null;
                 }
                 request.setProtocol(protocol.getStringValue());
-                decodeState.setState(DecodeState.STATE_FIRST_HEAD_END);
+                decodeState.setState(DecodeState.STATE_START_LINE_END);
             }
-            case DecodeState.STATE_FIRST_HEAD_END: {
+            case DecodeState.STATE_START_LINE_END: {
                 if (byteBuffer.remaining() == 0) {
                     return null;
                 }
@@ -134,21 +135,28 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> impl
             }
             // header name解析
             case DecodeState.STATE_HEADER_NAME: {
-                ByteTree<?> name = StringUtils.scanByteTree(byteBuffer, ByteTree.COLON_END_MATCHER, ByteTree.DEFAULT);
+                ByteTree<Function<String, ServerHandler<?, ?>>> name = StringUtils.scanByteTree(byteBuffer, ByteTree.COLON_END_MATCHER, configuration.getHeaderNameByteTree());
                 if (name == null) {
                     return null;
                 }
                 decodeState.setDecodeHeaderName(name.getStringValue());
+                decodeState.setHeaderFunc(name.getAttach());
                 decodeState.setState(DecodeState.STATE_HEADER_VALUE);
             }
             // header value解析
             case DecodeState.STATE_HEADER_VALUE: {
-                ByteTree<?> value = StringUtils.scanByteTree(byteBuffer, ByteTree.CR_END_MATCHER, ByteTree.DEFAULT);
+                ByteTree<?> value = StringUtils.scanByteTree(byteBuffer, ByteTree.CR_END_MATCHER, configuration.getByteCache());
                 if (value == null) {
                     if (byteBuffer.remaining() == byteBuffer.capacity()) {
                         throw new HttpException(HttpStatus.REQUEST_HEADER_FIELDS_TOO_LARGE);
                     }
                     return null;
+                }
+                if (decodeState.getHeaderFunc() != null) {
+                    ServerHandler replaceServerHandler = decodeState.getHeaderFunc().apply(value.getStringValue());
+                    if (replaceServerHandler != null) {
+                        request.setServerHandler(replaceServerHandler);
+                    }
                 }
                 request.setHeader(decodeState.getDecodeHeaderName(), value.getStringValue());
                 decodeState.setState(DecodeState.STATE_HEADER_LINE_END);
