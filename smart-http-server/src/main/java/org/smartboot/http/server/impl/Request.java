@@ -9,15 +9,16 @@
 package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.Cookie;
+import org.smartboot.http.common.DecodeState;
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.Multipart;
 import org.smartboot.http.common.Reset;
-import org.smartboot.http.common.enums.DecodePartEnum;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.enums.HttpTypeEnum;
 import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.io.BodyInputStream;
+import org.smartboot.http.common.io.ReadListener;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
 import org.smartboot.http.common.multipart.MultipartConfig;
@@ -82,6 +83,8 @@ public final class Request implements HttpRequest, Reset {
     private final List<HeaderValue> headers = new ArrayList<>(8);
     private final HttpServerConfiguration configuration;
     private ByteTree<Function<String, ServerHandler>> headerTemp;
+    private DecodeState decodeState = new DecodeState(DecodeState.STATE_METHOD);
+    private ReadListener listener;
     /**
      * 请求参数
      */
@@ -138,7 +141,6 @@ public final class Request implements HttpRequest, Reset {
      * 附件对象
      */
     private Attachment attachment;
-    private DecodePartEnum decodePartEnum = DecodePartEnum.HEADER_FINISH;
     private HttpRequestImpl httpRequest;
     private Http2RequestImpl http2Request;
     private WebSocketRequestImpl webSocketRequest;
@@ -217,15 +219,6 @@ public final class Request implements HttpRequest, Reset {
     long getRemainingThreshold() {
         return remainingThreshold;
     }
-
-    public DecodePartEnum getDecodePartEnum() {
-        return decodePartEnum;
-    }
-
-    public void setDecodePartEnum(DecodePartEnum decodePartEnum) {
-        this.decodePartEnum = decodePartEnum;
-    }
-
 
     public AioSession getAioSession() {
         return aioSession;
@@ -729,6 +722,10 @@ public final class Request implements HttpRequest, Reset {
         this.multipartDecoder = multipartDecoder;
     }
 
+    public DecodeState getDecodeState() {
+        return decodeState;
+    }
+
     public void reset() {
         remainingThreshold = configuration.getMaxRequestSize();
         headerSize = 0;
@@ -744,7 +741,7 @@ public final class Request implements HttpRequest, Reset {
         httpRequest = null;
         webSocketRequest = null;
         type = null;
-        decodePartEnum = DecodePartEnum.HEADER_FINISH;
+        decodeState.setState(DecodeState.STATE_METHOD);
         decoder = null;
         scheme = null;
         if (parts != null) {

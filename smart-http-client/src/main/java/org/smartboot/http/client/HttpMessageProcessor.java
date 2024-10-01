@@ -70,10 +70,10 @@ final class HttpMessageProcessor extends AbstractMessageProcessor<AbstractRespon
                     return null;
                 }
                 response.setReasonPhrase(byteTree.getStringValue());
-                attachment.setState(DecodeState.STATE_STATUS_END);
+                attachment.setState(DecodeState.STATE_FIRST_HEAD_END);
             }
             // 状态码结束
-            case DecodeState.STATE_STATUS_END: {
+            case DecodeState.STATE_FIRST_HEAD_END: {
                 if (buffer.remaining() == 0) {
                     return null;
                 }
@@ -84,6 +84,9 @@ final class HttpMessageProcessor extends AbstractMessageProcessor<AbstractRespon
             }
             // header结束判断
             case DecodeState.STATE_HEADER_END_CHECK: {
+                if (buffer.remaining() < 2) {
+                    return null;
+                }
                 //header解码结束
                 buffer.mark();
                 if (buffer.get() == Constant.CR) {
@@ -120,6 +123,9 @@ final class HttpMessageProcessor extends AbstractMessageProcessor<AbstractRespon
             }
             // header line结束
             case DecodeState.STATE_HEADER_LINE_END: {
+                if (!buffer.hasRemaining()) {
+                    return null;
+                }
                 if (buffer.get() != Constant.LF) {
                     throw new HttpException(HttpStatus.BAD_REQUEST);
                 }
@@ -144,7 +150,7 @@ final class HttpMessageProcessor extends AbstractMessageProcessor<AbstractRespon
         ResponseHandler responseHandler = response.getResponseHandler();
 
         switch (decoderUnit.getState()) {
-            case DecoderUnit.STATE_HEADER_CALLBACK:
+            case DecodeState.STATE_HEADER_CALLBACK:
                 try {
                     responseHandler.onHeaderComplete(response);
                 } catch (IOException e) {
@@ -153,7 +159,7 @@ final class HttpMessageProcessor extends AbstractMessageProcessor<AbstractRespon
                 }
                 decoderUnit.setState(DecoderUnit.STATE_BODY);
                 return;
-            case DecoderUnit.STATE_FINISH:
+            case DecodeState.STATE_FINISH:
                 if (executorService == null) {
                     response.getFuture().complete(response);
                 } else {

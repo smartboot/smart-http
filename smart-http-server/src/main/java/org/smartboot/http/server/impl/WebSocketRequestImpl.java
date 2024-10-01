@@ -9,7 +9,6 @@
 package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.codec.websocket.WebSocket;
-import org.smartboot.http.common.enums.DecodePartEnum;
 import org.smartboot.http.common.io.BodyInputStream;
 import org.smartboot.http.common.utils.SmartDecoder;
 import org.smartboot.http.common.utils.WebSocketUtil;
@@ -54,7 +53,6 @@ public class WebSocketRequestImpl extends AbstractRequest implements WebSocketRe
 
     @Override
     public void reset() {
-        request.setDecodePartEnum(DecodePartEnum.BODY);
         if (frameOpcode != WebSocketUtil.OPCODE_CONTINUE) {
             payload.reset();
         }

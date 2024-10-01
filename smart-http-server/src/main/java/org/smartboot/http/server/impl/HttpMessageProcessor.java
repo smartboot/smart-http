@@ -8,23 +8,27 @@
 
 package org.smartboot.http.server.impl;
 
+import org.smartboot.http.common.DecodeState;
 import org.smartboot.http.common.enums.BodyStreamStatus;
-import org.smartboot.http.common.enums.DecodePartEnum;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpStatus;
-import org.smartboot.http.common.enums.HttpTypeEnum;
 import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.io.ReadListener;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
+import org.smartboot.http.common.utils.ByteTree;
+import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.HttpServerHandler;
+import org.smartboot.http.server.ServerHandler;
 import org.smartboot.http.server.WebSocketHandler;
+import org.smartboot.http.server.waf.WAF;
+import org.smartboot.socket.Protocol;
 import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.extension.processor.AbstractMessageProcessor;
 import org.smartboot.socket.transport.AioSession;
@@ -41,18 +45,151 @@ import java.util.concurrent.CompletableFuture;
  * @author 三刀
  * @version V1.0 , 2018/6/10
  */
-public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
+public class HttpMessageProcessor extends AbstractMessageProcessor<Request> implements Protocol<Request> {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpMessageProcessor.class);
     private static final int MAX_LENGTH = 255 * 1024;
     private HttpServerConfiguration configuration;
 
     @Override
+    public Request decode(ByteBuffer byteBuffer, AioSession session) {
+        Request request = session.getAttachment();
+        DecodeState decodeState = request.getDecodeState();
+        switch (decodeState.getState()) {
+            case DecodeState.STATE_METHOD: {
+                ByteTree<?> method = StringUtils.scanByteTree(byteBuffer, ByteTree.SP_END_MATCHER, configuration.getByteCache());
+                if (method == null) {
+                    return null;
+                }
+                request.setMethod(method.getStringValue());
+                decodeState.setState(DecodeState.STATE_URI);
+                WAF.methodCheck(configuration, request);
+            }
+            case DecodeState.STATE_URI: {
+                ByteTree<ServerHandler<?, ?>> uriTreeNode = StringUtils.scanByteTree(byteBuffer, URI_END_MATCHER, configuration.getUriByteTree());
+                if (uriTreeNode == null) {
+                    return null;
+                }
+                request.setUri(uriTreeNode.getStringValue());
+                if (uriTreeNode.getAttach() == null) {
+                    request.setServerHandler(request.getConfiguration().getHttpServerHandler());
+                } else {
+                    request.setServerHandler(uriTreeNode.getAttach());
+                }
+                WAF.checkUri(configuration, request);
+                switch (byteBuffer.get(byteBuffer.position() - 1)) {
+                    case Constant.SP:
+                        decodeState.setState(DecodeState.STATE_PROTOCOL_DECODE);
+                        break;
+                    case '?':
+                        decodeState.setState(DecodeState.STATE_URI_QUERY);
+                        break;
+                    default:
+                        throw new HttpException(HttpStatus.BAD_REQUEST);
+                }
+                return decode(byteBuffer, session);
+            }
+            case DecodeState.STATE_URI_QUERY: {
+                int length = scanUriQuery(byteBuffer);
+                if (length < 0) {
+                    return null;
+                }
+                String query = StringUtils.convertToString(byteBuffer, byteBuffer.position() - 1 - length, length);
+                request.setQueryString(query);
+                decodeState.setState(DecodeState.STATE_PROTOCOL_DECODE);
+            }
+            case DecodeState.STATE_PROTOCOL_DECODE: {
+                ByteTree<?> protocol = StringUtils.scanByteTree(byteBuffer, ByteTree.CR_END_MATCHER, configuration.getByteCache());
+                if (protocol == null) {
+                    return null;
+                }
+                request.setProtocol(protocol.getStringValue());
+                decodeState.setState(DecodeState.STATE_FIRST_HEAD_END);
+            }
+            case DecodeState.STATE_FIRST_HEAD_END: {
+                if (byteBuffer.remaining() == 0) {
+                    return null;
+                }
+                if (byteBuffer.get() != Constant.LF) {
+                    throw new HttpException(HttpStatus.BAD_REQUEST);
+                }
+                decodeState.setState(DecodeState.STATE_HEADER_END_CHECK);
+            }
+            // header结束判断
+            case DecodeState.STATE_HEADER_END_CHECK: {
+                if (byteBuffer.remaining() < 2) {
+                    return null;
+                }
+                //header解码结束
+                byteBuffer.mark();
+                if (byteBuffer.get() == Constant.CR) {
+                    if (byteBuffer.get() != Constant.LF) {
+                        throw new HttpException(HttpStatus.BAD_REQUEST);
+                    }
+                    decodeState.setState(DecodeState.STATE_HEADER_CALLBACK);
+                    return request;
+                } else {
+                    byteBuffer.reset();
+                    decodeState.setState(DecodeState.STATE_HEADER_NAME);
+                }
+            }
+            // header name解析
+            case DecodeState.STATE_HEADER_NAME: {
+                ByteTree<?> name = StringUtils.scanByteTree(byteBuffer, ByteTree.COLON_END_MATCHER, ByteTree.DEFAULT);
+                if (name == null) {
+                    return null;
+                }
+                decodeState.setDecodeHeaderName(name.getStringValue());
+                decodeState.setState(DecodeState.STATE_HEADER_VALUE);
+            }
+            // header value解析
+            case DecodeState.STATE_HEADER_VALUE: {
+                ByteTree<?> value = StringUtils.scanByteTree(byteBuffer, ByteTree.CR_END_MATCHER, ByteTree.DEFAULT);
+                if (value == null) {
+                    if (byteBuffer.remaining() == byteBuffer.capacity()) {
+                        throw new HttpException(HttpStatus.REQUEST_HEADER_FIELDS_TOO_LARGE);
+                    }
+                    return null;
+                }
+                request.setHeader(decodeState.getDecodeHeaderName(), value.getStringValue());
+                decodeState.setState(DecodeState.STATE_HEADER_LINE_END);
+            }
+            // header line结束
+            case DecodeState.STATE_HEADER_LINE_END: {
+                if (!byteBuffer.hasRemaining()) {
+                    return null;
+                }
+                if (byteBuffer.get() != Constant.LF) {
+                    throw new HttpException(HttpStatus.BAD_REQUEST);
+                }
+                decodeState.setState(DecodeState.STATE_HEADER_END_CHECK);
+                return decode(byteBuffer, session);
+            }
+            case DecodeState.STATE_BODY: {
+                BodyStreamStatus bodyStreamStatus = request.getServerHandler().onBodyStream(byteBuffer, request);
+                if (bodyStreamStatus != BodyStreamStatus.Finish) {
+                    return null;
+                }
+                decodeState.setState(DecodeState.STATE_FINISH);
+                return request;
+            }
+//            case DecodeState.STATE_BODY_READING_CALLBACK:
+//                request.newHttpRequest().getInputStream().getReadListener().onDataAvailable();
+//                if (!abstractRequest.getInputStream().isFinished()) {
+//                    abstractRequest.request.setDecoder(HttpRequestProtocol.BODY_CONTINUE_DECODER);
+//                }
+//                return null;
+        }
+        return null;
+    }
+
+    @Override
     public void process0(AioSession session, Request request) {
+        DecodeState decodeState = request.getDecodeState();
         AbstractRequest abstractRequest = request.newAbstractRequest();
         AbstractResponse response = abstractRequest.getResponse();
         try {
-            switch (request.getDecodePartEnum()) {
-                case HEADER_FINISH:
+            switch (decodeState.getState()) {
+                case DecodeState.STATE_HEADER_CALLBACK: {
                     doHttpHeader(request);
 //                    if (HeaderValueEnum.CONTINUE.getName().equals(request.getHeader(HeaderNameEnum.EXPECT.getName()))) {
 //                        session.writeBuffer().write("HTTP/1.1 100 Continue".getBytes());
@@ -61,12 +198,21 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
                     if (response.isClosed()) {
                         break;
                     }
-                case BODY:
-                    onHttpBody(request, session.readBuffer());
-                    if (response.isClosed() || request.getDecodePartEnum() != DecodePartEnum.FINISH) {
-                        break;
+                    if (request.getMethod().equals(HttpMethodEnum.POST.getMethod())) {
+                        decodeState.setState(DecodeState.STATE_BODY);
+                        return;
+                    } else {
+                        decodeState.setState(DecodeState.STATE_FINISH);
                     }
-                case FINISH: {
+                }
+                case DecodeState.STATE_BODY: {
+                    BodyStreamStatus bodyStreamStatus = request.getServerHandler().onBodyStream(session.readBuffer(), request);
+                    if (bodyStreamStatus != BodyStreamStatus.Finish) {
+                        return;
+                    }
+                    decodeState.setState(DecodeState.STATE_FINISH);
+                }
+                case DecodeState.STATE_FINISH: {
                     //消息处理
                     switch (request.getRequestType()) {
                         case WEBSOCKET:
@@ -78,11 +224,11 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
                     }
                     break;
                 }
-                case BODY_ReadListener:
-                    request.newHttpRequest().getInputStream().getReadListener().onDataAvailable();
-                    if (!abstractRequest.getInputStream().isFinished()) {
-                        abstractRequest.request.setDecoder(HttpRequestProtocol.BODY_CONTINUE_DECODER);
-                    }
+//                case BODY_ReadListener:
+//                    request.newHttpRequest().getInputStream().getReadListener().onDataAvailable();
+//                    if (!abstractRequest.getInputStream().isFinished()) {
+//                        abstractRequest.request.setDecoder(HttpRequestProtocol.BODY_CONTINUE_DECODER);
+//                    }
             }
         } catch (HttpException e) {
             responseError(response, e);
@@ -177,7 +323,6 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
         if (readListener == null) {
             session.awaitRead();
         } else {
-            abstractRequest.request.setDecodePartEnum(DecodePartEnum.BODY_ReadListener);
             abstractRequest.request.setDecoder(session.readBuffer().hasRemaining() ? HttpRequestProtocol.BODY_READY_DECODER : HttpRequestProtocol.BODY_CONTINUE_DECODER);
         }
 
@@ -233,24 +378,10 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
     }
 
 
-    private void onHttpBody(Request request, ByteBuffer readBuffer) {
-        BodyStreamStatus status = request.getServerHandler().onBodyStream(readBuffer, request);
-        if (status == BodyStreamStatus.Finish) {
-            request.setDecodePartEnum(DecodePartEnum.FINISH);
-            if (request.getRequestType() == HttpTypeEnum.HTTP) {
-                request.setDecoder(null);
-            }
-        } else if (status == BodyStreamStatus.Continue && readBuffer.hasRemaining()) {
-            //半包,继续读数据
-            request.setDecoder(HttpRequestProtocol.BODY_CONTINUE_DECODER);
-        }
-    }
-
     private void doHttpHeader(Request request) throws IOException {
         methodCheck(request);
         uriCheck(request);
         request.getServerHandler().onHeaderComplete(request);
-        request.setDecodePartEnum(DecodePartEnum.BODY);
     }
 
     @Override
@@ -359,5 +490,24 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
 
     public void setConfiguration(HttpServerConfiguration configuration) {
         this.configuration = configuration;
+    }
+
+    private static final ByteTree.EndMatcher URI_END_MATCHER = endByte -> (endByte == ' ' || endByte == '?');
+
+
+    private int scanUriQuery(ByteBuffer buffer) {
+        if (!buffer.hasRemaining()) {
+            return -1;
+        }
+        int i = 0;
+        buffer.mark();
+        while (buffer.hasRemaining()) {
+            if (buffer.get() == Constant.SP) {
+                return i;
+            }
+            i++;
+        }
+        buffer.reset();
+        return -1;
     }
 }

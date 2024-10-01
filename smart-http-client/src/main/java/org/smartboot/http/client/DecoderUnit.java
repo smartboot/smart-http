@@ -16,7 +16,9 @@ import org.smartboot.http.common.DecodeState;
  */
 class DecoderUnit extends DecodeState {
 
-    private String decodeHeaderName;
+    public DecoderUnit() {
+        super(DecodeState.STATE_PROTOCOL_DECODE);
+    }
 
     private AbstractResponse response;
 
@@ -30,11 +32,4 @@ class DecoderUnit extends DecodeState {
     }
 
 
-    public String getDecodeHeaderName() {
-        return decodeHeaderName;
-    }
-
-    public void setDecodeHeaderName(String decodeHeaderName) {
-        this.decodeHeaderName = decodeHeaderName;
-    }
 }
