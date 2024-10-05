@@ -38,8 +38,6 @@ final class HttpMessageProcessor extends AbstractMessageProcessor<AbstractRespon
         this.executorService = executorService;
     }
 
-    int i = 0;
-
     @Override
     public AbstractResponse decode(ByteBuffer buffer, AioSession session) {
         DecoderUnit attachment = session.getAttachment();
@@ -51,7 +49,6 @@ final class HttpMessageProcessor extends AbstractMessageProcessor<AbstractRespon
                 if (method == null) {
                     return null;
                 }
-                System.out.println(++i);
                 response.setProtocol(method.getStringValue());
                 attachment.setState(DecodeState.STATE_STATUS_CODE);
             }

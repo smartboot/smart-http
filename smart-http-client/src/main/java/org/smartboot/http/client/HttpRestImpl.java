@@ -54,8 +54,6 @@ class HttpRestImpl implements HttpRest {
         this.response = new HttpResponseImpl(session, completableFuture);
     }
 
-    static int i = 0;
-
     protected final void willSendRequest() {
         if (commit) {
             return;
@@ -73,7 +71,6 @@ class HttpRestImpl implements HttpRest {
             if (attachment.getResponse() == null) {
                 attachment.setResponse(response);
             } else {
-                System.out.println(++i);
                 queue.offer(response);
             }
         }
