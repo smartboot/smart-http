@@ -8,10 +8,10 @@
 
 package org.smartboot.http.server.impl;
 
-import org.smartboot.http.common.io.BufferOutputStream;
 import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.enums.HeaderNameEnum;
+import org.smartboot.http.common.io.BufferOutputStream;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.server.HttpServerConfiguration;
 
@@ -28,14 +28,14 @@ abstract class AbstractOutputStream extends BufferOutputStream {
 
     protected static String SERVER_LINE = null;
     protected final AbstractResponse response;
-    protected final AbstractRequest request;
+    protected final Request request;
     protected final HttpServerConfiguration configuration;
 
-    public AbstractOutputStream(AbstractRequest httpRequest, AbstractResponse response) {
-        super(httpRequest.request.getAioSession());
+    public AbstractOutputStream(Request request, AbstractResponse response) {
+        super(request.getAioSession());
         this.response = response;
-        this.request = httpRequest;
-        this.configuration = httpRequest.request.getConfiguration();
+        this.request = request;
+        this.configuration = request.getConfiguration();
         if (SERVER_LINE == null) {
             SERVER_LINE = HeaderNameEnum.SERVER.getName() + Constant.COLON_CHAR + configuration.serverName() + Constant.CRLF;
         }
@@ -75,7 +75,7 @@ abstract class AbstractOutputStream extends BufferOutputStream {
     public void write(byte[] b, int off, int len) throws IOException {
         super.write(b, off, len);
         if (configuration.getWsIdleTimeout() > 0 || configuration.getHttpIdleTimeout() > 0) {
-            request.request.setLatestIo(System.currentTimeMillis());
+            request.setLatestIo(System.currentTimeMillis());
         }
     }
 

@@ -9,20 +9,13 @@
 package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.DecodeState;
-import org.smartboot.http.common.enums.BodyStreamStatus;
-import org.smartboot.http.common.enums.HeaderNameEnum;
-import org.smartboot.http.common.enums.HeaderValueEnum;
-import org.smartboot.http.common.enums.HttpMethodEnum;
-import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.exception.HttpException;
-import org.smartboot.http.common.io.ReadListener;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
 import org.smartboot.http.common.utils.ByteTree;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.StringUtils;
-import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.HttpServerHandler;
 import org.smartboot.http.server.ServerHandler;
@@ -37,7 +30,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 /**
@@ -54,12 +46,19 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> impl
     @Override
     public Request decode(ByteBuffer byteBuffer, AioSession session) {
         Request request = session.getAttachment();
+        int p = byteBuffer.position();
+        boolean flag = decode(byteBuffer, request);
+        request.decodeSize(byteBuffer.position() - p);
+        return flag ? request : null;
+    }
+
+    private boolean decode(ByteBuffer byteBuffer, Request request) {
         DecoderUnit decodeState = request.getDecodeState();
         switch (decodeState.getState()) {
             case DecodeState.STATE_METHOD: {
                 ByteTree<?> method = StringUtils.scanByteTree(byteBuffer, ByteTree.SP_END_MATCHER, configuration.getByteCache());
                 if (method == null) {
-                    return null;
+                    break;
                 }
                 request.setMethod(method.getStringValue());
                 decodeState.setState(DecodeState.STATE_URI);
@@ -68,7 +67,7 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> impl
             case DecodeState.STATE_URI: {
                 ByteTree<ServerHandler<?, ?>> uriTreeNode = StringUtils.scanByteTree(byteBuffer, URI_END_MATCHER, configuration.getUriByteTree());
                 if (uriTreeNode == null) {
-                    return null;
+                    break;
                 }
                 request.setUri(uriTreeNode.getStringValue());
                 if (uriTreeNode.getAttach() == null) {
@@ -87,12 +86,12 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> impl
                     default:
                         throw new HttpException(HttpStatus.BAD_REQUEST);
                 }
-                return decode(byteBuffer, session);
+                return decode(byteBuffer, request);
             }
             case DecodeState.STATE_URI_QUERY: {
                 int length = scanUriQuery(byteBuffer);
                 if (length < 0) {
-                    return null;
+                    break;
                 }
                 String query = StringUtils.convertToString(byteBuffer, byteBuffer.position() - 1 - length, length);
                 request.setQueryString(query);
@@ -101,14 +100,14 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> impl
             case DecodeState.STATE_PROTOCOL_DECODE: {
                 ByteTree<?> protocol = StringUtils.scanByteTree(byteBuffer, ByteTree.CR_END_MATCHER, configuration.getByteCache());
                 if (protocol == null) {
-                    return null;
+                    break;
                 }
                 request.setProtocol(protocol.getStringValue());
                 decodeState.setState(DecodeState.STATE_START_LINE_END);
             }
             case DecodeState.STATE_START_LINE_END: {
                 if (byteBuffer.remaining() == 0) {
-                    return null;
+                    break;
                 }
                 if (byteBuffer.get() != Constant.LF) {
                     throw new HttpException(HttpStatus.BAD_REQUEST);
@@ -118,7 +117,7 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> impl
             // header结束判断
             case DecodeState.STATE_HEADER_END_CHECK: {
                 if (byteBuffer.remaining() < 2) {
-                    return null;
+                    break;
                 }
                 //header解码结束
                 byteBuffer.mark();
@@ -127,7 +126,7 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> impl
                         throw new HttpException(HttpStatus.BAD_REQUEST);
                     }
                     decodeState.setState(DecodeState.STATE_HEADER_CALLBACK);
-                    return request;
+                    return true;
                 } else {
                     byteBuffer.reset();
                     decodeState.setState(DecodeState.STATE_HEADER_NAME);
@@ -137,7 +136,7 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> impl
             case DecodeState.STATE_HEADER_NAME: {
                 ByteTree<Function<String, ServerHandler<?, ?>>> name = StringUtils.scanByteTree(byteBuffer, ByteTree.COLON_END_MATCHER, configuration.getHeaderNameByteTree());
                 if (name == null) {
-                    return null;
+                    break;
                 }
                 decodeState.setDecodeHeaderName(name.getStringValue());
                 decodeState.setHeaderFunc(name.getAttach());
@@ -150,7 +149,7 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> impl
                     if (byteBuffer.remaining() == byteBuffer.capacity()) {
                         throw new HttpException(HttpStatus.REQUEST_HEADER_FIELDS_TOO_LARGE);
                     }
-                    return null;
+                    break;
                 }
                 if (decodeState.getHeaderFunc() != null) {
                     ServerHandler replaceServerHandler = decodeState.getHeaderFunc().apply(value.getStringValue());
@@ -164,138 +163,56 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> impl
             // header line结束
             case DecodeState.STATE_HEADER_LINE_END: {
                 if (!byteBuffer.hasRemaining()) {
-                    return null;
+                    break;
                 }
                 if (byteBuffer.get() != Constant.LF) {
                     throw new HttpException(HttpStatus.BAD_REQUEST);
                 }
                 decodeState.setState(DecodeState.STATE_HEADER_END_CHECK);
-                return decode(byteBuffer, session);
+                return decode(byteBuffer, request);
             }
-            case DecodeState.STATE_BODY: {
-                BodyStreamStatus bodyStreamStatus = request.getServerHandler().onBodyStream(byteBuffer, request);
-                if (bodyStreamStatus != BodyStreamStatus.Finish) {
-                    return null;
+            case DecodeState.STATE_BODY_READING_MONITOR:
+                decodeState.setState(DecodeState.STATE_HEADER_CALLBACK);
+                if (byteBuffer.position() > 0) {
+                    break;
                 }
-                decodeState.setState(DecodeState.STATE_FINISH);
-                return request;
-            }
-//            case DecodeState.STATE_BODY_READING_CALLBACK:
-//                request.newHttpRequest().getInputStream().getReadListener().onDataAvailable();
-//                if (!abstractRequest.getInputStream().isFinished()) {
-//                    abstractRequest.request.setDecoder(HttpRequestProtocol.BODY_CONTINUE_DECODER);
-//                }
-//                return null;
+            case DecodeState.STATE_BODY_READING_CALLBACK:
+                return true;
         }
-        return null;
+        return false;
     }
 
     @Override
     public void process0(AioSession session, Request request) {
         DecodeState decodeState = request.getDecodeState();
-        AbstractRequest abstractRequest = request.newAbstractRequest();
-        AbstractResponse response = abstractRequest.getResponse();
         try {
             switch (decodeState.getState()) {
                 case DecodeState.STATE_HEADER_CALLBACK: {
                     doHttpHeader(request);
-//                    if (HeaderValueEnum.CONTINUE.getName().equals(request.getHeader(HeaderNameEnum.EXPECT.getName()))) {
-//                        session.writeBuffer().write("HTTP/1.1 100 Continue".getBytes());
-//                        session.writeBuffer().flush();
-//                    }
-                    if (response.isClosed()) {
-                        break;
-                    }
-                    if (request.getMethod().equals(HttpMethodEnum.POST.getMethod())) {
-                        decodeState.setState(DecodeState.STATE_BODY);
-                        return;
-                    } else {
-                        decodeState.setState(DecodeState.STATE_FINISH);
-                    }
+                    decodeState.setState(DecodeState.STATE_BODY_READING_CALLBACK);
                 }
-                case DecodeState.STATE_BODY: {
-                    BodyStreamStatus bodyStreamStatus = request.getServerHandler().onBodyStream(session.readBuffer(), request);
-                    if (bodyStreamStatus != BodyStreamStatus.Finish) {
-                        return;
-                    }
-                    decodeState.setState(DecodeState.STATE_FINISH);
-                }
-                case DecodeState.STATE_FINISH: {
-                    //消息处理
+                case DecodeState.STATE_BODY_READING_CALLBACK: {
+                    decodeState.setState(DecodeState.STATE_BODY_READING_MONITOR);
                     switch (request.getRequestType()) {
-                        case WEBSOCKET:
-                            handleWebSocketRequest(request.newWebsocketRequest());
+                        case HTTP: {
+                            configuration.getHttpServerHandler().onBodyStream(session.readBuffer(), request);
                             break;
-                        case HTTP:
-                            handleHttpRequest(request.newHttpRequest());
+                        }
+                        case WEBSOCKET: {
+                            configuration.getWebSocketHandler().onBodyStream(session.readBuffer(), request);
                             break;
+                        }
                     }
                     break;
                 }
-//                case BODY_ReadListener:
-//                    request.newHttpRequest().getInputStream().getReadListener().onDataAvailable();
-//                    if (!abstractRequest.getInputStream().isFinished()) {
-//                        abstractRequest.request.setDecoder(HttpRequestProtocol.BODY_CONTINUE_DECODER);
-//                    }
             }
-        } catch (HttpException e) {
-            responseError(response, e);
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void handleWebSocketRequest(WebSocketRequestImpl abstractRequest) throws Throwable {
-        CompletableFuture<Object> future = new CompletableFuture<>();
-        abstractRequest.request.getServerHandler().handle(abstractRequest, abstractRequest.getResponse(), future);
-        if (future.isDone()) {
-            finishResponse(abstractRequest);
-        } else {
-            Thread thread = Thread.currentThread();
-            AioSession session = abstractRequest.request.getAioSession();
-            session.awaitRead();
-            future.thenRun(() -> {
-                try {
-                    finishResponse(abstractRequest);
-                    if (thread != Thread.currentThread()) {
-                        session.writeBuffer().flush();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    abstractRequest.getResponse().close();
-                } finally {
-                    session.signalRead();
-                }
-            });
-        }
-    }
 
-    private void handleHttpRequest(HttpRequestImpl abstractRequest) {
-        AbstractResponse response = abstractRequest.getResponse();
-        CompletableFuture<Object> future = new CompletableFuture<>();
-        boolean keepAlive = isKeepAlive(abstractRequest, response);
-        abstractRequest.setKeepAlive(keepAlive);
-        try {
-            abstractRequest.request.getServerHandler().handle(abstractRequest, response, future);
-            finishHttpHandle(abstractRequest, future);
-        } catch (Throwable e) {
-            responseError(response, e);
-        }
-    }
-
-    private boolean isKeepAlive(AbstractRequest abstractRequest, AbstractResponse response) {
-        boolean keepAlive = !HeaderValueEnum.CLOSE.getName().equals(abstractRequest.getRequest().getConnection());
-        // http/1.0默认短连接，http/1.1默认长连接。此处用 == 性能更高
-        if (keepAlive && HttpProtocolEnum.HTTP_10.getProtocol() == abstractRequest.getProtocol()) {
-            keepAlive = HeaderValueEnum.KEEPALIVE.getName().equalsIgnoreCase(abstractRequest.getHeader(HeaderNameEnum.CONNECTION.getName()));
-            if (keepAlive) {
-                response.setHeader(HeaderNameEnum.CONNECTION.getName(), HeaderValueEnum.KEEPALIVE.getName());
-            }
-        }
-        return keepAlive;
-    }
-
-    private static void responseError(AbstractResponse response, Throwable throwable) {
+    public static void responseError(AbstractResponse response, Throwable throwable) {
         if (throwable instanceof HttpException) {
             responseError(response, HttpStatus.valueOf(((HttpException) throwable).getHttpCode()), ((HttpException) throwable).getDesc());
         } else if (throwable.getCause() != null) {
@@ -317,74 +234,6 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> impl
             response.close();
         }
     }
-
-    private void finishHttpHandle(HttpRequestImpl abstractRequest, CompletableFuture<Object> future) throws IOException {
-        if (future.isDone()) {
-            if (keepConnection(abstractRequest)) {
-                finishResponse(abstractRequest);
-            }
-            return;
-        }
-
-        AioSession session = abstractRequest.request.getAioSession();
-        ReadListener readListener = abstractRequest.getInputStream().getReadListener();
-        if (readListener == null) {
-            session.awaitRead();
-        } else {
-            abstractRequest.request.setDecoder(session.readBuffer().hasRemaining() ? HttpRequestProtocol.BODY_READY_DECODER : HttpRequestProtocol.BODY_CONTINUE_DECODER);
-        }
-
-        Thread thread = Thread.currentThread();
-        AbstractResponse response = abstractRequest.getResponse();
-        future.thenRun(() -> {
-            try {
-                if (keepConnection(abstractRequest)) {
-                    finishResponse(abstractRequest);
-                    if (thread != Thread.currentThread()) {
-                        session.writeBuffer().flush();
-                    }
-                }
-            } catch (Exception e) {
-                responseError(response, e);
-            } finally {
-                if (readListener == null) {
-                    session.signalRead();
-                }
-            }
-        }).exceptionally(throwable -> {
-            try {
-                responseError(response, throwable);
-            } finally {
-                if (readListener == null) {
-                    session.signalRead();
-                }
-            }
-            return null;
-        });
-    }
-
-    private boolean keepConnection(HttpRequestImpl request) throws IOException {
-        if (request.getResponse().isClosed()) {
-            return false;
-        }
-        //非keepAlive或者 body部分未读取完毕,释放连接资源
-        if (!request.isKeepAlive() || (!HttpMethodEnum.GET.getMethod().equals(request.getMethod()) && request.getContentLength() > 0 && request.getInputStream().available() > 0)) {
-            request.getResponse().close();
-            return false;
-        }
-        return true;
-    }
-
-
-    private void finishResponse(AbstractRequest abstractRequest) throws IOException {
-        AbstractResponse response = abstractRequest.getResponse();
-        //关闭本次请求的输出流
-        if (!response.getOutputStream().isClosed()) {
-            response.getOutputStream().close();
-        }
-        abstractRequest.reset();
-    }
-
 
     private void doHttpHeader(Request request) throws IOException {
         methodCheck(request);
@@ -444,7 +293,7 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> impl
      * 方法 GET 和 HEAD 必须被所有一般的服务器支持。 所有其它的方法是可选的;
      * 然而，如果上面的方法都被实现， 这些方法遵循的语意必须和第 9 章指定的相同
      */
-    private void methodCheck(HttpRequest request) {
+    private void methodCheck(Request request) {
         if (request.getMethod() == null) {
             throw new HttpException(HttpStatus.NOT_IMPLEMENTED);
         }

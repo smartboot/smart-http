@@ -5,7 +5,6 @@ import org.smartboot.http.client.impl.WebSocketResponseImpl;
 import org.smartboot.http.common.codec.websocket.CloseReason;
 import org.smartboot.http.common.codec.websocket.Decoder;
 import org.smartboot.http.common.codec.websocket.WebSocket;
-import org.smartboot.http.common.enums.BodyStreamStatus;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
@@ -236,11 +235,13 @@ public class WebSocketClient {
             }
 
             @Override
-            public BodyStreamStatus onBodyStream(ByteBuffer buffer, AbstractResponse abstractResponse) {
+            public void onBodyStream(ByteBuffer buffer, AbstractResponse abstractResponse) {
                 WebSocketResponseImpl webSocketResponse = (WebSocketResponseImpl) abstractResponse;
                 Decoder decoder = webSocketResponse.getDecoder().decode(buffer, webSocketResponse);
                 webSocketResponse.setDecoder(decoder);
-                return decoder == WebSocket.PAYLOAD_FINISH ? BodyStreamStatus.Finish : BodyStreamStatus.Continue;
+                if (decoder == WebSocket.PAYLOAD_FINISH) {
+                    abstractResponse.getFuture().complete(abstractResponse);
+                }
             }
 
         });

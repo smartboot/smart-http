@@ -14,7 +14,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.smartboot.http.client.HttpClient;
-import org.smartboot.http.common.enums.BodyStreamStatus;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.utils.StringUtils;
@@ -23,12 +22,10 @@ import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
 import org.smartboot.http.server.HttpServerHandler;
 import org.smartboot.http.server.handler.HttpRouteHandler;
-import org.smartboot.http.server.impl.Request;
 import org.smartboot.socket.extension.plugins.SslPlugin;
 import org.smartboot.socket.extension.ssl.ClientAuth;
 import org.smartboot.socket.extension.ssl.factory.ServerSSLContextFactory;
 import org.smartboot.socket.util.AttachKey;
-import org.smartboot.socket.util.Attachment;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -66,31 +63,6 @@ public class HttpPostTest {
         routeHandle.route("/json", new HttpServerHandler() {
             private AttachKey<ByteBuffer> bodyKey = AttachKey.valueOf("bodyKey");
 
-            @Override
-            public BodyStreamStatus onBodyStream(ByteBuffer buffer, Request request) {
-                Attachment attachment = request.getAttachment();
-                ByteBuffer bodyBuffer = null;
-                if (attachment != null) {
-                    bodyBuffer = attachment.get(bodyKey);
-                }
-                if (bodyBuffer == null) {
-                    bodyBuffer = ByteBuffer.allocate((int) request.getContentLength());
-                    if (attachment == null) {
-                        attachment = new Attachment();
-                        request.setAttachment(attachment);
-                    }
-                    attachment.put(bodyKey, bodyBuffer);
-                }
-                if (buffer.remaining() <= bodyBuffer.remaining()) {
-                    bodyBuffer.put(buffer);
-                } else {
-                    int limit = buffer.limit();
-                    buffer.limit(buffer.position() + bodyBuffer.remaining());
-                    bodyBuffer.put(buffer);
-                    buffer.limit(limit);
-                }
-                return bodyBuffer.hasRemaining() ? BodyStreamStatus.Continue : BodyStreamStatus.Finish;
-            }
 
             @Override
             public void handle(HttpRequest request, HttpResponse response) throws IOException {

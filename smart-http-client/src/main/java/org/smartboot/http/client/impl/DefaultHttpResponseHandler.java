@@ -10,7 +10,6 @@ package org.smartboot.http.client.impl;
 
 import org.smartboot.http.client.AbstractResponse;
 import org.smartboot.http.client.ResponseHandler;
-import org.smartboot.http.common.enums.BodyStreamStatus;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpStatus;
@@ -31,26 +30,29 @@ import java.nio.charset.Charset;
  * @version V1.0 , 2021/7/15
  */
 public class DefaultHttpResponseHandler extends ResponseHandler {
+    private static final ResponseHandler DEFAULT_HANDLER = new ResponseHandler() {
+        @Override
+        public void onBodyStream(ByteBuffer buffer, AbstractResponse request) {
+
+        }
+    };
     private ResponseHandler responseHandler;
 
     @Override
-    public BodyStreamStatus onBodyStream(ByteBuffer buffer, AbstractResponse baseHttpResponse) {
+    public final void onBodyStream(ByteBuffer buffer, AbstractResponse baseHttpResponse) {
         if (responseHandler != null) {
-            return responseHandler.onBodyStream(buffer, baseHttpResponse);
+            responseHandler.onBodyStream(buffer, baseHttpResponse);
+            return;
         }
         String transferEncoding = baseHttpResponse.getHeader(HeaderNameEnum.TRANSFER_ENCODING.getName());
         if (StringUtils.equals(transferEncoding, HeaderValueEnum.CHUNKED.getName())) {
-            if (responseHandler == null) {
-                responseHandler = new ChunkedHttpLifecycle();
-            }
+            responseHandler = new ChunkedHttpLifecycle();
         } else if (baseHttpResponse.getContentLength() > 0) {
-            if (responseHandler == null) {
-                responseHandler = new ContentLengthHttpLifecycle();
-            }
+            responseHandler = new ContentLengthHttpLifecycle();
         } else {
-            return BodyStreamStatus.Finish;
+            responseHandler = DEFAULT_HANDLER;
         }
-        return responseHandler.onBodyStream(buffer, baseHttpResponse);
+        onBodyStream(buffer, baseHttpResponse);
     }
 
     /**
@@ -63,20 +65,23 @@ public class DefaultHttpResponseHandler extends ResponseHandler {
         private SmartDecoder chunkedDecoder;
 
         @Override
-        public BodyStreamStatus onBodyStream(ByteBuffer buffer, AbstractResponse response) {
+        public void onBodyStream(ByteBuffer buffer, AbstractResponse response) {
             switch (part) {
                 case CHUNK_LENGTH:
-                    return decodeChunkedLength(buffer, response);
+                    decodeChunkedLength(buffer, response);
+                    break;
                 case CHUNK_CONTENT:
-                    return decodeChunkedContent(buffer, response);
+                    decodeChunkedContent(buffer, response);
+                    break;
                 case CHUNK_END:
-                    return decodeChunkedEnd(buffer, response);
+                    decodeChunkedEnd(buffer, response);
+                    break;
                 default:
                     throw new IllegalStateException();
             }
         }
 
-        private BodyStreamStatus decodeChunkedContent(ByteBuffer buffer, AbstractResponse response) {
+        private void decodeChunkedContent(ByteBuffer buffer, AbstractResponse response) {
             if (chunkedDecoder.decode(buffer)) {
                 try {
                     body.write(chunkedDecoder.getBuffer().array());
@@ -84,39 +89,38 @@ public class DefaultHttpResponseHandler extends ResponseHandler {
                     e.printStackTrace();
                 }
                 part = PART.CHUNK_END;
-                return onBodyStream(buffer, response);
+                onBodyStream(buffer, response);
             }
-            return BodyStreamStatus.Continue;
         }
 
-        private BodyStreamStatus decodeChunkedEnd(ByteBuffer buffer, AbstractResponse response) {
+        private void decodeChunkedEnd(ByteBuffer buffer, AbstractResponse response) {
             if (buffer.remaining() < 2) {
-                return BodyStreamStatus.Continue;
+                return;
             }
             if (buffer.get() == Constant.CR && buffer.get() == Constant.LF) {
                 part = PART.CHUNK_LENGTH;
-                return onBodyStream(buffer, response);
+                onBodyStream(buffer, response);
+            } else {
+                throw new IllegalStateException();
             }
-            throw new IllegalStateException();
         }
 
-        private BodyStreamStatus decodeChunkedLength(ByteBuffer buffer, AbstractResponse response) {
+        private void decodeChunkedLength(ByteBuffer buffer, AbstractResponse response) {
             int length = StringUtils.scanUntilAndTrim(buffer, Constant.LF);
             if (length < 0) {
-                return BodyStreamStatus.Continue;
+                return;
             }
             if (length == 1) {
                 finishDecode((HttpResponseImpl) response);
-                return BodyStreamStatus.Finish;
+                return;
             }
             String contentLength = StringUtils.convertToString(buffer, buffer.position() - length - 1, length - 1);
             int chunkedLength = Integer.parseInt(contentLength, 16);
-            if (chunkedLength == 0) {
-                return onBodyStream(buffer, response);
+            if (chunkedLength != 0) {
+                part = PART.CHUNK_CONTENT;
+                chunkedDecoder = new FixedLengthFrameDecoder(chunkedLength);
             }
-            part = PART.CHUNK_CONTENT;
-            chunkedDecoder = new FixedLengthFrameDecoder(chunkedLength);
-            return onBodyStream(buffer, response);
+            onBodyStream(buffer, response);
         }
 
         public void finishDecode(HttpResponseImpl response) {
@@ -125,12 +129,11 @@ public class DefaultHttpResponseHandler extends ResponseHandler {
             } else {
                 response.setBody(body.toString());
             }
+            callback(response);
         }
 
         enum PART {
-            CHUNK_LENGTH,
-            CHUNK_CONTENT,
-            CHUNK_END
+            CHUNK_LENGTH, CHUNK_CONTENT, CHUNK_END
         }
     }
 
@@ -142,7 +145,7 @@ public class DefaultHttpResponseHandler extends ResponseHandler {
         private SmartDecoder smartDecoder;
 
         @Override
-        public BodyStreamStatus onBodyStream(ByteBuffer buffer, AbstractResponse abstractResponse) {
+        public void onBodyStream(ByteBuffer buffer, AbstractResponse abstractResponse) {
             HttpResponseImpl response = (HttpResponseImpl) abstractResponse;
             if (smartDecoder == null) {
                 int bodyLength = response.getContentLength();
@@ -153,9 +156,12 @@ public class DefaultHttpResponseHandler extends ResponseHandler {
             }
             if (smartDecoder.decode(buffer)) {
                 response.setBody(new String(smartDecoder.getBuffer().array(), Charset.forName(response.getCharacterEncoding())));
-                return BodyStreamStatus.Finish;
+                callback(abstractResponse);
             }
-            return BodyStreamStatus.Continue;
         }
+    }
+
+    private static void callback(AbstractResponse response) {
+        response.getFuture().complete(response);
     }
 }

@@ -8,6 +8,7 @@
 
 package org.smartboot.http.server.impl;
 
+import org.smartboot.http.common.Reset;
 import org.smartboot.http.common.codec.websocket.WebSocket;
 import org.smartboot.http.common.io.BodyInputStream;
 import org.smartboot.http.common.utils.SmartDecoder;
@@ -16,12 +17,14 @@ import org.smartboot.http.server.WebSocketRequest;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.Map;
 
 /**
  * @author 三刀
  * @version V1.0 , 2018/8/31
  */
-public class WebSocketRequestImpl extends AbstractRequest implements WebSocketRequest, WebSocket {
+public class WebSocketRequestImpl implements WebSocketRequest, WebSocket, Reset {
     private SmartDecoder payloadDecoder;
     private final ByteArrayOutputStream payload = new ByteArrayOutputStream();
     private final WebSocketResponseImpl response;
@@ -29,7 +32,7 @@ public class WebSocketRequestImpl extends AbstractRequest implements WebSocketRe
     private boolean frameMasked;
     private int frameRsv;
     private int frameOpcode;
-
+    public Request request;
     /**
      * payload长度
      */
@@ -38,7 +41,7 @@ public class WebSocketRequestImpl extends AbstractRequest implements WebSocketRe
     private byte[] maskingKey;
 
     public WebSocketRequestImpl(Request baseHttpRequest) {
-        init(baseHttpRequest);
+        this.request = baseHttpRequest;
         this.response = new WebSocketResponseImpl(this);
     }
 
@@ -92,6 +95,41 @@ public class WebSocketRequestImpl extends AbstractRequest implements WebSocketRe
 
     public byte[] getPayload() {
         return payload.toByteArray();
+    }
+
+    @Override
+    public String getRequestURL() {
+        return request.getRequestURL();
+    }
+
+    @Override
+    public String getRequestURI() {
+        return request.getRequestURI();
+    }
+
+    @Override
+    public String getQueryString() {
+        return request.getQueryString();
+    }
+
+    @Override
+    public Map<String, String[]> getParameters() {
+        return request.getParameters();
+    }
+
+    @Override
+    public InetSocketAddress getRemoteAddress() {
+        return request.getRemoteAddress();
+    }
+
+    @Override
+    public InetSocketAddress getLocalAddress() {
+        return request.getLocalAddress();
+    }
+
+    @Override
+    public boolean isSecure() {
+        return request.isSecure();
     }
 
     public long getPayloadLength() {

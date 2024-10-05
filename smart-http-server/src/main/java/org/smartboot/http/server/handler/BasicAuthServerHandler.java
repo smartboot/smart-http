@@ -8,7 +8,6 @@
 
 package org.smartboot.http.server.handler;
 
-import org.smartboot.http.common.enums.BodyStreamStatus;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.utils.StringUtils;
@@ -18,7 +17,6 @@ import org.smartboot.http.server.HttpServerHandler;
 import org.smartboot.http.server.impl.Request;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.Base64;
 
 /**
@@ -45,11 +43,6 @@ public final class BasicAuthServerHandler extends HttpServerHandler {
             response.setHttpStatus(HttpStatus.UNAUTHORIZED);
             response.close();
         }
-    }
-
-    @Override
-    public BodyStreamStatus onBodyStream(ByteBuffer buffer, Request request) {
-        return httpServerHandler.onBodyStream(buffer, request);
     }
 
     @Override

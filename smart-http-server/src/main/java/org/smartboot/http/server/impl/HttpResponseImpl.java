@@ -8,13 +8,34 @@
 
 package org.smartboot.http.server.impl;
 
+import org.smartboot.http.common.enums.HttpProtocolEnum;
+
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Supplier;
+
 /**
  * @author 三刀
  * @version V1.0 , 2018/2/3
  */
 class HttpResponseImpl extends AbstractResponse {
+    private final HttpRequestImpl request;
 
-    public HttpResponseImpl(HttpRequestImpl httpRequest) {
-        init(httpRequest, new HttpOutputStream(httpRequest, this));
+    public HttpResponseImpl(HttpRequestImpl request) {
+        init(request.request.getAioSession(), new HttpOutputStream(request, this));
+        this.request = request;
+    }
+
+    @Override
+    public void setTrailerFields(Supplier<Map<String, String>> supplier) {
+        if (outputStream.isCommitted()) {
+            throw new IllegalStateException();
+        }
+        if (Objects.equals(request.getProtocol(), HttpProtocolEnum.HTTP_10.getProtocol())) {
+            throw new IllegalStateException("HTTP/1.0 request");
+        } else if (Objects.equals(request.getProtocol(), HttpProtocolEnum.HTTP_11.getProtocol()) && !outputStream.isChunkedSupport()) {
+            throw new IllegalStateException("unSupport trailer");
+        }
+        outputStream.setTrailerFields(supplier);
     }
 }

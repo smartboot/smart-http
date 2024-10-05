@@ -13,9 +13,10 @@ import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.Reset;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
-import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpStatus;
+import org.smartboot.http.common.io.BufferOutputStream;
 import org.smartboot.http.server.HttpResponse;
+import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -32,11 +33,11 @@ import java.util.function.Supplier;
  * @author 三刀
  * @version V1.0 , 2018/2/3
  */
-class AbstractResponse implements HttpResponse, Reset {
+public class AbstractResponse implements HttpResponse, Reset {
     /**
      * 输入流
      */
-    private AbstractOutputStream outputStream;
+    protected AbstractOutputStream outputStream;
 
     /**
      * 响应消息头
@@ -64,7 +65,7 @@ class AbstractResponse implements HttpResponse, Reset {
      */
     private String contentType = HeaderValueEnum.DEFAULT_CONTENT_TYPE.getName();
 
-    private AbstractRequest request;
+    private AioSession session;
 
     /**
      * 是否关闭Socket连接通道
@@ -73,8 +74,8 @@ class AbstractResponse implements HttpResponse, Reset {
 
     private List<Cookie> cookies = Collections.emptyList();
 
-    protected void init(AbstractRequest request, AbstractOutputStream outputStream) {
-        this.request = request;
+    protected void init(AioSession session, AbstractOutputStream outputStream) {
+        this.session = session;
         this.outputStream = outputStream;
     }
 
@@ -90,7 +91,7 @@ class AbstractResponse implements HttpResponse, Reset {
     }
 
 
-    public final AbstractOutputStream getOutputStream() {
+    public final BufferOutputStream getOutputStream() {
         return outputStream;
     }
 
@@ -222,7 +223,7 @@ class AbstractResponse implements HttpResponse, Reset {
             }
         } catch (IOException ignored) {
         } finally {
-            request.getRequest().getAioSession().close(false);
+            session.close(false);
         }
         closed = true;
     }
@@ -269,18 +270,6 @@ class AbstractResponse implements HttpResponse, Reset {
         return closed;
     }
 
-    @Override
-    public void setTrailerFields(Supplier<Map<String, String>> supplier) {
-        if (outputStream.isCommitted()) {
-            throw new IllegalStateException();
-        }
-        if (Objects.equals(request.getProtocol(), HttpProtocolEnum.HTTP_10.getProtocol())) {
-            throw new IllegalStateException("HTTP/1.0 request");
-        } else if (Objects.equals(request.getProtocol(), HttpProtocolEnum.HTTP_11.getProtocol()) && !outputStream.isChunkedSupport()) {
-            throw new IllegalStateException("unSupport trailer");
-        }
-        outputStream.setTrailerFields(supplier);
-    }
 
     @Override
     public Supplier<Map<String, String>> getTrailerFields() {

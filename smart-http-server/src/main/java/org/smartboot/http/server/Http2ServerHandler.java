@@ -8,7 +8,6 @@
 
 package org.smartboot.http.server;
 
-import org.smartboot.http.common.enums.BodyStreamStatus;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpStatus;
@@ -17,9 +16,9 @@ import org.smartboot.http.server.h2.DataFrame;
 import org.smartboot.http.server.h2.Http2Frame;
 import org.smartboot.http.server.h2.SettingsFrame;
 import org.smartboot.http.server.h2.WindowUpdateFrame;
+import org.smartboot.http.server.impl.AbstractResponse;
 import org.smartboot.http.server.impl.Http2RequestImpl;
 import org.smartboot.http.server.impl.Request;
-import org.smartboot.http.server.impl.WebSocketResponseImpl;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -34,10 +33,15 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author 三刀
  * @version V1.0 , 2018/2/6
  */
-public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, HttpResponse> {
+public class Http2ServerHandler implements ServerHandler<HttpRequest, HttpResponse> {
     private final Map<Request, SmartDecoder> bodyDecoderMap = new ConcurrentHashMap<>();
     private static final byte[] H2C_PREFACE = "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n".getBytes();
     private static final int FRAME_HEADER_SIZE = 9;
+    private HttpServerHandler httpServerHandler;
+
+    public Http2ServerHandler(HttpServerHandler httpServerHandler) {
+        this.httpServerHandler = httpServerHandler;
+    }
 
     @Override
     public void onHeaderComplete(Request request) throws IOException {
@@ -49,49 +53,60 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
         settingsFrame.decode(byteBuffer);
         System.out.println("http2Settings:" + settingsFrame);
 
-        WebSocketResponseImpl response = request.newWebsocketRequest().getResponse();
+        Http2RequestImpl req = request.newHttp2Request();
+        AbstractResponse response = req.getResponse();
         response.setHttpStatus(HttpStatus.SWITCHING_PROTOCOLS);
         response.setHeader(HeaderNameEnum.UPGRADE.getName(), HeaderValueEnum.H2C.getName());
         response.setHeader(HeaderNameEnum.CONNECTION.getName(), HeaderValueEnum.UPGRADE.getName());
         OutputStream outputStream = response.getOutputStream();
         outputStream.flush();
         settingsFrame.writeTo(request.getAioSession().writeBuffer());
+
+        req.setState(Http2RequestImpl.STATE_FIRST_REQUEST);
     }
 
     @Override
-    public BodyStreamStatus onBodyStream(ByteBuffer buffer, Request request) {
+    public void onBodyStream(ByteBuffer buffer, Request request) {
         Http2RequestImpl req = request.newHttp2Request();
-        if (!req.isPrefaced()) {
-            if (buffer.remaining() < H2C_PREFACE.length) {
-                return BodyStreamStatus.Continue;
-            } else {
+        switch (req.getState()) {
+            case Http2RequestImpl.STATE_FIRST_REQUEST: {
+                
+            }
+            case Http2RequestImpl.STATE_PREFACE: {
+                if (buffer.remaining() < H2C_PREFACE.length) {
+                    break;
+                }
                 for (byte b : H2C_PREFACE) {
                     if (b != buffer.get()) {
                         throw new IllegalStateException();
                     }
                 }
                 req.setPrefaced(true);
+                req.setState(Http2RequestImpl.STATE_FRAME_HEAD);
+            }
+            case Http2RequestImpl.STATE_FRAME_HEAD: {
+                if (buffer.remaining() < FRAME_HEADER_SIZE) {
+                    break;
+                }
+                Http2Frame frame = parseFrame(buffer);
+                req.setCurrentFrame(frame);
+                req.setState(Http2RequestImpl.STATE_FRAME_PAYLOAD);
+            }
+            case Http2RequestImpl.STATE_FRAME_PAYLOAD: {
+                Http2Frame frame = req.getCurrentFrame();
+                if (!frame.decode(buffer)) {
+                    break;
+                }
+                req.setState(Http2RequestImpl.STATE_FRAME_HEAD);
+                req.setCurrentFrame(null);
+                try {
+                    doHandler(frame, request);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                onBodyStream(buffer, request);
             }
         }
-
-        Http2Frame frame = req.getCurrentFrame();
-        if (frame == null) {
-            if (buffer.remaining() < FRAME_HEADER_SIZE) {
-                return BodyStreamStatus.Continue;
-            }
-            frame = parseFrame(buffer);
-            req.setCurrentFrame(frame);
-        }
-        if (!frame.decode(buffer)) {
-            return BodyStreamStatus.Continue;
-        }
-        req.setCurrentFrame(null);
-        try {
-            doHandler(frame, request);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return buffer.hasRemaining() ? onBodyStream(buffer, request) : BodyStreamStatus.Continue;
     }
 
     private void doHandler(Http2Frame frame, Request req) throws IOException {

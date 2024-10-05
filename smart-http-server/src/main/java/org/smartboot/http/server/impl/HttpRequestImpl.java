@@ -10,12 +10,20 @@ package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
+import org.smartboot.http.common.enums.HttpStatus;
+import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.io.BodyInputStream;
 import org.smartboot.http.common.io.ChunkedInputStream;
 import org.smartboot.http.common.io.PostInputStream;
 import org.smartboot.http.common.io.ReadListener;
+import org.smartboot.http.common.multipart.MultipartConfig;
+import org.smartboot.http.common.multipart.Part;
+import org.smartboot.http.server.decode.MultipartFormDecoder;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -27,6 +35,8 @@ public class HttpRequestImpl extends AbstractRequest {
      * 释放维持长连接
      */
     private boolean keepAlive;
+    private List<Part> parts;
+    private boolean multipartParsed;
     /**
      * 空流
      */
@@ -60,7 +70,7 @@ public class HttpRequestImpl extends AbstractRequest {
         this.response = new HttpResponseImpl(this);
     }
 
-    public final HttpResponseImpl getResponse() {
+    public final AbstractResponse getResponse() {
         return response;
     }
 
@@ -77,7 +87,7 @@ public class HttpRequestImpl extends AbstractRequest {
         if (inputStream != null) {
             return inputStream;
         }
-        if (request.getFormUrlencoded() != null || request.isMultipartParsed()) {
+        if (request.getFormUrlencoded() != null || multipartParsed) {
             inputStream = EMPTY_INPUT_STREAM;
         }
         //如果一个消息即存在传输译码（Transfer-Encoding）头域并且也 Content-Length 头域，后者会被忽略。
@@ -116,6 +126,51 @@ public class HttpRequestImpl extends AbstractRequest {
             }
             inputStream = null;
         }
+        if (parts != null) {
+            for (Part part : parts) {
+                try {
+                    part.delete();
+                } catch (IOException ignore) {
+                }
+            }
+            parts = null;
+        }
+        multipartParsed = false;
+    }
+
+    public Collection<Part> getParts(MultipartConfig configElement) throws IOException {
+        if (!multipartParsed) {
+            MultipartFormDecoder multipartFormDecoder = new MultipartFormDecoder(this, configElement);
+            long remaining = getContentLength();
+            if (configElement.getMaxRequestSize() > 0 && configElement.getMaxRequestSize() < remaining) {
+                throw new HttpException(HttpStatus.PAYLOAD_TOO_LARGE);
+            }
+            int p = request.getAioSession().readBuffer().position();
+            while (!multipartFormDecoder.decode(request.getAioSession().readBuffer(), this)) {
+                remaining -= request.getAioSession().readBuffer().position() - p;
+                int readSize = request.getAioSession().read();
+                p = request.getAioSession().readBuffer().position();
+                if (readSize == -1) {
+                    break;
+                }
+            }
+            multipartParsed = true;
+            remaining -= request.getAioSession().readBuffer().position() - p;
+            if (remaining != 0) {
+                throw new HttpException(HttpStatus.BAD_REQUEST);
+            }
+        }
+        if (parts == null) {
+            parts = new ArrayList<>();
+        }
+        return parts;
+    }
+
+    public void setPart(Part part) {
+        if (parts == null) {
+            parts = new ArrayList<>();
+        }
+        this.parts.add(part);
     }
 
 }

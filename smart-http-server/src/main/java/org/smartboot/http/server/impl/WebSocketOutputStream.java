@@ -17,7 +17,7 @@ import org.smartboot.http.common.enums.HeaderNameEnum;
 final class WebSocketOutputStream extends AbstractOutputStream {
 
     public WebSocketOutputStream(WebSocketRequestImpl webSocketRequest, WebSocketResponseImpl response) {
-        super(webSocketRequest, response);
+        super(webSocketRequest.request, response);
         //ws不支持chunked
         disableChunked();
     }

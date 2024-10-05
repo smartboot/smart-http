@@ -9,7 +9,6 @@
 package org.smartboot.http.client;
 
 import org.smartboot.http.common.DecodeState;
-import org.smartboot.http.common.enums.BodyStreamStatus;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.utils.ByteTree;
@@ -39,6 +38,8 @@ final class HttpMessageProcessor extends AbstractMessageProcessor<AbstractRespon
         this.executorService = executorService;
     }
 
+    int i = 0;
+
     @Override
     public AbstractResponse decode(ByteBuffer buffer, AioSession session) {
         DecoderUnit attachment = session.getAttachment();
@@ -50,6 +51,7 @@ final class HttpMessageProcessor extends AbstractMessageProcessor<AbstractRespon
                 if (method == null) {
                     return null;
                 }
+                System.out.println(++i);
                 response.setProtocol(method.getStringValue());
                 attachment.setState(DecodeState.STATE_STATUS_CODE);
             }
@@ -134,11 +136,7 @@ final class HttpMessageProcessor extends AbstractMessageProcessor<AbstractRespon
             }
             //
             case DecodeState.STATE_BODY: {
-                BodyStreamStatus bodyStreamStatus = response.getResponseHandler().onBodyStream(buffer, response);
-                if (bodyStreamStatus == BodyStreamStatus.Finish) {
-                    attachment.setState(DecodeState.STATE_FINISH);
-                    return response;
-                }
+                response.getResponseHandler().onBodyStream(buffer, response);
             }
         }
         return null;

@@ -8,7 +8,6 @@
 
 package org.smartboot.http.server.handler;
 
-import org.smartboot.http.common.enums.BodyStreamStatus;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
 import org.smartboot.http.common.utils.AntPathMatcher;
@@ -20,7 +19,6 @@ import org.smartboot.http.server.impl.WebSocketRequestImpl;
 import org.smartboot.http.server.impl.WebSocketResponseImpl;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -70,11 +68,6 @@ public final class WebSocketRouteHandler extends WebSocketHandler {
     public void whenHeaderComplete(WebSocketRequestImpl request, WebSocketResponseImpl response) {
         WebSocketHandler httpHandler = handlerMap.get(request.getRequestURI());
         httpHandler.whenHeaderComplete(request, response);
-    }
-
-    @Override
-    public BodyStreamStatus onBodyStream(ByteBuffer byteBuffer, Request request) {
-        return handlerMap.get(request.getRequestURI()).onBodyStream(byteBuffer, request);
     }
 
     @Override

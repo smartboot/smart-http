@@ -10,6 +10,7 @@ package org.smartboot.http.test.client;
 
 import com.alibaba.fastjson.JSONObject;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.smartboot.http.client.HttpClient;
@@ -81,10 +82,13 @@ public class HttpRestTest {
         CountDownLatch countDownLatch = new CountDownLatch(count);
         for (int i = 0; i < count; i++) {
             form.put("name" + i, "value" + i);
+            final int j = i + 1;
             httpClient.post("/post").header().keepalive(true).done()
                     .body().formUrlencoded(form)
                     .onSuccess(httpResponse -> {
                         countDownLatch.countDown();
+                        JSONObject jsonObject = JSONObject.parseObject(httpResponse.body());
+                        Assert.assertEquals(jsonObject.size(), j);
                         System.out.println(httpResponse.body());
                     })
                     .onFailure(throwable -> {

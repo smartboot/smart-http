@@ -8,7 +8,6 @@
 
 package org.smartboot.http.server.handler;
 
-import org.smartboot.http.common.enums.BodyStreamStatus;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
@@ -20,7 +19,6 @@ import org.smartboot.http.server.ServerHandler;
 import org.smartboot.http.server.impl.Request;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -60,11 +58,6 @@ public final class HttpRouteHandler extends HttpServerHandler {
         //更新本次请求的实际 Handler
         request.setServerHandler(httpServerHandler);
         httpServerHandler.onHeaderComplete(request);
-    }
-
-    @Override
-    public BodyStreamStatus onBodyStream(ByteBuffer buffer, Request request) {
-        throw new UnsupportedOperationException();
     }
 
     @Override

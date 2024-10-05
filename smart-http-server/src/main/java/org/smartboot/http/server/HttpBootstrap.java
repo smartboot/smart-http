@@ -8,15 +8,18 @@
 
 package org.smartboot.http.server;
 
+import org.smartboot.http.common.enums.BodyStreamStatus;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.server.impl.HttpMessageProcessor;
-import org.smartboot.http.server.impl.HttpRequestProtocol;
+import org.smartboot.http.server.impl.Request;
 import org.smartboot.socket.buffer.BufferPagePool;
 import org.smartboot.socket.transport.AioQuickServer;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
@@ -150,19 +153,8 @@ public class HttpBootstrap {
         }
         // HTTP/2.0
         else if (HeaderValueEnum.H2C.getName().equals(upgrade) || HeaderValueEnum.H2.getName().equals(upgrade)) {
-            return new Http2ServerHandler() {
-                @Override
-                public void handle(HttpRequest request, HttpResponse response) throws Throwable {
-                    configuration.getHttpServerHandler().handle(request, response);
-                }
-
-                @Override
-                public void handle(HttpRequest request, HttpResponse response, CompletableFuture<Object> completableFuture) throws Throwable {
-                    configuration.getHttpServerHandler().handle(request, response, completableFuture);
-                }
-            };
-        }
-        else {
+            return new Http2ServerHandler(configuration.getHttpServerHandler());
+        } else {
             return null;
         }
     };

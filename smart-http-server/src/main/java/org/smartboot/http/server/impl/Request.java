@@ -11,9 +11,9 @@ package org.smartboot.http.server.impl;
 import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.DecodeState;
 import org.smartboot.http.common.HeaderValue;
-import org.smartboot.http.common.Multipart;
 import org.smartboot.http.common.Reset;
 import org.smartboot.http.common.enums.HeaderNameEnum;
+import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.enums.HttpTypeEnum;
 import org.smartboot.http.common.exception.HttpException;
@@ -21,21 +21,16 @@ import org.smartboot.http.common.io.BodyInputStream;
 import org.smartboot.http.common.io.ReadListener;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
-import org.smartboot.http.common.multipart.MultipartConfig;
-import org.smartboot.http.common.multipart.Part;
-import org.smartboot.http.common.utils.ByteTree;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.HttpUtils;
 import org.smartboot.http.common.utils.NumberUtils;
 import org.smartboot.http.common.utils.SmartDecoder;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.Http2ServerHandler;
-import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.ServerHandler;
 import org.smartboot.http.server.WebSocketHandler;
 import org.smartboot.http.server.decode.Decoder;
-import org.smartboot.http.server.decode.MultipartFormDecoder;
 import org.smartboot.socket.timer.HashedWheelTimer;
 import org.smartboot.socket.timer.TimerTask;
 import org.smartboot.socket.transport.AioSession;
@@ -56,13 +51,12 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 
 /**
  * @author 三刀
  * @version V1.0 , 2018/8/31
  */
-public final class Request implements HttpRequest, Reset {
+public final class Request implements Reset {
     private static final Logger LOGGER = LoggerFactory.getLogger(Request.class);
     private static final Locale defaultLocale = Locale.getDefault();
     private static final int INIT_CONTENT_LENGTH = -2;
@@ -82,7 +76,6 @@ public final class Request implements HttpRequest, Reset {
      */
     private final List<HeaderValue> headers = new ArrayList<>(8);
     private final HttpServerConfiguration configuration;
-    private ByteTree<Function<String, ServerHandler>> headerTemp;
     private DecoderUnit decodeState = new DecoderUnit();
     private ReadListener listener;
     /**
@@ -101,7 +94,7 @@ public final class Request implements HttpRequest, Reset {
     /**
      * Http协议版本
      */
-    private String protocol;
+    private String protocol = HttpProtocolEnum.HTTP_11.getProtocol();
     private String requestUri;
     private String requestUrl;
     private String contentType;
@@ -127,15 +120,7 @@ public final class Request implements HttpRequest, Reset {
      */
     private ByteBuffer formUrlencoded;
     private Cookie[] cookies;
-    /**
-     * form-data解码器
-     */
-    private Decoder multipartDecoder;
 
-    private List<Part> parts;
-    private boolean multipartParsed;
-
-    private Multipart multipart;
 
     /**
      * 附件对象
@@ -238,7 +223,7 @@ public final class Request implements HttpRequest, Reset {
         }
     }
 
-    @Override
+
     public String getHeader(String headName) {
         for (int i = 0; i < headerSize; i++) {
             HeaderValue headerValue = headers.get(i);
@@ -249,7 +234,7 @@ public final class Request implements HttpRequest, Reset {
         return null;
     }
 
-    @Override
+
     public Collection<String> getHeaders(String name) {
         List<String> value = new ArrayList<>(4);
         for (int i = 0; i < headerSize; i++) {
@@ -261,7 +246,7 @@ public final class Request implements HttpRequest, Reset {
         return value;
     }
 
-    @Override
+
     public Collection<String> getHeaderNames() {
         Set<String> nameSet = new HashSet<>();
         for (int i = 0; i < headerSize; i++) {
@@ -274,20 +259,11 @@ public final class Request implements HttpRequest, Reset {
         return headerSize;
     }
 
-    @Override
+
     public BodyInputStream getInputStream() {
         throw new UnsupportedOperationException();
     }
 
-    public void setHeadValue(String value) {
-        if (headerTemp.getAttach() != null) {
-            ServerHandler replaceServerHandler = headerTemp.getAttach().apply(value);
-            if (replaceServerHandler != null) {
-                setServerHandler(replaceServerHandler);
-            }
-        }
-        setHeader(headerTemp.getStringValue(), value);
-    }
 
     public void setHeader(String headerName, String value) {
         if (headerSize < headers.size()) {
@@ -322,7 +298,7 @@ public final class Request implements HttpRequest, Reset {
         this.serverHandler = serverHandler;
     }
 
-    @Override
+
     public String getRequestURI() {
         return requestUri;
     }
@@ -331,7 +307,7 @@ public final class Request implements HttpRequest, Reset {
         this.requestUri = uri;
     }
 
-    @Override
+
     public String getProtocol() {
         return protocol;
     }
@@ -344,7 +320,7 @@ public final class Request implements HttpRequest, Reset {
         return method;
     }
 
-    @Override
+
     public boolean isSecure() {
         return configuration.isSecure();
     }
@@ -361,11 +337,6 @@ public final class Request implements HttpRequest, Reset {
         this.uri = uri;
     }
 
-    public void setHeaderTemp(ByteTree headerTemp) {
-        this.headerTemp = headerTemp;
-    }
-
-    @Override
     public String getRequestURL() {
         if (requestUrl != null) {
             return requestUrl;
@@ -397,7 +368,7 @@ public final class Request implements HttpRequest, Reset {
         this.queryString = queryString;
     }
 
-    @Override
+
     public String getContentType() {
         if (contentType != null) {
             return contentType;
@@ -414,7 +385,7 @@ public final class Request implements HttpRequest, Reset {
         return connection;
     }
 
-    @Override
+
     public long getContentLength() {
         if (contentLength > INIT_CONTENT_LENGTH) {
             return contentLength;
@@ -427,13 +398,13 @@ public final class Request implements HttpRequest, Reset {
         return contentLength;
     }
 
-    @Override
+
     public String getParameter(String name) {
         String[] arr = (name != null ? getParameterValues(name) : null);
         return (arr != null && arr.length > 0 ? arr[0] : null);
     }
 
-    @Override
+
     public String[] getParameterValues(String name) {
         if (parameters != null) {
             return parameters.get(name);
@@ -452,65 +423,13 @@ public final class Request implements HttpRequest, Reset {
         return getParameterValues(name);
     }
 
-    @Override
+
     public Map<String, String[]> getParameters() {
         if (parameters == null) {
             getParameter("");
         }
         return parameters;
     }
-
-    @Override
-    public Collection<Part> getParts(MultipartConfig configElement) throws IOException {
-        if (!multipartParsed) {
-            Decoder multipartFormDecoder = new MultipartFormDecoder(this, configElement);
-            long remaining = getContentLength();
-            if (configElement.getMaxRequestSize() > 0 && configElement.getMaxRequestSize() < remaining) {
-                throw new HttpException(HttpStatus.PAYLOAD_TOO_LARGE);
-            }
-            int p = aioSession.readBuffer().position();
-            while ((multipartFormDecoder = multipartFormDecoder.decode(aioSession.readBuffer(), this)) != HttpRequestProtocol.BODY_READY_DECODER) {
-                remaining -= aioSession.readBuffer().position() - p;
-                int readSize = aioSession.read();
-                p = aioSession.readBuffer().position();
-                if (readSize == -1) {
-                    break;
-                }
-            }
-            remaining -= aioSession.readBuffer().position() - p;
-            if (remaining != 0) {
-                throw new HttpException(HttpStatus.BAD_REQUEST);
-            }
-        }
-        if (parts == null) {
-            parts = new ArrayList<>();
-        }
-        return parts;
-    }
-
-    public void setPart(Part part) {
-        if (parts == null) {
-            parts = new ArrayList<>();
-        }
-        this.parts.add(part);
-    }
-
-    public void multipartParsed() {
-        multipartParsed = true;
-    }
-
-    public boolean isMultipartParsed() {
-        return multipartParsed;
-    }
-
-    public Multipart getMultipart() {
-        return multipart;
-    }
-
-    public void setMultipart(Multipart multipart) {
-        this.multipart = multipart;
-    }
-
 
     /**
      * Returns the Internet Protocol (IP) address of the client
@@ -521,7 +440,7 @@ public final class Request implements HttpRequest, Reset {
      * @return a <code>String</code> containing the
      * IP address of the client that sent the request
      */
-    @Override
+
     public String getRemoteAddr() {
         if (remoteAddr != null) {
             return remoteAddr;
@@ -540,7 +459,7 @@ public final class Request implements HttpRequest, Reset {
         return remoteAddr;
     }
 
-    @Override
+
     public InetSocketAddress getRemoteAddress() {
         try {
             return aioSession.getRemoteAddress();
@@ -550,7 +469,7 @@ public final class Request implements HttpRequest, Reset {
         return null;
     }
 
-    @Override
+
     public InetSocketAddress getLocalAddress() {
         try {
             return aioSession.getLocalAddress();
@@ -571,7 +490,7 @@ public final class Request implements HttpRequest, Reset {
      * @return a <code>String</code> containing the fully
      * qualified name of the client
      */
-    @Override
+
     public String getRemoteHost() {
         if (remoteHost != null) {
             return remoteHost;
@@ -584,12 +503,12 @@ public final class Request implements HttpRequest, Reset {
         return remoteHost;
     }
 
-    @Override
+
     public Locale getLocale() {
         return getLocales().nextElement();
     }
 
-    @Override
+
     public Enumeration<Locale> getLocales() {
         Collection<String> acceptLanguage = getHeaders(HeaderNameEnum.ACCEPT_LANGUAGE.getName());
         if (acceptLanguage.isEmpty()) {
@@ -604,12 +523,12 @@ public final class Request implements HttpRequest, Reset {
         return Collections.enumeration(locales);
     }
 
-    @Override
+
     public String getCharacterEncoding() {
         return "utf8";
     }
 
-    @Override
+
     public Cookie[] getCookies() {
         if (cookies != null) {
             return cookies;
@@ -656,7 +575,8 @@ public final class Request implements HttpRequest, Reset {
     public AbstractRequest newAbstractRequest() {
         switch (getRequestType()) {
             case WEBSOCKET:
-                return newWebsocketRequest();
+//                return newWebsocketRequest();
+                throw new UnsupportedOperationException();
             case HTTP:
                 return newHttpRequest();
             case HTTP_2:
@@ -714,14 +634,6 @@ public final class Request implements HttpRequest, Reset {
         this.bodyDecoder = bodyDecoder;
     }
 
-    public Decoder getMultipartDecoder() {
-        return multipartDecoder;
-    }
-
-    public void setMultipartDecoder(Decoder multipartDecoder) {
-        this.multipartDecoder = multipartDecoder;
-    }
-
     public DecoderUnit getDecodeState() {
         return decodeState;
     }
@@ -744,15 +656,5 @@ public final class Request implements HttpRequest, Reset {
         decodeState.setState(DecodeState.STATE_METHOD);
         decoder = null;
         scheme = null;
-        if (parts != null) {
-            for (Part part : parts) {
-                try {
-                    part.delete();
-                } catch (IOException ignore) {
-                }
-            }
-            parts = null;
-        }
-        multipartParsed = false;
     }
 }

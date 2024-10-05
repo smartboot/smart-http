@@ -151,6 +151,8 @@ public final class HttpClient implements AutoCloseable {
         return post(uri);
     }
 
+    int i = 0;
+
     private void initRest(HttpRestImpl httpRestImpl, String uri) {
         HttpRequestImpl request = httpRestImpl.getRequest();
         if (configuration.getProxy() != null && StringUtils.isNotBlank(configuration.getProxy().getProxyUserName())) {

@@ -11,14 +11,15 @@ package org.smartboot.http.server;
 import org.smartboot.http.common.codec.websocket.BasicFrameDecoder;
 import org.smartboot.http.common.codec.websocket.Decoder;
 import org.smartboot.http.common.codec.websocket.WebSocket;
-import org.smartboot.http.common.enums.BodyStreamStatus;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.utils.SHA1;
+import org.smartboot.http.server.impl.AbstractResponse;
 import org.smartboot.http.server.impl.Request;
 import org.smartboot.http.server.impl.WebSocketRequestImpl;
 import org.smartboot.http.server.impl.WebSocketResponseImpl;
+import org.smartboot.socket.transport.AioSession;
 import org.smartboot.socket.util.AttachKey;
 import org.smartboot.socket.util.Attachment;
 
@@ -26,6 +27,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.Base64;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * WebSocket消息处理器
@@ -61,13 +63,13 @@ public abstract class WebSocketHandler implements ServerHandler<WebSocketRequest
         OutputStream outputStream = response.getOutputStream();
         outputStream.flush();
 
-        Attachment attachment = webSocketRequest.getAttachment();
+        Attachment attachment = request.getAttachment();
         if (attachment == null) {
             attachment = new Attachment();
-            webSocketRequest.setAttachment(attachment);
+            request.setAttachment(attachment);
         }
         attachment.put(FRAME_DECODER_KEY, basicFrameDecoder);
-        webSocketRequest.setAttachment(attachment);
+        request.setAttachment(attachment);
         whenHeaderComplete(webSocketRequest, response);
     }
 
@@ -76,16 +78,52 @@ public abstract class WebSocketHandler implements ServerHandler<WebSocketRequest
     }
 
     @Override
-    public BodyStreamStatus onBodyStream(ByteBuffer byteBuffer, Request request) {
-        Attachment attachment = request.newWebsocketRequest().getAttachment();
+    public final void onBodyStream(ByteBuffer byteBuffer, Request request) {
+        Attachment attachment = request.getAttachment();
         Decoder decoder = attachment.get(FRAME_DECODER_KEY).decode(byteBuffer, request.newWebsocketRequest());
         if (decoder == WebSocket.PAYLOAD_FINISH) {
             attachment.put(FRAME_DECODER_KEY, basicFrameDecoder);
-            return BodyStreamStatus.Finish;
+            try {
+                handleWebSocketRequest(request.newWebsocketRequest());
+            } catch (Throwable e) {
+                throw new RuntimeException(e);
+            }
         } else {
             attachment.put(FRAME_DECODER_KEY, decoder);
-            return BodyStreamStatus.Continue;
         }
     }
 
+    private void handleWebSocketRequest(WebSocketRequestImpl abstractRequest) throws Throwable {
+        CompletableFuture<Object> future = new CompletableFuture<>();
+        handle(abstractRequest, abstractRequest.getResponse(), future);
+        if (future.isDone()) {
+            finishResponse(abstractRequest);
+        } else {
+            Thread thread = Thread.currentThread();
+            AioSession session = abstractRequest.request.getAioSession();
+            session.awaitRead();
+            future.thenRun(() -> {
+                try {
+                    finishResponse(abstractRequest);
+                    if (thread != Thread.currentThread()) {
+                        session.writeBuffer().flush();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    abstractRequest.getResponse().close();
+                } finally {
+                    session.signalRead();
+                }
+            });
+        }
+    }
+
+    private void finishResponse(WebSocketRequestImpl abstractRequest) throws IOException {
+        AbstractResponse response = abstractRequest.getResponse();
+        //关闭本次请求的输出流
+        if (!response.getOutputStream().isClosed()) {
+            response.getOutputStream().close();
+        }
+        abstractRequest.reset();
+    }
 }
