@@ -23,7 +23,6 @@ import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.impl.AbstractResponse;
 import org.smartboot.http.server.impl.HttpMessageProcessor;
 import org.smartboot.http.server.impl.HttpRequestImpl;
-import org.smartboot.http.server.impl.HttpRequestProtocol;
 import org.smartboot.http.server.impl.Request;
 import org.smartboot.socket.transport.AioSession;
 
@@ -40,9 +39,10 @@ import java.util.concurrent.CompletableFuture;
 public abstract class HttpServerHandler implements ServerHandler<HttpRequest, HttpResponse> {
 
     @Override
-    public final void onBodyStream(ByteBuffer buffer, Request request) {
+    public void onBodyStream(ByteBuffer buffer, Request request) {
+        HttpRequestImpl httpRequest = request.newHttpRequest();
         if (HttpMethodEnum.GET.getMethod().equals(request.getMethod())) {
-            handleHttpRequest(request.newHttpRequest());
+            handleHttpRequest(httpRequest);
             return;
         }
         long postLength = request.getContentLength();
@@ -51,11 +51,11 @@ public abstract class HttpServerHandler implements ServerHandler<HttpRequest, Ht
                 && StringUtils.startsWith(request.getContentType(), HeaderValueEnum.X_WWW_FORM_URLENCODED.getName())
                 && !HeaderValueEnum.UPGRADE.getName().equals(request.getConnection())) {
             if (postLength == 0) {
-                handleHttpRequest(request.newHttpRequest());
+                handleHttpRequest(httpRequest);
                 return;
             }
 
-            SmartDecoder smartDecoder = request.getBodyDecoder();
+            SmartDecoder smartDecoder = httpRequest.getBodyDecoder();
             if (smartDecoder == null) {
                 if (postLength > 0) {
                     smartDecoder = new FixedLengthFrameDecoder((int) postLength);
@@ -64,12 +64,12 @@ public abstract class HttpServerHandler implements ServerHandler<HttpRequest, Ht
                 } else {
                     throw new HttpException(HttpStatus.LENGTH_REQUIRED);
                 }
-                request.setBodyDecoder(smartDecoder);
+                httpRequest.setBodyDecoder(smartDecoder);
             }
 
             if (smartDecoder.decode(buffer)) {
                 request.setFormUrlencoded(smartDecoder.getBuffer());
-                request.setBodyDecoder(null);
+                httpRequest.setBodyDecoder(null);
                 handleHttpRequest(request.newHttpRequest());
             }
         } else {
@@ -103,7 +103,8 @@ public abstract class HttpServerHandler implements ServerHandler<HttpRequest, Ht
         if (readListener == null) {
             session.awaitRead();
         } else {
-            abstractRequest.request.setDecoder(session.readBuffer().hasRemaining() ? HttpRequestProtocol.BODY_READY_DECODER : HttpRequestProtocol.BODY_CONTINUE_DECODER);
+            //todo
+//            abstractRequest.request.setDecoder(session.readBuffer().hasRemaining() ? HttpRequestProtocol.BODY_READY_DECODER : HttpRequestProtocol.BODY_CONTINUE_DECODER);
         }
 
         Thread thread = Thread.currentThread();

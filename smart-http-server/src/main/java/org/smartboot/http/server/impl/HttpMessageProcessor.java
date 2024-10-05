@@ -13,24 +13,17 @@ import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
-import org.smartboot.http.common.utils.ByteTree;
-import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.HttpServerHandler;
-import org.smartboot.http.server.ServerHandler;
 import org.smartboot.http.server.WebSocketHandler;
-import org.smartboot.http.server.waf.WAF;
-import org.smartboot.socket.Protocol;
 import org.smartboot.socket.StateMachineEnum;
 import org.smartboot.socket.extension.processor.AbstractMessageProcessor;
 import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
 import java.util.Objects;
-import java.util.function.Function;
 
 /**
  * http消息处理器
@@ -38,149 +31,11 @@ import java.util.function.Function;
  * @author 三刀
  * @version V1.0 , 2018/6/10
  */
-public class HttpMessageProcessor extends AbstractMessageProcessor<Request> implements Protocol<Request> {
+public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpMessageProcessor.class);
     private static final int MAX_LENGTH = 255 * 1024;
     private HttpServerConfiguration configuration;
 
-    @Override
-    public Request decode(ByteBuffer byteBuffer, AioSession session) {
-        Request request = session.getAttachment();
-        int p = byteBuffer.position();
-        boolean flag = decode(byteBuffer, request);
-        request.decodeSize(byteBuffer.position() - p);
-        return flag ? request : null;
-    }
-
-    private boolean decode(ByteBuffer byteBuffer, Request request) {
-        DecoderUnit decodeState = request.getDecodeState();
-        switch (decodeState.getState()) {
-            case DecodeState.STATE_METHOD: {
-                ByteTree<?> method = StringUtils.scanByteTree(byteBuffer, ByteTree.SP_END_MATCHER, configuration.getByteCache());
-                if (method == null) {
-                    break;
-                }
-                request.setMethod(method.getStringValue());
-                decodeState.setState(DecodeState.STATE_URI);
-                WAF.methodCheck(configuration, request);
-            }
-            case DecodeState.STATE_URI: {
-                ByteTree<ServerHandler<?, ?>> uriTreeNode = StringUtils.scanByteTree(byteBuffer, URI_END_MATCHER, configuration.getUriByteTree());
-                if (uriTreeNode == null) {
-                    break;
-                }
-                request.setUri(uriTreeNode.getStringValue());
-                if (uriTreeNode.getAttach() == null) {
-                    request.setServerHandler(request.getConfiguration().getHttpServerHandler());
-                } else {
-                    request.setServerHandler(uriTreeNode.getAttach());
-                }
-                WAF.checkUri(configuration, request);
-                switch (byteBuffer.get(byteBuffer.position() - 1)) {
-                    case Constant.SP:
-                        decodeState.setState(DecodeState.STATE_PROTOCOL_DECODE);
-                        break;
-                    case '?':
-                        decodeState.setState(DecodeState.STATE_URI_QUERY);
-                        break;
-                    default:
-                        throw new HttpException(HttpStatus.BAD_REQUEST);
-                }
-                return decode(byteBuffer, request);
-            }
-            case DecodeState.STATE_URI_QUERY: {
-                int length = scanUriQuery(byteBuffer);
-                if (length < 0) {
-                    break;
-                }
-                String query = StringUtils.convertToString(byteBuffer, byteBuffer.position() - 1 - length, length);
-                request.setQueryString(query);
-                decodeState.setState(DecodeState.STATE_PROTOCOL_DECODE);
-            }
-            case DecodeState.STATE_PROTOCOL_DECODE: {
-                ByteTree<?> protocol = StringUtils.scanByteTree(byteBuffer, ByteTree.CR_END_MATCHER, configuration.getByteCache());
-                if (protocol == null) {
-                    break;
-                }
-                request.setProtocol(protocol.getStringValue());
-                decodeState.setState(DecodeState.STATE_START_LINE_END);
-            }
-            case DecodeState.STATE_START_LINE_END: {
-                if (byteBuffer.remaining() == 0) {
-                    break;
-                }
-                if (byteBuffer.get() != Constant.LF) {
-                    throw new HttpException(HttpStatus.BAD_REQUEST);
-                }
-                decodeState.setState(DecodeState.STATE_HEADER_END_CHECK);
-            }
-            // header结束判断
-            case DecodeState.STATE_HEADER_END_CHECK: {
-                if (byteBuffer.remaining() < 2) {
-                    break;
-                }
-                //header解码结束
-                byteBuffer.mark();
-                if (byteBuffer.get() == Constant.CR) {
-                    if (byteBuffer.get() != Constant.LF) {
-                        throw new HttpException(HttpStatus.BAD_REQUEST);
-                    }
-                    decodeState.setState(DecodeState.STATE_HEADER_CALLBACK);
-                    return true;
-                } else {
-                    byteBuffer.reset();
-                    decodeState.setState(DecodeState.STATE_HEADER_NAME);
-                }
-            }
-            // header name解析
-            case DecodeState.STATE_HEADER_NAME: {
-                ByteTree<Function<String, ServerHandler<?, ?>>> name = StringUtils.scanByteTree(byteBuffer, ByteTree.COLON_END_MATCHER, configuration.getHeaderNameByteTree());
-                if (name == null) {
-                    break;
-                }
-                decodeState.setDecodeHeaderName(name.getStringValue());
-                decodeState.setHeaderFunc(name.getAttach());
-                decodeState.setState(DecodeState.STATE_HEADER_VALUE);
-            }
-            // header value解析
-            case DecodeState.STATE_HEADER_VALUE: {
-                ByteTree<?> value = StringUtils.scanByteTree(byteBuffer, ByteTree.CR_END_MATCHER, configuration.getByteCache());
-                if (value == null) {
-                    if (byteBuffer.remaining() == byteBuffer.capacity()) {
-                        throw new HttpException(HttpStatus.REQUEST_HEADER_FIELDS_TOO_LARGE);
-                    }
-                    break;
-                }
-                if (decodeState.getHeaderFunc() != null) {
-                    ServerHandler replaceServerHandler = decodeState.getHeaderFunc().apply(value.getStringValue());
-                    if (replaceServerHandler != null) {
-                        request.setServerHandler(replaceServerHandler);
-                    }
-                }
-                request.setHeader(decodeState.getDecodeHeaderName(), value.getStringValue());
-                decodeState.setState(DecodeState.STATE_HEADER_LINE_END);
-            }
-            // header line结束
-            case DecodeState.STATE_HEADER_LINE_END: {
-                if (!byteBuffer.hasRemaining()) {
-                    break;
-                }
-                if (byteBuffer.get() != Constant.LF) {
-                    throw new HttpException(HttpStatus.BAD_REQUEST);
-                }
-                decodeState.setState(DecodeState.STATE_HEADER_END_CHECK);
-                return decode(byteBuffer, request);
-            }
-            case DecodeState.STATE_BODY_READING_MONITOR:
-                decodeState.setState(DecodeState.STATE_HEADER_CALLBACK);
-                if (byteBuffer.position() > 0) {
-                    break;
-                }
-            case DecodeState.STATE_BODY_READING_CALLBACK:
-                return true;
-        }
-        return false;
-    }
 
     @Override
     public void process0(AioSession session, Request request) {
@@ -267,8 +122,20 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> impl
             case DECODE_EXCEPTION: {
                 LOGGER.warn("http decode exception,", throwable);
                 Request request = session.getAttachment();
-                AbstractRequest abstractRequest = request.newAbstractRequest();
-                AbstractResponse response = abstractRequest.getResponse();
+                AbstractResponse response;
+                switch (request.getRequestType()) {
+                    case WEBSOCKET:
+                        response = request.newWebsocketRequest().getResponse();
+                        break;
+                    case HTTP:
+                        response = request.newHttpRequest().getResponse();
+                        break;
+                    case HTTP_2:
+                        response = request.newHttp2Request().getResponse();
+                        break;
+                    default:
+                        throw new IllegalStateException();
+                }
                 responseError(response, throwable);
                 break;
             }
@@ -349,22 +216,4 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> impl
         this.configuration = configuration;
     }
 
-    private static final ByteTree.EndMatcher URI_END_MATCHER = endByte -> (endByte == ' ' || endByte == '?');
-
-
-    private int scanUriQuery(ByteBuffer buffer) {
-        if (!buffer.hasRemaining()) {
-            return -1;
-        }
-        int i = 0;
-        buffer.mark();
-        while (buffer.hasRemaining()) {
-            if (buffer.get() == Constant.SP) {
-                return i;
-            }
-            i++;
-        }
-        buffer.reset();
-        return -1;
-    }
 }

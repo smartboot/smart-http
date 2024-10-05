@@ -18,6 +18,7 @@ import org.smartboot.http.common.io.PostInputStream;
 import org.smartboot.http.common.io.ReadListener;
 import org.smartboot.http.common.multipart.MultipartConfig;
 import org.smartboot.http.common.multipart.Part;
+import org.smartboot.http.common.utils.SmartDecoder;
 import org.smartboot.http.server.decode.MultipartFormDecoder;
 
 import java.io.IOException;
@@ -37,6 +38,10 @@ public class HttpRequestImpl extends AbstractRequest {
     private boolean keepAlive;
     private List<Part> parts;
     private boolean multipartParsed;
+    /**
+     * Http Body解码器
+     */
+    private SmartDecoder bodyDecoder;
     /**
      * 空流
      */
@@ -113,7 +118,13 @@ public class HttpRequestImpl extends AbstractRequest {
     public boolean isTrailerFieldsReady() {
         return !HeaderValueEnum.CHUNKED.getName().equals(getHeader(HeaderNameEnum.TRANSFER_ENCODING.getName())) || trailerFields != null;
     }
+    public SmartDecoder getBodyDecoder() {
+        return bodyDecoder;
+    }
 
+    public void setBodyDecoder(SmartDecoder bodyDecoder) {
+        this.bodyDecoder = bodyDecoder;
+    }
     public void reset() {
         request.reset();
         response.reset();

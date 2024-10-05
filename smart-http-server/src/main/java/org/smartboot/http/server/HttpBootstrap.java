@@ -8,19 +8,15 @@
 
 package org.smartboot.http.server;
 
-import org.smartboot.http.common.enums.BodyStreamStatus;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.server.impl.HttpMessageProcessor;
-import org.smartboot.http.server.impl.Request;
+import org.smartboot.http.server.impl.HttpRequestProtocol;
 import org.smartboot.socket.buffer.BufferPagePool;
 import org.smartboot.socket.transport.AioQuickServer;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 public class HttpBootstrap {
@@ -40,6 +36,7 @@ public class HttpBootstrap {
      */
     private final HttpMessageProcessor processor;
     private final HttpServerConfiguration configuration = new HttpServerConfiguration();
+    private final HttpRequestProtocol protocol = new HttpRequestProtocol(configuration);
     private AioQuickServer server;
     /**
      * Http服务端口号
@@ -116,7 +113,7 @@ public class HttpBootstrap {
 
         configuration.getPlugins().forEach(processor::addPlugin);
 
-        server = new AioQuickServer(configuration.getHost(), port, processor, processor);
+        server = new AioQuickServer(configuration.getHost(), port, protocol, processor);
         server.setThreadNum(configuration.getThreadNum())
                 .setBannerEnabled(false)
                 .setReadBufferSize(configuration.getReadBufferSize())

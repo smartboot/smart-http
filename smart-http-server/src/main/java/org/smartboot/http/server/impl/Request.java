@@ -24,13 +24,11 @@ import org.smartboot.http.common.logging.LoggerFactory;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.HttpUtils;
 import org.smartboot.http.common.utils.NumberUtils;
-import org.smartboot.http.common.utils.SmartDecoder;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.Http2ServerHandler;
 import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.ServerHandler;
 import org.smartboot.http.server.WebSocketHandler;
-import org.smartboot.http.server.decode.Decoder;
 import org.smartboot.socket.timer.HashedWheelTimer;
 import org.smartboot.socket.timer.TimerTask;
 import org.smartboot.socket.transport.AioSession;
@@ -62,21 +60,14 @@ public final class Request implements Reset {
     private static final int INIT_CONTENT_LENGTH = -2;
     private static final int NONE_CONTENT_LENGTH = -1;
     private final AioSession aioSession;
-    /**
-     * 当前使用的解码器
-     */
-    private Decoder decoder;
 
-    /**
-     * Http Body解码器
-     */
-    private SmartDecoder bodyDecoder;
+
     /**
      * Http请求头
      */
     private final List<HeaderValue> headers = new ArrayList<>(8);
     private final HttpServerConfiguration configuration;
-    private DecoderUnit decodeState = new DecoderUnit();
+    private final DecoderUnit decodeState = new DecoderUnit();
     private ReadListener listener;
     /**
      * 请求参数
@@ -571,21 +562,6 @@ public final class Request implements Reset {
         this.attachment = attachment;
     }
 
-
-    public AbstractRequest newAbstractRequest() {
-        switch (getRequestType()) {
-            case WEBSOCKET:
-//                return newWebsocketRequest();
-                throw new UnsupportedOperationException();
-            case HTTP:
-                return newHttpRequest();
-            case HTTP_2:
-                return newHttp2Request();
-            default:
-                return null;
-        }
-    }
-
     public HttpRequestImpl newHttpRequest() {
         if (httpRequest == null) {
             httpRequest = new HttpRequestImpl(this);
@@ -618,21 +594,6 @@ public final class Request implements Reset {
         this.latestIo = latestIo;
     }
 
-    public Decoder getDecoder() {
-        return decoder;
-    }
-
-    public void setDecoder(Decoder decoder) {
-        this.decoder = decoder;
-    }
-
-    public SmartDecoder getBodyDecoder() {
-        return bodyDecoder;
-    }
-
-    public void setBodyDecoder(SmartDecoder bodyDecoder) {
-        this.bodyDecoder = bodyDecoder;
-    }
 
     public DecoderUnit getDecodeState() {
         return decodeState;
@@ -654,7 +615,6 @@ public final class Request implements Reset {
         webSocketRequest = null;
         type = null;
         decodeState.setState(DecodeState.STATE_METHOD);
-        decoder = null;
         scheme = null;
     }
 }
