@@ -258,7 +258,7 @@ public class AbstractResponse implements HttpResponse, Reset {
 
     @Override
     public final void setContentType(String contentType) {
-        this.contentType = Objects.requireNonNull(contentType);
+        this.contentType = contentType;
     }
 
     /**

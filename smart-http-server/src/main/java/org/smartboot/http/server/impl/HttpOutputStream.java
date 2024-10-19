@@ -124,7 +124,7 @@ final class HttpOutputStream extends AbstractOutputStream {
         }
         if (response.getContentLength() >= 0) {
             disableChunked();
-        } else if (response.getHttpStatus() == HttpStatus.CONTINUE.value()) {
+        } else if (response.getHttpStatus() == HttpStatus.CONTINUE.value() || response.getHttpStatus() == HttpStatus.SWITCHING_PROTOCOLS.value()) {
             disableChunked();
         } else if (HttpMethodEnum.HEAD.name().equals(request.getMethod())) {
             disableChunked();

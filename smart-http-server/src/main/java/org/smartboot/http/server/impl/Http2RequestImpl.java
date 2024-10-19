@@ -1,6 +1,7 @@
 package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.io.BodyInputStream;
+import org.smartboot.http.common.io.ReadListener;
 import org.smartboot.http.common.multipart.MultipartConfig;
 import org.smartboot.http.common.multipart.Part;
 import org.smartboot.http.server.h2.Http2Frame;
@@ -8,25 +9,22 @@ import org.smartboot.http.server.h2.Http2Frame;
 import java.io.IOException;
 import java.util.Collection;
 
-public class Http2RequestImpl extends AbstractRequest {
+public class Http2RequestImpl extends HttpRequestImpl {
     public static final int STATE_FIRST_REQUEST = 0;
     public static final int STATE_PREFACE = 1;
     public static final int STATE_FRAME_HEAD = 1 << 1;
     public static final int STATE_FRAME_PAYLOAD = 1 << 2;
+    private int streamId;
     private boolean prefaced;
-    private final Http2ResponseImpl response;
+    //    private final Http2ResponseImpl response;
     private Http2Frame currentFrame;
     private int state;
 
     public Http2RequestImpl(Request request) {
-        init(request);
-        this.response = new Http2ResponseImpl(this);
+        super(request);
+//        this.response = new Http2ResponseImpl(this);
     }
 
-    @Override
-    public AbstractResponse getResponse() {
-        return response;
-    }
 
     @Override
     public void reset() {
@@ -43,7 +41,12 @@ public class Http2RequestImpl extends AbstractRequest {
 
     @Override
     public BodyInputStream getInputStream() throws IOException {
-        return null;
+        return new BodyInputStream(request.getAioSession()) {
+            @Override
+            public void setReadListener(ReadListener listener) {
+                throw new UnsupportedOperationException();
+            }
+        };
     }
 
     @Override
@@ -60,10 +63,10 @@ public class Http2RequestImpl extends AbstractRequest {
     }
 
     public int getState() {
-        throw new UnsupportedOperationException();
+        return state;
     }
 
     public void setState(int state) {
-        throw new UnsupportedOperationException();
+        this.state = state;
     }
 }

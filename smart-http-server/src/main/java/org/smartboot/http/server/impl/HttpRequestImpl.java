@@ -118,6 +118,7 @@ public class HttpRequestImpl extends AbstractRequest {
     public boolean isTrailerFieldsReady() {
         return !HeaderValueEnum.CHUNKED.getName().equals(getHeader(HeaderNameEnum.TRANSFER_ENCODING.getName())) || trailerFields != null;
     }
+
     public SmartDecoder getBodyDecoder() {
         return bodyDecoder;
     }
@@ -125,6 +126,7 @@ public class HttpRequestImpl extends AbstractRequest {
     public void setBodyDecoder(SmartDecoder bodyDecoder) {
         this.bodyDecoder = bodyDecoder;
     }
+
     public void reset() {
         request.reset();
         response.reset();

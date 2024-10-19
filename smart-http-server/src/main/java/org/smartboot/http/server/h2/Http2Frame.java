@@ -41,6 +41,10 @@ public abstract class Http2Frame {
     }
 
     public final boolean getFlag(int flag) {
+        return hasFlag(flags, flag);
+    }
+
+    protected final boolean hasFlag(int flags, int flag) {
         return (flags & flag) != 0;
     }
 

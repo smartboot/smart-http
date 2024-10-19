@@ -49,8 +49,9 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
                 case DecodeState.STATE_BODY_READING_CALLBACK: {
                     decodeState.setState(DecodeState.STATE_BODY_READING_MONITOR);
                     switch (request.getRequestType()) {
+                        case HTTP_2:
                         case HTTP: {
-                            configuration.getHttpServerHandler().onBodyStream(session.readBuffer(), request);
+                            request.getServerHandler().onBodyStream(session.readBuffer(), request);
                             break;
                         }
                         case WEBSOCKET: {

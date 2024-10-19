@@ -1,6 +1,9 @@
 package org.smartboot.http.server.h2;
 
 
+import org.smartboot.socket.transport.WriteBuffer;
+
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public class DataFrame extends Http2Frame {
@@ -65,6 +68,42 @@ public class DataFrame extends Http2Frame {
 
         checkEndRemaining();
         return true;
+    }
+
+    public void writeTo(WriteBuffer writeBuffer, byte[] data, int offset, int length) throws IOException {
+        System.err.println("write data frame");
+        int payloadLength = length;
+        byte flags = (byte) this.flags;
+
+        // Check if padding is needed
+        boolean padded = padding != null && padding.length > 0;
+        if (padded) {
+            payloadLength += 1 + padding.length;
+            flags |= FLAG_PADDED;
+        }
+
+        // Write frame header
+        writeBuffer.flush();
+        writeBuffer.writeInt(payloadLength << 8 | TYPE);
+        System.out.println("data frame ....");
+        writeBuffer.flush();
+        System.out.println("payloadLength:" + payloadLength);
+        writeBuffer.writeByte(flags);
+        writeBuffer.writeInt(streamId);
+
+        // Write pad length if padded
+        if (padded) {
+            writeBuffer.writeByte((byte) padding.length);
+        }
+
+        // Write data
+        writeBuffer.write(data, offset, length);
+
+        // Write padding if padded
+        if (padded) {
+            writeBuffer.write(padding);
+        }
+        writeBuffer.flush();
     }
 
     public byte[] getPadding() {

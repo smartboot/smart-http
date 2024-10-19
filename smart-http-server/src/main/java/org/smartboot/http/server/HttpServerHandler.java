@@ -14,6 +14,7 @@ import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpStatus;
+import org.smartboot.http.common.enums.HttpTypeEnum;
 import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.io.BufferOutputStream;
 import org.smartboot.http.common.io.ReadListener;
@@ -40,7 +41,7 @@ public abstract class HttpServerHandler implements ServerHandler<HttpRequest, Ht
 
     @Override
     public void onBodyStream(ByteBuffer buffer, Request request) {
-        HttpRequestImpl httpRequest = request.newHttpRequest();
+        HttpRequestImpl httpRequest = request.getRequestType() == HttpTypeEnum.HTTP_2 ? request.newHttp2Request() : request.newHttpRequest();
         if (HttpMethodEnum.GET.getMethod().equals(request.getMethod())) {
             handleHttpRequest(httpRequest);
             return;
@@ -70,10 +71,10 @@ public abstract class HttpServerHandler implements ServerHandler<HttpRequest, Ht
             if (smartDecoder.decode(buffer)) {
                 request.setFormUrlencoded(smartDecoder.getBuffer());
                 httpRequest.setBodyDecoder(null);
-                handleHttpRequest(request.newHttpRequest());
+                handleHttpRequest(httpRequest);
             }
         } else {
-            handleHttpRequest(request.newHttpRequest());
+            handleHttpRequest(httpRequest);
         }
     }
 

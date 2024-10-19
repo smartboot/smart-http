@@ -281,6 +281,10 @@ public final class Request implements Reset {
         return type;
     }
 
+    public void setType(HttpTypeEnum type) {
+        this.type = type;
+    }
+
     public ServerHandler getServerHandler() {
         return serverHandler;
     }

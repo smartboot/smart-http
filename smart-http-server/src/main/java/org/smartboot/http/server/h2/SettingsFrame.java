@@ -62,6 +62,10 @@ public class SettingsFrame extends Http2Frame {
         super(streamId, flags, payloadLength);
     }
 
+    public SettingsFrame(int streamId, boolean ack) {
+        super(streamId, ack ? ACK : 0, 0);
+    }
+
     @Override
     public boolean decode(ByteBuffer buffer) {
         while (buffer.remaining() >= 6 && remaining > 0) {
@@ -104,20 +108,91 @@ public class SettingsFrame extends Http2Frame {
             writeBuffer.writeByte((byte) ACK);
             writeBuffer.writeInt(streamId);
         } else {
-            writeBuffer.writeInt(30 << 8 + TYPE);
-            writeBuffer.writeByte((byte) 0);
+            int payloadLength = 0;
+            if (headerTableSize != -1) payloadLength += 6;
+            if (enablePush != -1) payloadLength += 6;
+            if (maxConcurrentStreams != -1) payloadLength += 6;
+            if (initialWindowSize != -1) payloadLength += 6;
+            if (maxFrameSize != -1) payloadLength += 6;
+            if (maxHeaderListSize != -1) payloadLength += 6;
+
+            writeBuffer.writeInt(payloadLength << 8 | TYPE);
+            writeBuffer.writeByte((byte) 0); // flags
             writeBuffer.writeInt(streamId);
-            writeBuffer.writeShort(HEADER_TABLE_SIZE);
-            writeBuffer.writeInt(headerTableSize);
-            writeBuffer.writeShort(MAX_CONCURRENT_STREAMS);
-            writeBuffer.writeInt(maxConcurrentStreams);
-            writeBuffer.writeShort(INITIAL_WINDOW_SIZE);
-            writeBuffer.writeInt(initialWindowSize);
-            writeBuffer.writeShort(MAX_FRAME_SIZE);
-            writeBuffer.writeInt(maxFrameSize);
-            writeBuffer.writeShort(MAX_HEADER_LIST_SIZE);
-            writeBuffer.writeInt(maxHeaderListSize);
+
+            if (headerTableSize != -1) {
+                writeBuffer.writeShort(HEADER_TABLE_SIZE);
+                writeBuffer.writeInt(headerTableSize);
+            }
+            if (enablePush != -1) {
+                writeBuffer.writeShort(ENABLE_PUSH);
+                writeBuffer.writeInt(enablePush);
+            }
+            if (maxConcurrentStreams != -1) {
+                writeBuffer.writeShort(MAX_CONCURRENT_STREAMS);
+                writeBuffer.writeInt(maxConcurrentStreams);
+            }
+            if (initialWindowSize != -1) {
+                writeBuffer.writeShort(INITIAL_WINDOW_SIZE);
+                writeBuffer.writeInt(initialWindowSize);
+            }
+            if (maxFrameSize != -1) {
+                writeBuffer.writeShort(MAX_FRAME_SIZE);
+                writeBuffer.writeInt(maxFrameSize);
+            }
+            if (maxHeaderListSize != -1) {
+                writeBuffer.writeShort(MAX_HEADER_LIST_SIZE);
+                writeBuffer.writeInt(maxHeaderListSize);
+            }
         }
+    }
+
+    public int getHeaderTableSize() {
+        return headerTableSize;
+    }
+
+    public void setHeaderTableSize(int headerTableSize) {
+        this.headerTableSize = headerTableSize;
+    }
+
+    public int getEnablePush() {
+        return enablePush;
+    }
+
+    public void setEnablePush(int enablePush) {
+        this.enablePush = enablePush;
+    }
+
+    public int getMaxConcurrentStreams() {
+        return maxConcurrentStreams;
+    }
+
+    public void setMaxConcurrentStreams(int maxConcurrentStreams) {
+        this.maxConcurrentStreams = maxConcurrentStreams;
+    }
+
+    public int getInitialWindowSize() {
+        return initialWindowSize;
+    }
+
+    public void setInitialWindowSize(int initialWindowSize) {
+        this.initialWindowSize = initialWindowSize;
+    }
+
+    public int getMaxFrameSize() {
+        return maxFrameSize;
+    }
+
+    public void setMaxFrameSize(int maxFrameSize) {
+        this.maxFrameSize = maxFrameSize;
+    }
+
+    public int getMaxHeaderListSize() {
+        return maxHeaderListSize;
+    }
+
+    public void setMaxHeaderListSize(int maxHeaderListSize) {
+        this.maxHeaderListSize = maxHeaderListSize;
     }
 
     @Override
