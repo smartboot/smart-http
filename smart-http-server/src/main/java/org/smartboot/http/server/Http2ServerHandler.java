@@ -13,12 +13,12 @@ import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.enums.HttpTypeEnum;
 import org.smartboot.http.common.utils.SmartDecoder;
-import org.smartboot.http.server.h2.DataFrame;
-import org.smartboot.http.server.h2.Http2Frame;
-import org.smartboot.http.server.h2.SettingsFrame;
-import org.smartboot.http.server.h2.WindowUpdateFrame;
+import org.smartboot.http.server.h2.codec.DataFrame;
+import org.smartboot.http.server.h2.codec.Http2Frame;
+import org.smartboot.http.server.h2.codec.SettingsFrame;
+import org.smartboot.http.server.h2.codec.WindowUpdateFrame;
 import org.smartboot.http.server.impl.AbstractResponse;
-import org.smartboot.http.server.impl.Http2RequestImpl;
+import org.smartboot.http.server.impl.Http2Session;
 import org.smartboot.http.server.impl.HttpRequestImpl;
 import org.smartboot.http.server.impl.Request;
 
@@ -54,7 +54,10 @@ public class Http2ServerHandler implements ServerHandler<HttpRequest, HttpRespon
         ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
         SettingsFrame settingsFrame = new SettingsFrame(0, 0, bytes.length);
         settingsFrame.decode(byteBuffer);
-        System.out.println("header http2Settings:" + settingsFrame);
+        Http2Session session = request.newHttp2Session();
+        session.setState(Http2Session.STATE_PREFACE);
+        //更新服务端的 setting
+        session.updateSettings(settingsFrame);
 
         HttpRequestImpl req = request.newHttpRequest();
         AbstractResponse response = req.getResponse();
@@ -65,11 +68,7 @@ public class Http2ServerHandler implements ServerHandler<HttpRequest, HttpRespon
         OutputStream outputStream = response.getOutputStream();
         outputStream.flush();
 
-        // 返回设置帧
-        SettingsFrame serverSettingsFrame = new SettingsFrame(0, false);
-//        settingsFrame.writeTo(request.getAioSession().writeBuffer());
 
-        request.newHttp2Request().setState(Http2RequestImpl.STATE_PREFACE);
         request.setServerHandler(new ServerHandler<HttpRequest, HttpResponse>() {
             @Override
             public void onBodyStream(ByteBuffer buffer, Request request) {
@@ -92,15 +91,15 @@ public class Http2ServerHandler implements ServerHandler<HttpRequest, HttpRespon
 
     @Override
     public void onBodyStream(ByteBuffer buffer, Request request) {
-        Http2RequestImpl req = request.newHttp2Request();
+        Http2Session req = request.newHttp2Session();
         switch (req.getState()) {
-            case Http2RequestImpl.STATE_FIRST_REQUEST: {
+            case Http2Session.STATE_FIRST_REQUEST: {
                 HttpRequestImpl httpRequest = request.newHttpRequest();
                 request.setType(HttpTypeEnum.HTTP_2);
                 httpServerHandler.onBodyStream(buffer, request);
                 return;
             }
-            case Http2RequestImpl.STATE_PREFACE: {
+            case Http2Session.STATE_PREFACE: {
                 if (buffer.remaining() < H2C_PREFACE.length) {
                     break;
                 }
@@ -110,22 +109,22 @@ public class Http2ServerHandler implements ServerHandler<HttpRequest, HttpRespon
                     }
                 }
                 req.setPrefaced(true);
-                req.setState(Http2RequestImpl.STATE_FRAME_HEAD);
+                req.setState(Http2Session.STATE_FRAME_HEAD);
             }
-            case Http2RequestImpl.STATE_FRAME_HEAD: {
+            case Http2Session.STATE_FRAME_HEAD: {
                 if (buffer.remaining() < FRAME_HEADER_SIZE) {
                     break;
                 }
                 Http2Frame frame = parseFrame(buffer);
                 req.setCurrentFrame(frame);
-                req.setState(Http2RequestImpl.STATE_FRAME_PAYLOAD);
+                req.setState(Http2Session.STATE_FRAME_PAYLOAD);
             }
-            case Http2RequestImpl.STATE_FRAME_PAYLOAD: {
+            case Http2Session.STATE_FRAME_PAYLOAD: {
                 Http2Frame frame = req.getCurrentFrame();
                 if (!frame.decode(buffer)) {
                     break;
                 }
-                req.setState(Http2RequestImpl.STATE_FRAME_HEAD);
+                req.setState(Http2Session.STATE_FRAME_HEAD);
                 req.setCurrentFrame(null);
                 try {
                     doHandler(frame, request);
@@ -146,7 +145,7 @@ public class Http2ServerHandler implements ServerHandler<HttpRequest, HttpRespon
                     settingAckFrame.writeTo(req.getAioSession().writeBuffer());
                     req.getAioSession().writeBuffer().flush();
                     System.err.println("Setting ACK报文已发送");
-                    req.newHttp2Request().setState(Http2RequestImpl.STATE_FIRST_REQUEST);
+                    req.newHttp2Session().setState(Http2Session.STATE_FIRST_REQUEST);
                 } else {
                     System.out.println("settingsFrame:" + settingsFrame);
                     settingsFrame.writeTo(req.getAioSession().writeBuffer());

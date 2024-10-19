@@ -118,7 +118,7 @@ public final class Request implements Reset {
      */
     private Attachment attachment;
     private HttpRequestImpl httpRequest;
-    private Http2RequestImpl http2Request;
+    private Http2Session http2Request;
     private WebSocketRequestImpl webSocketRequest;
     private ServerHandler serverHandler;
 
@@ -574,9 +574,9 @@ public final class Request implements Reset {
         return httpRequest;
     }
 
-    public Http2RequestImpl newHttp2Request() {
+    public Http2Session newHttp2Session() {
         if (http2Request == null) {
-            http2Request = new Http2RequestImpl(this);
+            http2Request = new Http2Session(this);
             cancelWsIdleTask();
         }
         return http2Request;

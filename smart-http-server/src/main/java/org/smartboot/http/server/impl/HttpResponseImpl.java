@@ -22,7 +22,7 @@ class HttpResponseImpl extends AbstractResponse {
     private final HttpRequestImpl request;
 
     public HttpResponseImpl(HttpRequestImpl request) {
-        init(request.request.getAioSession(), request instanceof Http2RequestImpl ? new Http2OutputStream((Http2RequestImpl) request, this) : new HttpOutputStream(request, this));
+        init(request.request.getAioSession(), request instanceof Http2Session ? new Http2OutputStream((Http2Session) request, this) : new HttpOutputStream(request, this));
         this.request = request;
     }
 

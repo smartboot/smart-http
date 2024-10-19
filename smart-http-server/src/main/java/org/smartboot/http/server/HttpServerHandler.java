@@ -41,7 +41,7 @@ public abstract class HttpServerHandler implements ServerHandler<HttpRequest, Ht
 
     @Override
     public void onBodyStream(ByteBuffer buffer, Request request) {
-        HttpRequestImpl httpRequest = request.getRequestType() == HttpTypeEnum.HTTP_2 ? request.newHttp2Request() : request.newHttpRequest();
+        HttpRequestImpl httpRequest = request.getRequestType() == HttpTypeEnum.HTTP_2 ? request.newHttp2Session() : request.newHttpRequest();
         if (HttpMethodEnum.GET.getMethod().equals(request.getMethod())) {
             handleHttpRequest(httpRequest);
             return;

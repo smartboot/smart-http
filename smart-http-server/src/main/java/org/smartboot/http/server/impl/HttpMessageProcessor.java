@@ -132,7 +132,7 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
                         response = request.newHttpRequest().getResponse();
                         break;
                     case HTTP_2:
-                        response = request.newHttp2Request().getResponse();
+                        response = request.newHttp2Session().getResponse();
                         break;
                     default:
                         throw new IllegalStateException();

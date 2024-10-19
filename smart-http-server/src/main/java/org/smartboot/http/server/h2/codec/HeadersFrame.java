@@ -1,4 +1,4 @@
-package org.smartboot.http.server.h2;
+package org.smartboot.http.server.h2.codec;
 
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.server.h2.hpack.Encoder;

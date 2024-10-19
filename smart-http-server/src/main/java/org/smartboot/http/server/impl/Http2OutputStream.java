@@ -9,9 +9,9 @@
 package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.HeaderValue;
-import org.smartboot.http.server.h2.DataFrame;
-import org.smartboot.http.server.h2.HeadersFrame;
-import org.smartboot.http.server.h2.Http2Frame;
+import org.smartboot.http.server.h2.codec.DataFrame;
+import org.smartboot.http.server.h2.codec.HeadersFrame;
+import org.smartboot.http.server.h2.codec.Http2Frame;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ import java.util.List;
  */
 final class Http2OutputStream extends AbstractOutputStream {
 
-    public Http2OutputStream(Http2RequestImpl httpRequest, HttpResponseImpl response) {
+    public Http2OutputStream(Http2Session httpRequest, HttpResponseImpl response) {
         super(httpRequest.request, response);
         disableChunked();
     }

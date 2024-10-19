@@ -23,7 +23,7 @@
  * questions.
  */
 
-package org.smartboot.http.server.h2;
+package org.smartboot.http.server.h2.codec;
 
 import java.nio.ByteBuffer;
 
