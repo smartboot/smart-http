@@ -48,27 +48,34 @@ public class Http2ServerHandler implements ServerHandler<HttpRequest, HttpRespon
 
     @Override
     public void onHeaderComplete(Request request) throws IOException {
-        //解析 Header 中的 setting
-        String http2Settings = request.getHeader(HeaderNameEnum.HTTP2_SETTINGS.getName());
-        byte[] bytes = Base64.getUrlDecoder().decode(http2Settings);
-        ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
-        SettingsFrame settingsFrame = new SettingsFrame(0, 0, bytes.length);
-        settingsFrame.decode(byteBuffer);
-        Http2Session session = request.newHttp2Session();
-        session.setState(Http2Session.STATE_PREFACE);
-        //更新服务端的 setting
-        session.updateSettings(settingsFrame);
+        if (request.getRequestType() == HttpTypeEnum.HTTP_2) {
+            if (!"PRI".equals(request.getMethod()) || !"*".equals(request.getUri()) || request.getHeaderSize() > 0) {
+                throw new IllegalStateException();
+            }
+            Http2Session session = request.newHttp2Session();
+            session.setState(Http2Session.STATE_PREFACE_SM);
+        } else {
+            //解析 Header 中的 setting
+            String http2Settings = request.getHeader(HeaderNameEnum.HTTP2_SETTINGS.getName());
+            byte[] bytes = Base64.getUrlDecoder().decode(http2Settings);
+            ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
+            SettingsFrame settingsFrame = new SettingsFrame(0, 0, bytes.length);
+            settingsFrame.decode(byteBuffer);
+            Http2Session session = request.newHttp2Session();
+            session.setState(Http2Session.STATE_PREFACE);
+            //更新服务端的 setting
+            session.updateSettings(settingsFrame);
 
-        HttpRequestImpl req = request.newHttpRequest();
-        AbstractResponse response = req.getResponse();
-        response.setHttpStatus(HttpStatus.SWITCHING_PROTOCOLS);
-        response.setContentType(null);
-        response.setHeader(HeaderNameEnum.UPGRADE.getName(), HeaderValueEnum.H2C.getName());
-        response.setHeader(HeaderNameEnum.CONNECTION.getName(), HeaderValueEnum.UPGRADE.getName());
-        OutputStream outputStream = response.getOutputStream();
-        outputStream.flush();
+            HttpRequestImpl req = request.newHttpRequest();
+            AbstractResponse response = req.getResponse();
+            response.setHttpStatus(HttpStatus.SWITCHING_PROTOCOLS);
+            response.setContentType(null);
+            response.setHeader(HeaderNameEnum.UPGRADE.getName(), HeaderValueEnum.H2C.getName());
+            response.setHeader(HeaderNameEnum.CONNECTION.getName(), HeaderValueEnum.UPGRADE.getName());
+            OutputStream outputStream = response.getOutputStream();
+            outputStream.flush();
 
-
+        }
         request.setServerHandler(new ServerHandler<HttpRequest, HttpResponse>() {
             @Override
             public void onBodyStream(ByteBuffer buffer, Request request) {
@@ -97,6 +104,20 @@ public class Http2ServerHandler implements ServerHandler<HttpRequest, HttpRespon
                 HttpRequestImpl httpRequest = request.newHttpRequest();
                 request.setType(HttpTypeEnum.HTTP_2);
                 httpServerHandler.onBodyStream(buffer, request);
+                return;
+            }
+            case Http2Session.STATE_PREFACE_SM: {
+                if (buffer.remaining() < 6) {
+                    return;
+                }
+                for (int i = H2C_PREFACE.length - 6; i < H2C_PREFACE.length; i++) {
+                    if (H2C_PREFACE[i] != buffer.get()) {
+                        throw new IllegalStateException();
+                    }
+                }
+                req.setPrefaced(true);
+                req.setState(Http2Session.STATE_FRAME_HEAD);
+                onBodyStream(buffer, request);
                 return;
             }
             case Http2Session.STATE_PREFACE: {

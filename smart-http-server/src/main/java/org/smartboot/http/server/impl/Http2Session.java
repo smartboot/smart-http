@@ -18,8 +18,9 @@ public class Http2Session extends HttpRequestImpl {
     private static final Logger LOGGER = LoggerFactory.getLogger(Http2Session.class);
     public static final int STATE_FIRST_REQUEST = 0;
     public static final int STATE_PREFACE = 1;
-    public static final int STATE_FRAME_HEAD = 1 << 1;
-    public static final int STATE_FRAME_PAYLOAD = 1 << 2;
+    public static final int STATE_PREFACE_SM = 1 << 1;
+    public static final int STATE_FRAME_HEAD = 1 << 2;
+    public static final int STATE_FRAME_PAYLOAD = 1 << 3;
 
     private final SettingsFrame settings = new SettingsFrame(0, true) {
         @Override

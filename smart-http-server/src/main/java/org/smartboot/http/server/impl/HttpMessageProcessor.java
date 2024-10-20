@@ -9,11 +9,13 @@
 package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.DecodeState;
+import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
 import org.smartboot.http.common.utils.StringUtils;
+import org.smartboot.http.server.Http2ServerHandler;
 import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.HttpServerHandler;
 import org.smartboot.http.server.WebSocketHandler;
@@ -94,6 +96,9 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
     private void doHttpHeader(Request request) throws IOException {
         methodCheck(request);
         uriCheck(request);
+        if (request.getProtocol().equals(HttpProtocolEnum.HTTP_2.getProtocol())) {
+            request.setServerHandler(new Http2ServerHandler(configuration.getHttpServerHandler()));
+        }
         request.getServerHandler().onHeaderComplete(request);
     }
 

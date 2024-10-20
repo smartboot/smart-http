@@ -197,7 +197,7 @@ public class HttpRequestProtocol implements Protocol<Request> {
                 return false;
             }
             case DecodeState.STATE_BODY_READING_MONITOR:
-                decodeState.setState(DecodeState.STATE_HEADER_CALLBACK);
+                decodeState.setState(DecodeState.STATE_BODY_READING_CALLBACK);
                 if (byteBuffer.position() > 0) {
                     break;
                 }

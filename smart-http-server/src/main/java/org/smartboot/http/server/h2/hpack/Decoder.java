@@ -25,9 +25,6 @@
 package org.smartboot.http.server.h2.hpack;
 
 
-import org.smartboot.http.common.logging.Logger;
-import org.smartboot.http.common.logging.LoggerFactory;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -62,7 +59,6 @@ import static java.util.Objects.requireNonNull;
  */
 public final class Decoder {
 
-    private final Logger logger = LoggerFactory.getLogger(Decoder.class);
     private static final AtomicLong DECODERS_IDS = new AtomicLong();
 
     /* An immutable list of states */
