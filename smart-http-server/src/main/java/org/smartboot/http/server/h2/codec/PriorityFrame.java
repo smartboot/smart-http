@@ -8,8 +8,6 @@ public class PriorityFrame extends Http2Frame {
     private int weight;
     private boolean exclusive;
 
-    public static final int TYPE = 0x2;
-
     public PriorityFrame(int streamId, int flags, int remaining, int streamDependency, int weight, boolean exclusive) {
         super(streamId, flags, remaining);
         this.streamDependency = streamDependency;
@@ -36,7 +34,7 @@ public class PriorityFrame extends Http2Frame {
 
     @Override
     public int type() {
-        return TYPE;
+        return FRAME_TYPE_PRIORITY;
     }
 
 

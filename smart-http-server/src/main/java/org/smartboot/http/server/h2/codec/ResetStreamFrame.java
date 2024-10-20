@@ -4,7 +4,6 @@ import java.nio.ByteBuffer;
 
 public class ResetStreamFrame extends Http2Frame {
 
-    public static final int TYPE = 0x3;
 
     private int errorCode;
 
@@ -27,7 +26,7 @@ public class ResetStreamFrame extends Http2Frame {
 
     @Override
     public int type() {
-        return TYPE;
+        return FRAME_TYPE_RST_STREAM;
     }
 
     public int getErrorCode() {

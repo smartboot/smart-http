@@ -8,6 +8,8 @@ import org.smartboot.http.common.multipart.MultipartConfig;
 import org.smartboot.http.common.multipart.Part;
 import org.smartboot.http.server.h2.codec.Http2Frame;
 import org.smartboot.http.server.h2.codec.SettingsFrame;
+import org.smartboot.http.server.h2.hpack.Decoder;
+import org.smartboot.http.server.h2.hpack.Encoder;
 import org.smartboot.socket.transport.WriteBuffer;
 
 import java.io.IOException;
@@ -21,6 +23,8 @@ public class Http2Session extends HttpRequestImpl {
     public static final int STATE_PREFACE_SM = 1 << 1;
     public static final int STATE_FRAME_HEAD = 1 << 2;
     public static final int STATE_FRAME_PAYLOAD = 1 << 3;
+    private Decoder hpackDecoder = new Decoder(4096);
+    private Encoder encoder = new Encoder(4096);
 
     private final SettingsFrame settings = new SettingsFrame(0, true) {
         @Override

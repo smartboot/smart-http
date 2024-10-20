@@ -30,8 +30,6 @@ import java.nio.ByteBuffer;
 public class PingFrame extends Http2Frame {
 
 
-    public static final int TYPE = 0x6;
-
     private long data;
 
     public PingFrame(int streamId, int flags, int remaining) {
@@ -53,6 +51,6 @@ public class PingFrame extends Http2Frame {
 
     @Override
     public int type() {
-        return TYPE;
+        return FRAME_TYPE_PING;
     }
 }

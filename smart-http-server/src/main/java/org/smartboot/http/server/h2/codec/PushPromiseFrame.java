@@ -4,7 +4,6 @@ import java.nio.ByteBuffer;
 
 public class PushPromiseFrame extends Http2Frame {
 
-    public static final int TYPE = 0x5;
 
     private int padLength;
     private int promisedStream;
@@ -68,7 +67,7 @@ public class PushPromiseFrame extends Http2Frame {
 
     @Override
     public int type() {
-        return TYPE;
+        return FRAME_TYPE_PUSH_PROMISE;
     }
 
 

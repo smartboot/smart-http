@@ -30,7 +30,6 @@ import java.nio.ByteBuffer;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class GoAwayFrame extends Http2Frame {
-    public static final int TYPE = 0x7;
     private final int lastStream;
     private final byte[] debugData;
 
@@ -52,7 +51,7 @@ public class GoAwayFrame extends Http2Frame {
 
     @Override
     public int type() {
-        return TYPE;
+        return FRAME_TYPE_GOAWAY;
     }
 
 

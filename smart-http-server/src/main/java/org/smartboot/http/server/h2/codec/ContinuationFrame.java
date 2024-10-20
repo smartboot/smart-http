@@ -4,8 +4,6 @@ import java.nio.ByteBuffer;
 
 public class ContinuationFrame extends Http2Frame {
 
-    public static final int TYPE = 0x9;
-
     public ContinuationFrame(int streamId, int flags, int remaining) {
         super(streamId, flags, remaining);
     }
@@ -18,7 +16,7 @@ public class ContinuationFrame extends Http2Frame {
 
     @Override
     public int type() {
-        return TYPE;
+        return FRAME_TYPE_CONTINUATION;
     }
 
 }

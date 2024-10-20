@@ -197,7 +197,7 @@ public class SettingsFrame extends Http2Frame {
 
     @Override
     public int type() {
-        return TYPE;
+        return FRAME_TYPE_SETTINGS;
     }
 
     @Override

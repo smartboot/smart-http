@@ -1,6 +1,8 @@
 package org.smartboot.http.server.h2.codec;
 
 import org.smartboot.http.common.HeaderValue;
+import org.smartboot.http.server.h2.hpack.Decoder;
+import org.smartboot.http.server.h2.hpack.DecodingCallback;
 import org.smartboot.http.server.h2.hpack.Encoder;
 import org.smartboot.socket.transport.WriteBuffer;
 
@@ -9,9 +11,6 @@ import java.nio.ByteBuffer;
 import java.util.Collection;
 
 public class HeadersFrame extends Http2Frame {
-
-    public static final int TYPE = 0x1;
-
     private int padLength;
     private int streamDependency;
     private int weight;
@@ -69,11 +68,16 @@ public class HeadersFrame extends Http2Frame {
                     return false;
                 }
                 fragment.flip();
-                HpackDecoder hpackDecoder = new HpackDecoder(128);
+                Decoder hpackDecoder = new Decoder(4096);
                 try {
-                    headers = hpackDecoder.decode(fragment);
-                } catch (HpackDecoder.HpackException e) {
-                    throw new RuntimeException("Failed to decode HPACK headers", e);
+                    hpackDecoder.decode(fragment, getFlag(FLAG_END_HEADERS), new DecodingCallback() {
+                        @Override
+                        public void onDecoded(CharSequence name, CharSequence value) {
+                            System.out.println(name + ":" + value);
+                        }
+                    });
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
                 // Now 'headers' contains the decoded HTTP/2 headers
                 state = STATE_PADDING;
@@ -120,7 +124,7 @@ public class HeadersFrame extends Http2Frame {
         payloadLength += fragment.remaining();
 
         // Write frame header
-        writeBuffer.writeInt(payloadLength << 8 | TYPE);
+        writeBuffer.writeInt(payloadLength << 8 | FRAME_TYPE_HEADERS);
         writeBuffer.writeByte(flags);
         writeBuffer.writeInt(streamId);
 
@@ -151,7 +155,7 @@ public class HeadersFrame extends Http2Frame {
 
     @Override
     public int type() {
-        return TYPE;
+        return FRAME_TYPE_HEADERS;
     }
 
 

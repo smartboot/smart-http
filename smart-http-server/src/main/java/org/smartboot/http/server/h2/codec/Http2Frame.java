@@ -7,6 +7,18 @@ import java.nio.ByteBuffer;
 
 
 public abstract class Http2Frame {
+
+    public static final int FRAME_TYPE_DATA = 0x0;
+    public static final int FRAME_TYPE_HEADERS = 0x1;
+    public static final int FRAME_TYPE_PRIORITY = 0x2;
+    public static final int FRAME_TYPE_RST_STREAM = 0x3;
+    public static final int FRAME_TYPE_SETTINGS = 0x4;
+    public static final int FRAME_TYPE_PUSH_PROMISE = 0x5;
+    public static final int FRAME_TYPE_PING = 0x6;
+    public static final int FRAME_TYPE_GOAWAY = 0x7;
+    public static final int FRAME_TYPE_WINDOW_UPDATE = 0x8;
+    public static final int FRAME_TYPE_CONTINUATION = 0x9;
+
     protected static final byte[] EMPTY_PADDING = new byte[0];
     public static final int FLAG_END_STREAM = 0x1;
     public static final int FLAG_END_HEADERS = 0x4;

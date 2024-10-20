@@ -8,8 +8,6 @@ import java.nio.ByteBuffer;
 
 public class DataFrame extends Http2Frame {
 
-    public static final int TYPE = 0x0;
-
     private static final int STATE_PAD_LENGTH = 0;
     private static final int STATE_DATA = 1;
     private static final int STATE_PADDING = 2;
@@ -84,7 +82,7 @@ public class DataFrame extends Http2Frame {
 
         // Write frame header
         writeBuffer.flush();
-        writeBuffer.writeInt(payloadLength << 8 | TYPE);
+        writeBuffer.writeInt(payloadLength << 8 | FRAME_TYPE_DATA);
         System.out.println("data frame ....");
         writeBuffer.flush();
         System.out.println("payloadLength:" + payloadLength);
@@ -112,7 +110,7 @@ public class DataFrame extends Http2Frame {
 
     @Override
     public int type() {
-        return TYPE;
+        return FRAME_TYPE_DATA;
     }
 
 }

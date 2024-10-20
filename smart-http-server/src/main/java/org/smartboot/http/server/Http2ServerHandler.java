@@ -12,8 +12,8 @@ import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.enums.HttpTypeEnum;
-import org.smartboot.http.common.utils.SmartDecoder;
 import org.smartboot.http.server.h2.codec.DataFrame;
+import org.smartboot.http.server.h2.codec.HeadersFrame;
 import org.smartboot.http.server.h2.codec.Http2Frame;
 import org.smartboot.http.server.h2.codec.SettingsFrame;
 import org.smartboot.http.server.h2.codec.WindowUpdateFrame;
@@ -26,9 +26,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.Base64;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Http消息处理器
@@ -37,10 +35,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version V1.0 , 2018/2/6
  */
 public class Http2ServerHandler implements ServerHandler<HttpRequest, HttpResponse> {
-    private final Map<Request, SmartDecoder> bodyDecoderMap = new ConcurrentHashMap<>();
     private static final byte[] H2C_PREFACE = "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n".getBytes();
     private static final int FRAME_HEADER_SIZE = 9;
-    private HttpServerHandler httpServerHandler;
+    private final HttpServerHandler httpServerHandler;
 
     public Http2ServerHandler(HttpServerHandler httpServerHandler) {
         this.httpServerHandler = httpServerHandler;
@@ -159,14 +156,14 @@ public class Http2ServerHandler implements ServerHandler<HttpRequest, HttpRespon
 
     private void doHandler(Http2Frame frame, Request req) throws IOException {
         switch (frame.type()) {
-            case SettingsFrame.TYPE: {
+            case Http2Frame.FRAME_TYPE_SETTINGS: {
                 SettingsFrame settingsFrame = (SettingsFrame) frame;
                 if (settingsFrame.getFlag(SettingsFrame.ACK)) {
                     SettingsFrame settingAckFrame = new SettingsFrame(settingsFrame.streamId(), SettingsFrame.ACK, 0);
                     settingAckFrame.writeTo(req.getAioSession().writeBuffer());
                     req.getAioSession().writeBuffer().flush();
                     System.err.println("Setting ACK报文已发送");
-                    req.newHttp2Session().setState(Http2Session.STATE_FIRST_REQUEST);
+//                    req.newHttp2Session().setState(Http2Session.STATE_FRAME_HEAD);
                 } else {
                     System.out.println("settingsFrame:" + settingsFrame);
                     settingsFrame.writeTo(req.getAioSession().writeBuffer());
@@ -175,14 +172,14 @@ public class Http2ServerHandler implements ServerHandler<HttpRequest, HttpRespon
                 }
             }
             break;
-            case WindowUpdateFrame.TYPE: {
+            case Http2Frame.FRAME_TYPE_WINDOW_UPDATE: {
                 WindowUpdateFrame windowUpdateFrame = (WindowUpdateFrame) frame;
                 System.out.println(windowUpdateFrame.getUpdate());
                 SettingsFrame ackFrame = new SettingsFrame(windowUpdateFrame.streamId(), SettingsFrame.ACK, 0);
                 ackFrame.writeTo(req.getAioSession().writeBuffer());
             }
             break;
-            case DataFrame.TYPE: {
+            case Http2Frame.FRAME_TYPE_DATA: {
                 DataFrame dataFrame = (DataFrame) frame;
                 System.out.println("dataFrame:" + dataFrame);
                 if (dataFrame.getFlags() == DataFrame.FLAG_END_STREAM) {
@@ -207,13 +204,15 @@ public class Http2ServerHandler implements ServerHandler<HttpRequest, HttpRespon
             throw new IllegalStateException();
         }
         switch (type) {
-            case SettingsFrame.TYPE:
+            case Http2Frame.FRAME_TYPE_HEADERS:
+                return new HeadersFrame(streamId, flags, length);
+            case Http2Frame.FRAME_TYPE_SETTINGS:
                 return new SettingsFrame(streamId, flags, length);
-            case WindowUpdateFrame.TYPE:
+            case Http2Frame.FRAME_TYPE_WINDOW_UPDATE:
                 return new WindowUpdateFrame(streamId, flags, length);
-            case DataFrame.TYPE:
+            case Http2Frame.FRAME_TYPE_DATA:
                 return new DataFrame(streamId, flags, length);
         }
-        throw new IllegalStateException();
+        throw new IllegalStateException("invalid type :" + type);
     }
 }

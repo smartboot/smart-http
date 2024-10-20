@@ -6,8 +6,6 @@ public class WindowUpdateFrame extends Http2Frame {
 
     private int windowUpdate;
 
-    public static final int TYPE = 0x8;
-
     public WindowUpdateFrame(int streamId, int flags, int remaining) {
         super(streamId, flags, remaining);
     }
@@ -24,7 +22,7 @@ public class WindowUpdateFrame extends Http2Frame {
 
     @Override
     public int type() {
-        return TYPE;
+        return FRAME_TYPE_WINDOW_UPDATE;
     }
 
     public int getUpdate() {
