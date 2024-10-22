@@ -15,7 +15,7 @@ public class DataFrame extends Http2Frame {
 
 
     private int padLength = 0;
-    private ByteBuffer dataBuffer;
+    private ByteBuffer dataBuffer = ByteBuffer.allocate(0);
     private byte[] padding = EMPTY_PADDING;
 
 
@@ -65,6 +65,7 @@ public class DataFrame extends Http2Frame {
         }
 
         checkEndRemaining();
+        dataBuffer.flip();
         return true;
     }
 

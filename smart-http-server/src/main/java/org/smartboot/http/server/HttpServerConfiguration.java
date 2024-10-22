@@ -106,6 +106,13 @@ public class HttpServerConfiguration {
     };
     private WebSocketHandler webSocketHandler;
 
+    private Http2ServerHandler http2ServerHandler = new Http2ServerHandler() {
+        @Override
+        public void handle(HttpRequest request, HttpResponse response) throws IOException {
+            response.write("Hello smart-http".getBytes(StandardCharsets.UTF_8));
+        }
+    };
+
     private final WafConfiguration wafConfiguration = new WafConfiguration();
 
     public HttpServerConfiguration readMemoryPool(int totalBytes) {
@@ -238,6 +245,14 @@ public class HttpServerConfiguration {
 
     public void setWebSocketHandler(WebSocketHandler webSocketHandler) {
         this.webSocketHandler = webSocketHandler;
+    }
+
+    public Http2ServerHandler getHttp2ServerHandler() {
+        return http2ServerHandler;
+    }
+
+    public void setHttp2ServerHandler(Http2ServerHandler http2ServerHandler) {
+        this.http2ServerHandler = http2ServerHandler;
     }
 
     /**

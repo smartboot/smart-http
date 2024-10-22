@@ -74,6 +74,11 @@ public class HttpBootstrap {
         return this;
     }
 
+    public HttpBootstrap http2Handler(Http2ServerHandler httpHandler) {
+        processor.http2ServerHandler(httpHandler);
+        return this;
+    }
+
     /**
      * 获取websocket的处理器管道
      *
@@ -150,7 +155,7 @@ public class HttpBootstrap {
         }
         // HTTP/2.0
         else if (HeaderValueEnum.H2C.getName().equals(upgrade) || HeaderValueEnum.H2.getName().equals(upgrade)) {
-            return new Http2ServerHandler(configuration.getHttpServerHandler());
+            return configuration.getHttp2ServerHandler();
         } else {
             return null;
         }

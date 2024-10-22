@@ -11,8 +11,12 @@ package org.smartboot.http.server;
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
+import org.smartboot.http.common.enums.HttpMethodEnum;
+import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.enums.HttpTypeEnum;
+import org.smartboot.http.common.io.BufferOutputStream;
+import org.smartboot.http.common.io.ReadListener;
 import org.smartboot.http.server.h2.codec.DataFrame;
 import org.smartboot.http.server.h2.codec.HeadersFrame;
 import org.smartboot.http.server.h2.codec.Http2Frame;
@@ -21,8 +25,10 @@ import org.smartboot.http.server.h2.codec.WindowUpdateFrame;
 import org.smartboot.http.server.impl.AbstractResponse;
 import org.smartboot.http.server.impl.Http2RequestImpl;
 import org.smartboot.http.server.impl.Http2Session;
+import org.smartboot.http.server.impl.HttpMessageProcessor;
 import org.smartboot.http.server.impl.HttpRequestImpl;
 import org.smartboot.http.server.impl.Request;
+import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -37,17 +43,13 @@ import java.util.concurrent.CompletableFuture;
  * @author 三刀
  * @version V1.0 , 2018/2/6
  */
-public class Http2ServerHandler implements ServerHandler<HttpRequest, HttpResponse> {
+public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, HttpResponse> {
     private static final byte[] H2C_PREFACE = "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n".getBytes();
     private static final int FRAME_HEADER_SIZE = 9;
-    private final HttpServerHandler httpServerHandler;
 
-    public Http2ServerHandler(HttpServerHandler httpServerHandler) {
-        this.httpServerHandler = httpServerHandler;
-    }
 
     @Override
-    public void onHeaderComplete(Request request) throws IOException {
+    public final void onHeaderComplete(Request request) throws IOException {
         if (request.getRequestType() == HttpTypeEnum.HTTP_2) {
             if (!"PRI".equals(request.getMethod()) || !"*".equals(request.getUri()) || request.getHeaderSize() > 0) {
                 throw new IllegalStateException();
@@ -76,24 +78,6 @@ public class Http2ServerHandler implements ServerHandler<HttpRequest, HttpRespon
             outputStream.flush();
 
         }
-        request.setServerHandler(new ServerHandler<HttpRequest, HttpResponse>() {
-            @Override
-            public void onBodyStream(ByteBuffer buffer, Request request) {
-                Http2ServerHandler.this.onBodyStream(buffer, request);
-            }
-
-            @Override
-            public void handle(HttpRequest request, HttpResponse response, CompletableFuture<Object> completableFuture) throws Throwable {
-                CompletableFuture<Object> future = new CompletableFuture<>();
-                httpServerHandler.handle(request, response, future);
-            }
-        });
-    }
-
-    @Override
-    public void handle(HttpRequest request, HttpResponse response, CompletableFuture<Object> completableFuture) throws Throwable {
-        httpServerHandler.handle(request, response, completableFuture);
-        throw new IllegalStateException();
     }
 
     @Override
@@ -103,7 +87,7 @@ public class Http2ServerHandler implements ServerHandler<HttpRequest, HttpRespon
             case Http2Session.STATE_FIRST_REQUEST: {
                 HttpRequestImpl httpRequest = request.newHttpRequest();
                 request.setType(HttpTypeEnum.HTTP_2);
-                httpServerHandler.onBodyStream(buffer, request);
+//                httpServerHandler.onBodyStream(buffer, request);
                 return;
             }
             case Http2Session.STATE_PREFACE_SM: {
@@ -206,7 +190,7 @@ public class Http2ServerHandler implements ServerHandler<HttpRequest, HttpRespon
                     buffer.put(dataFrame.getDataBuffer());
                     buffer.flip();
                 }
-
+                onBodyStream(buffer, request);
                 if (dataFrame.getFlags() == DataFrame.FLAG_END_STREAM) {
                     System.out.println("END_STREAM");
                     req.getAioSession().close();
@@ -239,5 +223,107 @@ public class Http2ServerHandler implements ServerHandler<HttpRequest, HttpRespon
                 return new DataFrame(streamId, flags, length);
         }
         throw new IllegalStateException("invalid type :" + type);
+    }
+
+    private void onBodyStream(ByteBuffer buffer, Http2RequestImpl httpRequest) {
+        //打印buffer内容
+        if (buffer.hasRemaining()) {
+            byte[] bytes = new byte[buffer.remaining()];
+            buffer.get(bytes);
+            System.out.println(new String(bytes));
+        }
+    }
+
+//    private void handleHttpRequest(Http2RequestImpl abstractRequest) {
+//        AbstractResponse response = abstractRequest.getResponse();
+//        CompletableFuture<Object> future = new CompletableFuture<>();
+//        boolean keepAlive = isKeepAlive(abstractRequest, response);
+//        abstractRequest.setKeepAlive(keepAlive);
+//        try {
+//            abstractRequest.request.getServerHandler().handle(abstractRequest, response, future);
+//            finishHttpHandle(abstractRequest, future);
+//        } catch (Throwable e) {
+//            HttpMessageProcessor.responseError(response, e);
+//        }
+//    }
+
+    private void finishHttpHandle(HttpRequestImpl abstractRequest, CompletableFuture<Object> future) throws IOException {
+        if (future.isDone()) {
+            if (keepConnection(abstractRequest)) {
+                finishResponse(abstractRequest);
+            }
+            return;
+        }
+
+        AioSession session = abstractRequest.request.getAioSession();
+        ReadListener readListener = abstractRequest.getInputStream().getReadListener();
+        if (readListener == null) {
+            session.awaitRead();
+        } else {
+            //todo
+//            abstractRequest.request.setDecoder(session.readBuffer().hasRemaining() ? HttpRequestProtocol.BODY_READY_DECODER : HttpRequestProtocol.BODY_CONTINUE_DECODER);
+        }
+
+        Thread thread = Thread.currentThread();
+        AbstractResponse response = abstractRequest.getResponse();
+        future.thenRun(() -> {
+            try {
+                if (keepConnection(abstractRequest)) {
+                    finishResponse(abstractRequest);
+                    if (thread != Thread.currentThread()) {
+                        session.writeBuffer().flush();
+                    }
+                }
+            } catch (Exception e) {
+                HttpMessageProcessor.responseError(response, e);
+            } finally {
+                if (readListener == null) {
+                    session.signalRead();
+                }
+            }
+        }).exceptionally(throwable -> {
+            try {
+                HttpMessageProcessor.responseError(response, throwable);
+            } finally {
+                if (readListener == null) {
+                    session.signalRead();
+                }
+            }
+            return null;
+        });
+    }
+
+    private void finishResponse(HttpRequestImpl abstractRequest) throws IOException {
+        AbstractResponse response = abstractRequest.getResponse();
+        //关闭本次请求的输出流
+        BufferOutputStream bufferOutputStream = response.getOutputStream();
+        if (!bufferOutputStream.isClosed()) {
+            bufferOutputStream.close();
+        }
+        abstractRequest.reset();
+    }
+
+    private boolean keepConnection(HttpRequestImpl request) throws IOException {
+        if (request.getResponse().isClosed()) {
+            return false;
+        }
+        //非keepAlive或者 body部分未读取完毕,释放连接资源
+        if (!request.isKeepAlive() || (!HttpMethodEnum.GET.getMethod().equals(request.getMethod()) && request.getContentLength() > 0 && request.getInputStream().available() > 0)) {
+            request.getResponse().close();
+            return false;
+        }
+        return true;
+    }
+
+    private boolean isKeepAlive(HttpRequestImpl abstractRequest, AbstractResponse response) {
+        boolean keepAlive = !HeaderValueEnum.CLOSE.getName().equals(abstractRequest.getRequest().getConnection());
+        // http/1.0默认短连接，http/1.1默认长连接。此处用 == 性能更高
+        if (keepAlive && HttpProtocolEnum.HTTP_10.getProtocol() == abstractRequest.getProtocol()) {
+            keepAlive = HeaderValueEnum.KEEPALIVE.getName().equalsIgnoreCase(abstractRequest.getHeader(HeaderNameEnum.CONNECTION.getName()));
+            if (keepAlive) {
+                response.setHeader(HeaderNameEnum.CONNECTION.getName(), HeaderValueEnum.KEEPALIVE.getName());
+            }
+        }
+        return keepAlive;
     }
 }

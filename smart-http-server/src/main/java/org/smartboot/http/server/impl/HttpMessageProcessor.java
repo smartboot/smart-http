@@ -97,7 +97,7 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
         methodCheck(request);
         uriCheck(request);
         if (request.getProtocol().equals(HttpProtocolEnum.HTTP_2.getProtocol())) {
-            request.setServerHandler(new Http2ServerHandler(configuration.getHttpServerHandler()));
+            request.setServerHandler(configuration.getHttp2ServerHandler());
         }
         request.getServerHandler().onHeaderComplete(request);
     }
@@ -151,6 +151,10 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
 
     public void httpServerHandler(HttpServerHandler httpServerHandler) {
         this.configuration.setHttpServerHandler(Objects.requireNonNull(httpServerHandler));
+    }
+
+    public void http2ServerHandler(Http2ServerHandler httpServerHandler) {
+        this.configuration.setHttp2ServerHandler(Objects.requireNonNull(httpServerHandler));
     }
 
     public void setWebSocketHandler(WebSocketHandler webSocketHandler) {
