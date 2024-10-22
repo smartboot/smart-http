@@ -8,6 +8,7 @@
 
 package org.smartboot.http.server;
 
+import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpStatus;
@@ -18,6 +19,7 @@ import org.smartboot.http.server.h2.codec.Http2Frame;
 import org.smartboot.http.server.h2.codec.SettingsFrame;
 import org.smartboot.http.server.h2.codec.WindowUpdateFrame;
 import org.smartboot.http.server.impl.AbstractResponse;
+import org.smartboot.http.server.impl.Http2RequestImpl;
 import org.smartboot.http.server.impl.Http2Session;
 import org.smartboot.http.server.impl.HttpRequestImpl;
 import org.smartboot.http.server.impl.Request;
@@ -26,6 +28,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.Base64;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -155,6 +158,7 @@ public class Http2ServerHandler implements ServerHandler<HttpRequest, HttpRespon
     }
 
     private void doHandler(Http2Frame frame, Request req) throws IOException {
+        Http2Session session = req.newHttp2Session();
         switch (frame.type()) {
             case Http2Frame.FRAME_TYPE_SETTINGS: {
                 SettingsFrame settingsFrame = (SettingsFrame) frame;
@@ -179,9 +183,30 @@ public class Http2ServerHandler implements ServerHandler<HttpRequest, HttpRespon
                 ackFrame.writeTo(req.getAioSession().writeBuffer());
             }
             break;
+            case Http2Frame.FRAME_TYPE_HEADERS: {
+                HeadersFrame headersFrame = (HeadersFrame) frame;
+                Http2RequestImpl request = session.getStream(headersFrame.streamId());
+                request.checkState(Http2RequestImpl.STATE_HEADER_FRAME);
+                Map<String, HeaderValue> headers = request.getHeaders();
+                headersFrame.getHeaders().forEach(h -> headers.put(h.getName(), h));
+                if (headersFrame.getFlag(Http2Frame.FLAG_END_HEADERS)) {
+                    request.setState(Http2RequestImpl.STATE_DATA_FRAME);
+                }
+                break;
+            }
             case Http2Frame.FRAME_TYPE_DATA: {
                 DataFrame dataFrame = (DataFrame) frame;
                 System.out.println("dataFrame:" + dataFrame);
+                Http2RequestImpl request = session.getStream(dataFrame.streamId());
+                request.checkState(Http2RequestImpl.STATE_DATA_FRAME);
+                ByteBuffer buffer = dataFrame.getDataBuffer();
+                if (request.getReadBuffer() != null) {
+                    buffer = ByteBuffer.allocate(request.getReadBuffer().remaining() + dataFrame.getDataBuffer().remaining());
+                    buffer.put(request.getReadBuffer());
+                    buffer.put(dataFrame.getDataBuffer());
+                    buffer.flip();
+                }
+
                 if (dataFrame.getFlags() == DataFrame.FLAG_END_STREAM) {
                     System.out.println("END_STREAM");
                     req.getAioSession().close();

@@ -23,8 +23,8 @@ import java.util.List;
  */
 final class Http2OutputStream extends AbstractOutputStream {
 
-    public Http2OutputStream(Http2Session httpRequest, HttpResponseImpl response) {
-        super(httpRequest.request, response);
+    public Http2OutputStream(Request httpRequest, HttpResponseImpl response) {
+        super(httpRequest, response);
         disableChunked();
     }
 

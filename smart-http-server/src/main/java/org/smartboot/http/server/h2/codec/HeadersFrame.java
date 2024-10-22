@@ -9,6 +9,8 @@ import org.smartboot.socket.transport.WriteBuffer;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 public class HeadersFrame extends Http2Frame {
     private int padLength;
@@ -70,12 +72,19 @@ public class HeadersFrame extends Http2Frame {
                 fragment.flip();
                 Decoder hpackDecoder = new Decoder(4096);
                 try {
+                    Map<String, HeaderValue> headers = new HashMap<>();
                     hpackDecoder.decode(fragment, getFlag(FLAG_END_HEADERS), new DecodingCallback() {
                         @Override
                         public void onDecoded(CharSequence name, CharSequence value) {
                             System.out.println(name + ":" + value);
+                            if (headers.containsKey(name)) {
+                                headers.get(name).setNextValue(new HeaderValue(name.toString(), value.toString()));
+                            } else {
+                                headers.put(name.toString(), new HeaderValue(name.toString(), value.toString()));
+                            }
                         }
                     });
+                    this.headers = headers.values();
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -151,6 +160,10 @@ public class HeadersFrame extends Http2Frame {
 
     public void setHeaders(Collection<HeaderValue> headers) {
         this.headers = headers;
+    }
+
+    public Collection<HeaderValue> getHeaders() {
+        return headers;
     }
 
     @Override

@@ -1,11 +1,7 @@
 package org.smartboot.http.server.impl;
 
-import org.smartboot.http.common.io.BodyInputStream;
-import org.smartboot.http.common.io.ReadListener;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
-import org.smartboot.http.common.multipart.MultipartConfig;
-import org.smartboot.http.common.multipart.Part;
 import org.smartboot.http.server.h2.codec.Http2Frame;
 import org.smartboot.http.server.h2.codec.SettingsFrame;
 import org.smartboot.http.server.h2.hpack.Decoder;
@@ -14,15 +10,16 @@ import org.smartboot.socket.transport.WriteBuffer;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Collection;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class Http2Session extends HttpRequestImpl {
+public class Http2Session {
     private static final Logger LOGGER = LoggerFactory.getLogger(Http2Session.class);
     public static final int STATE_FIRST_REQUEST = 0;
     public static final int STATE_PREFACE = 1;
     public static final int STATE_PREFACE_SM = 1 << 1;
     public static final int STATE_FRAME_HEAD = 1 << 2;
     public static final int STATE_FRAME_PAYLOAD = 1 << 3;
+    private final ConcurrentHashMap<Integer, Http2RequestImpl> streams = new ConcurrentHashMap<>();
     private Decoder hpackDecoder = new Decoder(4096);
     private Encoder encoder = new Encoder(4096);
 
@@ -44,15 +41,14 @@ public class Http2Session extends HttpRequestImpl {
     private int state;
 
     public Http2Session(Request request) {
-        super(request);
+//        super(request);
 //        this.response = new Http2ResponseImpl(this);
     }
 
-
-    @Override
-    public void reset() {
-
+    public Http2RequestImpl getStream(int streamId) {
+        return streams.computeIfAbsent(streamId, k -> new Http2RequestImpl());
     }
+
 
     public boolean isPrefaced() {
         return prefaced;
@@ -62,20 +58,6 @@ public class Http2Session extends HttpRequestImpl {
         this.prefaced = prefaced;
     }
 
-    @Override
-    public BodyInputStream getInputStream() throws IOException {
-        return new BodyInputStream(request.getAioSession()) {
-            @Override
-            public void setReadListener(ReadListener listener) {
-                throw new UnsupportedOperationException();
-            }
-        };
-    }
-
-    @Override
-    public Collection<Part> getParts(MultipartConfig configElement) throws IOException {
-        throw new UnsupportedOperationException();
-    }
 
     public Http2Frame getCurrentFrame() {
         return currentFrame;

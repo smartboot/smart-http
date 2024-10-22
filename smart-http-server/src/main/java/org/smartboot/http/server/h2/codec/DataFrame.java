@@ -14,7 +14,7 @@ public class DataFrame extends Http2Frame {
     private int state = STATE_PAD_LENGTH;
 
 
-    private int padLength = -1;
+    private int padLength = 0;
     private ByteBuffer dataBuffer;
     private byte[] padding = EMPTY_PADDING;
 
@@ -38,7 +38,7 @@ public class DataFrame extends Http2Frame {
                     if (padLength < 0) {
                         throw new IllegalStateException();
                     }
-                    remaining = -1;
+                    remaining -= 1;
                 }
                 dataBuffer = ByteBuffer.allocate(remaining - padLength);
                 state = STATE_DATA;
@@ -106,6 +106,10 @@ public class DataFrame extends Http2Frame {
 
     public byte[] getPadding() {
         return padding;
+    }
+
+    public ByteBuffer getDataBuffer() {
+        return dataBuffer;
     }
 
     @Override
