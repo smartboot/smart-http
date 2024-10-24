@@ -193,7 +193,7 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
                 onBodyStream(buffer, request);
                 if (dataFrame.getFlags() == DataFrame.FLAG_END_STREAM) {
                     System.out.println("END_STREAM");
-                    req.getAioSession().close();
+//                    req.getAioSession().close();
                 }
             }
             break;
@@ -230,7 +230,7 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
         if (buffer.hasRemaining()) {
             byte[] bytes = new byte[buffer.remaining()];
             buffer.get(bytes);
-            System.out.println(new String(bytes));
+            System.out.println("steamId:" + httpRequest.getStreamId() + " " + new String(bytes));
         }
     }
 

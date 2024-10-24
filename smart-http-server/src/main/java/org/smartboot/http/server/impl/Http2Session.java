@@ -46,7 +46,7 @@ public class Http2Session {
     }
 
     public Http2RequestImpl getStream(int streamId) {
-        return streams.computeIfAbsent(streamId, k -> new Http2RequestImpl());
+        return streams.computeIfAbsent(streamId, k -> new Http2RequestImpl(streamId));
     }
 
 

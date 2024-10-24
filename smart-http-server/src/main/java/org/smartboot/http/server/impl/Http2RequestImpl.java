@@ -28,6 +28,11 @@ public class Http2RequestImpl implements HttpRequest, Reset {
     private int state = STATE_HEADER_FRAME;
     private final Map<String, HeaderValue> headers = new HashMap<>();
     private ByteBuffer readBuffer;
+    private final int streamId;
+
+    public Http2RequestImpl(int streamId) {
+        this.streamId = streamId;
+    }
 
     public Map<String, HeaderValue> getHeaders() {
         return headers;
@@ -166,6 +171,10 @@ public class Http2RequestImpl implements HttpRequest, Reset {
     @Override
     public Locale getLocale() {
         return null;
+    }
+
+    public int getStreamId() {
+        return streamId;
     }
 
     @Override
