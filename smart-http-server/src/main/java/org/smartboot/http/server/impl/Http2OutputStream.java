@@ -39,7 +39,7 @@ final class Http2OutputStream extends AbstractOutputStream {
             return;
         }
         // Create HEADERS frame
-        HeadersFrame headersFrame = new HeadersFrame(1, Http2Frame.FLAG_END_HEADERS, 0);
+        HeadersFrame headersFrame = new HeadersFrame(request.newHttp2Session(), 1, Http2Frame.FLAG_END_HEADERS, 0);
 
         List<HeaderValue> headers = new ArrayList<>();
         headers.add(new HeaderValue(":status", String.valueOf(response.getHttpStatus())));

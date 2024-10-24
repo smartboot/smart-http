@@ -1,9 +1,8 @@
 package org.smartboot.http.server.h2.codec;
 
 import org.smartboot.http.common.HeaderValue;
-import org.smartboot.http.server.h2.hpack.Decoder;
 import org.smartboot.http.server.h2.hpack.DecodingCallback;
-import org.smartboot.http.server.h2.hpack.Encoder;
+import org.smartboot.http.server.impl.Http2Session;
 import org.smartboot.socket.transport.WriteBuffer;
 
 import java.io.IOException;
@@ -20,9 +19,11 @@ public class HeadersFrame extends Http2Frame {
     private ByteBuffer fragment;
     private byte[] padding = EMPTY_PADDING;
     private Collection<HeaderValue> headers;
+    private Http2Session session;
 
-    public HeadersFrame(int streamId, int flags, int remaining) {
+    public HeadersFrame(Http2Session session, int streamId, int flags, int remaining) {
         super(streamId, flags, remaining);
+        this.session = session;
     }
 
     public HeadersFrame(int streamId) {
@@ -70,10 +71,9 @@ public class HeadersFrame extends Http2Frame {
                     return false;
                 }
                 fragment.flip();
-                Decoder hpackDecoder = new Decoder(4096);
                 try {
                     Map<String, HeaderValue> headers = new HashMap<>();
-                    hpackDecoder.decode(fragment, getFlag(FLAG_END_HEADERS), new DecodingCallback() {
+                    session.getHpackDecoder().decode(fragment, getFlag(FLAG_END_HEADERS), new DecodingCallback() {
                         @Override
                         public void onDecoded(CharSequence name, CharSequence value) {
                             System.out.println(name + ":" + value);
@@ -119,14 +119,11 @@ public class HeadersFrame extends Http2Frame {
             payloadLength += 5;
             flags |= FLAG_PRIORITY;
         }
-        // Encode headers
-//        HpackEncoder encoder = new HpackEncoder(4096);
-        Encoder encoder = new Encoder(4096);
         for (HeaderValue header : headers) {
-            encoder.header(header.getName(), header.getValue());
+            session.getHpackEncoder().header(header.getName(), header.getValue());
         }
         fragment = ByteBuffer.allocate(1024);
-        if (encoder.encode(fragment)) {
+        if (session.getHpackEncoder().encode(fragment)) {
             System.out.println("success");
         }
         fragment.flip();

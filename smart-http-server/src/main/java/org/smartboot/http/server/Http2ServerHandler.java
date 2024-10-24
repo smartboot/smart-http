@@ -82,8 +82,8 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
 
     @Override
     public void onBodyStream(ByteBuffer buffer, Request request) {
-        Http2Session req = request.newHttp2Session();
-        switch (req.getState()) {
+        Http2Session session = request.newHttp2Session();
+        switch (session.getState()) {
             case Http2Session.STATE_FIRST_REQUEST: {
                 HttpRequestImpl httpRequest = request.newHttpRequest();
                 request.setType(HttpTypeEnum.HTTP_2);
@@ -99,8 +99,8 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
                         throw new IllegalStateException();
                     }
                 }
-                req.setPrefaced(true);
-                req.setState(Http2Session.STATE_FRAME_HEAD);
+                session.setPrefaced(true);
+                session.setState(Http2Session.STATE_FRAME_HEAD);
                 onBodyStream(buffer, request);
                 return;
             }
@@ -113,24 +113,24 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
                         throw new IllegalStateException();
                     }
                 }
-                req.setPrefaced(true);
-                req.setState(Http2Session.STATE_FRAME_HEAD);
+                session.setPrefaced(true);
+                session.setState(Http2Session.STATE_FRAME_HEAD);
             }
             case Http2Session.STATE_FRAME_HEAD: {
                 if (buffer.remaining() < FRAME_HEADER_SIZE) {
                     break;
                 }
-                Http2Frame frame = parseFrame(buffer);
-                req.setCurrentFrame(frame);
-                req.setState(Http2Session.STATE_FRAME_PAYLOAD);
+                Http2Frame frame = parseFrame(session, buffer);
+                session.setCurrentFrame(frame);
+                session.setState(Http2Session.STATE_FRAME_PAYLOAD);
             }
             case Http2Session.STATE_FRAME_PAYLOAD: {
-                Http2Frame frame = req.getCurrentFrame();
+                Http2Frame frame = session.getCurrentFrame();
                 if (!frame.decode(buffer)) {
                     break;
                 }
-                req.setState(Http2Session.STATE_FRAME_HEAD);
-                req.setCurrentFrame(null);
+                session.setState(Http2Session.STATE_FRAME_HEAD);
+                session.setCurrentFrame(null);
                 try {
                     doHandler(frame, request);
                 } catch (IOException e) {
@@ -203,7 +203,7 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
     }
 
 
-    private static Http2Frame parseFrame(ByteBuffer buffer) {
+    private static Http2Frame parseFrame(Http2Session session, ByteBuffer buffer) {
         int first = buffer.getInt();
         int length = first >> 8;
         int type = first & 0x0f;
@@ -214,7 +214,7 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
         }
         switch (type) {
             case Http2Frame.FRAME_TYPE_HEADERS:
-                return new HeadersFrame(streamId, flags, length);
+                return new HeadersFrame(session, streamId, flags, length);
             case Http2Frame.FRAME_TYPE_SETTINGS:
                 return new SettingsFrame(streamId, flags, length);
             case Http2Frame.FRAME_TYPE_WINDOW_UPDATE:

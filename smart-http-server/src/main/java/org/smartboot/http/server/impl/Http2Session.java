@@ -21,7 +21,7 @@ public class Http2Session {
     public static final int STATE_FRAME_PAYLOAD = 1 << 3;
     private final ConcurrentHashMap<Integer, Http2RequestImpl> streams = new ConcurrentHashMap<>();
     private Decoder hpackDecoder = new Decoder(4096);
-    private Encoder encoder = new Encoder(4096);
+    private Encoder hpackEncoder = new Encoder(4096);
 
     private final SettingsFrame settings = new SettingsFrame(0, true) {
         @Override
@@ -73,6 +73,14 @@ public class Http2Session {
 
     public void setState(int state) {
         this.state = state;
+    }
+
+    public Decoder getHpackDecoder() {
+        return hpackDecoder;
+    }
+
+    public Encoder getHpackEncoder() {
+        return hpackEncoder;
     }
 
     /**
