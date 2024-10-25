@@ -12,9 +12,9 @@ package org.smartboot.http.server.impl;
  * @author 三刀
  * @version V1.0 , 2018/2/3
  */
-//class Http2ResponseImpl extends AbstractResponse {
-//
-//    public Http2ResponseImpl(Http2RequestImpl httpRequest) {
-//        init(httpRequest.request.getAioSession(), new Http2OutputStream(httpRequest, this));
-//    }
-//}
+class Http2ResponseImpl extends AbstractResponse {
+
+    public Http2ResponseImpl(Request httpRequest) {
+        init(httpRequest.getAioSession(), new Http2OutputStream(httpRequest, this));
+    }
+}

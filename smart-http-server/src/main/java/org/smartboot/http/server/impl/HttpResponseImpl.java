@@ -22,7 +22,7 @@ class HttpResponseImpl extends AbstractResponse {
     private final HttpRequestImpl request;
 
     public HttpResponseImpl(HttpRequestImpl request) {
-        init(request.request.getAioSession(), request.getProtocol().equals(HttpProtocolEnum.HTTP_2.getProtocol()) ? new Http2OutputStream(request.request, this) : new HttpOutputStream(request, this));
+        init(request.request.getAioSession(), new HttpOutputStream(request, this));
         this.request = request;
     }
 

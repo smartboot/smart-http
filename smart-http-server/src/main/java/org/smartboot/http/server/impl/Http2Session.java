@@ -39,14 +39,15 @@ public class Http2Session {
     //    private final Http2ResponseImpl response;
     private Http2Frame currentFrame;
     private int state;
+    private final Request request;
 
     public Http2Session(Request request) {
-//        super(request);
+        this.request = request;
 //        this.response = new Http2ResponseImpl(this);
     }
 
     public Http2RequestImpl getStream(int streamId) {
-        return streams.computeIfAbsent(streamId, k -> new Http2RequestImpl(streamId));
+        return streams.computeIfAbsent(streamId, k -> new Http2RequestImpl(streamId, request));
     }
 
 

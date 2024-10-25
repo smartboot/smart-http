@@ -9,6 +9,7 @@ import org.smartboot.http.common.multipart.Part;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.socket.util.Attachment;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -29,9 +30,12 @@ public class Http2RequestImpl implements HttpRequest, Reset {
     private final Map<String, HeaderValue> headers = new HashMap<>();
     private ByteBuffer readBuffer;
     private final int streamId;
+    private ByteArrayOutputStream formData;
+    private final Http2ResponseImpl response;
 
-    public Http2RequestImpl(int streamId) {
+    public Http2RequestImpl(int streamId, Request request) {
         this.streamId = streamId;
+        response = new Http2ResponseImpl(request);
     }
 
     public Map<String, HeaderValue> getHeaders() {
@@ -208,5 +212,17 @@ public class Http2RequestImpl implements HttpRequest, Reset {
 
     public void setReadBuffer(ByteBuffer readBuffer) {
         this.readBuffer = readBuffer;
+    }
+
+    public ByteArrayOutputStream getFormData() {
+        return formData;
+    }
+
+    public void setFormData(ByteArrayOutputStream formData) {
+        this.formData = formData;
+    }
+
+    public Http2ResponseImpl getResponse() {
+        return response;
     }
 }
