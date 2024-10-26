@@ -35,7 +35,7 @@ public class Http2RequestImpl implements HttpRequest, Reset {
 
     public Http2RequestImpl(int streamId, Request request) {
         this.streamId = streamId;
-        response = new Http2ResponseImpl(request);
+        response = new Http2ResponseImpl(streamId,request);
     }
 
     public Map<String, HeaderValue> getHeaders() {
@@ -222,7 +222,7 @@ public class Http2RequestImpl implements HttpRequest, Reset {
         this.formData = formData;
     }
 
-    public Http2ResponseImpl getResponse() {
+    public AbstractResponse getResponse() {
         return response;
     }
 }

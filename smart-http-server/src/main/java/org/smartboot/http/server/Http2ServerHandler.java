@@ -167,6 +167,7 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
             break;
             case Http2Frame.FRAME_TYPE_HEADERS: {
                 HeadersFrame headersFrame = (HeadersFrame) frame;
+                System.out.println("headerFrame Stream:" + headersFrame.streamId());
                 Http2RequestImpl request = session.getStream(headersFrame.streamId());
                 request.checkState(Http2RequestImpl.STATE_HEADER_FRAME);
                 Map<String, HeaderValue> headers = request.getHeaders();
@@ -246,6 +247,9 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
                 handleHttpRequest(request);
             }
         } else {
+            if (dataFrame.getFlag(DataFrame.FLAG_END_STREAM)) {
+                return;
+            }
             handleHttpRequest(request);
         }
     }
@@ -255,7 +259,7 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
         CompletableFuture<Object> future = new CompletableFuture<>();
         try {
             handle(abstractRequest, response, future);
-//            finishHttpHandle(abstractRequest, future);
+            abstractRequest.getResponse().close();
         } catch (Throwable e) {
             HttpMessageProcessor.responseError(response, e);
         }
@@ -263,9 +267,7 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
 
 //    private void finishHttpHandle(Http2RequestImpl abstractRequest, CompletableFuture<Object> future) throws IOException {
 //        if (future.isDone()) {
-//            if (keepConnection(abstractRequest)) {
-//                finishResponse(abstractRequest);
-//            }
+//           abstractRequest.getResponse().close();
 //            return;
 //        }
 //

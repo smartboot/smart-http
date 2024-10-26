@@ -82,11 +82,7 @@ public class DataFrame extends Http2Frame {
         }
 
         // Write frame header
-        writeBuffer.flush();
         writeBuffer.writeInt(payloadLength << 8 | FRAME_TYPE_DATA);
-        System.out.println("data frame ....");
-        writeBuffer.flush();
-        System.out.println("payloadLength:" + payloadLength);
         writeBuffer.writeByte(flags);
         writeBuffer.writeInt(streamId);
 
@@ -102,7 +98,7 @@ public class DataFrame extends Http2Frame {
         if (padded) {
             writeBuffer.write(padding);
         }
-        writeBuffer.flush();
+//        writeBuffer.flush();
     }
 
     public byte[] getPadding() {

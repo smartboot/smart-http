@@ -22,24 +22,26 @@ import java.util.List;
  * @version V1.0 , 2018/2/3
  */
 final class Http2OutputStream extends AbstractOutputStream {
+    private final int streamId;
 
-    public Http2OutputStream(Request httpRequest, Http2ResponseImpl response) {
+    public Http2OutputStream(int streamId, Request httpRequest, Http2ResponseImpl response) {
         super(httpRequest, response);
         disableChunked();
+        this.streamId = streamId;
     }
 
     protected void writeHeader(HeaderWriteSource source) throws IOException {
         if (committed) {
-            if (source == HeaderWriteSource.CLOSE) {
-                System.out.println("close...");
-                DataFrame dataFrame1 = new DataFrame(1, DataFrame.FLAG_END_STREAM, 0);
+            if (source == HeaderWriteSource.CLOSE && !closed) {
+                DataFrame dataFrame1 = new DataFrame(streamId, DataFrame.FLAG_END_STREAM, 0);
                 dataFrame1.writeTo(writeBuffer, new byte[0], 0, 0);
                 writeBuffer.flush();
+                System.out.println("close..., stream:" + streamId);
             }
             return;
         }
         // Create HEADERS frame
-        HeadersFrame headersFrame = new HeadersFrame(request.newHttp2Session(), 1, Http2Frame.FLAG_END_HEADERS, 0);
+        HeadersFrame headersFrame = new HeadersFrame(request.newHttp2Session(), streamId, Http2Frame.FLAG_END_HEADERS, 0);
 
         List<HeaderValue> headers = new ArrayList<>();
         headers.add(new HeaderValue(":status", String.valueOf(response.getHttpStatus())));
@@ -47,7 +49,7 @@ final class Http2OutputStream extends AbstractOutputStream {
         headersFrame.setHeaders(headers);
         headersFrame.writeTo(writeBuffer);
         writeBuffer.flush();
-        System.err.println("Header已发送...");
+        System.err.println("StreamID: " + streamId + " Header已发送...");
         committed = true;
     }
 
@@ -59,7 +61,8 @@ final class Http2OutputStream extends AbstractOutputStream {
     @Override
     public void write(byte[] b, int off, int len) throws IOException {
         writeHeader(HeaderWriteSource.WRITE);
-        DataFrame dataFrame = new DataFrame(1, DataFrame.FLAG_END_STREAM, len);
+        System.out.println("write streamId:" + streamId);
+        DataFrame dataFrame = new DataFrame(streamId, 0, len);
         dataFrame.writeTo(writeBuffer, b, off, len);
     }
 
