@@ -11,10 +11,8 @@ package org.smartboot.http.server;
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
-import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.enums.HttpTypeEnum;
-import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.h2.codec.DataFrame;
 import org.smartboot.http.server.h2.codec.HeadersFrame;
 import org.smartboot.http.server.h2.codec.Http2Frame;
@@ -34,6 +32,8 @@ import java.nio.ByteBuffer;
 import java.util.Base64;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Http消息处理器
@@ -45,6 +45,7 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
     private static final byte[] H2C_PREFACE = "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n".getBytes();
     private static final int FRAME_HEADER_SIZE = 9;
     private ServerHandler<HttpRequest, HttpResponse> serverHandler;
+    private ExecutorService executor = Executors.newCachedThreadPool();
 
     @Override
     public final void onHeaderComplete(Request request) throws IOException {
@@ -171,10 +172,29 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
                 Http2RequestImpl request = session.getStream(headersFrame.streamId());
                 request.checkState(Http2RequestImpl.STATE_HEADER_FRAME);
                 Map<String, HeaderValue> headers = request.getHeaders();
-                headersFrame.getHeaders().forEach(h -> headers.put(h.getName(), h));
+                headersFrame.getHeaders().forEach(h -> {
+                    if (h.getName().charAt(0) == ':') {
+                        switch (h.getName()) {
+                            case ":method":
+                                request.setMethod(h.getValue());
+                                break;
+                            case ":path":
+                                request.setRequestURI(h.getValue());
+                                break;
+                            case ":scheme":
+                            case ":authority":
+                                return;
+                        }
+                    } else {
+                        headers.put(h.getName(), h);
+                    }
+                });
                 if (headersFrame.getFlag(Http2Frame.FLAG_END_HEADERS)) {
                     request.setState(Http2RequestImpl.STATE_DATA_FRAME);
                     onHeaderComplete(request);
+                    if (request.getContentLength() > 0) {
+                        request.setBody(new ByteArrayOutputStream((int) request.getContentLength()));
+                    }
                 }
                 break;
             }
@@ -182,7 +202,11 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
                 DataFrame dataFrame = (DataFrame) frame;
                 Http2RequestImpl request = session.getStream(dataFrame.streamId());
                 request.checkState(Http2RequestImpl.STATE_DATA_FRAME);
-                onBodyStream(dataFrame, request);
+                request.getBody().write(dataFrame.getData());
+                if (dataFrame.getFlag(DataFrame.FLAG_END_STREAM)) {
+                    request.bodyDone();
+                    handleHttpRequest(request);
+                }
             }
             break;
             default:
@@ -215,43 +239,6 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
 
     protected void onHeaderComplete(Http2RequestImpl request) throws IOException {
 
-    }
-
-    protected void onBodyStream(DataFrame dataFrame, Http2RequestImpl request) throws IOException {
-        System.out.println("dataFrame:" + dataFrame);
-        ByteBuffer buffer = dataFrame.getDataBuffer();
-        if (request.getReadBuffer() != null) {
-            buffer = ByteBuffer.allocate(request.getReadBuffer().remaining() + dataFrame.getDataBuffer().remaining());
-            buffer.put(request.getReadBuffer());
-            buffer.put(dataFrame.getDataBuffer());
-            buffer.flip();
-        }
-        if (HttpMethodEnum.GET.getMethod().equals(request.getMethod())) {
-            if (!dataFrame.getFlag(Http2Frame.FLAG_END_STREAM)) {
-                throw new IllegalStateException();
-            }
-            handleHttpRequest(request);
-            return;
-        }
-        long postLength = request.getContentLength();
-        //Post请求
-        if (HttpMethodEnum.POST.getMethod().equals(request.getMethod())
-                && StringUtils.startsWith(request.getContentType(), HeaderValueEnum.X_WWW_FORM_URLENCODED.getName())) {
-            if (request.getFormData() == null) {
-                request.setFormData(new ByteArrayOutputStream());
-            }
-            byte[] bytes = new byte[buffer.remaining()];
-            buffer.get(bytes);
-            request.getFormData().write(bytes);
-            if (dataFrame.getFlag(Http2Frame.FLAG_END_STREAM)) {
-                handleHttpRequest(request);
-            }
-        } else {
-            if (dataFrame.getFlag(DataFrame.FLAG_END_STREAM)) {
-                return;
-            }
-            handleHttpRequest(request);
-        }
     }
 
     private void handleHttpRequest(Http2RequestImpl abstractRequest) {

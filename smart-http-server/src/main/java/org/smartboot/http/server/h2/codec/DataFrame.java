@@ -105,8 +105,8 @@ public class DataFrame extends Http2Frame {
         return padding;
     }
 
-    public ByteBuffer getDataBuffer() {
-        return dataBuffer;
+    public byte[] getData() {
+        return dataBuffer.array();
     }
 
     @Override

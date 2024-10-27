@@ -15,7 +15,6 @@ import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.io.BodyInputStream;
 import org.smartboot.http.common.io.ChunkedInputStream;
 import org.smartboot.http.common.io.PostInputStream;
-import org.smartboot.http.common.io.ReadListener;
 import org.smartboot.http.common.multipart.MultipartConfig;
 import org.smartboot.http.common.multipart.Part;
 import org.smartboot.http.common.utils.SmartDecoder;
@@ -42,30 +41,7 @@ public class HttpRequestImpl extends AbstractRequest {
      * Http Body解码器
      */
     private SmartDecoder bodyDecoder;
-    /**
-     * 空流
-     */
-    private static final BodyInputStream EMPTY_INPUT_STREAM = new BodyInputStream(null) {
-        @Override
-        public void setReadListener(ReadListener listener) {
-            throw new IllegalStateException();
-        }
 
-        @Override
-        public int read(byte[] b, int off, int len) {
-            return -1;
-        }
-
-        @Override
-        public int available() {
-            return 0;
-        }
-
-        @Override
-        public void close() {
-
-        }
-    };
     private final HttpResponseImpl response;
     private BodyInputStream inputStream;
     private Map<String, String> trailerFields;
@@ -93,7 +69,7 @@ public class HttpRequestImpl extends AbstractRequest {
             return inputStream;
         }
         if (request.getFormUrlencoded() != null || multipartParsed) {
-            inputStream = EMPTY_INPUT_STREAM;
+            inputStream = BodyInputStream.EMPTY_INPUT_STREAM;
         }
         //如果一个消息即存在传输译码（Transfer-Encoding）头域并且也 Content-Length 头域，后者会被忽略。
         else if (HeaderValueEnum.CHUNKED.getName().equalsIgnoreCase(request.getHeader(HeaderNameEnum.TRANSFER_ENCODING.getName()))) {
@@ -103,7 +79,7 @@ public class HttpRequestImpl extends AbstractRequest {
             if (contentLength > 0) {
                 inputStream = new PostInputStream(request.getAioSession(), contentLength);
             } else {
-                inputStream = EMPTY_INPUT_STREAM;
+                inputStream = BodyInputStream.EMPTY_INPUT_STREAM;
             }
         }
         return inputStream;

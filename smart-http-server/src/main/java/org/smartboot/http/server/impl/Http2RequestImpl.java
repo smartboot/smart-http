@@ -3,16 +3,19 @@ package org.smartboot.http.server.impl;
 import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.Reset;
+import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.io.BodyInputStream;
+import org.smartboot.http.common.io.ReadListener;
 import org.smartboot.http.common.multipart.MultipartConfig;
 import org.smartboot.http.common.multipart.Part;
+import org.smartboot.http.common.utils.NumberUtils;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.socket.util.Attachment;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -23,19 +26,29 @@ import java.util.Locale;
 import java.util.Map;
 
 public class Http2RequestImpl implements HttpRequest, Reset {
+    private static final int INIT_CONTENT_LENGTH = -2;
+    private static final int NONE_CONTENT_LENGTH = -1;
     public static final int STATE_HEADER_FRAME = 0;
     public static final int STATE_DATA_FRAME = 1;
     public static final int STATE_DONE = 2;
     private int state = STATE_HEADER_FRAME;
     private final Map<String, HeaderValue> headers = new HashMap<>();
-    private ByteBuffer readBuffer;
     private final int streamId;
-    private ByteArrayOutputStream formData;
+    private ByteArrayOutputStream body;
+    private BodyInputStream bodyInputStream = BodyInputStream.EMPTY_INPUT_STREAM;
     private final Http2ResponseImpl response;
+    /**
+     * 请求方法
+     */
+    private String method;
+    private String requestUri;
+    private String requestUrl;
+    private String contentType;
+    private long contentLength = 1;
 
     public Http2RequestImpl(int streamId, Request request) {
         this.streamId = streamId;
-        response = new Http2ResponseImpl(streamId,request);
+        response = new Http2ResponseImpl(streamId, request);
     }
 
     public Map<String, HeaderValue> getHeaders() {
@@ -84,12 +97,15 @@ public class Http2RequestImpl implements HttpRequest, Reset {
 
     @Override
     public BodyInputStream getInputStream() throws IOException {
-        return null;
+        return bodyInputStream;
     }
 
-    @Override
     public String getRequestURI() {
-        return "";
+        return requestUri;
+    }
+
+    public void setRequestURI(String uri) {
+        this.requestUri = uri;
     }
 
     @Override
@@ -99,7 +115,11 @@ public class Http2RequestImpl implements HttpRequest, Reset {
 
     @Override
     public String getMethod() {
-        return "";
+        return method;
+    }
+
+    public void setMethod(String method) {
+        this.method = method;
     }
 
     @Override
@@ -114,7 +134,15 @@ public class Http2RequestImpl implements HttpRequest, Reset {
 
     @Override
     public String getRequestURL() {
-        return "";
+        if (requestUrl != null) {
+            return requestUrl;
+        }
+        if (requestUri.startsWith("/")) {
+            requestUrl = getScheme() + "://" + getHeader(HeaderNameEnum.HOST.getName()) + getRequestURI();
+        } else {
+            requestUrl = requestUri;
+        }
+        return requestUrl;
     }
 
     @Override
@@ -122,14 +150,25 @@ public class Http2RequestImpl implements HttpRequest, Reset {
         return "";
     }
 
-    @Override
     public String getContentType() {
-        return "";
+        if (contentType != null) {
+            return contentType;
+        }
+        contentType = getHeader(HeaderNameEnum.CONTENT_TYPE.getName());
+        return contentType;
     }
 
-    @Override
+
     public long getContentLength() {
-        return 0;
+        if (contentLength > INIT_CONTENT_LENGTH) {
+            return contentLength;
+        }
+        //不包含content-length,则为：-1
+        contentLength = NumberUtils.toLong(getHeader(HeaderNameEnum.CONTENT_LENGTH.getName()), NONE_CONTENT_LENGTH);
+//        if (contentLength >= remainingThreshold) {
+//            throw new HttpException(HttpStatus.PAYLOAD_TOO_LARGE);
+//        }
+        return contentLength;
     }
 
     @Override
@@ -206,20 +245,27 @@ public class Http2RequestImpl implements HttpRequest, Reset {
 
     }
 
-    public ByteBuffer getReadBuffer() {
-        return readBuffer;
+    public ByteArrayOutputStream getBody() {
+        return body;
     }
 
-    public void setReadBuffer(ByteBuffer readBuffer) {
-        this.readBuffer = readBuffer;
+    public void setBody(ByteArrayOutputStream body) {
+        this.body = body;
     }
 
-    public ByteArrayOutputStream getFormData() {
-        return formData;
-    }
+    public void bodyDone() {
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(body.toByteArray());
+        bodyInputStream = new BodyInputStream(null) {
+            @Override
+            public void setReadListener(ReadListener listener) {
+                throw new UnsupportedOperationException();
+            }
 
-    public void setFormData(ByteArrayOutputStream formData) {
-        this.formData = formData;
+            @Override
+            public int read(byte[] b, int off, int len) throws IOException {
+                return inputStream.read(b, off, len);
+            }
+        };
     }
 
     public AbstractResponse getResponse() {
