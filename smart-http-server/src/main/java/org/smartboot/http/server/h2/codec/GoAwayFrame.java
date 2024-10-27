@@ -30,23 +30,49 @@ import java.nio.ByteBuffer;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class GoAwayFrame extends Http2Frame {
-    private final int lastStream;
-    private final byte[] debugData;
+    private static final int STATE_DEFAULT = 0;
+    private static final int STATE_DEBUG_DATA = 1;
+    private int state = STATE_DEFAULT;
+    private int lastStream;
+    private int errorCode;
+    private byte[] debugData;
 
-
-    public GoAwayFrame(int lastStream, int errorCode) {
-        this(lastStream, errorCode, new byte[0]);
+    public GoAwayFrame(int streamId, int flags, int remaining) {
+        super(streamId, flags, remaining);
     }
 
-    public GoAwayFrame(int lastStream, int errorCode, byte[] debugData) {
-        super(0, 0, errorCode);
-        this.lastStream = lastStream;
-        this.debugData = debugData.clone();
-    }
 
     @Override
     public boolean decode(ByteBuffer buffer) {
-        return false;
+        if (finishDecode()) {
+            return true;
+        }
+        switch (state) {
+            case STATE_DEFAULT:
+                if (buffer.remaining() < 8) {
+                    return false;
+                }
+                lastStream = buffer.getInt();
+                errorCode = buffer.getInt();
+                remaining -= 8;
+                state = STATE_DEBUG_DATA;
+            case STATE_DEBUG_DATA:
+                if (remaining > 0) {
+                    if (buffer.remaining() < remaining) {
+                        return false;
+                    }
+                    debugData = new byte[remaining];
+                    buffer.get(debugData);
+                } else {
+                    debugData = new byte[0];
+                }
+                remaining = 0;
+                break;
+            default:
+                throw new IllegalStateException();
+        }
+        checkEndRemaining();
+        return true;
     }
 
     @Override

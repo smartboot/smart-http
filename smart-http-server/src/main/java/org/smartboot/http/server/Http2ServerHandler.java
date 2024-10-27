@@ -14,6 +14,7 @@ import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.enums.HttpTypeEnum;
 import org.smartboot.http.server.h2.codec.DataFrame;
+import org.smartboot.http.server.h2.codec.GoAwayFrame;
 import org.smartboot.http.server.h2.codec.HeadersFrame;
 import org.smartboot.http.server.h2.codec.Http2Frame;
 import org.smartboot.http.server.h2.codec.SettingsFrame;
@@ -209,6 +210,10 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
                 }
             }
             break;
+            case Http2Frame.FRAME_TYPE_GOAWAY: {
+                System.out.println("GoAwayFrame:" + ((GoAwayFrame) frame).getLastStream());
+                break;
+            }
             default:
                 throw new IllegalStateException();
         }
@@ -233,6 +238,8 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
                 return new WindowUpdateFrame(streamId, flags, length);
             case Http2Frame.FRAME_TYPE_DATA:
                 return new DataFrame(streamId, flags, length);
+            case Http2Frame.FRAME_TYPE_GOAWAY:
+                return new GoAwayFrame(streamId, flags, length);
         }
         throw new IllegalStateException("invalid type :" + type);
     }
