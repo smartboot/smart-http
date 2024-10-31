@@ -19,6 +19,7 @@ import org.smartboot.http.server.h2.codec.HeadersFrame;
 import org.smartboot.http.server.h2.codec.Http2Frame;
 import org.smartboot.http.server.h2.codec.SettingsFrame;
 import org.smartboot.http.server.h2.codec.WindowUpdateFrame;
+import org.smartboot.http.server.h2.hpack.DecodingCallback;
 import org.smartboot.http.server.impl.AbstractResponse;
 import org.smartboot.http.server.impl.Http2RequestImpl;
 import org.smartboot.http.server.impl.Http2Session;
@@ -120,7 +121,7 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
                 if (buffer.remaining() < FRAME_HEADER_SIZE) {
                     break;
                 }
-                Http2Frame frame = parseFrame(session, buffer);
+                Http2Frame frame = parseFrame(buffer);
                 session.setCurrentFrame(frame);
                 session.setState(Http2Session.STATE_FRAME_PAYLOAD);
             }
@@ -173,21 +174,26 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
                 Http2RequestImpl request = session.getStream(headersFrame.streamId());
                 request.checkState(Http2RequestImpl.STATE_HEADER_FRAME);
                 Map<String, HeaderValue> headers = request.getHeaders();
-                headersFrame.getHeaders().forEach(h -> {
-                    if (h.getName().charAt(0) == ':') {
-                        switch (h.getName()) {
-                            case ":method":
-                                request.setMethod(h.getValue());
-                                break;
-                            case ":path":
-                                request.setRequestURI(h.getValue());
-                                break;
-                            case ":scheme":
-                            case ":authority":
-                                return;
+                session.getHpackDecoder().decode(headersFrame.getFragment(), headersFrame.getFlag(Http2Frame.FLAG_END_HEADERS), new DecodingCallback() {
+                    @Override
+                    public void onDecoded(CharSequence n, CharSequence v) {
+                        String name = n.toString();
+                        String value = v.toString();
+                        if (name.charAt(0) == ':') {
+                            switch (name) {
+                                case ":method":
+                                    request.setMethod(value);
+                                    break;
+                                case ":path":
+                                    request.setRequestURI(value);
+                                    break;
+                                case ":scheme":
+                                case ":authority":
+                                    return;
+                            }
+                        } else {
+                            headers.put(name, new HeaderValue(name, value));
                         }
-                    } else {
-                        headers.put(h.getName(), h);
                     }
                 });
                 if (headersFrame.getFlag(Http2Frame.FLAG_END_HEADERS)) {
@@ -222,7 +228,7 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
     }
 
 
-    private static Http2Frame parseFrame(Http2Session session, ByteBuffer buffer) {
+    private static Http2Frame parseFrame(ByteBuffer buffer) {
         int first = buffer.getInt();
         int length = first >> 8;
         int type = first & 0x0f;
@@ -233,7 +239,7 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
         }
         switch (type) {
             case Http2Frame.FRAME_TYPE_HEADERS:
-                return new HeadersFrame(session, streamId, flags, length);
+                return new HeadersFrame(streamId, flags, length);
             case Http2Frame.FRAME_TYPE_SETTINGS:
                 return new SettingsFrame(streamId, flags, length);
             case Http2Frame.FRAME_TYPE_WINDOW_UPDATE:

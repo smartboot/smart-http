@@ -68,11 +68,11 @@ final class Http2OutputStream extends AbstractOutputStream {
 
         boolean multipleHeaders = buffers.size()>1;
         if (push) {
-            PushPromiseFrame headersFrame = new PushPromiseFrame(http2Session, streamId, multipleHeaders?0:Http2Frame.FLAG_END_HEADERS, 0);
+            PushPromiseFrame headersFrame = new PushPromiseFrame(streamId, multipleHeaders?0:Http2Frame.FLAG_END_HEADERS, 0);
             headersFrame.setFragment(buffers.isEmpty()?null:buffers.get(0));
             headersFrame.writeTo(writeBuffer);
         } else {
-            HeadersFrame headersFrame = new HeadersFrame(http2Session, streamId, multipleHeaders?0:Http2Frame.FLAG_END_HEADERS, 0);
+            HeadersFrame headersFrame = new HeadersFrame( streamId, multipleHeaders?0:Http2Frame.FLAG_END_HEADERS, 0);
             headersFrame.setFragment(buffers.isEmpty()?null:buffers.get(0));
             headersFrame.writeTo(writeBuffer);
         }

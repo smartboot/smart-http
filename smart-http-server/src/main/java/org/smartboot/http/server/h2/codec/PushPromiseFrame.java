@@ -1,15 +1,9 @@
 package org.smartboot.http.server.h2.codec;
 
-import org.smartboot.http.common.HeaderValue;
-import org.smartboot.http.server.h2.hpack.DecodingCallback;
-import org.smartboot.http.server.impl.Http2Session;
 import org.smartboot.socket.transport.WriteBuffer;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 public class PushPromiseFrame extends Http2Frame {
 
@@ -19,8 +13,8 @@ public class PushPromiseFrame extends Http2Frame {
     private ByteBuffer fragment = EMPTY_BUFFER;
     private byte[] padding = EMPTY_PADDING;
 
-    public PushPromiseFrame(Http2Session http2Session, int streamId, int flags, int remaining) {
-        super(http2Session, streamId, flags, remaining);
+    public PushPromiseFrame(int streamId, int flags, int remaining) {
+        super(streamId, flags, remaining);
     }
 
 

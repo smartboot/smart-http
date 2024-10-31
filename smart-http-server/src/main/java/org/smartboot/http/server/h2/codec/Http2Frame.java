@@ -1,6 +1,5 @@
 package org.smartboot.http.server.h2.codec;
 
-import org.smartboot.http.server.impl.Http2Session;
 import org.smartboot.socket.transport.WriteBuffer;
 
 import java.io.IOException;
@@ -8,7 +7,7 @@ import java.nio.ByteBuffer;
 
 
 public abstract class Http2Frame {
-public static final ByteBuffer EMPTY_BUFFER = ByteBuffer.allocate(0);
+    public static final ByteBuffer EMPTY_BUFFER = ByteBuffer.allocate(0);
     public static final int FRAME_TYPE_DATA = 0x0;
     public static final int FRAME_TYPE_HEADERS = 0x1;
     public static final int FRAME_TYPE_PRIORITY = 0x2;
@@ -38,14 +37,8 @@ public static final ByteBuffer EMPTY_BUFFER = ByteBuffer.allocate(0);
      * 解码阶段
      */
     protected int state = STATE_PAD_LENGTH;
-    protected final Http2Session session;
 
     public Http2Frame(int streamId, int flags, int remaining) {
-        this(null, streamId, flags, remaining);
-    }
-
-    public Http2Frame(Http2Session session, int streamId, int flags, int remaining) {
-        this.session = session;
         this.streamId = streamId;
         this.flags = flags;
         this.remaining = remaining;

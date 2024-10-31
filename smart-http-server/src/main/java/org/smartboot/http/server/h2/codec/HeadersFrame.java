@@ -1,15 +1,10 @@
 package org.smartboot.http.server.h2.codec;
 
-import org.smartboot.http.common.HeaderValue;
-import org.smartboot.http.server.h2.hpack.DecodingCallback;
 import org.smartboot.http.server.impl.Http2Session;
 import org.smartboot.socket.transport.WriteBuffer;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 public class HeadersFrame extends Http2Frame {
     private int padLength;
@@ -19,8 +14,8 @@ public class HeadersFrame extends Http2Frame {
     private ByteBuffer fragment = EMPTY_BUFFER;
     private byte[] padding = EMPTY_PADDING;
 
-    public HeadersFrame(Http2Session session, int streamId, int flags, int remaining) {
-        super(session, streamId, flags, remaining);
+    public HeadersFrame(int streamId, int flags, int remaining) {
+        super(streamId, flags, remaining);
     }
 
 //    public HeadersFrame(int streamId) {
