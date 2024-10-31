@@ -24,7 +24,7 @@ import java.util.Map;
  */
 final class Http2OutputStream extends AbstractOutputStream {
     private final int streamId;
-    private boolean push;
+    private final boolean push;
     private final Http2Session http2Session;
 
     public Http2OutputStream(int streamId, Http2RequestImpl httpRequest, Http2ResponseImpl response, boolean push) {
@@ -48,8 +48,7 @@ final class Http2OutputStream extends AbstractOutputStream {
         // Create HEADERS frame
 
 
-
-        response.setHeader(":status",String.valueOf(response.getHttpStatus()));
+        response.setHeader(":status", String.valueOf(response.getHttpStatus()));
         List<ByteBuffer> buffers = new ArrayList<>();
         Encoder encoder = http2Session.getHpackEncoder();
         ByteBuffer buffer = ByteBuffer.allocate(1024);
@@ -62,28 +61,28 @@ final class Http2OutputStream extends AbstractOutputStream {
             }
         }
         buffer.flip();
-        if(buffer.hasRemaining()){
+        if (buffer.hasRemaining()) {
             buffers.add(buffer);
         }
 
-        boolean multipleHeaders = buffers.size()>1;
+        boolean multipleHeaders = buffers.size() > 1;
         if (push) {
-            PushPromiseFrame headersFrame = new PushPromiseFrame(streamId, multipleHeaders?0:Http2Frame.FLAG_END_HEADERS, 0);
-            headersFrame.setFragment(buffers.isEmpty()?null:buffers.get(0));
+            PushPromiseFrame headersFrame = new PushPromiseFrame(streamId, multipleHeaders ? 0 : Http2Frame.FLAG_END_HEADERS, 0);
+            headersFrame.setFragment(buffers.isEmpty() ? null : buffers.get(0));
             headersFrame.writeTo(writeBuffer);
         } else {
-            HeadersFrame headersFrame = new HeadersFrame( streamId, multipleHeaders?0:Http2Frame.FLAG_END_HEADERS, 0);
-            headersFrame.setFragment(buffers.isEmpty()?null:buffers.get(0));
+            HeadersFrame headersFrame = new HeadersFrame(streamId, multipleHeaders ? 0 : Http2Frame.FLAG_END_HEADERS, 0);
+            headersFrame.setFragment(buffers.isEmpty() ? null : buffers.get(0));
             headersFrame.writeTo(writeBuffer);
         }
-        for(int i = 1; i < buffers.size()-1; i++){
-            ContinuationFrame continuationFrame = new ContinuationFrame(null,  0, 0);
+        for (int i = 1; i < buffers.size() - 1; i++) {
+            ContinuationFrame continuationFrame = new ContinuationFrame(streamId, 0, 0);
             continuationFrame.setFragment(buffers.get(i));
             continuationFrame.writeTo(writeBuffer);
         }
-        if(multipleHeaders){
-            ContinuationFrame continuationFrame = new ContinuationFrame(null,  Http2Frame.FLAG_END_HEADERS, 0);
-            continuationFrame.setFragment(buffers.get(buffers.size()-1));
+        if (multipleHeaders) {
+            ContinuationFrame continuationFrame = new ContinuationFrame(streamId, Http2Frame.FLAG_END_HEADERS, 0);
+            continuationFrame.setFragment(buffers.get(buffers.size() - 1));
             continuationFrame.writeTo(writeBuffer);
         }
         writeBuffer.flush();
