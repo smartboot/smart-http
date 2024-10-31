@@ -8,7 +8,7 @@ import java.nio.ByteBuffer;
 
 
 public abstract class Http2Frame {
-
+public static final ByteBuffer EMPTY_BUFFER = ByteBuffer.allocate(0);
     public static final int FRAME_TYPE_DATA = 0x0;
     public static final int FRAME_TYPE_HEADERS = 0x1;
     public static final int FRAME_TYPE_PRIORITY = 0x2;

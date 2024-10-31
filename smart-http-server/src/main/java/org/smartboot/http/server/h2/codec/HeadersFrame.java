@@ -16,12 +16,11 @@ public class HeadersFrame extends Http2Frame {
     private int streamDependency;
     private int weight;
     private boolean exclusive;
-    private ByteBuffer fragment;
+    private ByteBuffer fragment = EMPTY_BUFFER;
     private byte[] padding = EMPTY_PADDING;
-    private Collection<HeaderValue> headers;
 
     public HeadersFrame(Http2Session session, int streamId, int flags, int remaining) {
-        super(session,streamId, flags, remaining);
+        super(session, streamId, flags, remaining);
     }
 
 //    public HeadersFrame(int streamId) {
@@ -69,23 +68,6 @@ public class HeadersFrame extends Http2Frame {
                     return false;
                 }
                 fragment.flip();
-                try {
-                    Map<String, HeaderValue> headers = new HashMap<>();
-                    session.getHpackDecoder().decode(fragment, getFlag(FLAG_END_HEADERS), new DecodingCallback() {
-                        @Override
-                        public void onDecoded(CharSequence name, CharSequence value) {
-                            System.out.println(name + ":" + value);
-                            if (headers.containsKey(name)) {
-                                headers.get(name).setNextValue(new HeaderValue(name.toString(), value.toString()));
-                            } else {
-                                headers.put(name.toString(), new HeaderValue(name.toString(), value.toString()));
-                            }
-                        }
-                    });
-                    this.headers = headers.values();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
                 // Now 'headers' contains the decoded HTTP/2 headers
                 state = STATE_PADDING;
             case STATE_PADDING:
@@ -117,14 +99,7 @@ public class HeadersFrame extends Http2Frame {
             payloadLength += 5;
             flags |= FLAG_PRIORITY;
         }
-        for (HeaderValue header : headers) {
-            session.getHpackEncoder().header(header.getName(), header.getValue());
-        }
-        fragment = ByteBuffer.allocate(1024);
-        if (session.getHpackEncoder().encode(fragment)) {
-            System.out.println("success");
-        }
-        fragment.flip();
+
         payloadLength += fragment.remaining();
 
         // Write frame header
@@ -154,12 +129,12 @@ public class HeadersFrame extends Http2Frame {
         }
     }
 
-    public void setHeaders(Collection<HeaderValue> headers) {
-        this.headers = headers;
+    public ByteBuffer getFragment() {
+        return fragment;
     }
 
-    public Collection<HeaderValue> getHeaders() {
-        return headers;
+    public void setFragment(ByteBuffer fragment) {
+        this.fragment = fragment;
     }
 
     @Override
