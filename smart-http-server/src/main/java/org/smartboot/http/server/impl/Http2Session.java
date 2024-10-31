@@ -11,6 +11,7 @@ import org.smartboot.socket.transport.WriteBuffer;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Http2Session {
     private static final Logger LOGGER = LoggerFactory.getLogger(Http2Session.class);
@@ -20,8 +21,9 @@ public class Http2Session {
     public static final int STATE_FRAME_HEAD = 1 << 2;
     public static final int STATE_FRAME_PAYLOAD = 1 << 3;
     private final ConcurrentHashMap<Integer, Http2RequestImpl> streams = new ConcurrentHashMap<>();
-    private Decoder hpackDecoder = new Decoder(4096);
-    private Encoder hpackEncoder = new Encoder(4096);
+    private final Decoder hpackDecoder = new Decoder(4096);
+    private final Encoder hpackEncoder = new Encoder(4096);
+    private final AtomicInteger pushStreamId = new AtomicInteger(0);
 
     private final SettingsFrame settings = new SettingsFrame(0, true) {
         @Override
@@ -47,7 +49,7 @@ public class Http2Session {
     }
 
     public Http2RequestImpl getStream(int streamId) {
-        return streams.computeIfAbsent(streamId, k -> new Http2RequestImpl(streamId, request));
+        return streams.computeIfAbsent(streamId, k -> new Http2RequestImpl(streamId, this, false));
     }
 
 
@@ -84,6 +86,10 @@ public class Http2Session {
         return hpackEncoder;
     }
 
+    public Request getRequest() {
+        return request;
+    }
+
     /**
      * 更新服务端Settings配置
      */
@@ -95,5 +101,9 @@ public class Http2Session {
         settings.setMaxFrameSize(settingsFrame.getMaxFrameSize());
         settings.setMaxHeaderListSize(settingsFrame.getMaxHeaderListSize());
         LOGGER.info("updateSettings:" + settings);
+    }
+
+    public AtomicInteger getPushStreamId() {
+        return pushStreamId;
     }
 }

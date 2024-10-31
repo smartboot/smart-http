@@ -11,7 +11,6 @@ package org.smartboot.http.common.io;
 import org.smartboot.http.common.Reset;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.utils.Constant;
-import org.smartboot.socket.transport.AioSession;
 import org.smartboot.socket.transport.WriteBuffer;
 
 import java.io.IOException;
@@ -30,7 +29,6 @@ import java.util.function.Supplier;
  */
 public abstract class BufferOutputStream extends OutputStream implements Reset {
     private static final Map<String, byte[]> HEADER_NAME_EXT_MAP = new ConcurrentHashMap<>();
-    protected final AioSession session;
     protected final WriteBuffer writeBuffer;
     protected boolean committed = false;
     protected boolean chunkedSupport = true;
@@ -43,9 +41,8 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
     protected long remaining = -1;
     private WriteListener writeListener;
 
-    public BufferOutputStream(AioSession session) {
-        this.session = session;
-        this.writeBuffer = session.writeBuffer();
+    public BufferOutputStream(WriteBuffer writeBuffer) {
+        this.writeBuffer = writeBuffer;
     }
 
     /**

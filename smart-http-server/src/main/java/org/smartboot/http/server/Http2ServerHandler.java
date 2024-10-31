@@ -195,6 +195,8 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
                     onHeaderComplete(request);
                     if (request.getContentLength() > 0) {
                         request.setBody(new ByteArrayOutputStream((int) request.getContentLength()));
+                    } else {
+                        request.setBody(new ByteArrayOutputStream());
                     }
                 }
                 break;
@@ -248,7 +250,7 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
 
     }
 
-    private void handleHttpRequest(Http2RequestImpl abstractRequest) {
+    public final void handleHttpRequest(Http2RequestImpl abstractRequest) {
         AbstractResponse response = abstractRequest.getResponse();
         CompletableFuture<Object> future = new CompletableFuture<>();
         try {

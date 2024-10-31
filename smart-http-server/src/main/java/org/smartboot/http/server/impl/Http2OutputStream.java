@@ -12,6 +12,7 @@ import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.server.h2.codec.DataFrame;
 import org.smartboot.http.server.h2.codec.HeadersFrame;
 import org.smartboot.http.server.h2.codec.Http2Frame;
+import org.smartboot.http.server.h2.codec.PushPromiseFrame;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,11 +24,15 @@ import java.util.List;
  */
 final class Http2OutputStream extends AbstractOutputStream {
     private final int streamId;
+    private boolean push;
+    private final Http2Session http2Session;
 
-    public Http2OutputStream(int streamId, Request httpRequest, Http2ResponseImpl response) {
+    public Http2OutputStream(int streamId, Http2RequestImpl httpRequest, Http2ResponseImpl response, boolean push) {
         super(httpRequest, response);
         disableChunked();
+        this.http2Session = httpRequest.getSession();
         this.streamId = streamId;
+        this.push = push;
     }
 
     protected void writeHeader(HeaderWriteSource source) throws IOException {
@@ -41,13 +46,21 @@ final class Http2OutputStream extends AbstractOutputStream {
             return;
         }
         // Create HEADERS frame
-        HeadersFrame headersFrame = new HeadersFrame(request.newHttp2Session(), streamId, Http2Frame.FLAG_END_HEADERS, 0);
+
 
         List<HeaderValue> headers = new ArrayList<>();
         headers.add(new HeaderValue(":status", String.valueOf(response.getHttpStatus())));
+
         response.getHeaders().forEach((k, v) -> headers.add(new HeaderValue(k, v.getValue())));
-        headersFrame.setHeaders(headers);
-        headersFrame.writeTo(writeBuffer);
+        if (push) {
+            PushPromiseFrame headersFrame = new PushPromiseFrame(http2Session, streamId, Http2Frame.FLAG_END_HEADERS, 0);
+            headersFrame.setHeaders(headers);
+            headersFrame.writeTo(writeBuffer);
+        } else {
+            HeadersFrame headersFrame = new HeadersFrame(http2Session, streamId, Http2Frame.FLAG_END_HEADERS, 0);
+            headersFrame.setHeaders(headers);
+            headersFrame.writeTo(writeBuffer);
+        }
         writeBuffer.flush();
         System.err.println("StreamID: " + streamId + " Header已发送...");
         committed = true;

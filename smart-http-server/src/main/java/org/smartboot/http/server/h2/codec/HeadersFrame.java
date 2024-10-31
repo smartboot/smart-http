@@ -19,16 +19,14 @@ public class HeadersFrame extends Http2Frame {
     private ByteBuffer fragment;
     private byte[] padding = EMPTY_PADDING;
     private Collection<HeaderValue> headers;
-    private Http2Session session;
 
     public HeadersFrame(Http2Session session, int streamId, int flags, int remaining) {
-        super(streamId, flags, remaining);
-        this.session = session;
+        super(session,streamId, flags, remaining);
     }
 
-    public HeadersFrame(int streamId) {
-        super(streamId, FLAG_END_HEADERS, 0);
-    }
+//    public HeadersFrame(int streamId) {
+//        super(streamId, FLAG_END_HEADERS, 0);
+//    }
 
 
     @Override

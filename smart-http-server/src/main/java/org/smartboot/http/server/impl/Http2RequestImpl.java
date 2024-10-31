@@ -1,31 +1,23 @@
 package org.smartboot.http.server.impl;
 
-import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.Reset;
-import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.io.BodyInputStream;
 import org.smartboot.http.common.io.ReadListener;
 import org.smartboot.http.common.multipart.MultipartConfig;
 import org.smartboot.http.common.multipart.Part;
-import org.smartboot.http.common.utils.NumberUtils;
 import org.smartboot.http.server.HttpRequest;
-import org.smartboot.socket.util.Attachment;
+import org.smartboot.http.server.PushBuilder;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
-public class Http2RequestImpl implements HttpRequest, Reset {
+public class Http2RequestImpl extends CommonRequest implements HttpRequest, Reset {
     private static final int INIT_CONTENT_LENGTH = -2;
     private static final int NONE_CONTENT_LENGTH = -1;
     public static final int STATE_HEADER_FRAME = 0;
@@ -37,19 +29,15 @@ public class Http2RequestImpl implements HttpRequest, Reset {
     private ByteArrayOutputStream body;
     private BodyInputStream bodyInputStream = BodyInputStream.EMPTY_INPUT_STREAM;
     private final Http2ResponseImpl response;
-    /**
-     * 请求方法
-     */
-    private String method;
-    private String requestUri;
-    private String requestUrl;
-    private String contentType;
-    private long contentLength = 1;
+    private final Http2Session session;
 
-    public Http2RequestImpl(int streamId, Request request) {
+    public Http2RequestImpl(int streamId, Http2Session session, boolean push) {
+        super(session.getRequest().aioSession, session.getRequest().getConfiguration());
         this.streamId = streamId;
-        response = new Http2ResponseImpl(streamId, request);
+        this.session = session;
+        response = new Http2ResponseImpl(streamId, this, push);
     }
+
 
     public Map<String, HeaderValue> getHeaders() {
         return headers;
@@ -68,122 +56,6 @@ public class Http2RequestImpl implements HttpRequest, Reset {
     @Override
     public void reset() {
 
-    }
-
-    @Override
-    public String getHeader(String headName) {
-        HeaderValue headerValue = headers.get(headName);
-        return headerValue == null ? null : headerValue.getValue();
-    }
-
-    @Override
-    public Collection<String> getHeaders(String name) {
-        HeaderValue headerValue = headers.get(name);
-        if (headerValue == null) {
-            return Collections.emptyList();
-        }
-        List<String> values = new ArrayList<>(4);
-        do {
-            values.add(headerValue.getValue());
-            headerValue = headerValue.getNextValue();
-        } while (headerValue != null);
-        return values;
-    }
-
-    @Override
-    public Collection<String> getHeaderNames() {
-        return headers.keySet();
-    }
-
-    @Override
-    public BodyInputStream getInputStream() throws IOException {
-        return bodyInputStream;
-    }
-
-    public String getRequestURI() {
-        return requestUri;
-    }
-
-    public void setRequestURI(String uri) {
-        this.requestUri = uri;
-    }
-
-    @Override
-    public String getProtocol() {
-        return "";
-    }
-
-    @Override
-    public String getMethod() {
-        return method;
-    }
-
-    public void setMethod(String method) {
-        this.method = method;
-    }
-
-    @Override
-    public boolean isSecure() {
-        return false;
-    }
-
-    @Override
-    public String getScheme() {
-        return "";
-    }
-
-    @Override
-    public String getRequestURL() {
-        if (requestUrl != null) {
-            return requestUrl;
-        }
-        if (requestUri.startsWith("/")) {
-            requestUrl = getScheme() + "://" + getHeader(HeaderNameEnum.HOST.getName()) + getRequestURI();
-        } else {
-            requestUrl = requestUri;
-        }
-        return requestUrl;
-    }
-
-    @Override
-    public String getQueryString() {
-        return "";
-    }
-
-    public String getContentType() {
-        if (contentType != null) {
-            return contentType;
-        }
-        contentType = getHeader(HeaderNameEnum.CONTENT_TYPE.getName());
-        return contentType;
-    }
-
-
-    public long getContentLength() {
-        if (contentLength > INIT_CONTENT_LENGTH) {
-            return contentLength;
-        }
-        //不包含content-length,则为：-1
-        contentLength = NumberUtils.toLong(getHeader(HeaderNameEnum.CONTENT_LENGTH.getName()), NONE_CONTENT_LENGTH);
-//        if (contentLength >= remainingThreshold) {
-//            throw new HttpException(HttpStatus.PAYLOAD_TOO_LARGE);
-//        }
-        return contentLength;
-    }
-
-    @Override
-    public String getParameter(String name) {
-        return "";
-    }
-
-    @Override
-    public String[] getParameterValues(String name) {
-        return new String[0];
-    }
-
-    @Override
-    public Map<String, String[]> getParameters() {
-        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -212,38 +84,14 @@ public class Http2RequestImpl implements HttpRequest, Reset {
     }
 
     @Override
-    public Locale getLocale() {
-        return null;
+    public BodyInputStream getInputStream() {
+        return bodyInputStream;
     }
 
     public int getStreamId() {
         return streamId;
     }
 
-    @Override
-    public Enumeration<Locale> getLocales() {
-        return null;
-    }
-
-    @Override
-    public String getCharacterEncoding() {
-        return "";
-    }
-
-    @Override
-    public Cookie[] getCookies() {
-        return new Cookie[0];
-    }
-
-    @Override
-    public Attachment getAttachment() {
-        return null;
-    }
-
-    @Override
-    public void setAttachment(Attachment attachment) {
-
-    }
 
     public ByteArrayOutputStream getBody() {
         return body;
@@ -270,5 +118,14 @@ public class Http2RequestImpl implements HttpRequest, Reset {
 
     public AbstractResponse getResponse() {
         return response;
+    }
+
+    public Http2Session getSession() {
+        return session;
+    }
+
+    @Override
+    public PushBuilder newPushBuilder() {
+        return new PushBuilderImpl(session);
     }
 }

@@ -2,10 +2,10 @@ package org.smartboot.http.server.h2.codec;
 
 import java.nio.ByteBuffer;
 
-public class ContinuationFrame extends Http2Frame {
+public class ContinuationFrame extends HeadersFrame {
 
-    public ContinuationFrame(int streamId, int flags, int remaining) {
-        super(streamId, flags, remaining);
+    public ContinuationFrame(HeadersFrame prevFrame, int flags, int remaining) {
+        super(prevFrame.session, prevFrame.streamId, flags, remaining);
     }
 
 

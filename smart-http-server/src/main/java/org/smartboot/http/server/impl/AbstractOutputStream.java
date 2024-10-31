@@ -13,7 +13,6 @@ import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.io.BufferOutputStream;
 import org.smartboot.http.common.utils.Constant;
-import org.smartboot.http.server.HttpServerConfiguration;
 
 import java.io.IOException;
 import java.util.List;
@@ -24,21 +23,13 @@ import java.util.Map;
  * @version V1.0 , 2018/2/3
  */
 abstract class AbstractOutputStream extends BufferOutputStream {
-
-
-    protected static String SERVER_LINE = null;
     protected final AbstractResponse response;
-    protected final Request request;
-    protected final HttpServerConfiguration configuration;
+    protected final CommonRequest request;
 
-    public AbstractOutputStream(Request request, AbstractResponse response) {
-        super(request.getAioSession());
+    public AbstractOutputStream(CommonRequest request, AbstractResponse response) {
+        super(request.getAioSession().writeBuffer());
         this.response = response;
         this.request = request;
-        this.configuration = request.getConfiguration();
-        if (SERVER_LINE == null) {
-            SERVER_LINE = HeaderNameEnum.SERVER.getName() + Constant.COLON_CHAR + configuration.serverName() + Constant.CRLF;
-        }
     }
 
     /**
@@ -68,14 +59,6 @@ abstract class AbstractOutputStream extends BufferOutputStream {
         List<Cookie> cookies = response.getCookies();
         if (cookies.size() > 0) {
             cookies.forEach(cookie -> response.addHeader(HeaderNameEnum.SET_COOKIE.getName(), cookie.toString()));
-        }
-    }
-
-    @Override
-    public void write(byte[] b, int off, int len) throws IOException {
-        super.write(b, off, len);
-        if (configuration.getWsIdleTimeout() > 0 || configuration.getHttpIdleTimeout() > 0) {
-            request.setLatestIo(System.currentTimeMillis());
         }
     }
 

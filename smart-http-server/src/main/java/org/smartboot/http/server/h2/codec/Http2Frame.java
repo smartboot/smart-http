@@ -1,5 +1,6 @@
 package org.smartboot.http.server.h2.codec;
 
+import org.smartboot.http.server.impl.Http2Session;
 import org.smartboot.socket.transport.WriteBuffer;
 
 import java.io.IOException;
@@ -37,8 +38,14 @@ public abstract class Http2Frame {
      * 解码阶段
      */
     protected int state = STATE_PAD_LENGTH;
+    protected final Http2Session session;
 
     public Http2Frame(int streamId, int flags, int remaining) {
+        this(null, streamId, flags, remaining);
+    }
+
+    public Http2Frame(Http2Session session, int streamId, int flags, int remaining) {
+        this.session = session;
         this.streamId = streamId;
         this.flags = flags;
         this.remaining = remaining;
