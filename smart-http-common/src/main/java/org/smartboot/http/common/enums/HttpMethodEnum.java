@@ -25,12 +25,18 @@ public enum HttpMethodEnum {
     CONNECT("CONNECT");
 
     private final String method;
+    private final String lowerCaseMethod;
 
     HttpMethodEnum(String method) {
         this.method = method;
+        this.lowerCaseMethod = method.toLowerCase();
     }
 
     public String getMethod() {
         return method;
+    }
+
+    public String getLowerCaseMethod() {
+        return lowerCaseMethod;
     }
 }

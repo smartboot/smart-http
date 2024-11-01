@@ -21,8 +21,8 @@ public class Http2Session {
     public static final int STATE_FRAME_HEAD = 1 << 2;
     public static final int STATE_FRAME_PAYLOAD = 1 << 3;
     private final ConcurrentHashMap<Integer, Http2RequestImpl> streams = new ConcurrentHashMap<>();
-    private final Decoder hpackDecoder = new Decoder(4096);
-    private final Encoder hpackEncoder = new Encoder(4096);
+    private final Decoder hpackDecoder = new Decoder(65536);
+    private final Encoder hpackEncoder = new Encoder(65536);
     private final AtomicInteger pushStreamId = new AtomicInteger(0);
 
     private final SettingsFrame settings = new SettingsFrame(0, true) {

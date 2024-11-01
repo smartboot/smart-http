@@ -11,6 +11,7 @@ package org.smartboot.http.server;
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
+import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.enums.HttpTypeEnum;
 import org.smartboot.http.server.h2.codec.DataFrame;
@@ -136,6 +137,7 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
                 try {
                     doHandler(frame, request);
                 } catch (IOException e) {
+                    e.printStackTrace();
                     throw new RuntimeException(e);
                 }
                 onBodyStream(buffer, request);
@@ -198,13 +200,15 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
                         }
                     }
                 });
-                if(headersFrame.getFragment().hasRemaining()){
+                if (headersFrame.getFragment().hasRemaining()) {
                     System.out.println("hasRemaining");
                 }
                 if (headersFrame.getFlag(Http2Frame.FLAG_END_HEADERS)) {
                     request.setState(Http2RequestImpl.STATE_DATA_FRAME);
                     onHeaderComplete(request);
-                    if (request.getContentLength() > 0) {
+                    if (HttpMethodEnum.GET.getMethod().equals(request.getMethod())) {
+                        handleHttpRequest(request);
+                    } else if (request.getContentLength() > 0) {
                         request.setBody(new ByteArrayOutputStream((int) request.getContentLength()));
                     } else {
                         request.setBody(new ByteArrayOutputStream());
