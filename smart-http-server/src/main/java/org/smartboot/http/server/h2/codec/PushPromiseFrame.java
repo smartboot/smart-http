@@ -33,7 +33,7 @@ public class PushPromiseFrame extends Http2Frame {
                     if (padLength < 0) {
                         throw new IllegalStateException();
                     }
-                    remaining = -1;
+                    remaining -= 1;
                 }
                 state = STATE_STREAM_ID;
             case STATE_STREAM_ID:
@@ -41,7 +41,7 @@ public class PushPromiseFrame extends Http2Frame {
                     return false;
                 }
                 promisedStream = buffer.getInt();
-                remaining = 4;
+                remaining -= 4;
                 state = STATE_FRAGMENT;
                 fragment = ByteBuffer.allocate(remaining - padLength);
             case STATE_FRAGMENT:

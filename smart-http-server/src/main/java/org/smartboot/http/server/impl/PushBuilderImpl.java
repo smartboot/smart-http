@@ -10,6 +10,8 @@ public class PushBuilderImpl implements PushBuilder {
 
     public PushBuilderImpl(int streamId, Http2Session session) {
         this.pushRequest = new Http2RequestImpl(streamId, session, true);
+        pushRequest.getResponse().setHeader(":authority", session.getRequest().getHost());
+        pushRequest.getResponse().setHeader(":scheme", session.getRequest().getScheme());
     }
 
     @Override

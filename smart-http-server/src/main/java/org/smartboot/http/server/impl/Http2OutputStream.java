@@ -48,7 +48,7 @@ final class Http2OutputStream extends AbstractOutputStream {
     protected void writeHeader(HeaderWriteSource source) throws IOException {
         if (committed) {
             if (source == HeaderWriteSource.CLOSE && !closed) {
-                DataFrame dataFrame1 = new DataFrame(streamId, DataFrame.FLAG_END_STREAM, 0);
+                DataFrame dataFrame1 = new DataFrame((push ? promisedStreamId : streamId), DataFrame.FLAG_END_STREAM, 0);
                 dataFrame1.writeTo(writeBuffer, new byte[0], 0, 0);
                 writeBuffer.flush();
                 System.out.println("close..., stream:" + streamId);

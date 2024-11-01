@@ -158,6 +158,7 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
 //                    req.newHttp2Session().setState(Http2Session.STATE_FRAME_HEAD);
                 } else {
                     System.out.println("settingsFrame:" + settingsFrame);
+                    session.updateSettings(settingsFrame);
                     settingsFrame.writeTo(req.getAioSession().writeBuffer());
                     req.getAioSession().writeBuffer().flush();
                     System.err.println("Setting报文已发送");

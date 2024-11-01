@@ -126,6 +126,9 @@ public class Http2RequestImpl extends CommonRequest implements HttpRequest, Rese
 
     @Override
     public PushBuilder newPushBuilder() {
-        return new PushBuilderImpl(streamId,session);
+        if (session.getSettings().getEnablePush() == 0) {
+            throw new IllegalStateException();
+        }
+        return new PushBuilderImpl(streamId, session);
     }
 }

@@ -103,6 +103,10 @@ public class Http2Session {
         LOGGER.info("updateSettings:" + settings);
     }
 
+    public SettingsFrame getSettings() {
+        return settings;
+    }
+
     public AtomicInteger getPushStreamId() {
         return pushStreamId;
     }
