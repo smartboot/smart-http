@@ -8,8 +8,8 @@ import java.util.Set;
 public class PushBuilderImpl implements PushBuilder {
     private final Http2RequestImpl pushRequest;
 
-    public PushBuilderImpl(Http2Session session) {
-        this.pushRequest = new Http2RequestImpl(session.getPushStreamId().addAndGet(2), session, true);
+    public PushBuilderImpl(int streamId, Http2Session session) {
+        this.pushRequest = new Http2RequestImpl(streamId, session, true);
     }
 
     @Override
@@ -47,6 +47,7 @@ public class PushBuilderImpl implements PushBuilder {
     public PushBuilder path(String path) {
         pushRequest.setUri(path);
         pushRequest.setRequestURI(path);
+        pushRequest.getResponse().setHeader(":path", path);
         return this;
     }
 

@@ -7,8 +7,8 @@ public class ResetStreamFrame extends Http2Frame {
 
     private int errorCode;
 
-    public ResetStreamFrame(int streamid, int errorCode) {
-        super(streamid, 0, errorCode);
+    public ResetStreamFrame(int streamid, int flag, int remaining) {
+        super(streamid, flag, remaining);
     }
 
     @Override
@@ -21,6 +21,7 @@ public class ResetStreamFrame extends Http2Frame {
         }
         errorCode = buffer.getInt();
         remaining -= 4;
+        checkEndRemaining();
         return true;
     }
 

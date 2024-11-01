@@ -126,6 +126,6 @@ public class Http2RequestImpl extends CommonRequest implements HttpRequest, Rese
 
     @Override
     public PushBuilder newPushBuilder() {
-        return new PushBuilderImpl(session);
+        return new PushBuilderImpl(streamId,session);
     }
 }

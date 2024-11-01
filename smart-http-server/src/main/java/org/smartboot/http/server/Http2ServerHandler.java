@@ -17,6 +17,7 @@ import org.smartboot.http.server.h2.codec.DataFrame;
 import org.smartboot.http.server.h2.codec.GoAwayFrame;
 import org.smartboot.http.server.h2.codec.HeadersFrame;
 import org.smartboot.http.server.h2.codec.Http2Frame;
+import org.smartboot.http.server.h2.codec.ResetStreamFrame;
 import org.smartboot.http.server.h2.codec.SettingsFrame;
 import org.smartboot.http.server.h2.codec.WindowUpdateFrame;
 import org.smartboot.http.server.h2.hpack.DecodingCallback;
@@ -177,6 +178,7 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
                 session.getHpackDecoder().decode(headersFrame.getFragment(), headersFrame.getFlag(Http2Frame.FLAG_END_HEADERS), new DecodingCallback() {
                     @Override
                     public void onDecoded(CharSequence n, CharSequence v) {
+                        System.out.println("name:" + n + " value:" + v);
                         String name = n.toString();
                         String value = v.toString();
                         if (name.charAt(0) == ':') {
@@ -196,6 +198,9 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
                         }
                     }
                 });
+                if(headersFrame.getFragment().hasRemaining()){
+                    System.out.println("hasRemaining");
+                }
                 if (headersFrame.getFlag(Http2Frame.FLAG_END_HEADERS)) {
                     request.setState(Http2RequestImpl.STATE_DATA_FRAME);
                     onHeaderComplete(request);
@@ -220,6 +225,11 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
             break;
             case Http2Frame.FRAME_TYPE_GOAWAY: {
                 System.out.println("GoAwayFrame:" + ((GoAwayFrame) frame).getLastStream());
+                break;
+            }
+            case Http2Frame.FRAME_TYPE_RST_STREAM: {
+                ResetStreamFrame resetStreamFrame = (ResetStreamFrame) frame;
+                System.out.println("RST_Stream, errorCode: " + resetStreamFrame.getErrorCode());
                 break;
             }
             default:
@@ -248,6 +258,8 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
                 return new DataFrame(streamId, flags, length);
             case Http2Frame.FRAME_TYPE_GOAWAY:
                 return new GoAwayFrame(streamId, flags, length);
+            case Http2Frame.FRAME_TYPE_RST_STREAM:
+                return new ResetStreamFrame(streamId, flags, length);
         }
         throw new IllegalStateException("invalid type :" + type);
     }

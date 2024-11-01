@@ -82,7 +82,7 @@ public class PushPromiseFrame extends Http2Frame {
             flags |= FLAG_PADDED;
         }
 
-        payloadLength += fragment.remaining();
+        payloadLength += 4 + fragment.remaining();
 
         // Write frame header
         writeBuffer.writeInt(payloadLength << 8 | FRAME_TYPE_PUSH_PROMISE);
@@ -128,5 +128,9 @@ public class PushPromiseFrame extends Http2Frame {
 
     public void setFragment(ByteBuffer fragment) {
         this.fragment = fragment;
+    }
+
+    public void setPromisedStream(int promisedStream) {
+        this.promisedStream = promisedStream;
     }
 }

@@ -9,7 +9,11 @@
 package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.HeaderValue;
-import org.smartboot.http.server.h2.codec.*;
+import org.smartboot.http.server.h2.codec.ContinuationFrame;
+import org.smartboot.http.server.h2.codec.DataFrame;
+import org.smartboot.http.server.h2.codec.HeadersFrame;
+import org.smartboot.http.server.h2.codec.Http2Frame;
+import org.smartboot.http.server.h2.codec.PushPromiseFrame;
 import org.smartboot.http.server.h2.hpack.Encoder;
 
 import java.io.IOException;
@@ -26,6 +30,7 @@ final class Http2OutputStream extends AbstractOutputStream {
     private final int streamId;
     private final boolean push;
     private final Http2Session http2Session;
+    private final int promisedStreamId;
 
     public Http2OutputStream(int streamId, Http2RequestImpl httpRequest, Http2ResponseImpl response, boolean push) {
         super(httpRequest, response);
@@ -33,6 +38,11 @@ final class Http2OutputStream extends AbstractOutputStream {
         this.http2Session = httpRequest.getSession();
         this.streamId = streamId;
         this.push = push;
+        if (push) {
+            promisedStreamId = http2Session.getPushStreamId().addAndGet(2);
+        } else {
+            promisedStreamId = 0;
+        }
     }
 
     protected void writeHeader(HeaderWriteSource source) throws IOException {
@@ -47,12 +57,13 @@ final class Http2OutputStream extends AbstractOutputStream {
         }
         // Create HEADERS frame
 
-
         response.setHeader(":status", String.valueOf(response.getHttpStatus()));
+
         List<ByteBuffer> buffers = new ArrayList<>();
         Encoder encoder = http2Session.getHpackEncoder();
         ByteBuffer buffer = ByteBuffer.allocate(1024);
         for (Map.Entry<String, HeaderValue> entry : response.getHeaders().entrySet()) {
+            System.out.println("encode: " + entry.getKey() + ":" + entry.getValue().getValue());
             encoder.header(entry.getKey(), entry.getValue().getValue());
             while (!encoder.encode(buffer)) {
                 buffer.flip();
@@ -68,7 +79,11 @@ final class Http2OutputStream extends AbstractOutputStream {
         boolean multipleHeaders = buffers.size() > 1;
         if (push) {
             PushPromiseFrame headersFrame = new PushPromiseFrame(streamId, multipleHeaders ? 0 : Http2Frame.FLAG_END_HEADERS, 0);
-            headersFrame.setFragment(buffers.isEmpty() ? null : buffers.get(0));
+            headersFrame.setPromisedStream(promisedStreamId);
+            if (!buffers.isEmpty()) {
+                headersFrame.setFragment(buffers.get(0));
+            }
+
             headersFrame.writeTo(writeBuffer);
         } else {
             HeadersFrame headersFrame = new HeadersFrame(streamId, multipleHeaders ? 0 : Http2Frame.FLAG_END_HEADERS, 0);
@@ -98,8 +113,8 @@ final class Http2OutputStream extends AbstractOutputStream {
     @Override
     public void write(byte[] b, int off, int len) throws IOException {
         writeHeader(HeaderWriteSource.WRITE);
-        System.out.println("write streamId:" + streamId);
-        DataFrame dataFrame = new DataFrame(streamId, 0, len);
+        System.out.println("write streamId:" + (push ? promisedStreamId : streamId));
+        DataFrame dataFrame = new DataFrame(push ? promisedStreamId : streamId, 0, len);
         dataFrame.writeTo(writeBuffer, b, off, len);
     }
 

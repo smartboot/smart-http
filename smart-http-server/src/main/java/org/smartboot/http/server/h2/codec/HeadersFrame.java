@@ -1,6 +1,5 @@
 package org.smartboot.http.server.h2.codec;
 
-import org.smartboot.http.server.impl.Http2Session;
 import org.smartboot.socket.transport.WriteBuffer;
 
 import java.io.IOException;
@@ -48,7 +47,7 @@ public class HeadersFrame extends Http2Frame {
                     }
                     streamDependency = buffer.getInt();
                     weight = buffer.get() & 0xFF;
-                    remaining = 5;
+                    remaining -= 5;
                 }
                 state = STATE_FRAGMENT;
                 fragment = ByteBuffer.allocate(remaining - padLength);
