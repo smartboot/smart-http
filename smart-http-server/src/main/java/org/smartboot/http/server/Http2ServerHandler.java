@@ -12,6 +12,7 @@ import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
+import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.enums.HttpTypeEnum;
 import org.smartboot.http.server.h2.codec.DataFrame;
@@ -53,7 +54,7 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
 
     @Override
     public final void onHeaderComplete(Request request) throws IOException {
-        if (request.getRequestType() == HttpTypeEnum.HTTP_2) {
+        if (HttpProtocolEnum.HTTP_2.getProtocol().equals(request.getProtocol())) {
             if (!"PRI".equals(request.getMethod()) || !"*".equals(request.getUri()) || request.getHeaderSize() > 0) {
                 throw new IllegalStateException();
             }

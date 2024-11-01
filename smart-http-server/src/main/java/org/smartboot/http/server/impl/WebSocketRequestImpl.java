@@ -14,6 +14,7 @@ import org.smartboot.http.common.io.BodyInputStream;
 import org.smartboot.http.common.utils.SmartDecoder;
 import org.smartboot.http.common.utils.WebSocketUtil;
 import org.smartboot.http.server.WebSocketRequest;
+import org.smartboot.socket.util.Attachment;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -130,6 +131,16 @@ public class WebSocketRequestImpl implements WebSocketRequest, WebSocket, Reset 
     @Override
     public boolean isSecure() {
         return request.isSecure();
+    }
+
+    @Override
+    public Attachment getAttachment() {
+        return request.getAttachment();
+    }
+
+    @Override
+    public void setAttachment(Attachment attachment) {
+        request.setAttachment(attachment);
     }
 
     public long getPayloadLength() {
