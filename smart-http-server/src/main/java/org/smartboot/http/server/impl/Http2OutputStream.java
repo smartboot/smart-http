@@ -48,27 +48,58 @@ final class Http2OutputStream extends AbstractOutputStream {
     protected void writeHeader(HeaderWriteSource source) throws IOException {
         if (committed) {
             if (source == HeaderWriteSource.CLOSE && !closed) {
+                System.err.println("before close..., stream:" + (push ? promisedStreamId : streamId));
+//                writeBuffer.flush();
                 DataFrame dataFrame1 = new DataFrame((push ? promisedStreamId : streamId), DataFrame.FLAG_END_STREAM, 0);
                 dataFrame1.writeTo(writeBuffer, new byte[0], 0, 0);
-                writeBuffer.flush();
-                System.out.println("close..., stream:" + streamId);
+//                writeBuffer.flush();
+                System.err.println("after close..., stream:" + (push ? promisedStreamId : streamId));
             }
             return;
         }
+        //转换Cookie
+        convertCookieToHeader();
         // Create HEADERS frame
+        if (!push) {
+            response.setHeader(":status", String.valueOf(response.getHttpStatus()));
+        }
 
-        response.setHeader(":status", String.valueOf(response.getHttpStatus()));
 
         List<ByteBuffer> buffers = new ArrayList<>();
         Encoder encoder = http2Session.getHpackEncoder();
         ByteBuffer buffer = ByteBuffer.allocate(1024);
+
         for (Map.Entry<String, HeaderValue> entry : response.getHeaders().entrySet()) {
+            if (entry.getKey().charAt(0) != ':') {
+                continue;
+            }
             System.out.println("encode: " + entry.getKey() + ":" + entry.getValue().getValue());
-            encoder.header(entry.getKey(), entry.getValue().getValue());
-            while (!encoder.encode(buffer)) {
-                buffer.flip();
-                buffers.add(buffer);
-                buffer = ByteBuffer.allocate(1024);
+            HeaderValue headerValue = entry.getValue();
+            while (headerValue != null) {
+                encoder.header(entry.getKey().toLowerCase(), headerValue.getValue());
+                while (!encoder.encode(buffer)) {
+                    buffer.flip();
+                    buffers.add(buffer);
+                    buffer = ByteBuffer.allocate(1024);
+                }
+                headerValue = headerValue.getNextValue();
+            }
+        }
+
+        for (Map.Entry<String, HeaderValue> entry : response.getHeaders().entrySet()) {
+            if (entry.getKey().charAt(0) == ':') {
+                continue;
+            }
+            System.out.println("encode: " + entry.getKey() + ":" + entry.getValue().getValue());
+            HeaderValue headerValue = entry.getValue();
+            while (headerValue != null) {
+                encoder.header(entry.getKey().toLowerCase(), headerValue.getValue());
+                while (!encoder.encode(buffer)) {
+                    buffer.flip();
+                    buffers.add(buffer);
+                    buffer = ByteBuffer.allocate(1024);
+                }
+                headerValue = headerValue.getNextValue();
             }
         }
         buffer.flip();
@@ -100,7 +131,7 @@ final class Http2OutputStream extends AbstractOutputStream {
             continuationFrame.setFragment(buffers.get(buffers.size() - 1));
             continuationFrame.writeTo(writeBuffer);
         }
-        writeBuffer.flush();
+//        writeBuffer.flush();
         System.err.println("StreamID: " + streamId + " Header已发送...");
         committed = true;
     }
@@ -113,6 +144,9 @@ final class Http2OutputStream extends AbstractOutputStream {
     @Override
     public void write(byte[] b, int off, int len) throws IOException {
         writeHeader(HeaderWriteSource.WRITE);
+        if(len==0){
+            return;
+        }
         System.out.println("write streamId:" + (push ? promisedStreamId : streamId));
         DataFrame dataFrame = new DataFrame(push ? promisedStreamId : streamId, 0, len);
         dataFrame.writeTo(writeBuffer, b, off, len);

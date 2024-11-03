@@ -81,6 +81,10 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
             OutputStream outputStream = response.getOutputStream();
             outputStream.flush();
 
+            Http2RequestImpl http2Request = session.getStream(1);
+            http2Request.setRequestURI(request.getUri());
+            http2Request.setMethod(request.getMethod());
+            req.getHeaderNames().forEach(name -> http2Request.setHeader(name, request.getHeader(name)));
         }
     }
 
@@ -119,6 +123,8 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
                 }
                 session.setPrefaced(true);
                 session.setState(Http2Session.STATE_FRAME_HEAD);
+                handleHttpRequest(session.getStream(1));
+                break;
             }
             case Http2Session.STATE_FRAME_HEAD: {
                 if (buffer.remaining() < FRAME_HEADER_SIZE) {
@@ -150,13 +156,15 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
         Http2Session session = req.newHttp2Session();
         switch (frame.type()) {
             case Http2Frame.FRAME_TYPE_SETTINGS: {
+                if (!session.isSettingEnabled()) {
+                    throw new IOException();
+                }
                 SettingsFrame settingsFrame = (SettingsFrame) frame;
                 if (settingsFrame.getFlag(SettingsFrame.ACK)) {
                     SettingsFrame settingAckFrame = new SettingsFrame(settingsFrame.streamId(), SettingsFrame.ACK, 0);
                     settingAckFrame.writeTo(req.getAioSession().writeBuffer());
                     req.getAioSession().writeBuffer().flush();
                     System.err.println("Setting ACK报文已发送");
-//                    req.newHttp2Session().setState(Http2Session.STATE_FRAME_HEAD);
                 } else {
                     System.out.println("settingsFrame:" + settingsFrame);
                     session.updateSettings(settingsFrame);
@@ -174,6 +182,7 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
             }
             break;
             case Http2Frame.FRAME_TYPE_HEADERS: {
+                session.settingDisable();
                 HeadersFrame headersFrame = (HeadersFrame) frame;
                 System.out.println("headerFrame Stream:" + headersFrame.streamId());
                 Http2RequestImpl request = session.getStream(headersFrame.streamId());
@@ -219,6 +228,7 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
                 break;
             }
             case Http2Frame.FRAME_TYPE_DATA: {
+                session.settingDisable();
                 DataFrame dataFrame = (DataFrame) frame;
                 Http2RequestImpl request = session.getStream(dataFrame.streamId());
                 request.checkState(Http2RequestImpl.STATE_DATA_FRAME);

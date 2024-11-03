@@ -24,6 +24,7 @@ public class Http2Session {
     private final Decoder hpackDecoder = new Decoder(65536);
     private final Encoder hpackEncoder = new Encoder(65536);
     private final AtomicInteger pushStreamId = new AtomicInteger(0);
+    private boolean settingEnabled = true;
 
     private final SettingsFrame settings = new SettingsFrame(0, true) {
         @Override
@@ -109,5 +110,13 @@ public class Http2Session {
 
     public AtomicInteger getPushStreamId() {
         return pushStreamId;
+    }
+
+    public boolean isSettingEnabled() {
+        return settingEnabled;
+    }
+
+    public void settingDisable() {
+        this.settingEnabled = false;
     }
 }
