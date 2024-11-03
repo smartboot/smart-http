@@ -2,10 +2,10 @@ package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
-import org.smartboot.http.server.h2.codec.Http2Frame;
-import org.smartboot.http.server.h2.codec.SettingsFrame;
-import org.smartboot.http.server.h2.hpack.Decoder;
-import org.smartboot.http.server.h2.hpack.Encoder;
+import org.smartboot.http.common.codec.h2.codec.Http2Frame;
+import org.smartboot.http.common.codec.h2.codec.SettingsFrame;
+import org.smartboot.http.common.codec.h2.hpack.Decoder;
+import org.smartboot.http.common.codec.h2.hpack.Encoder;
 import org.smartboot.socket.transport.WriteBuffer;
 
 import java.io.IOException;

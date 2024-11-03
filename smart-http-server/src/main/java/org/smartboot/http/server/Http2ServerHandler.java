@@ -9,20 +9,20 @@
 package org.smartboot.http.server;
 
 import org.smartboot.http.common.HeaderValue;
+import org.smartboot.http.common.codec.h2.codec.DataFrame;
+import org.smartboot.http.common.codec.h2.codec.GoAwayFrame;
+import org.smartboot.http.common.codec.h2.codec.HeadersFrame;
+import org.smartboot.http.common.codec.h2.codec.Http2Frame;
+import org.smartboot.http.common.codec.h2.codec.ResetStreamFrame;
+import org.smartboot.http.common.codec.h2.codec.SettingsFrame;
+import org.smartboot.http.common.codec.h2.codec.WindowUpdateFrame;
+import org.smartboot.http.common.codec.h2.hpack.DecodingCallback;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.enums.HttpTypeEnum;
-import org.smartboot.http.server.h2.codec.DataFrame;
-import org.smartboot.http.server.h2.codec.GoAwayFrame;
-import org.smartboot.http.server.h2.codec.HeadersFrame;
-import org.smartboot.http.server.h2.codec.Http2Frame;
-import org.smartboot.http.server.h2.codec.ResetStreamFrame;
-import org.smartboot.http.server.h2.codec.SettingsFrame;
-import org.smartboot.http.server.h2.codec.WindowUpdateFrame;
-import org.smartboot.http.server.h2.hpack.DecodingCallback;
 import org.smartboot.http.server.impl.AbstractResponse;
 import org.smartboot.http.server.impl.Http2RequestImpl;
 import org.smartboot.http.server.impl.Http2Session;
@@ -84,7 +84,7 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
             Http2RequestImpl http2Request = session.getStream(1);
             http2Request.setRequestURI(request.getUri());
             http2Request.setMethod(request.getMethod());
-            req.getHeaderNames().forEach(name -> http2Request.setHeader(name, request.getHeader(name)));
+            req.getHeaderNames().forEach(name -> http2Request.setHeader(name.toLowerCase(), request.getHeader(name)));
         }
     }
 

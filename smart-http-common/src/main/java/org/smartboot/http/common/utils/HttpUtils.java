@@ -9,9 +9,12 @@
 package org.smartboot.http.common.utils;
 
 import org.smartboot.http.common.Cookie;
+import org.smartboot.http.common.HeaderValue;
+import org.smartboot.http.common.codec.h2.hpack.Encoder;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -125,4 +128,47 @@ public class HttpUtils {
         }
     }
 
+    public static List<ByteBuffer> HPackEncoder(Encoder encoder, Map<String, HeaderValue> headers) {
+        ByteBuffer buffer = ByteBuffer.allocate(1024);
+        List<ByteBuffer> buffers = new ArrayList<>();
+
+        for (Map.Entry<String, HeaderValue> entry : headers.entrySet()) {
+            if (entry.getKey().charAt(0) != ':') {
+                continue;
+            }
+            System.out.println("encode: " + entry.getKey() + ":" + entry.getValue().getValue());
+            HeaderValue headerValue = entry.getValue();
+            while (headerValue != null) {
+                encoder.header(entry.getKey().toLowerCase(), headerValue.getValue());
+                while (!encoder.encode(buffer)) {
+                    buffer.flip();
+                    buffers.add(buffer);
+                    buffer = ByteBuffer.allocate(1024);
+                }
+                headerValue = headerValue.getNextValue();
+            }
+        }
+
+        for (Map.Entry<String, HeaderValue> entry : headers.entrySet()) {
+            if (entry.getKey().charAt(0) == ':') {
+                continue;
+            }
+            System.out.println("encode: " + entry.getKey() + ":" + entry.getValue().getValue());
+            HeaderValue headerValue = entry.getValue();
+            while (headerValue != null) {
+                encoder.header(entry.getKey().toLowerCase(), headerValue.getValue());
+                while (!encoder.encode(buffer)) {
+                    buffer.flip();
+                    buffers.add(buffer);
+                    buffer = ByteBuffer.allocate(1024);
+                }
+                headerValue = headerValue.getNextValue();
+            }
+        }
+        buffer.flip();
+        if (buffer.hasRemaining()) {
+            buffers.add(buffer);
+        }
+        return buffers;
+    }
 }

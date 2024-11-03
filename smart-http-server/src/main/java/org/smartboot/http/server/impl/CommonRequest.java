@@ -175,6 +175,21 @@ public abstract class CommonRequest {
         headerSize++;
     }
 
+    public final void addHeader(String headerName, String value) {
+        for (HeaderValue headerValue : headers) {
+            if (!headerValue.getName().equalsIgnoreCase(headerName)) {
+                continue;
+            }
+            HeaderValue nextValue = headerValue;
+            while (nextValue.getNextValue() != null) {
+                nextValue = nextValue.getNextValue();
+            }
+            nextValue.setNextValue(new HeaderValue(null, value));
+            return;
+        }
+        setHeader(headerName, value);
+    }
+
     public HttpTypeEnum getRequestType() {
         if (type != null) {
             return type;

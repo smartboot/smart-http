@@ -24,7 +24,6 @@ public class Http2RequestImpl extends CommonRequest implements HttpRequest, Rese
     public static final int STATE_DATA_FRAME = 1;
     public static final int STATE_DONE = 2;
     private int state = STATE_HEADER_FRAME;
-    private final Map<String, HeaderValue> headers = new HashMap<>();
     private final int streamId;
     private ByteArrayOutputStream body;
     private BodyInputStream bodyInputStream = BodyInputStream.EMPTY_INPUT_STREAM;
@@ -40,7 +39,12 @@ public class Http2RequestImpl extends CommonRequest implements HttpRequest, Rese
 
 
     public Map<String, HeaderValue> getHeaders() {
-        return headers;
+        Map<String, HeaderValue> map = new HashMap<>();
+        for (int i = 0; i < headerSize; i++) {
+            HeaderValue headerValue = headers.get(i);
+            map.put(headerValue.getName(), headerValue);
+        }
+        return map;
     }
 
     public void checkState(int state) {
@@ -129,6 +133,8 @@ public class Http2RequestImpl extends CommonRequest implements HttpRequest, Rese
         if (session.getSettings().getEnablePush() == 0) {
             throw new IllegalStateException();
         }
-        return new PushBuilderImpl(streamId,response, session);
+        PushBuilderImpl builder = new PushBuilderImpl(streamId, response, session);
+        getHeaderNames().stream().filter(headerName -> !PushBuilderImpl.IGNORE_HEADERS.contains(headerName)).forEach(headerName -> getHeaders(headerName).forEach(headerValue -> builder.addHeader(headerName, headerValue)));
+        return builder;
     }
 }
