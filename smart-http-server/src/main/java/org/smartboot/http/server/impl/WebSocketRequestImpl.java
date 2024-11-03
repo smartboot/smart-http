@@ -11,21 +11,24 @@ package org.smartboot.http.server.impl;
 import org.smartboot.http.common.Reset;
 import org.smartboot.http.common.codec.websocket.WebSocket;
 import org.smartboot.http.common.io.BodyInputStream;
+import org.smartboot.http.common.multipart.MultipartConfig;
+import org.smartboot.http.common.multipart.Part;
 import org.smartboot.http.common.utils.SmartDecoder;
 import org.smartboot.http.common.utils.WebSocketUtil;
+import org.smartboot.http.server.PushBuilder;
 import org.smartboot.http.server.WebSocketRequest;
 import org.smartboot.socket.util.Attachment;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.InetSocketAddress;
+import java.util.Collection;
 import java.util.Map;
 
 /**
  * @author 三刀
  * @version V1.0 , 2018/8/31
  */
-public class WebSocketRequestImpl implements WebSocketRequest, WebSocket, Reset {
+public class WebSocketRequestImpl extends AbstractRequest implements WebSocketRequest, WebSocket, Reset {
     private SmartDecoder payloadDecoder;
     private final ByteArrayOutputStream payload = new ByteArrayOutputStream();
     private final WebSocketResponseImpl response;
@@ -33,7 +36,6 @@ public class WebSocketRequestImpl implements WebSocketRequest, WebSocket, Reset 
     private boolean frameMasked;
     private int frameRsv;
     private int frameOpcode;
-    public Request request;
     /**
      * payload长度
      */
@@ -42,7 +44,7 @@ public class WebSocketRequestImpl implements WebSocketRequest, WebSocket, Reset 
     private byte[] maskingKey;
 
     public WebSocketRequestImpl(Request baseHttpRequest) {
-        this.request = baseHttpRequest;
+        init(baseHttpRequest);
         this.response = new WebSocketResponseImpl(this);
     }
 
@@ -99,39 +101,25 @@ public class WebSocketRequestImpl implements WebSocketRequest, WebSocket, Reset 
     }
 
     @Override
-    public String getRequestURL() {
-        return request.getRequestURL();
+    public Collection<Part> getParts() throws IOException {
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    public String getRequestURI() {
-        return request.getRequestURI();
+    public Collection<Part> getParts(MultipartConfig configElement) throws IOException {
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    public String getQueryString() {
-        return request.getQueryString();
+    public Map<String, String> getTrailerFields() {
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    public Map<String, String[]> getParameters() {
-        return request.getParameters();
+    public boolean isTrailerFieldsReady() {
+        throw new UnsupportedOperationException();
     }
 
-    @Override
-    public InetSocketAddress getRemoteAddress() {
-        return request.getRemoteAddress();
-    }
-
-    @Override
-    public InetSocketAddress getLocalAddress() {
-        return request.getLocalAddress();
-    }
-
-    @Override
-    public boolean isSecure() {
-        return request.isSecure();
-    }
 
     @Override
     public Attachment getAttachment() {
@@ -142,6 +130,12 @@ public class WebSocketRequestImpl implements WebSocketRequest, WebSocket, Reset 
     public void setAttachment(Attachment attachment) {
         request.setAttachment(attachment);
     }
+
+    @Override
+    public PushBuilder newPushBuilder() {
+        throw new UnsupportedOperationException();
+    }
+
 
     public long getPayloadLength() {
         return payloadLength;

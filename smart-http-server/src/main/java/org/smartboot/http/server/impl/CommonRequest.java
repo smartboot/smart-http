@@ -406,11 +406,11 @@ public abstract class CommonRequest {
         return cookies;
     }
 
-    ByteBuffer getFormUrlencoded() {
+    final ByteBuffer getFormUrlencoded() {
         return formUrlencoded;
     }
 
-    public void setFormUrlencoded(ByteBuffer formUrlencoded) {
+    final public void setFormUrlencoded(ByteBuffer formUrlencoded) {
         this.formUrlencoded = formUrlencoded;
     }
 

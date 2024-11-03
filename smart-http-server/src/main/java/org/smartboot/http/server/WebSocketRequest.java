@@ -11,6 +11,7 @@ package org.smartboot.http.server;
 import org.smartboot.socket.util.Attachment;
 
 import java.net.InetSocketAddress;
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -61,4 +62,17 @@ public interface WebSocketRequest {
      * @param attachment 附件对象
      */
     void setAttachment(Attachment attachment);
+
+    /**
+     * 获取指定名称的Http Header值
+     *
+     * @param headName
+     * @return
+     */
+    String getHeader(String headName);
+
+
+    Collection<String> getHeaders(String name);
+
+    Collection<String> getHeaderNames();
 }

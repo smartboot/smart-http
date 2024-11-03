@@ -29,7 +29,6 @@ import org.smartboot.socket.transport.AioSession;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -49,11 +48,6 @@ public final class Request extends CommonRequest implements Reset {
      * 消息类型
      */
     private HttpTypeEnum type = null;
-    /**
-     * Post表单
-     */
-    private ByteBuffer formUrlencoded;
-
 
     private HttpRequestImpl httpRequest;
     private Http2Session http2Request;
@@ -254,16 +248,6 @@ public final class Request extends CommonRequest implements Reset {
         }
         return remoteHost;
     }
-
-
-    ByteBuffer getFormUrlencoded() {
-        return formUrlencoded;
-    }
-
-    public void setFormUrlencoded(ByteBuffer formUrlencoded) {
-        this.formUrlencoded = formUrlencoded;
-    }
-
 
     public HttpRequestImpl newHttpRequest() {
         if (httpRequest == null) {

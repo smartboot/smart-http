@@ -27,7 +27,7 @@ public class WebSocketResponseImpl extends AbstractResponse implements WebSocket
     private boolean closed;
 
     public WebSocketResponseImpl(WebSocketRequestImpl webSocketRequest) {
-        init(webSocketRequest.request.getAioSession(), new WebSocketOutputStream(webSocketRequest, this));
+        init(webSocketRequest.getRequest().aioSession, new WebSocketOutputStream(webSocketRequest, this));
     }
 
     @Override
