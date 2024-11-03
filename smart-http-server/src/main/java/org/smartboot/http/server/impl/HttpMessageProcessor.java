@@ -9,11 +9,13 @@
 package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.DecodeState;
+import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
 import org.smartboot.http.common.utils.StringUtils;
+import org.smartboot.http.server.Http2ServerHandler;
 import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.HttpServerHandler;
 import org.smartboot.http.server.WebSocketHandler;
@@ -49,8 +51,9 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
                 case DecodeState.STATE_BODY_READING_CALLBACK: {
                     decodeState.setState(DecodeState.STATE_BODY_READING_MONITOR);
                     switch (request.getRequestType()) {
+                        case HTTP_2:
                         case HTTP: {
-                            configuration.getHttpServerHandler().onBodyStream(session.readBuffer(), request);
+                            request.getServerHandler().onBodyStream(session.readBuffer(), request);
                             break;
                         }
                         case WEBSOCKET: {
@@ -93,6 +96,9 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
     private void doHttpHeader(Request request) throws IOException {
         methodCheck(request);
         uriCheck(request);
+        if (request.getProtocol().equals(HttpProtocolEnum.HTTP_2.getProtocol())) {
+            request.setServerHandler(configuration.getHttp2ServerHandler());
+        }
         request.getServerHandler().onHeaderComplete(request);
     }
 
@@ -131,8 +137,9 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
                         response = request.newHttpRequest().getResponse();
                         break;
                     case HTTP_2:
-                        response = request.newHttp2Request().getResponse();
-                        break;
+                        //todo
+//                        response = request.newHttp2Session().getResponse();
+//                        break;
                     default:
                         throw new IllegalStateException();
                 }
@@ -144,6 +151,10 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
 
     public void httpServerHandler(HttpServerHandler httpServerHandler) {
         this.configuration.setHttpServerHandler(Objects.requireNonNull(httpServerHandler));
+    }
+
+    public void http2ServerHandler(Http2ServerHandler httpServerHandler) {
+        this.configuration.setHttp2ServerHandler(Objects.requireNonNull(httpServerHandler));
     }
 
     public void setWebSocketHandler(WebSocketHandler webSocketHandler) {

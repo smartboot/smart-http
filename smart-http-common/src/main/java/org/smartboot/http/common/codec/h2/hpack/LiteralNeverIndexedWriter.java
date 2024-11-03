@@ -22,51 +22,11 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+package org.smartboot.http.common.codec.h2.hpack;
 
-package org.smartboot.http.server.h2;
+final class LiteralNeverIndexedWriter extends IndexNameValueWriter {
 
-import java.nio.ByteBuffer;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
-
-public class GoAwayFrame extends Http2Frame {
-    public static final int TYPE = 0x7;
-    private final int lastStream;
-    private final byte[] debugData;
-
-
-    public GoAwayFrame(int lastStream, int errorCode) {
-        this(lastStream, errorCode, new byte[0]);
+    LiteralNeverIndexedWriter() {
+        super(0b0001_0000, 4);
     }
-
-    public GoAwayFrame(int lastStream, int errorCode, byte[] debugData) {
-        super(0, 0, errorCode);
-        this.lastStream = lastStream;
-        this.debugData = debugData.clone();
-    }
-
-    @Override
-    public boolean decode(ByteBuffer buffer) {
-        return false;
-    }
-
-    @Override
-    public int type() {
-        return TYPE;
-    }
-
-
-    @Override
-    public String toString() {
-        return super.toString() + " Debugdata: " + new String(debugData, UTF_8);
-    }
-
-    public int getLastStream() {
-        return this.lastStream;
-    }
-
-    public byte[] getDebugData() {
-        return debugData.clone();
-    }
-
 }

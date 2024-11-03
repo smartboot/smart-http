@@ -70,7 +70,7 @@ public class AbstractResponse implements HttpResponse, Reset {
     /**
      * 是否关闭Socket连接通道
      */
-    private boolean closed = false;
+    protected boolean closed = false;
 
     private List<Cookie> cookies = Collections.emptyList();
 
@@ -258,7 +258,7 @@ public class AbstractResponse implements HttpResponse, Reset {
 
     @Override
     public final void setContentType(String contentType) {
-        this.contentType = Objects.requireNonNull(contentType);
+        this.contentType = contentType;
     }
 
     /**

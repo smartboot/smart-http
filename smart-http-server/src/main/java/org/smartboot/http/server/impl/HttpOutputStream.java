@@ -15,7 +15,9 @@ import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.TimerUtils;
+import org.smartboot.http.server.HttpServerConfiguration;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -30,6 +32,7 @@ import java.util.concurrent.Semaphore;
 final class HttpOutputStream extends AbstractOutputStream {
     private static final SimpleDateFormat sdf = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
     private static final int CACHE_LIMIT = 512;
+    private static String SERVER_LINE = null;
     /**
      * key:status+contentType
      */
@@ -39,6 +42,8 @@ final class HttpOutputStream extends AbstractOutputStream {
     private static long expireTime;
     private static byte[] dateBytes;
     private static String date;
+    private final Request request;
+    private final HttpServerConfiguration configuration;
 
     static {
         flushDate();
@@ -49,6 +54,11 @@ final class HttpOutputStream extends AbstractOutputStream {
 
     public HttpOutputStream(HttpRequestImpl httpRequest, HttpResponseImpl response) {
         super(httpRequest.request, response);
+        this.request = httpRequest.request;
+        this.configuration = request.getConfiguration();
+        if (SERVER_LINE == null) {
+            SERVER_LINE = HeaderNameEnum.SERVER.getName() + Constant.COLON_CHAR + configuration.serverName() + Constant.CRLF;
+        }
     }
 
     private static long flushDate() {
@@ -64,6 +74,14 @@ final class HttpOutputStream extends AbstractOutputStream {
             }
         }
         return currentTime;
+    }
+
+    @Override
+    public void write(byte[] b, int off, int len) throws IOException {
+        super.write(b, off, len);
+        if (configuration.getWsIdleTimeout() > 0 || configuration.getHttpIdleTimeout() > 0) {
+            request.setLatestIo(System.currentTimeMillis());
+        }
     }
 
     protected byte[] getHeadPart(boolean hasHeader) {
@@ -124,7 +142,7 @@ final class HttpOutputStream extends AbstractOutputStream {
         }
         if (response.getContentLength() >= 0) {
             disableChunked();
-        } else if (response.getHttpStatus() == HttpStatus.CONTINUE.value()) {
+        } else if (response.getHttpStatus() == HttpStatus.CONTINUE.value() || response.getHttpStatus() == HttpStatus.SWITCHING_PROTOCOLS.value()) {
             disableChunked();
         } else if (HttpMethodEnum.HEAD.name().equals(request.getMethod())) {
             disableChunked();

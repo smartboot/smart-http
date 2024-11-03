@@ -1,21 +1,25 @@
-package org.smartboot.http.server.h2;
+package org.smartboot.http.common.codec.h2.codec;
 
+import org.smartboot.socket.transport.WriteBuffer;
+
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public class HeadersFrame extends Http2Frame {
-
-    public static final int TYPE = 0x1;
-
     private int padLength;
     private int streamDependency;
     private int weight;
     private boolean exclusive;
-    private ByteBuffer fragment;
+    private ByteBuffer fragment = EMPTY_BUFFER;
     private byte[] padding = EMPTY_PADDING;
 
     public HeadersFrame(int streamId, int flags, int remaining) {
         super(streamId, flags, remaining);
     }
+
+//    public HeadersFrame(int streamId) {
+//        super(streamId, FLAG_END_HEADERS, 0);
+//    }
 
 
     @Override
@@ -43,7 +47,7 @@ public class HeadersFrame extends Http2Frame {
                     }
                     streamDependency = buffer.getInt();
                     weight = buffer.get() & 0xFF;
-                    remaining = 5;
+                    remaining -= 5;
                 }
                 state = STATE_FRAGMENT;
                 fragment = ByteBuffer.allocate(remaining - padLength);
@@ -57,6 +61,8 @@ public class HeadersFrame extends Http2Frame {
                 if (fragment.hasRemaining()) {
                     return false;
                 }
+                fragment.flip();
+                // Now 'headers' contains the decoded HTTP/2 headers
                 state = STATE_PADDING;
             case STATE_PADDING:
                 if (buffer.remaining() < padLength) {
@@ -73,8 +79,61 @@ public class HeadersFrame extends Http2Frame {
     }
 
     @Override
+    public void writeTo(WriteBuffer writeBuffer) throws IOException {
+        int payloadLength = 0;
+        byte flags = (byte) this.flags;
+
+        // Calculate payload length and set flags
+        boolean padded = padding != null && padding.length > 0;
+        if (padded) {
+            payloadLength += 1 + padding.length;
+            flags |= FLAG_PADDED;
+        }
+        if (weight > 0) {
+            payloadLength += 5;
+            flags |= FLAG_PRIORITY;
+        }
+
+        payloadLength += fragment.remaining();
+
+        // Write frame header
+        writeBuffer.writeInt(payloadLength << 8 | FRAME_TYPE_HEADERS);
+        writeBuffer.writeByte(flags);
+        System.out.println("write header ,streamId:" + streamId);
+        writeBuffer.writeInt(streamId);
+
+        // Write pad length if padded
+        if (padded) {
+            writeBuffer.writeByte((byte) padding.length);
+        }
+
+        // Write stream dependency and weight if priority is set
+        if (hasFlag(flags, FLAG_PRIORITY)) {
+            writeBuffer.writeInt(streamDependency);
+            writeBuffer.writeByte((byte) weight);
+        }
+
+        // Write fragment
+
+        writeBuffer.write(fragment.array(), 0, fragment.remaining());
+
+        // Write padding if padded
+        if (padded) {
+            writeBuffer.write(padding);
+        }
+    }
+
+    public ByteBuffer getFragment() {
+        return fragment;
+    }
+
+    public void setFragment(ByteBuffer fragment) {
+        this.fragment = fragment;
+    }
+
+    @Override
     public int type() {
-        return TYPE;
+        return FRAME_TYPE_HEADERS;
     }
 
 

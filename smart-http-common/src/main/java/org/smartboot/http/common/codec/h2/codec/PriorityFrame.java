@@ -1,4 +1,4 @@
-package org.smartboot.http.server.h2;
+package org.smartboot.http.common.codec.h2.codec;
 
 import java.nio.ByteBuffer;
 
@@ -7,8 +7,6 @@ public class PriorityFrame extends Http2Frame {
     private int streamDependency;
     private int weight;
     private boolean exclusive;
-
-    public static final int TYPE = 0x2;
 
     public PriorityFrame(int streamId, int flags, int remaining, int streamDependency, int weight, boolean exclusive) {
         super(streamId, flags, remaining);
@@ -36,7 +34,7 @@ public class PriorityFrame extends Http2Frame {
 
     @Override
     public int type() {
-        return TYPE;
+        return FRAME_TYPE_PRIORITY;
     }
 
 

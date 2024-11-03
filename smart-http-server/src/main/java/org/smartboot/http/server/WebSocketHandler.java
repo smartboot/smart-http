@@ -84,7 +84,7 @@ public abstract class WebSocketHandler implements ServerHandler<WebSocketRequest
         if (decoder == WebSocket.PAYLOAD_FINISH) {
             attachment.put(FRAME_DECODER_KEY, basicFrameDecoder);
             try {
-                handleWebSocketRequest(request.newWebsocketRequest());
+                handleWebSocketRequest(request.newWebsocketRequest(), request.getAioSession());
             } catch (Throwable e) {
                 throw new RuntimeException(e);
             }
@@ -93,14 +93,13 @@ public abstract class WebSocketHandler implements ServerHandler<WebSocketRequest
         }
     }
 
-    private void handleWebSocketRequest(WebSocketRequestImpl abstractRequest) throws Throwable {
+    private void handleWebSocketRequest(WebSocketRequestImpl abstractRequest, AioSession session) throws Throwable {
         CompletableFuture<Object> future = new CompletableFuture<>();
         handle(abstractRequest, abstractRequest.getResponse(), future);
         if (future.isDone()) {
             finishResponse(abstractRequest);
         } else {
             Thread thread = Thread.currentThread();
-            AioSession session = abstractRequest.request.getAioSession();
             session.awaitRead();
             future.thenRun(() -> {
                 try {

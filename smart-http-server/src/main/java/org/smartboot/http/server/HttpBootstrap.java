@@ -12,11 +12,14 @@ import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
+import org.smartboot.http.server.impl.Http2RequestImpl;
 import org.smartboot.http.server.impl.HttpMessageProcessor;
 import org.smartboot.http.server.impl.HttpRequestProtocol;
 import org.smartboot.socket.buffer.BufferPagePool;
 import org.smartboot.socket.transport.AioQuickServer;
 
+import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 public class HttpBootstrap {
@@ -71,8 +74,24 @@ public class HttpBootstrap {
      */
     public HttpBootstrap httpHandler(HttpServerHandler httpHandler) {
         processor.httpServerHandler(httpHandler);
+        processor.http2ServerHandler(new Http2ServerHandler() {
+            @Override
+            protected void onHeaderComplete(Http2RequestImpl request) throws IOException {
+                super.onHeaderComplete(request);
+            }
+
+            @Override
+            public void handle(HttpRequest request, HttpResponse response, CompletableFuture<Object> completableFuture) throws Throwable {
+                httpHandler.handle(request, response, completableFuture);
+            }
+        });
         return this;
     }
+
+//    public HttpBootstrap http2Handler(Http2ServerHandler httpHandler) {
+//        processor.http2ServerHandler(httpHandler);
+//        return this;
+//    }
 
     /**
      * 获取websocket的处理器管道
@@ -150,7 +169,7 @@ public class HttpBootstrap {
         }
         // HTTP/2.0
         else if (HeaderValueEnum.H2C.getName().equals(upgrade) || HeaderValueEnum.H2.getName().equals(upgrade)) {
-            return new Http2ServerHandler(configuration.getHttpServerHandler());
+            return configuration.getHttp2ServerHandler();
         } else {
             return null;
         }

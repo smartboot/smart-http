@@ -1,15 +1,14 @@
-package org.smartboot.http.server.h2;
+package org.smartboot.http.common.codec.h2.codec;
 
 import java.nio.ByteBuffer;
 
 public class ResetStreamFrame extends Http2Frame {
 
-    public static final int TYPE = 0x3;
 
     private int errorCode;
 
-    public ResetStreamFrame(int streamid, int errorCode) {
-        super(streamid, 0, errorCode);
+    public ResetStreamFrame(int streamid, int flag, int remaining) {
+        super(streamid, flag, remaining);
     }
 
     @Override
@@ -22,12 +21,13 @@ public class ResetStreamFrame extends Http2Frame {
         }
         errorCode = buffer.getInt();
         remaining -= 4;
+        checkEndRemaining();
         return true;
     }
 
     @Override
     public int type() {
-        return TYPE;
+        return FRAME_TYPE_RST_STREAM;
     }
 
     public int getErrorCode() {

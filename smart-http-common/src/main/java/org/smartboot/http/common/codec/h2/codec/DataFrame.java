@@ -1,11 +1,12 @@
-package org.smartboot.http.server.h2;
+package org.smartboot.http.common.codec.h2.codec;
 
 
+import org.smartboot.socket.transport.WriteBuffer;
+
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public class DataFrame extends Http2Frame {
-
-    public static final int TYPE = 0x0;
 
     private static final int STATE_PAD_LENGTH = 0;
     private static final int STATE_DATA = 1;
@@ -13,8 +14,8 @@ public class DataFrame extends Http2Frame {
     private int state = STATE_PAD_LENGTH;
 
 
-    private int padLength = -1;
-    private ByteBuffer dataBuffer;
+    private int padLength = 0;
+    private ByteBuffer dataBuffer = ByteBuffer.allocate(0);
     private byte[] padding = EMPTY_PADDING;
 
 
@@ -37,7 +38,7 @@ public class DataFrame extends Http2Frame {
                     if (padLength < 0) {
                         throw new IllegalStateException();
                     }
-                    remaining = -1;
+                    remaining -= 1;
                 }
                 dataBuffer = ByteBuffer.allocate(remaining - padLength);
                 state = STATE_DATA;
@@ -64,16 +65,53 @@ public class DataFrame extends Http2Frame {
         }
 
         checkEndRemaining();
+        dataBuffer.flip();
         return true;
+    }
+
+    public void writeTo(WriteBuffer writeBuffer, byte[] data, int offset, int length) throws IOException {
+        System.err.println("write data frame");
+        int payloadLength = length;
+        byte flags = (byte) this.flags;
+
+        // Check if padding is needed
+        boolean padded = padding != null && padding.length > 0;
+        if (padded) {
+            payloadLength += 1 + padding.length;
+            flags |= FLAG_PADDED;
+        }
+
+        // Write frame header
+        writeBuffer.writeInt(payloadLength << 8 | FRAME_TYPE_DATA);
+        writeBuffer.writeByte(flags);
+        writeBuffer.writeInt(streamId);
+
+        // Write pad length if padded
+        if (padded) {
+            writeBuffer.writeByte((byte) padding.length);
+        }
+
+        // Write data
+        writeBuffer.write(data, offset, length);
+
+        // Write padding if padded
+        if (padded) {
+            writeBuffer.write(padding);
+        }
+//        writeBuffer.flush();
     }
 
     public byte[] getPadding() {
         return padding;
     }
 
+    public byte[] getData() {
+        return dataBuffer.array();
+    }
+
     @Override
     public int type() {
-        return TYPE;
+        return FRAME_TYPE_DATA;
     }
 
 }

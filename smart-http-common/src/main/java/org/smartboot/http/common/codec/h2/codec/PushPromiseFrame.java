@@ -1,14 +1,16 @@
-package org.smartboot.http.server.h2;
+package org.smartboot.http.common.codec.h2.codec;
 
+import org.smartboot.socket.transport.WriteBuffer;
+
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public class PushPromiseFrame extends Http2Frame {
 
-    public static final int TYPE = 0x5;
 
     private int padLength;
     private int promisedStream;
-    private ByteBuffer fragment;
+    private ByteBuffer fragment = EMPTY_BUFFER;
     private byte[] padding = EMPTY_PADDING;
 
     public PushPromiseFrame(int streamId, int flags, int remaining) {
@@ -31,7 +33,7 @@ public class PushPromiseFrame extends Http2Frame {
                     if (padLength < 0) {
                         throw new IllegalStateException();
                     }
-                    remaining = -1;
+                    remaining -= 1;
                 }
                 state = STATE_STREAM_ID;
             case STATE_STREAM_ID:
@@ -39,7 +41,7 @@ public class PushPromiseFrame extends Http2Frame {
                     return false;
                 }
                 promisedStream = buffer.getInt();
-                remaining = 4;
+                remaining -= 4;
                 state = STATE_FRAGMENT;
                 fragment = ByteBuffer.allocate(remaining - padLength);
             case STATE_FRAGMENT:
@@ -52,6 +54,7 @@ public class PushPromiseFrame extends Http2Frame {
                 if (fragment.hasRemaining()) {
                     return false;
                 }
+                fragment.flip();
                 state = STATE_PADDING;
             case STATE_PADDING:
                 if (buffer.remaining() < padLength) {
@@ -63,12 +66,51 @@ public class PushPromiseFrame extends Http2Frame {
                     remaining -= padLength;
                 }
         }
+        checkEndRemaining();
         return true;
     }
 
     @Override
+    public void writeTo(WriteBuffer writeBuffer) throws IOException {
+        int payloadLength = 0;
+        byte flags = (byte) this.flags;
+
+        // Calculate payload length and set flags
+        boolean padded = padding != null && padding.length > 0;
+        if (padded) {
+            payloadLength += 1 + padding.length;
+            flags |= FLAG_PADDED;
+        }
+
+        payloadLength += 4 + fragment.remaining();
+
+        // Write frame header
+        writeBuffer.writeInt(payloadLength << 8 | FRAME_TYPE_PUSH_PROMISE);
+        writeBuffer.writeByte(flags);
+        System.out.println("write push promise header ,streamId:" + streamId);
+        writeBuffer.writeInt(streamId);
+
+        // Write pad length if padded
+        if (padded) {
+            writeBuffer.writeByte((byte) padding.length);
+        }
+
+        // Write stream dependency and weight if priority is set
+        writeBuffer.writeInt(promisedStream);
+
+        // Write fragment
+
+        writeBuffer.write(fragment.array(), 0, fragment.remaining());
+
+        // Write padding if padded
+        if (padded) {
+            writeBuffer.write(padding);
+        }
+    }
+
+    @Override
     public int type() {
-        return TYPE;
+        return FRAME_TYPE_PUSH_PROMISE;
     }
 
 
@@ -80,4 +122,15 @@ public class PushPromiseFrame extends Http2Frame {
         return promisedStream;
     }
 
+    public ByteBuffer getFragment() {
+        return fragment;
+    }
+
+    public void setFragment(ByteBuffer fragment) {
+        this.fragment = fragment;
+    }
+
+    public void setPromisedStream(int promisedStream) {
+        this.promisedStream = promisedStream;
+    }
 }

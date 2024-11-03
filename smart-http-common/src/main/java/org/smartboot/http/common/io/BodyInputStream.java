@@ -7,6 +7,27 @@ import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 public abstract class BodyInputStream extends InputStream {
+    public static final BodyInputStream EMPTY_INPUT_STREAM = new BodyInputStream(null) {
+        @Override
+        public void setReadListener(ReadListener listener) {
+            throw new IllegalStateException();
+        }
+
+        @Override
+        public int read(byte[] b, int off, int len) {
+            return -1;
+        }
+
+        @Override
+        public int available() {
+            return 0;
+        }
+
+        @Override
+        public void close() {
+
+        }
+    };
     protected final AioSession session;
     protected ReadListener readListener;
     protected volatile int state;

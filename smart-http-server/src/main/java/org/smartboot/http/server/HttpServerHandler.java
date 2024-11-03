@@ -70,10 +70,10 @@ public abstract class HttpServerHandler implements ServerHandler<HttpRequest, Ht
             if (smartDecoder.decode(buffer)) {
                 request.setFormUrlencoded(smartDecoder.getBuffer());
                 httpRequest.setBodyDecoder(null);
-                handleHttpRequest(request.newHttpRequest());
+                handleHttpRequest(httpRequest);
             }
         } else {
-            handleHttpRequest(request.newHttpRequest());
+            handleHttpRequest(httpRequest);
         }
     }
 

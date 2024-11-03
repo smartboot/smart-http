@@ -15,6 +15,7 @@ package org.smartboot.http.common.enums;
 public enum HttpProtocolEnum {
     HTTP_11("HTTP/1.1"),
     HTTP_10("HTTP/1.0"),
+    HTTP_2("HTTP/2.0"),
     ;
 
     private final String protocol;

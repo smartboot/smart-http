@@ -23,14 +23,12 @@
  * questions.
  */
 
-package org.smartboot.http.server.h2;
+package org.smartboot.http.common.codec.h2.codec;
 
 import java.nio.ByteBuffer;
 
 public class PingFrame extends Http2Frame {
 
-
-    public static final int TYPE = 0x6;
 
     private long data;
 
@@ -53,6 +51,6 @@ public class PingFrame extends Http2Frame {
 
     @Override
     public int type() {
-        return TYPE;
+        return FRAME_TYPE_PING;
     }
 }

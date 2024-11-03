@@ -29,7 +29,7 @@ abstract class AbstractOutputStream extends BufferOutputStream {
     protected final AbstractRequest request;
 
     public AbstractOutputStream(AbstractRequest request, AioSession aioSession) {
-        super(aioSession);
+        super(aioSession.writeBuffer());
         this.request = request;
     }
 

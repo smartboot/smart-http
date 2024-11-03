@@ -149,4 +149,8 @@ public interface HttpRequest {
      * @param attachment 附件对象
      */
     void setAttachment(Attachment attachment);
+
+    default PushBuilder newPushBuilder() {
+        throw new UnsupportedOperationException();
+    }
 }
