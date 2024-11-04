@@ -175,7 +175,7 @@ public class AbstractResponse implements HttpResponse, Reset {
             setContentType(value);
             return true;
         } else if (name.equalsIgnoreCase(HeaderNameEnum.CONTENT_LENGTH.getName())) {
-            setContentLength(Integer.parseInt(value));
+            setContentLength(Long.parseLong(value));
             return true;
         }
         return false;
