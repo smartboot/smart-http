@@ -29,9 +29,6 @@ public interface PushBuilder {
     String getQueryString();
 
 
-    String getSessionId();
-
-
     Set<String> getHeaderNames();
 
 

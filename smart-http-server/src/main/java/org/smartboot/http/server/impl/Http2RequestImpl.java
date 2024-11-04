@@ -2,6 +2,7 @@ package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.Reset;
+import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.io.BodyInputStream;
 import org.smartboot.http.common.io.ReadListener;
 import org.smartboot.http.common.multipart.MultipartConfig;
@@ -59,7 +60,20 @@ public class Http2RequestImpl extends CommonRequest implements HttpRequest, Rese
 
     @Override
     public void reset() {
-
+        headerSize = 0;
+        method = HttpMethodEnum.GET.getMethod();
+        uri = null;
+        requestUri = null;
+        requestUrl = null;
+        parameters = null;
+        contentType = null;
+        contentLength = INIT_CONTENT_LENGTH;
+        formUrlencoded = null;
+        queryString = null;
+        cookies = null;
+        type = null;
+        scheme = null;
+        response.reset();
     }
 
     @Override
@@ -131,7 +145,7 @@ public class Http2RequestImpl extends CommonRequest implements HttpRequest, Rese
     @Override
     public PushBuilder newPushBuilder() {
         if (session.getSettings().getEnablePush() == 0) {
-            throw new IllegalStateException();
+            return null;
         }
         PushBuilderImpl builder = new PushBuilderImpl(streamId, response, session);
         getHeaderNames().stream().filter(headerName -> !PushBuilderImpl.IGNORE_HEADERS.contains(headerName)).forEach(headerName -> getHeaders(headerName).forEach(headerValue -> builder.addHeader(headerName, headerValue)));

@@ -5,6 +5,7 @@ import org.smartboot.http.common.codec.h2.codec.Http2Frame;
 import org.smartboot.http.common.codec.h2.codec.PushPromiseFrame;
 import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.utils.HttpUtils;
+import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.PushBuilder;
 
 import java.io.IOException;
@@ -16,8 +17,13 @@ import java.util.Set;
 
 public class PushBuilderImpl implements PushBuilder {
     public static final List<String> IGNORE_HEADERS = Arrays.asList("if-match", "if-none-match", "if-modified-since", "if-unmodified-since", "if-range", "range", "proxy-authorization", "from", "user-agent", "range", "expect", "max-forwards", "proxy-authenticate", "proxy-authorization", "age", "cache-control", "clear-site-data");
+    private static final Set<String> UNSUPPORTED_METHODS = new HashSet<>(Arrays.asList("", "POST", "PUT", "DELETE",
+            "CONNECT", "OPTIONS", "TRACE"));
     private final Http2RequestImpl pushRequest;
     private final int streamId;
+    private String path;
+    private String queryString;
+
 
     public PushBuilderImpl(int streamId, Http2ResponseImpl response, Http2Session session) {
         this.streamId = streamId;
@@ -29,13 +35,19 @@ public class PushBuilderImpl implements PushBuilder {
 
     @Override
     public PushBuilder method(String method) {
+        if (method == null) {
+            throw new NullPointerException();
+        }
+        if (UNSUPPORTED_METHODS.contains(method)) {
+            throw new IllegalArgumentException("Unsupported method: " + method);
+        }
         pushRequest.setMethod(method);
         return this;
     }
 
     @Override
     public PushBuilder queryString(String queryString) {
-        pushRequest.setQueryString(queryString);
+        this.queryString = queryString;
         return this;
     }
 
@@ -59,8 +71,7 @@ public class PushBuilderImpl implements PushBuilder {
 
     @Override
     public PushBuilder path(String path) {
-        pushRequest.setUri(path);
-        pushRequest.setRequestURI(path);
+        this.path = path;
         return this;
     }
 
@@ -77,11 +88,24 @@ public class PushBuilderImpl implements PushBuilder {
 //                pushRequest.getSession().getRequest().getConfiguration().getHttp2ServerHandler().handleHttpRequest(pushRequest);
 //            }
 //        });
+        if (StringUtils.isBlank(path)) {
+            throw new IllegalStateException();
+        }
+        String path = this.path;
+        if (queryString != null && !queryString.isEmpty()) {
+            if (path.contains("?")) {
+                path += "&" + queryString;
+            } else {
+                path += "?" + queryString;
+            }
+        }
         try {
             pushRequest.setHeader(":method", pushRequest.getMethod());
             pushRequest.setHeader(":scheme", pushRequest.getScheme());
-            pushRequest.setHeader(":path", pushRequest.getRequestURI());
+            pushRequest.setHeader(":path", path);
             pushRequest.setHeader(":authority", pushRequest.getSession().getRequest().getHost());
+            pushRequest.setUri(path);
+            pushRequest.setRequestURI(path);
             List<ByteBuffer> buffers = HttpUtils.HPackEncoder(pushRequest.getSession().getHpackEncoder(), pushRequest.getHeaders());
             PushPromiseFrame frame = new PushPromiseFrame(streamId, buffers.size() > 1 ? 0 : Http2Frame.FLAG_END_HEADERS, 0);
             frame.setPromisedStream(pushRequest.getStreamId());
@@ -103,6 +127,9 @@ public class PushBuilderImpl implements PushBuilder {
             throw new RuntimeException(e);
         }
         pushRequest.getSession().getRequest().getConfiguration().getHttp2ServerHandler().handleHttpRequest(pushRequest);
+        pushRequest.reset();
+        this.path = null;
+        this.queryString = null;
 //        pushRequest.getSession().getRequest().aioSession.writeBuffer().flush();
     }
 
@@ -113,12 +140,7 @@ public class PushBuilderImpl implements PushBuilder {
 
     @Override
     public String getQueryString() {
-        return pushRequest.getQueryString();
-    }
-
-    @Override
-    public String getSessionId() {
-        return "";
+        return queryString;
     }
 
     @Override
@@ -133,6 +155,6 @@ public class PushBuilderImpl implements PushBuilder {
 
     @Override
     public String getPath() {
-        return pushRequest.getRequestURI();
+        return this.path;
     }
 }

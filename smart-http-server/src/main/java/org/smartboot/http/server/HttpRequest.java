@@ -151,6 +151,6 @@ public interface HttpRequest {
     void setAttachment(Attachment attachment);
 
     default PushBuilder newPushBuilder() {
-        throw new UnsupportedOperationException();
+        return null;
     }
 }

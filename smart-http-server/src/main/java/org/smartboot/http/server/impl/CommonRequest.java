@@ -165,6 +165,13 @@ public abstract class CommonRequest {
 
 
     public final void setHeader(String headerName, String value) {
+        if (value == null) {
+            boolean suc = headers.removeIf(headerValue -> headerValue.getName().equalsIgnoreCase(headerName));
+            if (suc) {
+                headerSize--;
+            }
+            return;
+        }
         if (headerSize < headers.size()) {
             HeaderValue headerValue = headers.get(headerSize);
             headerValue.setName(headerName);
