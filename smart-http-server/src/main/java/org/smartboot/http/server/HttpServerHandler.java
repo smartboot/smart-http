@@ -151,7 +151,7 @@ public abstract class HttpServerHandler implements ServerHandler<HttpRequest, Ht
             return false;
         }
         //非keepAlive或者 body部分未读取完毕,释放连接资源
-        if (!request.isKeepAlive() || (!HttpMethodEnum.GET.getMethod().equals(request.getMethod()) && request.getContentLength() > 0 && request.getInputStream().available() > 0)) {
+        if (!request.isKeepAlive() || (!HttpMethodEnum.GET.getMethod().equals(request.getMethod()) && request.getContentLength() > 0 && !request.getInputStream().isFinished())) {
             request.getResponse().close();
             return false;
         }
