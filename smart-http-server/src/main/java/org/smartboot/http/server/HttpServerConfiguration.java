@@ -322,7 +322,7 @@ public class HttpServerConfiguration {
         return wsIdleTimeout;
     }
 
-    public HttpServerConfiguration setWsIdleTimeout(int wsIdleTimeout) {
+    public HttpServerConfiguration setWsIdleTimeout(long wsIdleTimeout) {
         this.wsIdleTimeout = wsIdleTimeout;
         return this;
     }
