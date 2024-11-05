@@ -13,11 +13,8 @@ import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.io.BodyInputStream;
-import org.smartboot.http.common.io.ChunkedInputStream;
-import org.smartboot.http.common.io.PostInputStream;
 import org.smartboot.http.common.multipart.MultipartConfig;
 import org.smartboot.http.common.multipart.Part;
-import org.smartboot.http.common.utils.SmartDecoder;
 import org.smartboot.http.server.decode.MultipartFormDecoder;
 
 import java.io.IOException;
@@ -37,14 +34,8 @@ public class HttpRequestImpl extends AbstractRequest {
     private boolean keepAlive;
     private List<Part> parts;
     private boolean multipartParsed;
-    /**
-     * Http Body解码器
-     */
-    private SmartDecoder bodyDecoder;
 
     private final HttpResponseImpl response;
-    private BodyInputStream inputStream;
-    private Map<String, String> trailerFields;
 
     HttpRequestImpl(Request request) {
         init(request);
@@ -65,56 +56,23 @@ public class HttpRequestImpl extends AbstractRequest {
 
     @Override
     public BodyInputStream getInputStream() throws IOException {
-        if (inputStream != null) {
-            return inputStream;
-        }
-        if (request.getFormUrlencoded() != null || multipartParsed) {
-            inputStream = BodyInputStream.EMPTY_INPUT_STREAM;
-        }
-        //如果一个消息即存在传输译码（Transfer-Encoding）头域并且也 Content-Length 头域，后者会被忽略。
-        else if (HeaderValueEnum.CHUNKED.getName().equalsIgnoreCase(request.getHeader(HeaderNameEnum.TRANSFER_ENCODING.getName()))) {
-            inputStream = new ChunkedInputStream(request.getAioSession(), request.getRemainingThreshold(), stringStringMap -> HttpRequestImpl.this.trailerFields = stringStringMap);
-        } else {
-            long contentLength = getContentLength();
-            if (contentLength > 0) {
-                inputStream = new PostInputStream(request.getAioSession(), contentLength);
-            } else {
-                inputStream = BodyInputStream.EMPTY_INPUT_STREAM;
-            }
-        }
-        return inputStream;
+        return request.getInputStream();
     }
 
     @Override
     public Map<String, String> getTrailerFields() {
-        return trailerFields == null ? super.getTrailerFields() : trailerFields;
+        return request.getTrailerFields() == null ? super.getTrailerFields() : request.getTrailerFields();
     }
 
     @Override
     public boolean isTrailerFieldsReady() {
-        return !HeaderValueEnum.CHUNKED.getName().equals(getHeader(HeaderNameEnum.TRANSFER_ENCODING.getName())) || trailerFields != null;
-    }
-
-    public SmartDecoder getBodyDecoder() {
-        return bodyDecoder;
-    }
-
-    public void setBodyDecoder(SmartDecoder bodyDecoder) {
-        this.bodyDecoder = bodyDecoder;
+        return !HeaderValueEnum.CHUNKED.getName().equals(getHeader(HeaderNameEnum.TRANSFER_ENCODING.getName())) || request.getTrailerFields() != null;
     }
 
     public void reset() {
         request.reset();
         response.reset();
-        trailerFields = null;
-        if (inputStream != null) {
-            try {
-                inputStream.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            inputStream = null;
-        }
+
         if (parts != null) {
             for (Part part : parts) {
                 try {
@@ -144,6 +102,7 @@ public class HttpRequestImpl extends AbstractRequest {
                 }
             }
             multipartParsed = true;
+            request.setInputStream(BodyInputStream.EMPTY_INPUT_STREAM);
             remaining -= request.getAioSession().readBuffer().position() - p;
             if (remaining != 0) {
                 throw new HttpException(HttpStatus.BAD_REQUEST);

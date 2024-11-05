@@ -27,6 +27,11 @@ public abstract class BodyInputStream extends InputStream {
         public void close() {
 
         }
+
+        @Override
+        public boolean isFinished() {
+            return true;
+        }
     };
     protected final AioSession session;
     protected ReadListener readListener;

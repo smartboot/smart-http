@@ -68,7 +68,6 @@ public class Http2RequestImpl extends CommonRequest implements HttpRequest, Rese
         parameters = null;
         contentType = null;
         contentLength = INIT_CONTENT_LENGTH;
-        formUrlencoded = null;
         queryString = null;
         cookies = null;
         type = null;

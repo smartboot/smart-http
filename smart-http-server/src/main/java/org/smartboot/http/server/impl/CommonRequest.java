@@ -27,8 +27,10 @@ import org.smartboot.http.server.WebSocketHandler;
 import org.smartboot.socket.transport.AioSession;
 import org.smartboot.socket.util.Attachment;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -94,10 +96,7 @@ public abstract class CommonRequest {
      * 消息类型
      */
     protected HttpTypeEnum type = null;
-    /**
-     * Post表单
-     */
-    protected ByteBuffer formUrlencoded;
+
     protected Cookie[] cookies;
 
 
@@ -340,9 +339,21 @@ public abstract class CommonRequest {
             HttpUtils.decodeParamString(urlParamStr, parameters);
         }
 
-        if (formUrlencoded != null) {
-            HttpUtils.decodeParamString(new String(formUrlencoded.array()), parameters);
+
+        try (InputStream inputStream = getInputStream()) {
+            if (inputStream != BodyInputStream.EMPTY_INPUT_STREAM) {
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                byte[] bytes = new byte[1024];
+                int len;
+                while ((len = inputStream.read(bytes)) != -1) {
+                    outputStream.write(bytes, 0, len);
+                }
+                HttpUtils.decodeParamString(outputStream.toString(), parameters);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
+
         return getParameterValues(name);
     }
 
@@ -426,14 +437,6 @@ public abstract class CommonRequest {
         cookies = new Cookie[parsedCookies.size()];
         parsedCookies.toArray(cookies);
         return cookies;
-    }
-
-    final ByteBuffer getFormUrlencoded() {
-        return formUrlencoded;
-    }
-
-    final public void setFormUrlencoded(ByteBuffer formUrlencoded) {
-        this.formUrlencoded = formUrlencoded;
     }
 
     /**

@@ -11,9 +11,13 @@ package org.smartboot.http.server.impl;
 import org.smartboot.http.common.DecodeState;
 import org.smartboot.http.common.Reset;
 import org.smartboot.http.common.enums.HeaderNameEnum;
+import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.enums.HttpTypeEnum;
 import org.smartboot.http.common.exception.HttpException;
+import org.smartboot.http.common.io.BodyInputStream;
+import org.smartboot.http.common.io.ChunkedInputStream;
+import org.smartboot.http.common.io.PostInputStream;
 import org.smartboot.http.common.io.ReadListener;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
@@ -29,6 +33,7 @@ import org.smartboot.socket.transport.AioSession;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -65,6 +70,8 @@ public final class Request extends CommonRequest implements Reset {
     private long latestIo;
     private TimerTask httpIdleTask;
     private TimerTask wsIdleTask;
+    private BodyInputStream inputStream;
+    private Map<String, String> trailerFields;
 
     void cancelHttpIdleTask() {
         synchronized (this) {
@@ -123,8 +130,27 @@ public final class Request extends CommonRequest implements Reset {
         }
     }
 
-    long getRemainingThreshold() {
-        return remainingThreshold;
+    public void setInputStream(BodyInputStream inputStream) {
+        this.inputStream = inputStream;
+    }
+
+    @Override
+    public BodyInputStream getInputStream() {
+        if (inputStream != null) {
+            return inputStream;
+        }
+        //如果一个消息即存在传输译码（Transfer-Encoding）头域并且也 Content-Length 头域，后者会被忽略。
+        if (HeaderValueEnum.CHUNKED.getName().equalsIgnoreCase(getHeader(HeaderNameEnum.TRANSFER_ENCODING.getName()))) {
+            inputStream = new ChunkedInputStream(aioSession, remainingThreshold, stringStringMap -> this.trailerFields = stringStringMap);
+        } else {
+            long contentLength = getContentLength();
+            if (contentLength > 0) {
+                inputStream = new PostInputStream(aioSession, contentLength);
+            } else {
+                inputStream = BodyInputStream.EMPTY_INPUT_STREAM;
+            }
+        }
+        return inputStream;
     }
 
     public AioSession getAioSession() {
@@ -273,6 +299,9 @@ public final class Request extends CommonRequest implements Reset {
         return webSocketRequest;
     }
 
+    public Map<String, String> getTrailerFields() {
+        return trailerFields;
+    }
 
     public void setLatestIo(long latestIo) {
         this.latestIo = latestIo;
@@ -292,7 +321,6 @@ public final class Request extends CommonRequest implements Reset {
         parameters = null;
         contentType = null;
         contentLength = INIT_CONTENT_LENGTH;
-        formUrlencoded = null;
         queryString = null;
         cookies = null;
         httpRequest = null;
@@ -300,5 +328,14 @@ public final class Request extends CommonRequest implements Reset {
         type = null;
         decodeState.setState(DecodeState.STATE_METHOD);
         scheme = null;
+        trailerFields = null;
+        if (inputStream != null) {
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            inputStream = null;
+        }
     }
 }

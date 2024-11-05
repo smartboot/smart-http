@@ -8,18 +8,11 @@
 
 package org.smartboot.http.server;
 
-import org.smartboot.http.common.ChunkedFrameDecoder;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
-import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
-import org.smartboot.http.common.enums.HttpStatus;
-import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.io.BufferOutputStream;
 import org.smartboot.http.common.io.ReadListener;
-import org.smartboot.http.common.utils.FixedLengthFrameDecoder;
-import org.smartboot.http.common.utils.SmartDecoder;
-import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.impl.AbstractResponse;
 import org.smartboot.http.server.impl.HttpMessageProcessor;
 import org.smartboot.http.server.impl.HttpRequestImpl;
@@ -41,40 +34,41 @@ public abstract class HttpServerHandler implements ServerHandler<HttpRequest, Ht
     @Override
     public void onBodyStream(ByteBuffer buffer, Request request) {
         HttpRequestImpl httpRequest = request.newHttpRequest();
-        if (HttpMethodEnum.GET.getMethod().equals(request.getMethod())) {
-            handleHttpRequest(httpRequest);
-            return;
-        }
-        long postLength = request.getContentLength();
-        //Post请求
-        if (HttpMethodEnum.POST.getMethod().equals(request.getMethod())
-                && StringUtils.startsWith(request.getContentType(), HeaderValueEnum.X_WWW_FORM_URLENCODED.getName())
-                && !HeaderValueEnum.UPGRADE.getName().equals(request.getConnection())) {
-            if (postLength == 0) {
-                handleHttpRequest(httpRequest);
-                return;
-            }
-
-            SmartDecoder smartDecoder = httpRequest.getBodyDecoder();
-            if (smartDecoder == null) {
-                if (postLength > 0) {
-                    smartDecoder = new FixedLengthFrameDecoder((int) postLength);
-                } else if (HeaderValueEnum.CHUNKED.getName().equals(request.getHeader(HeaderNameEnum.TRANSFER_ENCODING.getName()))) {
-                    smartDecoder = new ChunkedFrameDecoder();
-                } else {
-                    throw new HttpException(HttpStatus.LENGTH_REQUIRED);
-                }
-                httpRequest.setBodyDecoder(smartDecoder);
-            }
-
-            if (smartDecoder.decode(buffer)) {
-                request.setFormUrlencoded(smartDecoder.getBuffer());
-                httpRequest.setBodyDecoder(null);
-                handleHttpRequest(httpRequest);
-            }
-        } else {
-            handleHttpRequest(httpRequest);
-        }
+        handleHttpRequest(httpRequest);
+//        if (HttpMethodEnum.GET.getMethod().equals(request.getMethod())) {
+//            handleHttpRequest(httpRequest);
+//            return;
+//        }
+//        long postLength = request.getContentLength();
+//        //表单提交自动解析
+//        if (HttpMethodEnum.POST.getMethod().equals(request.getMethod())
+//                && StringUtils.startsWith(request.getContentType(), HeaderValueEnum.X_WWW_FORM_URLENCODED.getName())
+//                && !HeaderValueEnum.UPGRADE.getName().equals(request.getConnection())) {
+//            if (postLength == 0) {
+//                handleHttpRequest(httpRequest);
+//                return;
+//            }
+//
+//            SmartDecoder smartDecoder = httpRequest.getBodyDecoder();
+//            if (smartDecoder == null) {
+//                if (postLength > 0) {
+//                    smartDecoder = new FixedLengthFrameDecoder((int) postLength);
+//                } else if (HeaderValueEnum.CHUNKED.getName().equals(request.getHeader(HeaderNameEnum.TRANSFER_ENCODING.getName()))) {
+//                    smartDecoder = new ChunkedFrameDecoder();
+//                } else {
+//                    throw new HttpException(HttpStatus.LENGTH_REQUIRED);
+//                }
+//                httpRequest.setBodyDecoder(smartDecoder);
+//            }
+//
+//            if (smartDecoder.decode(buffer)) {
+//                httpRequest.setBodyDecoder(null);
+//                httpRequest.setInputStream(new ByteArrayBodyInputStream(new ByteArrayInputStream(smartDecoder.getBuffer().array())));
+//                handleHttpRequest(httpRequest);
+//            }
+//        } else {
+//            handleHttpRequest(httpRequest);
+//        }
     }
 
     private void handleHttpRequest(HttpRequestImpl abstractRequest) {
@@ -151,7 +145,7 @@ public abstract class HttpServerHandler implements ServerHandler<HttpRequest, Ht
             return false;
         }
         //非keepAlive或者 body部分未读取完毕,释放连接资源
-        if (!request.isKeepAlive() || (!HttpMethodEnum.GET.getMethod().equals(request.getMethod()) && request.getContentLength() > 0 && !request.getInputStream().isFinished())) {
+        if (!request.isKeepAlive() || !request.getInputStream().isFinished()) {
             request.getResponse().close();
             return false;
         }
