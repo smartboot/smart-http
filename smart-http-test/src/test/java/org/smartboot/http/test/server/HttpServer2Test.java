@@ -92,6 +92,46 @@ public class HttpServer2Test extends BastTest {
         Assert.assertEquals(httpResponse.getStatus(), HttpStatus.OK.value());
     }
 
+    @Test
+    public void testPost() throws ExecutionException, InterruptedException {
+        bootstrap.httpHandler(new HttpServerHandler() {
+            @Override
+            public void handle(HttpRequest request, HttpResponse response) throws IOException {
+                request.getInputStream().close();
+                response.write("Hello World".getBytes(StandardCharsets.UTF_8));
+            }
+        }).setPort(SERVER_PORT);
+        for (int i = 0; i < 10; i++) {
+            String body = "hello" + i;
+            org.smartboot.http.client.HttpResponse httpResponse = httpClient.post("/").header().setContentLength(body.length()).done().body().write(body).done().done().get();
+            Assert.assertEquals(httpResponse.getProtocol(), HttpProtocolEnum.HTTP_11.getProtocol());
+            Assert.assertEquals(httpResponse.getStatus(), HttpStatus.OK.value());
+            Assert.assertEquals(httpResponse.body(), "Hello World");
+        }
+
+    }
+
+    @Test
+    public void testPost1() throws ExecutionException, InterruptedException {
+        bootstrap.httpHandler(new HttpServerHandler() {
+            @Override
+            public void handle(HttpRequest request, HttpResponse response) throws IOException {
+                byte[] buffer = new byte[(int) request.getContentLength()];
+                request.getInputStream().read(buffer);
+//                request.getInputStream().close();
+                response.write(buffer);
+            }
+        }).setPort(SERVER_PORT);
+        for (int i = 0; i < 10; i++) {
+            String body = "hello" + i;
+            org.smartboot.http.client.HttpResponse httpResponse = httpClient.post("/").header().keepalive(true).setContentLength(body.length()).done().body().write(body).done().done().get();
+            Assert.assertEquals(httpResponse.getProtocol(), HttpProtocolEnum.HTTP_11.getProtocol());
+            Assert.assertEquals(httpResponse.getStatus(), HttpStatus.OK.value());
+            Assert.assertEquals(httpResponse.body(), body);
+        }
+
+    }
+
     @After
     public void destroy() {
         httpClient.close();
