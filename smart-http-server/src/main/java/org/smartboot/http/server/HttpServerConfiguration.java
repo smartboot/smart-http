@@ -79,7 +79,7 @@ public class HttpServerConfiguration {
     /**
      * 闲置超时时间，默认：1分钟
      */
-    private int wsIdleTimeout = 120000;
+    private long wsIdleTimeout = 120000;
     /**
      * 服务器名称
      */
@@ -318,7 +318,7 @@ public class HttpServerConfiguration {
         return this;
     }
 
-    public int getWsIdleTimeout() {
+    public long getWsIdleTimeout() {
         return wsIdleTimeout;
     }
 
