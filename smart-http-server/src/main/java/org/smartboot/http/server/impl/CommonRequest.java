@@ -10,6 +10,7 @@ package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
+import org.smartboot.http.common.Reset;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpTypeEnum;
@@ -46,7 +47,7 @@ import java.util.Set;
  * @author 三刀
  * @version V1.0 , 2018/8/31
  */
-public abstract class CommonRequest {
+public abstract class CommonRequest implements Reset {
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonRequest.class);
     private static final Locale defaultLocale = Locale.getDefault();
     private static final int INIT_CONTENT_LENGTH = -2;
@@ -465,4 +466,18 @@ public abstract class CommonRequest {
         return configuration;
     }
 
+    @Override
+    public void reset() {
+        headerSize = 0;
+        uri = null;
+        requestUrl = null;
+        parameters = null;
+        contentType = null;
+        contentLength = INIT_CONTENT_LENGTH;
+        cookies = null;
+        type = null;
+        scheme = null;
+        queryString = null;
+        requestUri = null;
+    }
 }

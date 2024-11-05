@@ -313,21 +313,12 @@ public final class Request extends CommonRequest implements Reset {
     }
 
     public void reset() {
+        super.reset();
         remainingThreshold = configuration.getMaxRequestSize();
-        headerSize = 0;
         method = null;
-        uri = null;
-        requestUrl = null;
-        parameters = null;
-        contentType = null;
-        contentLength = INIT_CONTENT_LENGTH;
-        queryString = null;
-        cookies = null;
         httpRequest = null;
         webSocketRequest = null;
-        type = null;
         decodeState.setState(DecodeState.STATE_METHOD);
-        scheme = null;
         trailerFields = null;
         if (inputStream != null) {
             try {

@@ -60,18 +60,8 @@ public class Http2RequestImpl extends CommonRequest implements HttpRequest, Rese
 
     @Override
     public void reset() {
-        headerSize = 0;
+        super.reset();
         method = HttpMethodEnum.GET.getMethod();
-        uri = null;
-        requestUri = null;
-        requestUrl = null;
-        parameters = null;
-        contentType = null;
-        contentLength = INIT_CONTENT_LENGTH;
-        queryString = null;
-        cookies = null;
-        type = null;
-        scheme = null;
         response.reset();
     }
 
