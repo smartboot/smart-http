@@ -12,6 +12,7 @@ import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.Reset;
 import org.smartboot.http.common.enums.HeaderNameEnum;
+import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpTypeEnum;
 import org.smartboot.http.common.io.BodyInputStream;
@@ -340,21 +341,22 @@ public abstract class CommonRequest implements Reset {
             HttpUtils.decodeParamString(urlParamStr, parameters);
         }
 
-
-        try (InputStream inputStream = getInputStream()) {
-            if (inputStream != BodyInputStream.EMPTY_INPUT_STREAM) {
-                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                byte[] bytes = new byte[1024];
-                int len;
-                while ((len = inputStream.read(bytes)) != -1) {
-                    outputStream.write(bytes, 0, len);
+        if (HeaderValueEnum.X_WWW_FORM_URLENCODED.getName().equals(getContentType())) {
+            try {
+                InputStream inputStream = getInputStream();
+                if (inputStream != BodyInputStream.EMPTY_INPUT_STREAM) {
+                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                    byte[] bytes = new byte[1024];
+                    int len;
+                    while ((len = inputStream.read(bytes)) != -1) {
+                        outputStream.write(bytes, 0, len);
+                    }
+                    HttpUtils.decodeParamString(outputStream.toString(), parameters);
                 }
-                HttpUtils.decodeParamString(outputStream.toString(), parameters);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
-
         return getParameterValues(name);
     }
 
