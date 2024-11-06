@@ -112,6 +112,22 @@ public class HttpPostTest {
             }
         });
 
+        routeHandle.route("/body", new HttpServerHandler() {
+            @Override
+            public void handle(HttpRequest request, HttpResponse response) throws Throwable {
+                System.out.println(request.getParameters());
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                byteArrayOutputStream.write(String.valueOf(request.getContentLength()).getBytes());
+                InputStream inputStream = request.getInputStream();
+                byte[] bytes = new byte[1024];
+                int size;
+                while ((size = inputStream.read(bytes)) != -1) {
+                    byteArrayOutputStream.write(bytes, 0, size);
+                }
+                response.write(byteArrayOutputStream.toByteArray());
+            }
+        });
+
         httpBootstrap = new HttpBootstrap();
         httpBootstrap.httpHandler(routeHandle).setPort(8080).start();
 
@@ -256,6 +272,19 @@ public class HttpPostTest {
         doRequest(new HttpClient("http://127.0.0.1:8080"), consumer);
         doRequest(new HttpClient("https://127.0.0.1:8888"), consumer);
     }
+
+    @Test
+    public void testBody() throws Throwable {
+        Consumer consumer = httpClient -> {
+            httpClient.configuration().debug(true);
+            byte[] jsonBytes = "{\"a\":1,\"b\":\"123\"}".getBytes(StandardCharsets.UTF_8);
+            String resp = httpClient.post("/body").header().setContentLength(jsonBytes.length).setContentType("application/json").done().body().write(jsonBytes).flush().done().done().get().body();
+            Assert.assertEquals(resp, jsonBytes.length + new String(jsonBytes));
+        };
+        doRequest(new HttpClient("http://127.0.0.1:8080"), consumer);
+        doRequest(new HttpClient("https://127.0.0.1:8888"), consumer);
+    }
+
 
     @After
     public void destroy() {
