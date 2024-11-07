@@ -145,7 +145,7 @@ public final class Request extends CommonRequest implements Reset {
         } else {
             long contentLength = getContentLength();
             if (contentLength > 0) {
-                inputStream = new PostInputStream(aioSession, contentLength);
+                inputStream = new PostInputStream(aioSession, contentLength, remainingThreshold);
             } else {
                 inputStream = BodyInputStream.EMPTY_INPUT_STREAM;
             }
@@ -197,9 +197,10 @@ public final class Request extends CommonRequest implements Reset {
         }
         //不包含content-length,则为：-1
         contentLength = NumberUtils.toLong(getHeader(HeaderNameEnum.CONTENT_LENGTH.getName()), NONE_CONTENT_LENGTH);
-        if (contentLength >= remainingThreshold) {
-            throw new HttpException(HttpStatus.PAYLOAD_TOO_LARGE);
-        }
+//todo:取消这里的异常（改在读流时）
+        //        if (contentLength >= remainingThreshold) {
+//            throw new HttpException(HttpStatus.PAYLOAD_TOO_LARGE);
+//        }
         return contentLength;
     }
 
