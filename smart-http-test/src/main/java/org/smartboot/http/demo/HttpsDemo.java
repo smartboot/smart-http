@@ -12,6 +12,7 @@ import org.smartboot.http.server.HttpBootstrap;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
 import org.smartboot.http.server.HttpServerHandler;
+import org.smartboot.http.server.PushBuilder;
 import org.smartboot.socket.extension.plugins.SslPlugin;
 import org.smartboot.socket.extension.plugins.StreamMonitorPlugin;
 import org.smartboot.socket.extension.ssl.factory.PemServerSSLContextFactory;
@@ -34,7 +35,11 @@ public class HttpsDemo {
                 if (request.getRequestURI().equals("/aa.css")) {
                     response.write("hello smart-http push<br/>".getBytes());
                 } else {
-                    request.newPushBuilder().path("/aa.css").addHeader("aa", "bb").method("GET").push();
+                    PushBuilder pushBuilder = request.newPushBuilder();
+                    if (pushBuilder != null) {
+                        request.newPushBuilder().path("/aa.css").addHeader("aa", "bb").method("GET").push();
+                    }
+
                     response.write("<html><head></head><body>hello smart-http<br/></body></html>".getBytes());
 
                 }
