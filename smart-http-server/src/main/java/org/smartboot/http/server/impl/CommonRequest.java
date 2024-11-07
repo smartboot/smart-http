@@ -341,7 +341,10 @@ public abstract class CommonRequest implements Reset {
             HttpUtils.decodeParamString(urlParamStr, parameters);
         }
 
-        if (HeaderValueEnum.X_WWW_FORM_URLENCODED.getName().equals(getContentType())) {
+        //application/x-www-form-urlencoded
+        //application/x-www-form-urlencoded;charset=utf-8
+        String contentTypeTmp = getContentType();
+        if (contentTypeTmp != null && contentTypeTmp.startsWith(HeaderValueEnum.X_WWW_FORM_URLENCODED.getName())) {
             try {
                 InputStream inputStream = getInputStream();
                 if (inputStream != BodyInputStream.EMPTY_INPUT_STREAM) {
