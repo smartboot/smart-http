@@ -283,7 +283,7 @@ public class HttpServerConfiguration {
         return maxRequestSize;
     }
 
-    public void setMaxRequestSize(int maxRequestSize) {
+    public void setMaxRequestSize(long maxRequestSize) {
         this.maxRequestSize = maxRequestSize;
     }
 
