@@ -20,7 +20,7 @@ import java.nio.ByteBuffer;
  * @version V1.0 , 2019/12/1
  */
 public class PostInputStream extends BodyInputStream {
-    private long maxPayload;
+    private final long maxPayload;
     private long remaining;
 
     public PostInputStream(AioSession session, long contentLength, long maxPayload) {
@@ -31,13 +31,8 @@ public class PostInputStream extends BodyInputStream {
 
     @Override
     public int read(byte[] data, int off, int len) throws IOException {
-        if (maxPayload > 0L) {
-            //读流时触发 PAYLOAD_TOO_LARGE 检测（只在第一次）
-            if (remaining > maxPayload) {
-                throw new HttpException(HttpStatus.PAYLOAD_TOO_LARGE);
-            } else {
-                maxPayload = -1L;
-            }
+        if (maxPayload > 0L && remaining > maxPayload) {
+            throw new HttpException(HttpStatus.PAYLOAD_TOO_LARGE);
         }
 
         checkState();

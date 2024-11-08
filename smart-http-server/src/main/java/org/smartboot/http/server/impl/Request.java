@@ -21,7 +21,6 @@ import org.smartboot.http.common.io.PostInputStream;
 import org.smartboot.http.common.io.ReadListener;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
-import org.smartboot.http.common.utils.NumberUtils;
 import org.smartboot.http.server.Http2ServerHandler;
 import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.ServerHandler;
@@ -190,19 +189,6 @@ public final class Request extends CommonRequest implements Reset {
         this.serverHandler = serverHandler;
     }
 
-
-    public long getContentLength() {
-        if (contentLength > INIT_CONTENT_LENGTH) {
-            return contentLength;
-        }
-        //不包含content-length,则为：-1
-        contentLength = NumberUtils.toLong(getHeader(HeaderNameEnum.CONTENT_LENGTH.getName()), NONE_CONTENT_LENGTH);
-//todo:取消这里的异常（改在读流时）
-        //        if (contentLength >= remainingThreshold) {
-//            throw new HttpException(HttpStatus.PAYLOAD_TOO_LARGE);
-//        }
-        return contentLength;
-    }
 
     /**
      * Returns the Internet Protocol (IP) address of the client
