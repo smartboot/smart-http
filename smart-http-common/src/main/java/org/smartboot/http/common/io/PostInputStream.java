@@ -8,6 +8,8 @@
 
 package org.smartboot.http.common.io;
 
+import org.smartboot.http.common.enums.HttpStatus;
+import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.socket.transport.AioSession;
 
 import java.io.IOException;
@@ -18,15 +20,26 @@ import java.nio.ByteBuffer;
  * @version V1.0 , 2019/12/1
  */
 public class PostInputStream extends BodyInputStream {
+    private long maxPayload;
     private long remaining;
 
-    public PostInputStream(AioSession session, long contentLength) {
+    public PostInputStream(AioSession session, long contentLength, long maxPayload) {
         super(session);
         this.remaining = contentLength;
+        this.maxPayload = maxPayload;
     }
 
     @Override
     public int read(byte[] data, int off, int len) throws IOException {
+        if (maxPayload > 0L) {
+            //读流时触发 PAYLOAD_TOO_LARGE 检测（只在第一次）
+            if (remaining > maxPayload) {
+                throw new HttpException(HttpStatus.PAYLOAD_TOO_LARGE);
+            } else {
+                maxPayload = -1L;
+            }
+        }
+
         checkState();
         if (data == null) {
             throw new NullPointerException();
