@@ -14,6 +14,7 @@ import org.smartboot.http.common.multipart.MultipartConfig;
 import org.smartboot.http.common.multipart.Part;
 import org.smartboot.socket.util.Attachment;
 
+import javax.net.ssl.SSLEngine;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Collection;
@@ -29,6 +30,7 @@ import java.util.Map;
  * @version V1.0 , 2018/8/7
  */
 public interface HttpRequest {
+    ThreadLocal<SSLEngine> SSL_ENGINE_THREAD_LOCAL = ThreadLocal.withInitial(() -> null);
 
     /**
      * 获取指定名称的Http Header值
@@ -149,6 +151,8 @@ public interface HttpRequest {
      * @param attachment 附件对象
      */
     void setAttachment(Attachment attachment);
+
+    SSLEngine getSslEngine();
 
     default PushBuilder newPushBuilder() {
         return null;

@@ -23,12 +23,14 @@ import org.smartboot.http.common.utils.HttpUtils;
 import org.smartboot.http.common.utils.NumberUtils;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.Http2ServerHandler;
+import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpServerConfiguration;
 import org.smartboot.http.server.ServerHandler;
 import org.smartboot.http.server.WebSocketHandler;
 import org.smartboot.socket.transport.AioSession;
 import org.smartboot.socket.util.Attachment;
 
+import javax.net.ssl.SSLEngine;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -100,7 +102,7 @@ public abstract class CommonRequest implements Reset {
     protected HttpTypeEnum type = null;
 
     protected Cookie[] cookies;
-
+    protected SSLEngine sslEngine;
 
     /**
      * 附件对象
@@ -113,8 +115,12 @@ public abstract class CommonRequest implements Reset {
     CommonRequest(AioSession aioSession, HttpServerConfiguration configuration) {
         this.aioSession = aioSession;
         this.configuration = configuration;
+        this.sslEngine = HttpRequest.SSL_ENGINE_THREAD_LOCAL.get();
     }
 
+    public SSLEngine getSslEngine() {
+        return sslEngine;
+    }
 
     public final String getHost() {
         if (hostHeader == null) {

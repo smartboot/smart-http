@@ -13,6 +13,7 @@ import org.smartboot.http.common.Reset;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.socket.util.Attachment;
 
+import javax.net.ssl.SSLEngine;
 import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -31,6 +32,10 @@ abstract class AbstractRequest implements HttpRequest, Reset {
         this.request = request;
     }
 
+    @Override
+    public SSLEngine getSslEngine() {
+        return request.getSslEngine();
+    }
 
     @Override
     public final String getHeader(String headName) {
