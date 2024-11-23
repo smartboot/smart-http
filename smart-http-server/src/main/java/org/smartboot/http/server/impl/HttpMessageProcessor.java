@@ -76,13 +76,15 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
         } else if (throwable.getCause() != null) {
             responseError(response, throwable.getCause());
         } else {
-            LOGGER.warn("", throwable);
             responseError(response, HttpStatus.INTERNAL_SERVER_ERROR, throwable.fillInStackTrace().toString());
         }
     }
 
     private static void responseError(AbstractResponse response, HttpStatus httpStatus, String desc) {
         try {
+            if (response.outputStream.request.getAioSession().isInvalid()) {
+                return;
+            }
             response.setHttpStatus(httpStatus);
             OutputStream outputStream = response.getOutputStream();
             outputStream.write(("<center><h1>" + httpStatus.value() + " " + httpStatus.getReasonPhrase() + "</h1>" + desc + "<hr/><a target='_blank' href='https://smartboot.tech/'>smart-http</a>/" + HttpServerConfiguration.VERSION + "&nbsp;|&nbsp; <a target='_blank' href='https://gitee.com/smartboot/smart-http'>Gitee</a></center>").getBytes());
