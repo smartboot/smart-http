@@ -14,7 +14,7 @@ import org.smartboot.socket.transport.WriteBuffer;
 import java.io.IOException;
 
 public class HttpStatus {
-
+    private static final HttpStatus[] HASH_TABLE = new HttpStatus[600];
     // 1xx Informational
 
     public static final HttpStatus CONTINUE = new HttpStatus(100, "Continue");
@@ -107,7 +107,11 @@ public class HttpStatus {
         } else {
             this.bytes = null;
         }
-
+        int hash = value % HASH_TABLE.length;
+        if (HASH_TABLE[hash] != null) {
+            throw new IllegalArgumentException("Duplicate status code: " + value);
+        }
+        HASH_TABLE[hash] = this;
     }
 
     public HttpStatus(int value, String reasonPhrase) {
@@ -130,56 +134,8 @@ public class HttpStatus {
     }
 
     public static HttpStatus valueOf(int value) {
-        if (value >= 100 && value <= 103) {
-            switch (value) {
-                case 100:
-                    return HttpStatus.CONTINUE;
-                case 101:
-                    return HttpStatus.SWITCHING_PROTOCOLS;
-                case 102:
-                    return HttpStatus.PROCESSING;
-                case 103:
-                    return HttpStatus.CHECKPOINT;
-            }
-        } else if (value >= 200 && value <= 208) {
-            switch (value) {
-                case 200:
-                    return HttpStatus.OK;
-                case 201:
-                    return HttpStatus.CREATED;
-                case 202:
-                    return HttpStatus.ACCEPTED;
-                case 203:
-                    return HttpStatus.NON_AUTHORITATIVE_INFORMATION;
-                case 204:
-                    return HttpStatus.NO_CONTENT;
-                case 205:
-                    return HttpStatus.RESET_CONTENT;
-                case 206:
-                    return HttpStatus.PARTIAL_CONTENT;
-                case 207:
-                    return HttpStatus.MULTI_STATUS;
-                case 208:
-                    return HttpStatus.ALREADY_REPORTED;
-            }
-        } else if (value >= 300 && value <= 303) {
-            return HttpStatus.MULTIPLE_CHOICES;
-        } else if (value >= 400 && value <= 403) {
-            switch (value) {
-                case 400:
-                    return HttpStatus.BAD_REQUEST;
-                case 401:
-                    return HttpStatus.UNAUTHORIZED;
-                case 402:
-                    return HttpStatus.PAYMENT_REQUIRED;
-                case 403:
-                    return HttpStatus.FORBIDDEN;
-            }
-            return HttpStatus.BAD_REQUEST;
-        } else if (value >= 500 && value <= 503) {
-            return HttpStatus.INTERNAL_SERVER_ERROR;
-        }
-        return null;
+        HttpStatus httpStatus = HASH_TABLE[value % HASH_TABLE.length];
+        return httpStatus;
     }
 
     /**
