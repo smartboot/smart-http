@@ -37,8 +37,6 @@ import java.nio.ByteBuffer;
 import java.util.Base64;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * Http消息处理器
@@ -50,11 +48,10 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
     private static final byte[] H2C_PREFACE = "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n".getBytes();
     private static final int FRAME_HEADER_SIZE = 9;
     private ServerHandler<HttpRequest, HttpResponse> serverHandler;
-    private ExecutorService executor = Executors.newCachedThreadPool();
 
     @Override
     public final void onHeaderComplete(Request request) throws IOException {
-        if (HttpProtocolEnum.HTTP_2.getProtocol().equals(request.getProtocol())) {
+        if (HttpProtocolEnum.HTTP_2 == request.getProtocol()) {
             if (!"PRI".equals(request.getMethod()) || !"*".equals(request.getUri()) || request.getHeaderSize() > 0) {
                 throw new IllegalStateException();
             }
