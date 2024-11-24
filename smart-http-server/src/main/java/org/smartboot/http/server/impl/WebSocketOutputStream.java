@@ -9,6 +9,10 @@
 package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.enums.HeaderNameEnum;
+import org.smartboot.http.common.enums.HttpStatus;
+import org.smartboot.http.common.utils.Constant;
+
+import java.io.IOException;
 
 /**
  * @author 三刀
@@ -22,8 +26,19 @@ final class WebSocketOutputStream extends AbstractOutputStream {
         disableChunked();
     }
 
-    protected byte[] getHeadPart(boolean hasHeader) {
-        return getBytes(request.getProtocol() + " " + response.getHttpStatus() + " " + response.getReasonPhrase() + "\r\n" + HeaderNameEnum.CONTENT_TYPE.getName() + ":" + response.getContentType() + (hasHeader ? "\r\n" : "\r\n\r\n"));
+    protected void writeHeadPart(boolean hasHeader) throws IOException {
+        // HTTP/1.1
+        writeBuffer.write(request.getProtocol().getProtocolBytesWithSP());
+
+        // Status
+        HttpStatus httpStatus = response.getHttpStatus();
+        httpStatus.write(writeBuffer);
+        writeBuffer.write(getHeaderNameBytes(HeaderNameEnum.CONTENT_TYPE.getName()));
+        writeString(response.getContentType());
+        writeBuffer.write(Constant.CRLF_BYTES);
+        if (!hasHeader) {
+            writeBuffer.write(Constant.CRLF_BYTES);
+        }
     }
 
 }

@@ -9,6 +9,7 @@
 package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.DecodeState;
+import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.exception.HttpException;
 import org.smartboot.http.common.utils.ByteTree;
@@ -94,7 +95,8 @@ public class HttpRequestProtocol implements Protocol<Request> {
                 if (protocol == null) {
                     break;
                 }
-                request.setProtocol(protocol.getStringValue());
+                HttpProtocolEnum protocolEnum = (HttpProtocolEnum) protocol.getAttach();
+                request.setProtocol(protocolEnum);
                 decodeState.setState(DecodeState.STATE_START_LINE_END);
             }
             case DecodeState.STATE_START_LINE_END: {

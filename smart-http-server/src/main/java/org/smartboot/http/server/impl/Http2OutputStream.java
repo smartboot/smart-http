@@ -71,7 +71,7 @@ final class Http2OutputStream extends AbstractOutputStream {
         committed = true;
     }
 
-    protected byte[] getHeadPart(boolean hasHeader) {
+    protected void writeHeadPart(boolean hasHeader) {
         //编码成http2
         throw new UnsupportedOperationException();
     }

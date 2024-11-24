@@ -79,7 +79,7 @@ public abstract class CommonRequest implements Reset {
     /**
      * Http协议版本
      */
-    protected String protocol = HttpProtocolEnum.HTTP_11.getProtocol();
+    protected HttpProtocolEnum protocol = HttpProtocolEnum.HTTP_11;
     protected String requestUri;
     protected String requestUrl;
     protected String contentType;
@@ -240,11 +240,11 @@ public abstract class CommonRequest implements Reset {
     }
 
 
-    public final String getProtocol() {
+    public final HttpProtocolEnum getProtocol() {
         return protocol;
     }
 
-    public final void setProtocol(String protocol) {
+    public final void setProtocol(HttpProtocolEnum protocol) {
         this.protocol = protocol;
     }
 

@@ -155,7 +155,7 @@ public abstract class HttpServerHandler implements ServerHandler<HttpRequest, Ht
     private boolean isKeepAlive(HttpRequestImpl abstractRequest, AbstractResponse response) {
         boolean keepAlive = !HeaderValueEnum.CLOSE.getName().equals(abstractRequest.getRequest().getConnection());
         // http/1.0默认短连接，http/1.1默认长连接。此处用 == 性能更高
-        if (keepAlive && HttpProtocolEnum.HTTP_10.getProtocol() == abstractRequest.getProtocol()) {
+        if (keepAlive && HttpProtocolEnum.HTTP_10 == abstractRequest.getProtocol()) {
             keepAlive = HeaderValueEnum.KEEPALIVE.getName().equalsIgnoreCase(abstractRequest.getHeader(HeaderNameEnum.CONNECTION.getName()));
             if (keepAlive) {
                 response.setHeader(HeaderNameEnum.CONNECTION.getName(), HeaderValueEnum.KEEPALIVE.getName());

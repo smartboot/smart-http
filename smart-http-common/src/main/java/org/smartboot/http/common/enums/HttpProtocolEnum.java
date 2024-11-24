@@ -19,12 +19,18 @@ public enum HttpProtocolEnum {
     ;
 
     private final String protocol;
+    private final byte[] protocolBytesWithSP;
 
     HttpProtocolEnum(String protocol) {
         this.protocol = protocol;
+        protocolBytesWithSP = (protocol + " ").getBytes();
     }
 
     public String getProtocol() {
         return protocol;
+    }
+
+    public byte[] getProtocolBytesWithSP() {
+        return protocolBytesWithSP;
     }
 }

@@ -45,7 +45,7 @@ abstract class AbstractOutputStream extends BufferOutputStream {
 
         boolean hasHeader = hasHeader();
         //输出http状态行、contentType,contentLength、Transfer-Encoding、server等信息
-        writeBuffer.write(getHeadPart(hasHeader));
+        writeHeadPart(hasHeader);
         if (hasHeader) {
             //输出Header部分
             writeHeaders();
@@ -53,7 +53,7 @@ abstract class AbstractOutputStream extends BufferOutputStream {
         committed = true;
     }
 
-    protected abstract byte[] getHeadPart(boolean hasHeader);
+    protected abstract void writeHeadPart(boolean hasHeader) throws IOException;
 
     protected void convertCookieToHeader() {
         List<Cookie> cookies = response.getCookies();
@@ -71,7 +71,7 @@ abstract class AbstractOutputStream extends BufferOutputStream {
             HeaderValue headerValue = entry.getValue();
             while (headerValue != null) {
                 writeBuffer.write(getHeaderNameBytes(entry.getKey()));
-                writeBuffer.write(getBytes(headerValue.getValue()));
+                writeString(headerValue.getName());
                 writeBuffer.write(Constant.CRLF_BYTES);
                 headerValue = headerValue.getNextValue();
             }

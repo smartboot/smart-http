@@ -21,8 +21,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -31,25 +29,21 @@ import java.util.concurrent.Semaphore;
  */
 final class HttpOutputStream extends AbstractOutputStream {
     private static final SimpleDateFormat sdf = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
-    private static final int CACHE_LIMIT = 512;
-    private static String SERVER_LINE = null;
-    /**
-     * key:status+contentType
-     */
-    private static final Map<String, WriteCache>[] CACHE_CONTENT_TYPE_AND_LENGTH = new Map[CACHE_LIMIT];
+    private static byte[] SERVER_LINE = null;
     private static final Date currentDate = new Date(0);
     private static final Semaphore flushDateSemaphore = new Semaphore(1);
     private static long expireTime;
     private static byte[] dateBytes;
-    private static String date;
     private final Request request;
     private final HttpServerConfiguration configuration;
+    private static final byte[] CHUNKED = "Transfer-Encoding: chunked\r\n".getBytes();
+    private static final byte[] DATE_END_1 = "Date:E, dd MMM yyyy HH:mm:ss z\r\n".getBytes();
+    private static final byte[] DATE_END_2 = "Date:E, dd MMM yyyy HH:mm:ss z\r\n\r\n".getBytes();
+    private static long expireTime_1;
+    private static long expireTime_2;
 
     static {
         flushDate();
-        for (int i = 0; i < CACHE_LIMIT; i++) {
-            CACHE_CONTENT_TYPE_AND_LENGTH[i] = new ConcurrentHashMap<>();
-        }
     }
 
     public HttpOutputStream(HttpRequestImpl httpRequest, HttpResponseImpl response) {
@@ -57,7 +51,7 @@ final class HttpOutputStream extends AbstractOutputStream {
         this.request = httpRequest.request;
         this.configuration = request.getConfiguration();
         if (SERVER_LINE == null) {
-            SERVER_LINE = HeaderNameEnum.SERVER.getName() + Constant.COLON_CHAR + configuration.serverName() + Constant.CRLF;
+            SERVER_LINE = (HeaderNameEnum.SERVER.getName() + Constant.COLON_CHAR + configuration.serverName() + Constant.CRLF).getBytes();
         }
     }
 
@@ -67,7 +61,7 @@ final class HttpOutputStream extends AbstractOutputStream {
             try {
                 expireTime = currentTime + 1000;
                 currentDate.setTime(currentTime);
-                date = sdf.format(currentDate);
+                String date = sdf.format(currentDate);
                 dateBytes = date.getBytes();
             } finally {
                 flushDateSemaphore.release();
@@ -84,56 +78,54 @@ final class HttpOutputStream extends AbstractOutputStream {
         }
     }
 
-    protected byte[] getHeadPart(boolean hasHeader) {
+    protected void writeHeadPart(boolean hasHeader) throws IOException {
         checkChunked();
-        long currentTime = flushDate();
+
         long contentLength = response.getContentLength();
         String contentType = response.getContentType();
         if (contentLength > 0) {
             remaining = contentLength;
         }
-        //成功消息优先从缓存中加载。启用缓存的条件：Http_200, contentLength<512,未设置过Header,Http/1.1
-        boolean cache = response.isDefaultStatus() && contentLength > 0 && contentLength < CACHE_LIMIT && !hasHeader;
 
-        if (cache) {
-            WriteCache data = CACHE_CONTENT_TYPE_AND_LENGTH[(int) contentLength].get(contentType);
-            if (data != null) {
-                if (currentTime > data.getExpireTime() && data.getSemaphore().tryAcquire()) {
-                    try {
-                        data.setExpireTime(currentTime + 1000);
-                        System.arraycopy(dateBytes, 0, data.getCacheData(), data.getCacheData().length - 4 - dateBytes.length, dateBytes.length);
-                    } finally {
-                        data.getSemaphore().release();
-                    }
-                }
-                return data.getCacheData();
-            }
-        }
+        // HTTP/1.1
+        writeBuffer.write(request.getProtocol().getProtocolBytesWithSP());
 
-        StringBuilder sb = new StringBuilder(256);
-        sb.append(request.getProtocol()).append(Constant.SP_CHAR).append(response.getHttpStatus()).append(Constant.SP_CHAR).append(response.getReasonPhrase()).append(Constant.CRLF);
+        // Status
+        HttpStatus httpStatus = response.getHttpStatus();
+        httpStatus.write(writeBuffer);
+
         if (contentType != null) {
-            sb.append(HeaderNameEnum.CONTENT_TYPE.getName()).append(Constant.COLON_CHAR).append(contentType).append(Constant.CRLF);
+            writeBuffer.write(HeaderNameEnum.CONTENT_TYPE.getBytesWithColon());
+            writeString(contentType);
+            writeBuffer.write(Constant.CRLF_BYTES);
         }
         if (contentLength >= 0) {
-            sb.append(HeaderNameEnum.CONTENT_LENGTH.getName()).append(Constant.COLON_CHAR).append(contentLength).append(Constant.CRLF);
+            writeBuffer.write(HeaderNameEnum.CONTENT_LENGTH.getBytesWithColon());
+            writeLongString(contentLength);
+            writeBuffer.write(Constant.CRLF_BYTES);
         } else if (chunkedSupport) {
-            sb.append(HeaderNameEnum.TRANSFER_ENCODING.getName()).append(Constant.COLON_CHAR).append(HeaderValueEnum.CHUNKED.getName()).append(Constant.CRLF);
+            writeBuffer.write(CHUNKED);
         }
 
         if (configuration.serverName() != null && response.getHeader(HeaderNameEnum.SERVER.getName()) == null) {
-            sb.append(SERVER_LINE);
+            writeBuffer.write(SERVER_LINE);
         }
-        sb.append(HeaderNameEnum.DATE.getName()).append(Constant.COLON_CHAR).append(date).append(Constant.CRLF);
 
-        //缓存响应头
-        if (cache) {
-            sb.append(Constant.CRLF);
-            WriteCache writeCache = new WriteCache(currentTime + 1000, sb.toString().getBytes());
-            CACHE_CONTENT_TYPE_AND_LENGTH[(int) contentLength].put(contentType, writeCache);
-            return writeCache.getCacheData();
+        // Date
+        long currentTime = flushDate();
+        if (hasHeader) {
+            if (currentTime > expireTime_1) {
+                expireTime_1 = currentTime + 1000;
+                System.arraycopy(dateBytes, 0, DATE_END_1, 5, 25);
+            }
+            writeBuffer.write(DATE_END_1);
+        } else {
+            if (currentTime > expireTime_2) {
+                expireTime_2 = currentTime + 1000;
+                System.arraycopy(dateBytes, 0, DATE_END_2, 5, 25);
+            }
+            writeBuffer.write(DATE_END_2);
         }
-        return hasHeader ? sb.toString().getBytes() : sb.append(Constant.CRLF).toString().getBytes();
     }
 
     private void checkChunked() {
@@ -142,11 +134,11 @@ final class HttpOutputStream extends AbstractOutputStream {
         }
         if (response.getContentLength() >= 0) {
             disableChunked();
-        } else if (response.getHttpStatus() == HttpStatus.CONTINUE.value() || response.getHttpStatus() == HttpStatus.SWITCHING_PROTOCOLS.value()) {
+        } else if (response.getHttpStatus().value() == HttpStatus.CONTINUE.value() || response.getHttpStatus().value() == HttpStatus.SWITCHING_PROTOCOLS.value()) {
             disableChunked();
         } else if (HttpMethodEnum.HEAD.name().equals(request.getMethod())) {
             disableChunked();
-        } else if (!HttpProtocolEnum.HTTP_11.getProtocol().equals(request.getProtocol())) {
+        } else if (HttpProtocolEnum.HTTP_11 != request.getProtocol()) {
             disableChunked();
         } else if (response.getContentType().startsWith(HeaderValueEnum.CONTENT_TYPE_EVENT_STREAM.getName())) {
             disableChunked();

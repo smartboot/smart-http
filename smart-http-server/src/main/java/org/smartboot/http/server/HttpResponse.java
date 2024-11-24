@@ -8,9 +8,9 @@
 
 package org.smartboot.http.server;
 
-import org.smartboot.http.common.io.BufferOutputStream;
 import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.enums.HttpStatus;
+import org.smartboot.http.common.io.BufferOutputStream;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -37,7 +37,7 @@ public interface HttpResponse {
      *
      * @return
      */
-    int getHttpStatus();
+    HttpStatus getHttpStatus();
 
     /**
      * 设置Http响应状态,若不设置默认{@link HttpStatus#OK}
@@ -53,12 +53,6 @@ public interface HttpResponse {
      */
     void setHttpStatus(int httpStatus, String reasonPhrase);
 
-    /**
-     * 获取Http响应描述
-     *
-     * @return
-     */
-    String getReasonPhrase();
 
     /**
      * Sets a response header with the given name and value. If the header had
@@ -150,14 +144,11 @@ public interface HttpResponse {
      * Failure to do so may lead to interoperability failures.
      * </p>
      *
-     * @implSpec The default implementation is a no-op.
-     *
      * @param supplier the supplier of trailer headers
-     *
-     * @exception IllegalStateException if it is invoked after the response has has been committed, or the trailer is not
-     * supported in the request, for instance, the underlying protocol is HTTP 1.0, or the response is not in chunked
-     * encoding in HTTP 1.1.
-     *
+     * @throws IllegalStateException if it is invoked after the response has has been committed, or the trailer is not
+     *                               supported in the request, for instance, the underlying protocol is HTTP 1.0, or the response is not in chunked
+     *                               encoding in HTTP 1.1.
+     * @implSpec The default implementation is a no-op.
      * @since Servlet 4.0
      */
     default public void setTrailerFields(Supplier<Map<String, String>> supplier) {
@@ -166,10 +157,8 @@ public interface HttpResponse {
     /**
      * Gets the supplier of trailer headers.
      *
-     * @implSpec The default implememtation return null.
-     *
      * @return <code>Supplier</code> of trailer headers
-     *
+     * @implSpec The default implememtation return null.
      * @since Servlet 4.0
      */
     default public Supplier<Map<String, String>> getTrailerFields() {

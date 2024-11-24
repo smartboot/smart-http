@@ -185,7 +185,7 @@ public class HttpBootstrap {
             configuration.getByteCache().addNode(httpMethodEnum.getMethod());
         }
         for (HttpProtocolEnum httpProtocolEnum : HttpProtocolEnum.values()) {
-            configuration.getByteCache().addNode(httpProtocolEnum.getProtocol());
+            configuration.getByteCache().addNode(httpProtocolEnum.getProtocol(), httpProtocolEnum);
         }
         for (HeaderNameEnum headerNameEnum : HeaderNameEnum.values()) {
             configuration.getHeaderNameByteTree().addNode(headerNameEnum.getName());

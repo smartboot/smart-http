@@ -10,6 +10,7 @@ package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.Reset;
+import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.server.HttpRequest;
 import org.smartboot.socket.util.Attachment;
 
@@ -59,7 +60,7 @@ abstract class AbstractRequest implements HttpRequest, Reset {
     }
 
     @Override
-    public final String getProtocol() {
+    public final HttpProtocolEnum getProtocol() {
         return request.getProtocol();
     }
 

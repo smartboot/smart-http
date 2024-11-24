@@ -72,7 +72,8 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
 
     public static void responseError(AbstractResponse response, Throwable throwable) {
         if (throwable instanceof HttpException) {
-            responseError(response, HttpStatus.valueOf(((HttpException) throwable).getHttpCode()), ((HttpException) throwable).getDesc());
+            HttpStatus httpStatus = ((HttpException) throwable).getHttpStatus();
+            responseError(response, httpStatus, httpStatus.getReasonPhrase());
         } else if (throwable.getCause() != null) {
             responseError(response, throwable.getCause());
         } else {

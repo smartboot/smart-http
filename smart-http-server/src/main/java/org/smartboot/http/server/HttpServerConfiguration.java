@@ -33,7 +33,7 @@ public class HttpServerConfiguration {
     /**
      * 缓存
      */
-    private final ByteTree<?> byteCache = new ByteTree<>();
+    private final ByteTree<Object> byteCache = new ByteTree<>();
     /**
      * URI缓存
      */
@@ -259,7 +259,7 @@ public class HttpServerConfiguration {
      * 将字符串缓存至 ByteTree 中，在Http报文解析过程中将获得更好的性能表现。
      * 适用反馈包括： URL、HeaderName、HeaderValue
      */
-    public ByteTree<?> getByteCache() {
+    public ByteTree<Object> getByteCache() {
         return byteCache;
     }
 

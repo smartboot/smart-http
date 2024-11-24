@@ -9,6 +9,7 @@
 package org.smartboot.http.server;
 
 import org.smartboot.http.common.Cookie;
+import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.io.BodyInputStream;
 import org.smartboot.http.common.multipart.MultipartConfig;
 import org.smartboot.http.common.multipart.Part;
@@ -49,7 +50,7 @@ public interface HttpRequest {
 
     String getRequestURI();
 
-    String getProtocol();
+    HttpProtocolEnum getProtocol();
 
     /**
      * Returns the name of the HTTP method with which this

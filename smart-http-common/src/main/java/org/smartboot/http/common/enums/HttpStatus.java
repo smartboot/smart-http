@@ -8,460 +8,110 @@
 
 package org.smartboot.http.common.enums;
 
-/**
- * 本类取自Spring代码org.springframework.http.HttpStatus
- * Java 5 enumeration of HTTP status codes.
- * <p>
- * <p>The HTTP status code series can be retrieved via {@link #series()}.
- *
- * @author Arjen Poutsma
- * @author Sebastien Deleuze
- * @see <a href="http://www.iana.org/assignments/http-status-codes">HTTP Status Code Registry</a>
- * @see <a href="http://en.wikipedia.org/wiki/List_of_HTTP_status_codes">List of HTTP status codes - Wikipedia</a>
- */
-public enum HttpStatus {
+import org.smartboot.http.common.utils.Constant;
+import org.smartboot.socket.transport.WriteBuffer;
+
+import java.io.IOException;
+
+public class HttpStatus {
 
     // 1xx Informational
 
-    /**
-     * {@code 100 Continue}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7231#section-6.2.1">HTTP/1.1: Semantics and Content, section 6.2.1</a>
-     */
-    CONTINUE(100, "Continue"),
-    /**
-     * {@code 101 Switching Protocols}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7231#section-6.2.2">HTTP/1.1: Semantics and Content, section 6.2.2</a>
-     */
-    SWITCHING_PROTOCOLS(101, "Switching Protocols"),
-    /**
-     * {@code 102 Processing}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc2518#section-10.1">WebDAV</a>
-     */
-    PROCESSING(102, "Processing"),
-    /**
-     * {@code 103 Checkpoint}.
-     *
-     * @see <a href="http://code.google.com/p/gears/wiki/ResumableHttpRequestsProposal">A proposal for supporting
-     * resumable POST/PUT HTTP requests in HTTP/1.0</a>
-     */
-    CHECKPOINT(103, "Checkpoint"),
+    public static final HttpStatus CONTINUE = new HttpStatus(100, "Continue");
+    public static final HttpStatus SWITCHING_PROTOCOLS = new HttpStatus(101, "Switching Protocols");
+    public static final HttpStatus PROCESSING = new HttpStatus(102, "Processing");
+    public static final HttpStatus CHECKPOINT = new HttpStatus(103, "Checkpoint");
 
     // 2xx Success
 
-    /**
-     * {@code 200 OK}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7231#section-6.3.1">HTTP/1.1: Semantics and Content, section 6.3.1</a>
-     */
-    OK(200, "OK"),
-    /**
-     * {@code 201 Created}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7231#section-6.3.2">HTTP/1.1: Semantics and Content, section 6.3.2</a>
-     */
-    CREATED(201, "Created"),
-    /**
-     * {@code 202 Accepted}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7231#section-6.3.3">HTTP/1.1: Semantics and Content, section 6.3.3</a>
-     */
-    ACCEPTED(202, "Accepted"),
-    /**
-     * {@code 203 Non-Authoritative Information}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7231#section-6.3.4">HTTP/1.1: Semantics and Content, section 6.3.4</a>
-     */
-    NON_AUTHORITATIVE_INFORMATION(203, "Non-Authoritative Information"),
-    /**
-     * {@code 204 No Content}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7231#section-6.3.5">HTTP/1.1: Semantics and Content, section 6.3.5</a>
-     */
-    NO_CONTENT(204, "No Content"),
-    /**
-     * {@code 205 Reset Content}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7231#section-6.3.6">HTTP/1.1: Semantics and Content, section 6.3.6</a>
-     */
-    RESET_CONTENT(205, "Reset Content"),
-    /**
-     * {@code 206 Partial Content}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7233#section-4.1">HTTP/1.1: Range Requests, section 4.1</a>
-     */
-    PARTIAL_CONTENT(206, "Partial Content"),
-    /**
-     * {@code 207 Multi-Status}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc4918#section-13">WebDAV</a>
-     */
-    MULTI_STATUS(207, "Multi-Status"),
-    /**
-     * {@code 208 Already Reported}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc5842#section-7.1">WebDAV Binding Extensions</a>
-     */
-    ALREADY_REPORTED(208, "Already Reported"),
-    /**
-     * {@code 226 IM Used}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc3229#section-10.4.1">Delta encoding in HTTP</a>
-     */
-    IM_USED(226, "IM Used"),
+    public static final HttpStatus OK = new HttpStatus(200, "OK", true);
+    public static final HttpStatus CREATED = new HttpStatus(201, "Created");
+    public static final HttpStatus ACCEPTED = new HttpStatus(202, "Accepted");
+    public static final HttpStatus NON_AUTHORITATIVE_INFORMATION = new HttpStatus(203, "Non-Authoritative Information");
+    public static final HttpStatus NO_CONTENT = new HttpStatus(204, "No Content");
+    public static final HttpStatus RESET_CONTENT = new HttpStatus(205, "Reset Content");
+    public static final HttpStatus PARTIAL_CONTENT = new HttpStatus(206, "Partial Content");
+    public static final HttpStatus MULTI_STATUS = new HttpStatus(207, "Multi-Status");
+    public static final HttpStatus ALREADY_REPORTED = new HttpStatus(208, "Already Reported");
+    public static final HttpStatus IM_USED = new HttpStatus(226, "IM Used");
 
     // 3xx Redirection
 
-    /**
-     * {@code 300 Multiple Choices}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7231#section-6.4.1">HTTP/1.1: Semantics and Content, section 6.4.1</a>
-     */
-    MULTIPLE_CHOICES(300, "Multiple Choices"),
-    /**
-     * {@code 301 Moved Permanently}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7231#section-6.4.2">HTTP/1.1: Semantics and Content, section 6.4.2</a>
-     */
-    MOVED_PERMANENTLY(301, "Moved Permanently"),
-    /**
-     * {@code 302 Found}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7231#section-6.4.3">HTTP/1.1: Semantics and Content, section 6.4.3</a>
-     */
-    FOUND(302, "Found"),
-    /**
-     * {@code 302 Moved Temporarily}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc1945#section-9.3">HTTP/1.0, section 9.3</a>
-     * @deprecated In favor of {@link #FOUND} which will be returned from {@code HttpStatus.valueOf(302)}
-     */
-    @Deprecated
-    MOVED_TEMPORARILY(302, "Moved Temporarily"),
-    /**
-     * {@code 303 See Other}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7231#section-6.4.4">HTTP/1.1: Semantics and Content, section 6.4.4</a>
-     */
-    SEE_OTHER(303, "See Other"),
-    /**
-     * {@code 304 Not Modified}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7232#section-4.1">HTTP/1.1: Conditional Requests, section 4.1</a>
-     */
-    NOT_MODIFIED(304, "Not Modified"),
-    /**
-     * {@code 305 Use Proxy}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7231#section-6.4.5">HTTP/1.1: Semantics and Content, section 6.4.5</a>
-     * @deprecated due to security concerns regarding in-band configuration of a proxy
-     */
-    @Deprecated
-    USE_PROXY(305, "Use Proxy"),
-    /**
-     * {@code 307 Temporary Redirect}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7231#section-6.4.7">HTTP/1.1: Semantics and Content, section 6.4.7</a>
-     */
-    TEMPORARY_REDIRECT(307, "Temporary Redirect"),
-    /**
-     * {@code 308 Permanent Redirect}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7238">RFC 7238</a>
-     */
-    PERMANENT_REDIRECT(308, "Permanent Redirect"),
+    public static final HttpStatus MULTIPLE_CHOICES = new HttpStatus(300, "Multiple Choices");
+    public static final HttpStatus MOVED_PERMANENTLY = new HttpStatus(301, "Moved Permanently");
+    public static final HttpStatus FOUND = new HttpStatus(302, "Found");
+    public static final HttpStatus SEE_OTHER = new HttpStatus(303, "See Other");
+    public static final HttpStatus NOT_MODIFIED = new HttpStatus(304, "Not Modified");
+    public static final HttpStatus USE_PROXY = new HttpStatus(305, "Use Proxy");
+    public static final HttpStatus TEMPORARY_REDIRECT = new HttpStatus(307, "Temporary Redirect");
+    public static final HttpStatus PERMANENT_REDIRECT = new HttpStatus(308, "Permanent Redirect");
 
     // --- 4xx Client Error ---
 
-    /**
-     * {@code 400 Bad Request}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7231#section-6.5.1">HTTP/1.1: Semantics and Content, section 6.5.1</a>
-     */
-    BAD_REQUEST(400, "Bad Request"),
-    /**
-     * {@code 401 Unauthorized}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7235#section-3.1">HTTP/1.1: Authentication, section 3.1</a>
-     */
-    UNAUTHORIZED(401, "Unauthorized"),
-    /**
-     * {@code 402 Payment Required}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7231#section-6.5.2">HTTP/1.1: Semantics and Content, section 6.5.2</a>
-     */
-    PAYMENT_REQUIRED(402, "Payment Required"),
-    /**
-     * {@code 403 Forbidden}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7231#section-6.5.3">HTTP/1.1: Semantics and Content, section 6.5.3</a>
-     */
-    FORBIDDEN(403, "Forbidden"),
-    /**
-     * {@code 404 Not Found}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7231#section-6.5.4">HTTP/1.1: Semantics and Content, section 6.5.4</a>
-     */
-    NOT_FOUND(404, "Not Found"),
-    /**
-     * {@code 405 Method Not Allowed}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7231#section-6.5.5">HTTP/1.1: Semantics and Content, section 6.5.5</a>
-     */
-    METHOD_NOT_ALLOWED(405, "Method Not Allowed"),
-    /**
-     * {@code 406 Not Acceptable}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7231#section-6.5.6">HTTP/1.1: Semantics and Content, section 6.5.6</a>
-     */
-    NOT_ACCEPTABLE(406, "Not Acceptable"),
-    /**
-     * {@code 407 Proxy Authentication Required}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7235#section-3.2">HTTP/1.1: Authentication, section 3.2</a>
-     */
-    PROXY_AUTHENTICATION_REQUIRED(407, "Proxy Authentication Required"),
-    /**
-     * {@code 408 Request Timeout}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7231#section-6.5.7">HTTP/1.1: Semantics and Content, section 6.5.7</a>
-     */
-    REQUEST_TIMEOUT(408, "Request Timeout"),
-    /**
-     * {@code 409 Conflict}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7231#section-6.5.8">HTTP/1.1: Semantics and Content, section 6.5.8</a>
-     */
-    CONFLICT(409, "Conflict"),
-    /**
-     * {@code 410 Gone}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7231#section-6.5.9">HTTP/1.1: Semantics and Content, section 6.5.9</a>
-     */
-    GONE(410, "Gone"),
-    /**
-     * {@code 411 Length Required}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7231#section-6.5.10">HTTP/1.1: Semantics and Content, section 6.5.10</a>
-     */
-    LENGTH_REQUIRED(411, "Length Required"),
-    /**
-     * {@code 412 Precondition failed}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7232#section-4.2">HTTP/1.1: Conditional Requests, section 4.2</a>
-     */
-    PRECONDITION_FAILED(412, "Precondition Failed"),
-    /**
-     * {@code 413 Payload Too Large}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7231#section-6.5.11">HTTP/1.1: Semantics and Content, section 6.5.11</a>
-     * @since 4.1
-     */
-    PAYLOAD_TOO_LARGE(413, "Payload Too Large"),
-    /**
-     * {@code 413 Request Entity Too Large}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc2616#section-10.4.14">HTTP/1.1, section 10.4.14</a>
-     * @deprecated In favor of {@link #PAYLOAD_TOO_LARGE} which will be returned from {@code HttpStatus.valueOf(413)}
-     */
-    @Deprecated
-    REQUEST_ENTITY_TOO_LARGE(413, "Request Entity Too Large"),
-    /**
-     * {@code 414 URI Too Long}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7231#section-6.5.12">HTTP/1.1: Semantics and Content, section 6.5.12</a>
-     * @since 4.1
-     */
-    URI_TOO_LONG(414, "URI Too Long"),
-    /**
-     * {@code 414 Request-URI Too Long}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc2616#section-10.4.15">HTTP/1.1, section 10.4.15</a>
-     * @deprecated In favor of {@link #URI_TOO_LONG} which will be returned from {@code HttpStatus.valueOf(414)}
-     */
-    @Deprecated
-    REQUEST_URI_TOO_LONG(414, "Request-URI Too Long"),
-    /**
-     * {@code 415 Unsupported Media Type}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7231#section-6.5.13">HTTP/1.1: Semantics and Content, section 6.5.13</a>
-     */
-    UNSUPPORTED_MEDIA_TYPE(415, "Unsupported Media Type"),
-    /**
-     * {@code 416 Requested Range Not Satisfiable}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7233#section-4.4">HTTP/1.1: Range Requests, section 4.4</a>
-     */
-    REQUESTED_RANGE_NOT_SATISFIABLE(416, "Requested range not satisfiable"),
-    /**
-     * {@code 417 Expectation Failed}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7231#section-6.5.14">HTTP/1.1: Semantics and Content, section 6.5.14</a>
-     */
-    EXPECTATION_FAILED(417, "Expectation Failed"),
-    /**
-     * {@code 418 I'm a teapot}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc2324#section-2.3.2">HTCPCP/1.0</a>
-     */
-    I_AM_A_TEAPOT(418, "I'm a teapot"),
-    /**
-     * @deprecated See <a href="http://tools.ietf.org/rfcdiff?difftype=--hwdiff&url2=draft-ietf-webdav-protocol-06.txt">WebDAV Draft Changes</a>
-     */
-    @Deprecated
-    INSUFFICIENT_SPACE_ON_RESOURCE(419, "Insufficient Space On Resource"),
-    /**
-     * @deprecated See <a href="http://tools.ietf.org/rfcdiff?difftype=--hwdiff&url2=draft-ietf-webdav-protocol-06.txt">WebDAV Draft Changes</a>
-     */
-    @Deprecated
-    METHOD_FAILURE(420, "Method Failure"),
-    /**
-     * @deprecated See <a href="http://tools.ietf.org/rfcdiff?difftype=--hwdiff&url2=draft-ietf-webdav-protocol-06.txt">WebDAV Draft Changes</a>
-     */
-    @Deprecated
-    DESTINATION_LOCKED(421, "Destination Locked"),
-    /**
-     * {@code 422 Unprocessable Entity}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc4918#section-11.2">WebDAV</a>
-     */
-    UNPROCESSABLE_ENTITY(422, "Unprocessable Entity"),
-    /**
-     * {@code 423 Locked}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc4918#section-11.3">WebDAV</a>
-     */
-    LOCKED(423, "Locked"),
-    /**
-     * {@code 424 Failed Dependency}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc4918#section-11.4">WebDAV</a>
-     */
-    FAILED_DEPENDENCY(424, "Failed Dependency"),
-    /**
-     * {@code 426 Upgrade Required}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc2817#section-6">Upgrading to TLS Within HTTP/1.1</a>
-     */
-    UPGRADE_REQUIRED(426, "Upgrade Required"),
-    /**
-     * {@code 428 Precondition Required}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc6585#section-3">Additional HTTP Status Codes</a>
-     */
-    PRECONDITION_REQUIRED(428, "Precondition Required"),
-    /**
-     * {@code 429 Too Many Requests}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc6585#section-4">Additional HTTP Status Codes</a>
-     */
-    TOO_MANY_REQUESTS(429, "Too Many Requests"),
-    /**
-     * {@code 431 Request Header Fields Too Large}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc6585#section-5">Additional HTTP Status Codes</a>
-     */
-    REQUEST_HEADER_FIELDS_TOO_LARGE(431, "Request Header Fields Too Large"),
+    public static final HttpStatus BAD_REQUEST = new HttpStatus(400, "Bad Request");
+    public static final HttpStatus UNAUTHORIZED = new HttpStatus(401, "Unauthorized");
+    public static final HttpStatus PAYMENT_REQUIRED = new HttpStatus(402, "Payment Required");
+    public static final HttpStatus FORBIDDEN = new HttpStatus(403, "Forbidden");
+    public static final HttpStatus NOT_FOUND = new HttpStatus(404, "Not Found");
+    public static final HttpStatus METHOD_NOT_ALLOWED = new HttpStatus(405, "Method Not Allowed");
+    public static final HttpStatus NOT_ACCEPTABLE = new HttpStatus(406, "Not Acceptable");
+    public static final HttpStatus PROXY_AUTHENTICATION_REQUIRED = new HttpStatus(407, "Proxy Authentication Required");
+    public static final HttpStatus REQUEST_TIMEOUT = new HttpStatus(408, "Request Timeout");
+    public static final HttpStatus CONFLICT = new HttpStatus(409, "Conflict");
+    public static final HttpStatus GONE = new HttpStatus(410, "Gone");
+    public static final HttpStatus LENGTH_REQUIRED = new HttpStatus(411, "Length Required");
+    public static final HttpStatus PRECONDITION_FAILED = new HttpStatus(412, "Precondition Failed");
+    public static final HttpStatus PAYLOAD_TOO_LARGE = new HttpStatus(413, "Payload Too Large");
+    public static final HttpStatus URI_TOO_LONG = new HttpStatus(414, "URI Too Long");
+    public static final HttpStatus UNSUPPORTED_MEDIA_TYPE = new HttpStatus(415, "Unsupported Media Type");
+    public static final HttpStatus REQUESTED_RANGE_NOT_SATISFIABLE = new HttpStatus(416, "Requested range not satisfiable");
+    public static final HttpStatus EXPECTATION_FAILED = new HttpStatus(417, "Expectation Failed");
+    public static final HttpStatus I_AM_A_TEAPOT = new HttpStatus(418, "I'm a teapot");
+    public static final HttpStatus INSUFFICIENT_SPACE_ON_RESOURCE = new HttpStatus(419, "Insufficient Space On Resource");
+    public static final HttpStatus METHOD_FAILURE = new HttpStatus(420, "Method Failure");
+    public static final HttpStatus DESTINATION_LOCKED = new HttpStatus(421, "Destination Locked");
+    public static final HttpStatus UNPROCESSABLE_ENTITY = new HttpStatus(422, "Unprocessable Entity");
+    public static final HttpStatus LOCKED = new HttpStatus(423, "Locked");
+    public static final HttpStatus FAILED_DEPENDENCY = new HttpStatus(424, "Failed Dependency");
+    public static final HttpStatus UPGRADE_REQUIRED = new HttpStatus(426, "Upgrade Required");
+    public static final HttpStatus PRECONDITION_REQUIRED = new HttpStatus(428, "Precondition Required");
+    public static final HttpStatus TOO_MANY_REQUESTS = new HttpStatus(429, "Too Many Requests");
+    public static final HttpStatus REQUEST_HEADER_FIELDS_TOO_LARGE = new HttpStatus(431, "Request Header Fields Too Large");
 
     // --- 5xx Server Error ---
 
-    /**
-     * {@code 500 Internal Server Error}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7231#section-6.6.1">HTTP/1.1: Semantics and Content, section 6.6.1</a>
-     */
-    INTERNAL_SERVER_ERROR(500, "Internal Server Error"),
-    /**
-     * {@code 501 Not Implemented}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7231#section-6.6.2">HTTP/1.1: Semantics and Content, section 6.6.2</a>
-     */
-    NOT_IMPLEMENTED(501, "Not Implemented"),
-    /**
-     * {@code 502 Bad Gateway}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7231#section-6.6.3">HTTP/1.1: Semantics and Content, section 6.6.3</a>
-     */
-    BAD_GATEWAY(502, "Bad Gateway"),
-    /**
-     * {@code 503 Service Unavailable}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7231#section-6.6.4">HTTP/1.1: Semantics and Content, section 6.6.4</a>
-     */
-    SERVICE_UNAVAILABLE(503, "Service Unavailable"),
-    /**
-     * {@code 504 Gateway Timeout}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7231#section-6.6.5">HTTP/1.1: Semantics and Content, section 6.6.5</a>
-     */
-    GATEWAY_TIMEOUT(504, "Gateway Timeout"),
-    /**
-     * {@code 505 HTTP Version Not Supported}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc7231#section-6.6.6">HTTP/1.1: Semantics and Content, section 6.6.6</a>
-     */
-    HTTP_VERSION_NOT_SUPPORTED(505, "HTTP Version not supported"),
-    /**
-     * {@code 506 Variant Also Negotiates}
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc2295#section-8.1">Transparent Content Negotiation</a>
-     */
-    VARIANT_ALSO_NEGOTIATES(506, "Variant Also Negotiates"),
-    /**
-     * {@code 507 Insufficient Storage}
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc4918#section-11.5">WebDAV</a>
-     */
-    INSUFFICIENT_STORAGE(507, "Insufficient Storage"),
-    /**
-     * {@code 508 Loop Detected}
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc5842#section-7.2">WebDAV Binding Extensions</a>
-     */
-    LOOP_DETECTED(508, "Loop Detected"),
-    /**
-     * {@code 509 Bandwidth Limit Exceeded}
-     */
-    BANDWIDTH_LIMIT_EXCEEDED(509, "Bandwidth Limit Exceeded"),
-    /**
-     * {@code 510 Not Extended}
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc2774#section-7">HTTP Extension Framework</a>
-     */
-    NOT_EXTENDED(510, "Not Extended"),
-    /**
-     * {@code 511 Network Authentication Required}.
-     *
-     * @see <a href="http://tools.ietf.org/html/rfc6585#section-6">Additional HTTP Status Codes</a>
-     */
-    NETWORK_AUTHENTICATION_REQUIRED(511, "Network Authentication Required");
-
+    public static final HttpStatus INTERNAL_SERVER_ERROR = new HttpStatus(500, "Internal Server Error");
+    public static final HttpStatus NOT_IMPLEMENTED = new HttpStatus(501, "Not Implemented");
+    public static final HttpStatus BAD_GATEWAY = new HttpStatus(502, "Bad Gateway");
+    public static final HttpStatus SERVICE_UNAVAILABLE = new HttpStatus(503, "Service Unavailable");
+    public static final HttpStatus GATEWAY_TIMEOUT = new HttpStatus(504, "Gateway Timeout");
+    public static final HttpStatus HTTP_VERSION_NOT_SUPPORTED = new HttpStatus(505, "HTTP Version not supported");
+    public static final HttpStatus VARIANT_ALSO_NEGOTIATES = new HttpStatus(506, "Variant Also Negotiates");
+    public static final HttpStatus INSUFFICIENT_STORAGE = new HttpStatus(507, "Insufficient Storage");
+    public static final HttpStatus LOOP_DETECTED = new HttpStatus(508, "Loop Detected");
+    public static final HttpStatus BANDWIDTH_LIMIT_EXCEEDED = new HttpStatus(509, "Bandwidth Limit Exceeded");
+    public static final HttpStatus NOT_EXTENDED = new HttpStatus(510, "Not Extended");
+    public static final HttpStatus NETWORK_AUTHENTICATION_REQUIRED = new HttpStatus(511, "Network Authentication Required");
 
     private final int value;
 
     private final String reasonPhrase;
 
-    HttpStatus(int value, String reasonPhrase) {
+    private final byte[] bytes;
+
+    public HttpStatus(int value, String reasonPhrase, boolean cache) {
         this.value = value;
         this.reasonPhrase = reasonPhrase;
+        if (cache) {
+            this.bytes = (value + " " + reasonPhrase + "\r\n").getBytes();
+        } else {
+            this.bytes = null;
+        }
+
     }
 
-    /**
-     * Return the enum constant of this type with the specified numeric value.
-     *
-     * @param statusCode the numeric value of the enum to be returned
-     * @return the enum constant with the specified numeric value
-     * @throws IllegalArgumentException if this enum has no constant for the specified numeric value
-     */
-    public static HttpStatus valueOf(int statusCode) {
-        for (HttpStatus status : values()) {
-            if (status.value == statusCode) {
-                return status;
-            }
-        }
-        throw new IllegalArgumentException("No matching constant for [" + statusCode + "]");
+    public HttpStatus(int value, String reasonPhrase) {
+        this(value, reasonPhrase, false);
     }
 
     /**
@@ -479,7 +129,58 @@ public enum HttpStatus {
         return reasonPhrase;
     }
 
-
+    public static HttpStatus valueOf(int value) {
+        if (value >= 100 && value <= 103) {
+            switch (value) {
+                case 100:
+                    return HttpStatus.CONTINUE;
+                case 101:
+                    return HttpStatus.SWITCHING_PROTOCOLS;
+                case 102:
+                    return HttpStatus.PROCESSING;
+                case 103:
+                    return HttpStatus.CHECKPOINT;
+            }
+        } else if (value >= 200 && value <= 208) {
+            switch (value) {
+                case 200:
+                    return HttpStatus.OK;
+                case 201:
+                    return HttpStatus.CREATED;
+                case 202:
+                    return HttpStatus.ACCEPTED;
+                case 203:
+                    return HttpStatus.NON_AUTHORITATIVE_INFORMATION;
+                case 204:
+                    return HttpStatus.NO_CONTENT;
+                case 205:
+                    return HttpStatus.RESET_CONTENT;
+                case 206:
+                    return HttpStatus.PARTIAL_CONTENT;
+                case 207:
+                    return HttpStatus.MULTI_STATUS;
+                case 208:
+                    return HttpStatus.ALREADY_REPORTED;
+            }
+        } else if (value >= 300 && value <= 303) {
+            return HttpStatus.MULTIPLE_CHOICES;
+        } else if (value >= 400 && value <= 403) {
+            switch (value) {
+                case 400:
+                    return HttpStatus.BAD_REQUEST;
+                case 401:
+                    return HttpStatus.UNAUTHORIZED;
+                case 402:
+                    return HttpStatus.PAYMENT_REQUIRED;
+                case 403:
+                    return HttpStatus.FORBIDDEN;
+            }
+            return HttpStatus.BAD_REQUEST;
+        } else if (value >= 500 && value <= 503) {
+            return HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+        return null;
+    }
 
     /**
      * Return a string representation of this status code.
@@ -489,6 +190,16 @@ public enum HttpStatus {
         return Integer.toString(value);
     }
 
-
-
+    public void write(WriteBuffer writeBuffer) throws IOException {
+        if (bytes == null) {
+            writeBuffer.writeByte((byte) (value / 100 + '0'));
+            writeBuffer.writeByte((byte) (value / 10 % 10 + '0'));
+            writeBuffer.writeByte((byte) (value % 10 + '0'));
+            writeBuffer.writeByte((byte) ' ');
+            writeBuffer.write(reasonPhrase.getBytes());
+            writeBuffer.write(Constant.CRLF_BYTES);
+        } else {
+            writeBuffer.write(bytes);
+        }
+    }
 }

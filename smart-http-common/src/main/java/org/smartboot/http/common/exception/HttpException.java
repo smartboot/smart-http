@@ -12,31 +12,23 @@ import org.smartboot.http.common.enums.HttpStatus;
 
 /**
  * HTTP异常
+ *
  * @author 三刀
  * @version V1.0 , 2018/6/3
  */
 public class HttpException extends RuntimeException {
-    private final int httpCode;
-
-    private final String desc;
+    private final HttpStatus httpStatus;
 
     public HttpException(HttpStatus httpStatus) {
-        this(httpStatus, httpStatus.getReasonPhrase());
-    }
-
-    public HttpException(HttpStatus httpStatus, String desc) {
         super(httpStatus.getReasonPhrase());
-        this.httpCode = httpStatus.value();
-        this.desc = desc;
+        this.httpStatus = httpStatus;
     }
 
-    public int getHttpCode() {
-        return httpCode;
+    public HttpException(int httpStatusCode, String desc) {
+        this(new HttpStatus(httpStatusCode, desc));
     }
 
-
-    public String getDesc() {
-        return desc;
+    public HttpStatus getHttpStatus() {
+        return httpStatus;
     }
-
 }

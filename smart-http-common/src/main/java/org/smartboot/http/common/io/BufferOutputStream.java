@@ -19,7 +19,6 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Semaphore;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -189,35 +188,6 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
 
     protected abstract void writeHeader(HeaderWriteSource source) throws IOException;
 
-    protected static class WriteCache {
-        private final byte[] cacheData;
-        private final Semaphore semaphore = new Semaphore(1);
-        private long expireTime;
-
-
-        public WriteCache(long cacheTime, byte[] data) {
-            this.expireTime = cacheTime;
-            this.cacheData = data;
-        }
-
-        public long getExpireTime() {
-            return expireTime;
-        }
-
-        public void setExpireTime(long expireTime) {
-            this.expireTime = expireTime;
-        }
-
-        public Semaphore getSemaphore() {
-            return semaphore;
-        }
-
-        public byte[] getCacheData() {
-            return cacheData;
-        }
-
-    }
-
     public void disableChunked() {
         this.chunkedSupport = false;
     }
@@ -240,5 +210,46 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
 
     public Supplier<Map<String, String>> getTrailerFields() {
         return trailerSupplier;
+    }
+
+
+    protected void writeLongString(long value) {
+        if (value == 0) {
+            writeBuffer.writeByte((byte) '0');
+            return;
+        }
+
+        boolean negative = value < 0;
+        if (negative) {
+            throw new IllegalArgumentException("");
+//            value = -value;
+//            writeBuffer.writeByte((byte) '-');
+        }
+
+        long tempValue = value;
+        int numDigits = 0;
+        while (tempValue > 0) {
+            numDigits++;
+            tempValue /= 10;
+        }
+
+        byte[] buffer = new byte[numDigits];
+        for (int i = numDigits - 1; i >= 0; i--) {
+            buffer[i] = (byte) ('0' + (value % 10));
+            value /= 10;
+        }
+
+        for (byte b : buffer) {
+            writeBuffer.writeByte(b);
+        }
+    }
+
+    protected void writeString(String string) {
+        int length = string.length();
+        for (int charIndex = 0; charIndex < length; charIndex++) {
+            char c = string.charAt(charIndex);
+            byte b = (byte) c;
+            writeBuffer.writeByte(b);
+        }
     }
 }

@@ -46,15 +46,9 @@ public class AbstractResponse implements HttpResponse, Reset {
     /**
      * http响应码
      */
-    private int httpStatus = HttpStatus.OK.value();
-    /**
-     * 响应描述
-     */
-    private String reasonPhrase = HttpStatus.OK.getReasonPhrase();
-    /**
-     * 是否默认响应
-     */
-    private boolean defaultStatus = true;
+    private HttpStatus httpStatus = HttpStatus.OK;
+
+
     /**
      * 响应正文长度
      */
@@ -96,28 +90,23 @@ public class AbstractResponse implements HttpResponse, Reset {
     }
 
     @Override
-    public int getHttpStatus() {
+    public HttpStatus getHttpStatus() {
         return httpStatus;
     }
 
     public final void setHttpStatus(HttpStatus httpStatus) {
         Objects.requireNonNull(httpStatus);
-        setHttpStatus(httpStatus.value(), httpStatus.getReasonPhrase());
+        if (httpStatus.value() < 100 || httpStatus.value() > 1000) {
+            throw new IllegalArgumentException("httpStatus must between 100 and 1000");
+        }
+        this.httpStatus = httpStatus;
     }
 
-    public String getReasonPhrase() {
-        return reasonPhrase;
-    }
 
     public final void setHttpStatus(int value, String reasonPhrase) {
-        this.httpStatus = value;
-        this.reasonPhrase = Objects.requireNonNull(reasonPhrase);
-        defaultStatus = httpStatus == HttpStatus.OK.value() && HttpStatus.OK.getReasonPhrase().equals(reasonPhrase);
+        setHttpStatus(new HttpStatus(value, Objects.requireNonNull(reasonPhrase)));
     }
 
-    public boolean isDefaultStatus() {
-        return defaultStatus;
-    }
 
     @Override
     public final void setHeader(String name, String value) {
