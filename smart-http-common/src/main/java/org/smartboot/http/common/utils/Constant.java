@@ -60,6 +60,8 @@ public interface Constant {
 
     byte[] CRLF_BYTES = {Constant.CR, Constant.LF};
 
+    byte[] CRLF_CRLF_BYTES = {Constant.CR, Constant.LF, Constant.CR, Constant.LF};
+
     String CRLF = "\r\n";
 
     byte[] CHUNKED_END_BYTES = "0\r\n\r\n".getBytes(StandardCharsets.US_ASCII);

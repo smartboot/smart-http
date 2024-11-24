@@ -33,25 +33,22 @@ final class HttpOutputStream extends AbstractOutputStream {
     private static final Date currentDate = new Date(0);
     private static final Semaphore flushDateSemaphore = new Semaphore(1);
     private static long expireTime;
-    private static byte[] dateBytes;
     private final Request request;
     private final HttpServerConfiguration configuration;
     private static final byte[] CHUNKED = "Transfer-Encoding: chunked\r\n".getBytes();
-    private static final byte[] DATE_END_1 = "Date:E, dd MMM yyyy HH:mm:ss z\r\n".getBytes();
-    private static final byte[] DATE_END_2 = "Date:E, dd MMM yyyy HH:mm:ss z\r\n\r\n".getBytes();
-    private static long expireTime_1;
-    private static long expireTime_2;
+    private static final byte[] CHUNKED_2 = "Transfer-Encoding: chunked\r\n\r\n".getBytes();
+    private static byte[] HEAD_PART_BYTES;
 
-    static {
-        flushDate();
-    }
 
     public HttpOutputStream(HttpRequestImpl httpRequest, HttpResponseImpl response) {
         super(httpRequest.request, response);
         this.request = httpRequest.request;
         this.configuration = request.getConfiguration();
         if (SERVER_LINE == null) {
-            SERVER_LINE = (HeaderNameEnum.SERVER.getName() + Constant.COLON_CHAR + configuration.serverName() + Constant.CRLF).getBytes();
+            String serverLine = HeaderNameEnum.SERVER.getName() + Constant.COLON_CHAR + configuration.serverName() + Constant.CRLF;
+            SERVER_LINE = serverLine.getBytes();
+            HEAD_PART_BYTES = (HttpProtocolEnum.HTTP_11.getProtocol() + " 200 OK\r\n" + serverLine + "Date:Sun, 24 Nov 2024 15:50:27 CST\r\n").getBytes();
+            flushDate();
         }
     }
 
@@ -62,7 +59,8 @@ final class HttpOutputStream extends AbstractOutputStream {
                 expireTime = currentTime + 1000;
                 currentDate.setTime(currentTime);
                 String date = sdf.format(currentDate);
-                dateBytes = date.getBytes();
+                byte[] bytes = date.getBytes();
+                System.arraycopy(bytes, 0, HEAD_PART_BYTES, HEAD_PART_BYTES.length - 31, bytes.length);
             } finally {
                 flushDateSemaphore.release();
             }
@@ -87,12 +85,24 @@ final class HttpOutputStream extends AbstractOutputStream {
             remaining = contentLength;
         }
 
-        // HTTP/1.1
-        writeBuffer.write(request.getProtocol().getProtocolBytesWithSP());
+        flushDate();
 
-        // Status
+
         HttpStatus httpStatus = response.getHttpStatus();
-        httpStatus.write(writeBuffer);
+        boolean fastWrite = request.getProtocol() == HttpProtocolEnum.HTTP_11 && httpStatus == HttpStatus.OK && configuration.serverName() != null && response.getHeader(HeaderNameEnum.SERVER.getName()) == null;
+        // HTTP/1.1
+        if (fastWrite) {
+            writeBuffer.write(HEAD_PART_BYTES);
+        } else {
+            writeString(request.getProtocol().getProtocol());
+            writeBuffer.writeByte((byte) ' ');
+            httpStatus.write(writeBuffer);
+            if (configuration.serverName() != null && response.getHeader(HeaderNameEnum.SERVER.getName()) == null) {
+                writeBuffer.write(SERVER_LINE);
+            }
+            // Date
+            writeBuffer.write(HEAD_PART_BYTES, HEAD_PART_BYTES.length - 31, 29);
+        }
 
         if (contentType != null) {
             writeBuffer.write(HeaderNameEnum.CONTENT_TYPE.getBytesWithColon());
@@ -102,29 +112,19 @@ final class HttpOutputStream extends AbstractOutputStream {
         if (contentLength >= 0) {
             writeBuffer.write(HeaderNameEnum.CONTENT_LENGTH.getBytesWithColon());
             writeLongString(contentLength);
-            writeBuffer.write(Constant.CRLF_BYTES);
+            if (hasHeader) {
+                writeBuffer.write(Constant.CRLF_BYTES);
+            } else {
+                writeBuffer.write(Constant.CRLF_CRLF_BYTES);
+            }
         } else if (chunkedSupport) {
-            writeBuffer.write(CHUNKED);
-        }
-
-        if (configuration.serverName() != null && response.getHeader(HeaderNameEnum.SERVER.getName()) == null) {
-            writeBuffer.write(SERVER_LINE);
-        }
-
-        // Date
-        long currentTime = flushDate();
-        if (hasHeader) {
-            if (currentTime > expireTime_1) {
-                expireTime_1 = currentTime + 1000;
-                System.arraycopy(dateBytes, 0, DATE_END_1, 5, 25);
+            if (hasHeader) {
+                writeBuffer.write(CHUNKED);
+            } else {
+                writeBuffer.write(CHUNKED_2);
             }
-            writeBuffer.write(DATE_END_1);
         } else {
-            if (currentTime > expireTime_2) {
-                expireTime_2 = currentTime + 1000;
-                System.arraycopy(dateBytes, 0, DATE_END_2, 5, 25);
-            }
-            writeBuffer.write(DATE_END_2);
+            writeBuffer.write(Constant.CRLF_BYTES);
         }
     }
 
