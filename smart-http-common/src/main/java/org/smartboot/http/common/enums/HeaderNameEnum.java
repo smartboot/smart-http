@@ -81,32 +81,17 @@ public enum HeaderNameEnum {
 
     private final String name;
 
-    private final byte[] bytes;
-
     private final byte[] bytesWithColon;
 
 
     HeaderNameEnum(String name) {
         this.name = name;
-        this.bytes = name.getBytes();
         this.bytesWithColon = (name + ":").getBytes();
     }
 
 
     public String getName() {
         return name;
-    }
-
-    public boolean equals(byte[] bytes, int length) {
-        if (this.bytes.length != length) {
-            return false;
-        }
-        for (int i = 0; i < length; i++) {
-            if (this.bytes[i] != bytes[i]) {
-                return false;
-            }
-        }
-        return true;
     }
 
     public byte[] getBytesWithColon() {
