@@ -52,7 +52,7 @@ final class HttpOutputStream extends AbstractOutputStream {
         }
     }
 
-    private static long flushDate() {
+    private void flushDate() {
         long currentTime = TimerUtils.currentTimeMillis();
         if (currentTime > expireTime && flushDateSemaphore.tryAcquire()) {
             try {
@@ -65,7 +65,6 @@ final class HttpOutputStream extends AbstractOutputStream {
                 flushDateSemaphore.release();
             }
         }
-        return currentTime;
     }
 
     @Override
@@ -101,7 +100,7 @@ final class HttpOutputStream extends AbstractOutputStream {
                 writeBuffer.write(SERVER_LINE);
             }
             // Date
-            writeBuffer.write(HEAD_PART_BYTES, HEAD_PART_BYTES.length - 31, 29);
+            writeBuffer.write(HEAD_PART_BYTES, HEAD_PART_BYTES.length - 36, 36);
         }
 
         if (contentType != null) {

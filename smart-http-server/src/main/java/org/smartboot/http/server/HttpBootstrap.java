@@ -11,7 +11,6 @@ package org.smartboot.http.server;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
-import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.server.impl.Http2RequestImpl;
 import org.smartboot.http.server.impl.HttpMessageProcessor;
 import org.smartboot.http.server.impl.HttpRequestProtocol;
@@ -183,9 +182,6 @@ public class HttpBootstrap {
     private void initByteCache() {
         for (HttpMethodEnum httpMethodEnum : HttpMethodEnum.values()) {
             configuration.getByteCache().addNode(httpMethodEnum.getMethod());
-        }
-        for (HttpProtocolEnum httpProtocolEnum : HttpProtocolEnum.values()) {
-            configuration.getByteCache().addNode(httpProtocolEnum.getProtocol(), httpProtocolEnum);
         }
         for (HeaderNameEnum headerNameEnum : HeaderNameEnum.values()) {
             configuration.getHeaderNameByteTree().addNode(headerNameEnum.getName());
