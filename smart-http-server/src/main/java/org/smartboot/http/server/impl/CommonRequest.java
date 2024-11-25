@@ -16,8 +16,6 @@ import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpTypeEnum;
 import org.smartboot.http.common.io.BodyInputStream;
-import org.smartboot.http.common.logging.Logger;
-import org.smartboot.http.common.logging.LoggerFactory;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.http.common.utils.HttpUtils;
 import org.smartboot.http.common.utils.NumberUtils;
@@ -51,7 +49,6 @@ import java.util.Set;
  * @version V1.0 , 2018/8/31
  */
 public abstract class CommonRequest implements Reset {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CommonRequest.class);
     private static final Locale defaultLocale = Locale.getDefault();
     private static final int INIT_CONTENT_LENGTH = -2;
     private static final int NONE_CONTENT_LENGTH = -1;
@@ -61,7 +58,7 @@ public abstract class CommonRequest implements Reset {
     /**
      * Http请求头
      */
-    protected final List<HeaderValue> headers = new ArrayList<>(8);
+    protected final Map<String, HeaderValue> headers = new HashMap<>();
     protected final HttpServerConfiguration configuration;
     /**
      * 请求参数
@@ -124,30 +121,35 @@ public abstract class CommonRequest implements Reset {
 
     public final String getHost() {
         if (hostHeader == null) {
-            hostHeader = getHeader(HeaderNameEnum.HOST.getName());
+            hostHeader = getHeader(HeaderNameEnum.HOST);
         }
         return hostHeader;
     }
 
 
+    final String getInnerHeader(String lowCaseHeaderName) {
+        HeaderValue headerValue = headers.get(lowCaseHeaderName);
+        return headerValue == null ? null : headerValue.getValue();
+    }
+
+    public final String getHeader(HeaderNameEnum headerNameEnum) {
+        return getInnerHeader(headerNameEnum.getLowCaseName());
+    }
+
     public final String getHeader(String headName) {
-        for (int i = 0; i < headerSize; i++) {
-            HeaderValue headerValue = headers.get(i);
-            if (headerValue.getName().equalsIgnoreCase(headName)) {
-                return headerValue.getValue();
-            }
-        }
-        return null;
+        return getInnerHeader(headName.toLowerCase());
     }
 
 
     public final Collection<String> getHeaders(String name) {
+        HeaderValue headerValue = headers.get(name.toLowerCase());
+        if (headerValue == null) {
+            return Collections.emptyList();
+        }
         List<String> value = new ArrayList<>(4);
-        for (int i = 0; i < headerSize; i++) {
-            HeaderValue headerValue = headers.get(i);
-            if (headerValue.getName().equalsIgnoreCase(name)) {
-                value.add(headerValue.getValue());
-            }
+        while (headerValue != null) {
+            value.add(headerValue.getValue());
+            headerValue = headerValue.getNextValue();
         }
         return value;
     }
@@ -155,9 +157,12 @@ public abstract class CommonRequest implements Reset {
 
     public final Collection<String> getHeaderNames() {
         Set<String> nameSet = new HashSet<>();
-        for (int i = 0; i < headerSize; i++) {
-            nameSet.add(headers.get(i).getName());
-        }
+        headers.forEach((k, v) -> {
+            while (v != null) {
+                nameSet.add(v.getName());
+                v = v.getNextValue();
+            }
+        });
         return nameSet;
     }
 
@@ -170,38 +175,44 @@ public abstract class CommonRequest implements Reset {
         throw new UnsupportedOperationException();
     }
 
-
-    public final void setHeader(String headerName, String value) {
+    final void setHeader(String lowCaseHeader, String headerName, String value) {
         if (value == null) {
-            boolean suc = headers.removeIf(headerValue -> headerValue.getName().equalsIgnoreCase(headerName));
-            if (suc) {
-                headerSize--;
+            HeaderValue oldValue = headers.remove(lowCaseHeader);
+            if (oldValue != null) {
+                do {
+                    headerSize--;
+                } while ((oldValue = oldValue.getNextValue()) != null);
             }
             return;
         }
-        if (headerSize < headers.size()) {
-            HeaderValue headerValue = headers.get(headerSize);
-            headerValue.setName(headerName);
-            headerValue.setValue(value);
+        HeaderValue headerValue = headers.get(lowCaseHeader);
+        if (headerValue == null) {
+            headers.put(lowCaseHeader, new HeaderValue(headerName, value));
         } else {
-            headers.add(new HeaderValue(headerName, value));
+            headerValue.setNextValue(new HeaderValue(headerName, value));
         }
         headerSize++;
     }
 
-    public final void addHeader(String headerName, String value) {
-        for (HeaderValue headerValue : headers) {
-            if (!headerValue.getName().equalsIgnoreCase(headerName)) {
-                continue;
+    public final void setHeader(String headerName, String value) {
+        setHeader(headerName.toLowerCase(), headerName, value);
+    }
+
+    final void addHeader(String lowCaseHeader, String headerName, String value) {
+        HeaderValue oldValue = headers.remove(lowCaseHeader);
+        if (oldValue != null) {
+            while (oldValue.getNextValue() != null) {
+                oldValue = oldValue.getNextValue();
             }
-            HeaderValue nextValue = headerValue;
-            while (nextValue.getNextValue() != null) {
-                nextValue = nextValue.getNextValue();
-            }
-            nextValue.setNextValue(new HeaderValue(null, value));
-            return;
+            oldValue.setNextValue(new HeaderValue(null, value));
+            headerSize++;
+        } else {
+            setHeader(lowCaseHeader, headerName, value);
         }
-        setHeader(headerName, value);
+    }
+
+    public final void addHeader(String headerName, String value) {
+        addHeader(headerName.toLowerCase(), headerName, value);
     }
 
     public HttpTypeEnum getRequestType() {
@@ -274,7 +285,7 @@ public abstract class CommonRequest implements Reset {
             return requestUrl;
         }
         if (requestUri.startsWith("/")) {
-            requestUrl = getScheme() + "://" + getHeader(HeaderNameEnum.HOST.getName()) + getRequestURI();
+            requestUrl = getScheme() + "://" + getHost() + getRequestURI();
         } else {
             requestUrl = requestUri;
         }
@@ -305,7 +316,7 @@ public abstract class CommonRequest implements Reset {
         if (contentType != null) {
             return contentType;
         }
-        contentType = getHeader(HeaderNameEnum.CONTENT_TYPE.getName());
+        contentType = getHeader(HeaderNameEnum.CONTENT_TYPE);
         return contentType;
     }
 
@@ -313,7 +324,7 @@ public abstract class CommonRequest implements Reset {
         if (connection != null) {
             return connection;
         }
-        connection = getHeader(HeaderNameEnum.CONNECTION.getName());
+        connection = getHeader(HeaderNameEnum.CONNECTION);
         return connection;
     }
 
@@ -323,7 +334,7 @@ public abstract class CommonRequest implements Reset {
             return contentLength;
         }
         //不包含content-length,则为：-1
-        contentLength = NumberUtils.toLong(getHeader(HeaderNameEnum.CONTENT_LENGTH.getName()), NONE_CONTENT_LENGTH);
+        contentLength = NumberUtils.toLong(getHeader(HeaderNameEnum.CONTENT_LENGTH), NONE_CONTENT_LENGTH);
 
         return contentLength;
     }
@@ -439,12 +450,15 @@ public abstract class CommonRequest implements Reset {
         if (cookies != null) {
             return cookies;
         }
+
+        HeaderValue headerValue = headers.get(HeaderNameEnum.COOKIE.getLowCaseName());
+        if (headerValue == null) {
+            return new Cookie[0];
+        }
         final List<Cookie> parsedCookies = new ArrayList<>();
-        for (int i = 0; i < headerSize; i++) {
-            HeaderValue headerValue = headers.get(i);
-            if (headerValue.getName().equalsIgnoreCase(HeaderNameEnum.COOKIE.getName())) {
-                parsedCookies.addAll(HttpUtils.decodeCookies(headerValue.getValue()));
-            }
+        while (headerValue != null) {
+            parsedCookies.addAll(HttpUtils.decodeCookies(headerValue.getValue()));
+            headerValue = headerValue.getNextValue();
         }
         cookies = new Cookie[parsedCookies.size()];
         parsedCookies.toArray(cookies);
@@ -480,6 +494,7 @@ public abstract class CommonRequest implements Reset {
     @Override
     public void reset() {
         headerSize = 0;
+        headers.clear();
         uri = null;
         requestUrl = null;
         parameters = null;

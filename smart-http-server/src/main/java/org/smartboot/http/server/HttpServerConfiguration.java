@@ -8,6 +8,7 @@
 
 package org.smartboot.http.server;
 
+import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.utils.ByteTree;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.impl.Request;
@@ -21,7 +22,6 @@ import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 /**
  * @author 三刀（zhengjunweimail@163.com）
@@ -39,7 +39,7 @@ public class HttpServerConfiguration {
      */
     private final ByteTree<ServerHandler<?, ?>> uriByteTree = new ByteTree<>();
 
-    private final ByteTree<Function<String, ServerHandler<?, ?>>> headerNameByteTree = new ByteTree<>();
+    private final ByteTree<HeaderNameEnum> headerNameByteTree = new ByteTree<>();
 
     /**
      * smart-socket 插件
@@ -263,7 +263,7 @@ public class HttpServerConfiguration {
         return byteCache;
     }
 
-    public ByteTree<Function<String, ServerHandler<?, ?>>> getHeaderNameByteTree() {
+    public ByteTree<HeaderNameEnum> getHeaderNameByteTree() {
         return headerNameByteTree;
     }
 

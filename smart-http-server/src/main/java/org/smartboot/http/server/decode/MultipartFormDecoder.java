@@ -108,7 +108,7 @@ public class MultipartFormDecoder {
                 }
                 byteBuffer.reset();
                 //Header name解码
-                ByteTree<Function<String, ServerHandler<?, ?>>> name = StringUtils.scanByteTree(byteBuffer, ByteTree.COLON_END_MATCHER, request.getRequest().getConfiguration().getHeaderNameByteTree());
+                ByteTree<HeaderNameEnum> name = StringUtils.scanByteTree(byteBuffer, ByteTree.COLON_END_MATCHER, request.getRequest().getConfiguration().getHeaderNameByteTree());
                 if (name == null) {
                     return false;
                 }

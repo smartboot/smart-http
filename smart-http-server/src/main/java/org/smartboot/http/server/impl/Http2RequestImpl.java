@@ -15,7 +15,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 
 public class Http2RequestImpl extends CommonRequest implements HttpRequest, Reset {
@@ -40,12 +39,7 @@ public class Http2RequestImpl extends CommonRequest implements HttpRequest, Rese
 
 
     public Map<String, HeaderValue> getHeaders() {
-        Map<String, HeaderValue> map = new HashMap<>();
-        for (int i = 0; i < headerSize; i++) {
-            HeaderValue headerValue = headers.get(i);
-            map.put(headerValue.getName(), headerValue);
-        }
-        return map;
+        return headers;
     }
 
     public void checkState(int state) {

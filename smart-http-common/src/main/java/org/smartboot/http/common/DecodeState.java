@@ -25,7 +25,7 @@ public class DecodeState {
      * HTTP响应报文解析状态
      */
     private int state;
-    private String decodeHeaderName;
+
 
     public DecodeState(int state) {
         this.state = state;
@@ -39,11 +39,4 @@ public class DecodeState {
         this.state = state;
     }
 
-    public String getDecodeHeaderName() {
-        return decodeHeaderName;
-    }
-
-    public void setDecodeHeaderName(String decodeHeaderName) {
-        this.decodeHeaderName = decodeHeaderName;
-    }
 }

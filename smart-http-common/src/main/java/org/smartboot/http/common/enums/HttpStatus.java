@@ -137,16 +137,7 @@ public class HttpStatus {
     }
 
     public static HttpStatus valueOf(int value) {
-        HttpStatus httpStatus = HASH_TABLE[value % HASH_TABLE.length];
-        return httpStatus;
-    }
-
-    /**
-     * Return a string representation of this status code.
-     */
-    @Override
-    public String toString() {
-        return Integer.toString(value);
+        return HASH_TABLE[value % HASH_TABLE.length];
     }
 
     public void write(WriteBuffer writeBuffer) throws IOException {

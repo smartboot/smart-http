@@ -9,6 +9,8 @@
 package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.DecodeState;
+import org.smartboot.http.common.enums.HeaderNameEnum;
+import org.smartboot.http.common.enums.HeaderValueEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.exception.HttpException;
@@ -99,8 +101,19 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
     private void doHttpHeader(Request request) throws IOException {
         methodCheck(request);
         uriCheck(request);
-        if (request.getProtocol().equals(HttpProtocolEnum.HTTP_2.getProtocol())) {
+
+        if (request.getProtocol() == HttpProtocolEnum.HTTP_2) {
             request.setServerHandler(configuration.getHttp2ServerHandler());
+        } else {
+            String upgrade = request.getHeader(HeaderNameEnum.UPGRADE);
+            // WebSocket
+            if (HeaderValueEnum.WEBSOCKET.getName().equalsIgnoreCase(upgrade)) {
+                request.setServerHandler(configuration.getWebSocketHandler());
+            }
+            // HTTP/2.0
+            else if (HeaderValueEnum.H2C.getName().equals(upgrade) || HeaderValueEnum.H2.getName().equals(upgrade)) {
+                request.setServerHandler(configuration.getHttp2ServerHandler());
+            }
         }
         request.getServerHandler().onHeaderComplete(request);
     }

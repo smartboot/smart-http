@@ -81,17 +81,24 @@ public enum HeaderNameEnum {
 
     private final String name;
 
+    private final String lowCaseName;
+
     private final byte[] bytesWithColon;
 
 
     HeaderNameEnum(String name) {
         this.name = name;
+        this.lowCaseName = name.toLowerCase();
         this.bytesWithColon = (name + ":").getBytes();
     }
 
 
     public String getName() {
         return name;
+    }
+
+    public String getLowCaseName() {
+        return lowCaseName;
     }
 
     public byte[] getBytesWithColon() {

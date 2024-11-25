@@ -9,6 +9,7 @@
 package org.smartboot.http.server.impl;
 
 import org.smartboot.http.common.DecodeState;
+import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.exception.HttpException;
@@ -22,7 +23,6 @@ import org.smartboot.socket.Protocol;
 import org.smartboot.socket.transport.AioSession;
 
 import java.nio.ByteBuffer;
-import java.util.function.Function;
 
 /**
  * @author 三刀
@@ -132,12 +132,11 @@ public class HttpRequestProtocol implements Protocol<Request> {
             }
             // header name解析
             case DecodeState.STATE_HEADER_NAME: {
-                ByteTree<Function<String, ServerHandler<?, ?>>> name = StringUtils.scanByteTree(byteBuffer, ByteTree.COLON_END_MATCHER, configuration.getHeaderNameByteTree());
+                ByteTree<HeaderNameEnum> name = StringUtils.scanByteTree(byteBuffer, ByteTree.COLON_END_MATCHER, configuration.getHeaderNameByteTree());
                 if (name == null) {
                     break;
                 }
-                decodeState.setDecodeHeaderName(name.getStringValue());
-                decodeState.setHeaderFunc(name.getAttach());
+                decodeState.setDecodeHeaderName(name);
                 decodeState.setState(DecodeState.STATE_HEADER_VALUE);
             }
             // header value解析
@@ -149,13 +148,13 @@ public class HttpRequestProtocol implements Protocol<Request> {
                     }
                     break;
                 }
-                if (decodeState.getHeaderFunc() != null) {
-                    ServerHandler replaceServerHandler = decodeState.getHeaderFunc().apply(value.getStringValue());
-                    if (replaceServerHandler != null) {
-                        request.setServerHandler(replaceServerHandler);
-                    }
+                HeaderNameEnum headerName = decodeState.getDecodeHeaderName().getAttach();
+                if (headerName != null) {
+                    request.addHeader(headerName.getLowCaseName(), decodeState.getDecodeHeaderName().getStringValue(), value.getStringValue());
+                } else {
+                    request.addHeader(decodeState.getDecodeHeaderName().getStringValue(), value.getStringValue());
                 }
-                request.setHeader(decodeState.getDecodeHeaderName(), value.getStringValue());
+
                 decodeState.setState(DecodeState.STATE_HEADER_LINE_END);
             }
             // header line结束
