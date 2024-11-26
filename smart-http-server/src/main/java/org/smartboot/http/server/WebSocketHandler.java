@@ -52,7 +52,7 @@ public abstract class WebSocketHandler implements ServerHandler<WebSocketRequest
         WebSocketRequestImpl webSocketRequest = request.newWebsocketRequest();
         WebSocketResponseImpl response = webSocketRequest.getResponse();
         willHeaderComplete(webSocketRequest, response);
-        String key = request.getHeader(HeaderNameEnum.Sec_WebSocket_Key.getName());
+        String key = request.getHeader(HeaderNameEnum.Sec_WebSocket_Key);
         String acceptSeed = key + WEBSOCKET_13_ACCEPT_GUID;
         byte[] sha1 = SHA1.encode(acceptSeed);
         String accept = Base64.getEncoder().encodeToString(sha1);

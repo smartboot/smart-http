@@ -59,7 +59,7 @@ public abstract class Http2ServerHandler implements ServerHandler<HttpRequest, H
             session.setState(Http2Session.STATE_PREFACE_SM);
         } else {
             //解析 Header 中的 setting
-            String http2Settings = request.getHeader(HeaderNameEnum.HTTP2_SETTINGS.getName());
+            String http2Settings = request.getHeader(HeaderNameEnum.HTTP2_SETTINGS);
             byte[] bytes = Base64.getUrlDecoder().decode(http2Settings);
             ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
             SettingsFrame settingsFrame = new SettingsFrame(0, 0, bytes.length);

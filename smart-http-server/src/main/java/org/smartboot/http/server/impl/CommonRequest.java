@@ -107,6 +107,7 @@ public abstract class CommonRequest implements Reset {
     protected Attachment attachment;
 
     protected ServerHandler serverHandler;
+    private boolean multiplexing = false;
 
 
     CommonRequest(AioSession aioSession, HttpServerConfiguration configuration) {
@@ -175,7 +176,7 @@ public abstract class CommonRequest implements Reset {
         throw new UnsupportedOperationException();
     }
 
-    final void setHeader(String lowCaseHeader, String headerName, String value) {
+    private void setHeader(String lowCaseHeader, String headerName, String value) {
         if (value == null) {
             HeaderValue oldValue = headers.remove(lowCaseHeader);
             if (oldValue != null) {
@@ -209,10 +210,6 @@ public abstract class CommonRequest implements Reset {
         } else {
             setHeader(lowCaseHeader, headerName, value);
         }
-    }
-
-    public final void addHeader(String headerName, String value) {
-        addHeader(headerName.toLowerCase(), headerName, value);
     }
 
     public HttpTypeEnum getRequestType() {
@@ -491,6 +488,10 @@ public abstract class CommonRequest implements Reset {
         return configuration;
     }
 
+    public boolean isMultiplexing() {
+        return multiplexing;
+    }
+
     @Override
     public void reset() {
         headerSize = 0;
@@ -505,5 +506,6 @@ public abstract class CommonRequest implements Reset {
         scheme = null;
         queryString = null;
         requestUri = null;
+        multiplexing = true;
     }
 }

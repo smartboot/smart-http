@@ -102,6 +102,10 @@ public class HttpMessageProcessor extends AbstractMessageProcessor<Request> {
         methodCheck(request);
         uriCheck(request);
 
+        if (request.isMultiplexing()) {
+            request.getServerHandler().onHeaderComplete(request);
+            return;
+        }
         if (request.getProtocol() == HttpProtocolEnum.HTTP_2) {
             request.setServerHandler(configuration.getHttp2ServerHandler());
         } else {

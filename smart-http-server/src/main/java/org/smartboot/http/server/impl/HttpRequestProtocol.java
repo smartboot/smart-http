@@ -152,7 +152,7 @@ public class HttpRequestProtocol implements Protocol<Request> {
                 if (headerName != null) {
                     request.addHeader(headerName.getLowCaseName(), decodeState.getDecodeHeaderName().getStringValue(), value.getStringValue());
                 } else {
-                    request.addHeader(decodeState.getDecodeHeaderName().getStringValue(), value.getStringValue());
+                    request.addHeader(decodeState.getDecodeHeaderName().getStringValue().toLowerCase(), decodeState.getDecodeHeaderName().getStringValue(), value.getStringValue());
                 }
 
                 decodeState.setState(DecodeState.STATE_HEADER_LINE_END);

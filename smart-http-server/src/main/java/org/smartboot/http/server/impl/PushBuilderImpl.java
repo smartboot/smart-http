@@ -3,6 +3,7 @@ package org.smartboot.http.server.impl;
 import org.smartboot.http.common.codec.h2.codec.ContinuationFrame;
 import org.smartboot.http.common.codec.h2.codec.Http2Frame;
 import org.smartboot.http.common.codec.h2.codec.PushPromiseFrame;
+import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HttpMethodEnum;
 import org.smartboot.http.common.utils.HttpUtils;
 import org.smartboot.http.common.utils.StringUtils;
@@ -28,7 +29,7 @@ public class PushBuilderImpl implements PushBuilder {
     public PushBuilderImpl(int streamId, Http2ResponseImpl response, Http2Session session) {
         this.streamId = streamId;
         this.pushRequest = new Http2RequestImpl(session.getPushStreamId().addAndGet(2), session, true);
-        response.getCookies().forEach(cookie -> pushRequest.addHeader("Cookie", cookie.toString()));
+        response.getCookies().forEach(cookie -> pushRequest.addHeader(HeaderNameEnum.COOKIE.getLowCaseName(), HeaderNameEnum.COOKIE.getName(), cookie.toString()));
 
         method(HttpMethodEnum.GET.getMethod());
     }
@@ -59,7 +60,7 @@ public class PushBuilderImpl implements PushBuilder {
 
     @Override
     public PushBuilder addHeader(String name, String value) {
-        pushRequest.addHeader(name, value);
+        pushRequest.addHeader(name.toLowerCase(), name, value);
         return this;
     }
 
