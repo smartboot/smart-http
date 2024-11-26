@@ -25,12 +25,10 @@ import org.smartboot.http.server.handler.HttpRouteHandler;
 import org.smartboot.socket.extension.plugins.SslPlugin;
 import org.smartboot.socket.extension.ssl.ClientAuth;
 import org.smartboot.socket.extension.ssl.factory.ServerSSLContextFactory;
-import org.smartboot.socket.util.AttachKey;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -61,16 +59,19 @@ public class HttpPostTest {
             }
         });
         routeHandle.route("/json", new HttpServerHandler() {
-            private AttachKey<ByteBuffer> bodyKey = AttachKey.valueOf("bodyKey");
-
 
             @Override
             public void handle(HttpRequest request, HttpResponse response) throws IOException {
-                ByteBuffer buffer = request.getAttachment().get(bodyKey);
-                buffer.flip();
-                byte[] bytes = new byte[buffer.remaining()];
-                buffer.get(bytes);
-                System.out.println(new String(bytes));
+                System.out.println(request.getParameters());
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                byteArrayOutputStream.write(String.valueOf(request.getContentLength()).getBytes());
+                InputStream inputStream = request.getInputStream();
+                byte[] bytes = new byte[1024];
+                int size;
+                while ((size = inputStream.read(bytes)) != -1) {
+                    byteArrayOutputStream.write(bytes, 0, size);
+                }
+                response.write(byteArrayOutputStream.toByteArray());
             }
         });
         routeHandle.route("/header", new HttpServerHandler() {
@@ -131,7 +132,9 @@ public class HttpPostTest {
         httpBootstrap = new HttpBootstrap();
         httpBootstrap.httpHandler(routeHandle).setPort(8080).start();
 
-        SslPlugin sslPlugin = new SslPlugin(new ServerSSLContextFactory(HttpPostTest.class.getClassLoader().getResourceAsStream("server.keystore"), "123456", "123456"), ClientAuth.NONE);
+        SslPlugin sslPlugin =
+                new SslPlugin(new ServerSSLContextFactory(HttpPostTest.class.getClassLoader().getResourceAsStream(
+                        "server.keystore"), "123456", "123456"), ClientAuth.NONE);
         httpsBootstrap = new HttpBootstrap();
         httpsBootstrap.configuration().addPlugin(sslPlugin);
         httpsBootstrap.httpHandler(routeHandle).setPort(8888).start();
@@ -160,10 +163,6 @@ public class HttpPostTest {
         doRequest(new HttpClient("https://127.0.0.1:8888"), consumer);
     }
 
-    interface Consumer {
-        void accept(HttpClient httpClient) throws Throwable;
-    }
-
     private void doRequest(HttpClient client, Consumer consumer) throws Throwable {
         consumer.accept(client);
     }
@@ -186,7 +185,8 @@ public class HttpPostTest {
                     }).done();
             JSONObject jsonObject = JSONObject.parseObject(future.get().body());
             Assert.assertNull(jsonObject.getString(HeaderNameEnum.TRANSFER_ENCODING.getName()));
-            Assert.assertEquals(jsonObject.getString(HeaderNameEnum.CONTENT_LENGTH.getName()), String.valueOf(body.getBytes().length));
+            Assert.assertEquals(jsonObject.getString(HeaderNameEnum.CONTENT_LENGTH.getName()),
+                    String.valueOf(body.getBytes().length));
         };
         doRequest(new HttpClient("http://127.0.0.1:8080"), consumer);
         doRequest(new HttpClient("https://127.0.0.1:8888"), consumer);
@@ -278,17 +278,22 @@ public class HttpPostTest {
         Consumer consumer = httpClient -> {
             httpClient.configuration().debug(true);
             byte[] jsonBytes = "{\"a\":1,\"b\":\"123\"}".getBytes(StandardCharsets.UTF_8);
-            String resp = httpClient.post("/body").header().setContentLength(jsonBytes.length).setContentType("application/json").done().body().write(jsonBytes).flush().done().done().get().body();
+            String resp = httpClient.post("/body").header().setContentLength(jsonBytes.length).setContentType(
+                    "application/json").done().body().write(jsonBytes).flush().done().done().get().body();
             Assert.assertEquals(resp, jsonBytes.length + new String(jsonBytes));
         };
         doRequest(new HttpClient("http://127.0.0.1:8080"), consumer);
         doRequest(new HttpClient("https://127.0.0.1:8888"), consumer);
     }
 
-
     @After
     public void destroy() {
         httpBootstrap.shutdown();
         httpsBootstrap.shutdown();
+    }
+
+
+    interface Consumer {
+        void accept(HttpClient httpClient) throws Throwable;
     }
 }
