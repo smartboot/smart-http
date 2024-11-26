@@ -29,15 +29,15 @@ import java.util.concurrent.Semaphore;
  */
 final class HttpOutputStream extends AbstractOutputStream {
     private static final SimpleDateFormat sdf = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
-    private static byte[] SERVER_LINE = null;
     private static final Date currentDate = new Date(0);
     private static final Semaphore flushDateSemaphore = new Semaphore(1);
-    private static long expireTime;
-    private final Request request;
-    private final HttpServerConfiguration configuration;
     private static final byte[] CHUNKED = "Transfer-Encoding: chunked\r\n".getBytes();
     private static final byte[] CHUNKED_2 = "Transfer-Encoding: chunked\r\n\r\n".getBytes();
+    private static byte[] SERVER_LINE = null;
+    private static long expireTime;
     private static byte[] HEAD_PART_BYTES;
+    private final Request request;
+    private final HttpServerConfiguration configuration;
 
 
     public HttpOutputStream(HttpRequestImpl httpRequest, HttpResponseImpl response) {
@@ -45,9 +45,11 @@ final class HttpOutputStream extends AbstractOutputStream {
         this.request = httpRequest.request;
         this.configuration = request.getConfiguration();
         if (SERVER_LINE == null) {
-            String serverLine = HeaderNameEnum.SERVER.getName() + Constant.COLON_CHAR + configuration.serverName() + Constant.CRLF;
+            String serverLine =
+                    HeaderNameEnum.SERVER.getName() + Constant.COLON_CHAR + configuration.serverName() + Constant.CRLF;
             SERVER_LINE = serverLine.getBytes();
-            HEAD_PART_BYTES = (HttpProtocolEnum.HTTP_11.getProtocol() + " 200 OK\r\n" + serverLine + "Date:Sun, 24 Nov 2024 15:50:27 CST\r\n").getBytes();
+            HEAD_PART_BYTES = (HttpProtocolEnum.HTTP_11.getProtocol() + " 200 OK\r\n" + serverLine + "Date:Sun, 24 " +
+                    "Nov 2024 15:50:27 CST\r\n").getBytes();
             flushDate();
         }
     }
@@ -88,7 +90,8 @@ final class HttpOutputStream extends AbstractOutputStream {
 
 
         HttpStatus httpStatus = response.getHttpStatus();
-        boolean fastWrite = request.getProtocol() == HttpProtocolEnum.HTTP_11 && httpStatus == HttpStatus.OK && configuration.serverName() != null && response.getHeader(HeaderNameEnum.SERVER.getName()) == null;
+        boolean fastWrite =
+                request.getProtocol() == HttpProtocolEnum.HTTP_11 && httpStatus == HttpStatus.OK && configuration.serverName() != null && response.getHeader(HeaderNameEnum.SERVER.getName()) == null;
         // HTTP/1.1
         if (fastWrite) {
             writeBuffer.write(HEAD_PART_BYTES);
@@ -104,12 +107,12 @@ final class HttpOutputStream extends AbstractOutputStream {
         }
 
         if (contentType != null) {
-            writeBuffer.write(HeaderNameEnum.CONTENT_TYPE.getBytesWithColon());
+            writeBuffer.write(HeaderNameEnum.Content_Type_Bytes);
             writeString(contentType);
             writeBuffer.write(Constant.CRLF_BYTES);
         }
         if (contentLength >= 0) {
-            writeBuffer.write(HeaderNameEnum.CONTENT_LENGTH.getBytesWithColon());
+            writeBuffer.write(HeaderNameEnum.Content_Length_Bytes);
             writeLongString(contentLength);
             if (hasHeader) {
                 writeBuffer.write(Constant.CRLF_BYTES);

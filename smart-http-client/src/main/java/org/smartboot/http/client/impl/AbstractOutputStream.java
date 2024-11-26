@@ -8,11 +8,11 @@
 
 package org.smartboot.http.client.impl;
 
-import org.smartboot.http.common.io.BufferOutputStream;
 import org.smartboot.http.common.Cookie;
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.enums.HeaderValueEnum;
+import org.smartboot.http.common.io.BufferOutputStream;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.socket.transport.AioSession;
 
@@ -51,13 +51,13 @@ abstract class AbstractOutputStream extends BufferOutputStream {
         convertCookieToHeader(request);
 
         if (request.getContentType() != null) {
-            writeBuffer.write(getHeaderNameBytes(HeaderNameEnum.CONTENT_TYPE.getName()));
+            writeBuffer.write(HeaderNameEnum.Content_Type_Bytes);
             writeBuffer.write(getBytes(String.valueOf(request.getContentType())));
             writeBuffer.write(Constant.CRLF_BYTES);
         }
 
         if (request.getContentLength() >= 0) {
-            writeBuffer.write(getHeaderNameBytes(HeaderNameEnum.CONTENT_LENGTH.getName()));
+            writeBuffer.write(HeaderNameEnum.Content_Length_Bytes);
             writeBuffer.write(getBytes(String.valueOf(request.getContentLength())));
             writeBuffer.write(Constant.CRLF_BYTES);
         } else if (chunkedSupport && source == HeaderWriteSource.WRITE) {
@@ -69,8 +69,9 @@ abstract class AbstractOutputStream extends BufferOutputStream {
             for (Map.Entry<String, HeaderValue> entry : request.getHeaders().entrySet()) {
                 HeaderValue headerValue = entry.getValue();
                 while (headerValue != null) {
-                    writeBuffer.write(getHeaderNameBytes(entry.getKey()));
-                    writeBuffer.write(getBytes(headerValue.getValue()));
+                    writeString(entry.getKey());
+                    writeBuffer.writeByte((byte) ':');
+                    writeString(headerValue.getValue());
                     writeBuffer.write(Constant.CRLF_BYTES);
                     headerValue = headerValue.getNextValue();
                 }

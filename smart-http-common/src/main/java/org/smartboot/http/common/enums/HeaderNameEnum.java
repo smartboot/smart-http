@@ -8,9 +8,6 @@
 
 package org.smartboot.http.common.enums;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * @author 三刀
  * @version V1.0 , 2018/12/6
@@ -71,25 +68,16 @@ public enum HeaderNameEnum {
     Sec_WebSocket_Version("Sec-WebSocket-Version"),
     HTTP2_SETTINGS("HTTP2-Settings"),
     CONTENT_DISPOSITION("Content-Disposition");
-    public static final Map<String, HeaderNameEnum> HEADER_NAME_ENUM_MAP = new HashMap<>();
-
-    static {
-        for (HeaderNameEnum headerNameEnum : HeaderNameEnum.values()) {
-            HEADER_NAME_ENUM_MAP.put(headerNameEnum.getName(), headerNameEnum);
-        }
-    }
+    public static final byte[] Content_Type_Bytes = "Content-Type:".getBytes();
+    public static final byte[] Content_Length_Bytes = "Content-Length:".getBytes();
 
     private final String name;
 
     private final String lowCaseName;
 
-    private final byte[] bytesWithColon;
-
-
     HeaderNameEnum(String name) {
         this.name = name;
         this.lowCaseName = name.toLowerCase();
-        this.bytesWithColon = (name + ":").getBytes();
     }
 
 
@@ -99,9 +87,5 @@ public enum HeaderNameEnum {
 
     public String getLowCaseName() {
         return lowCaseName;
-    }
-
-    public byte[] getBytesWithColon() {
-        return bytesWithColon;
     }
 }

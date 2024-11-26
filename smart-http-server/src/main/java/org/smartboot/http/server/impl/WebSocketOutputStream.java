@@ -34,7 +34,8 @@ final class WebSocketOutputStream extends AbstractOutputStream {
         // Status
         HttpStatus httpStatus = response.getHttpStatus();
         httpStatus.write(writeBuffer);
-        writeBuffer.write(getHeaderNameBytes(HeaderNameEnum.CONTENT_TYPE.getName()));
+        writeString(HeaderNameEnum.CONTENT_TYPE.getName());
+        writeBuffer.writeByte((byte) ':');
         writeString(response.getContentType());
         writeBuffer.write(Constant.CRLF_BYTES);
         if (!hasHeader) {

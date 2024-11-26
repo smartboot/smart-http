@@ -70,7 +70,8 @@ abstract class AbstractOutputStream extends BufferOutputStream {
         for (Map.Entry<String, HeaderValue> entry : response.getHeaders().entrySet()) {
             HeaderValue headerValue = entry.getValue();
             while (headerValue != null) {
-                writeBuffer.write(getHeaderNameBytes(entry.getKey()));
+                writeString(entry.getKey());
+                writeBuffer.writeByte((byte) ':');
                 writeString(headerValue.getValue());
                 writeBuffer.write(Constant.CRLF_BYTES);
                 headerValue = headerValue.getNextValue();

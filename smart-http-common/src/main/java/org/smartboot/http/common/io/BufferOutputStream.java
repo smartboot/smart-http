@@ -9,7 +9,6 @@
 package org.smartboot.http.common.io;
 
 import org.smartboot.http.common.Reset;
-import org.smartboot.http.common.enums.HeaderNameEnum;
 import org.smartboot.http.common.utils.Constant;
 import org.smartboot.socket.transport.WriteBuffer;
 
@@ -27,7 +26,6 @@ import java.util.function.Supplier;
  * @version V1.0 , 2020/12/7
  */
 public abstract class BufferOutputStream extends OutputStream implements Reset {
-    private static final Map<String, byte[]> HEADER_NAME_EXT_MAP = new ConcurrentHashMap<>();
     protected final WriteBuffer writeBuffer;
     protected boolean committed = false;
     protected boolean chunkedSupport = true;
@@ -35,9 +33,8 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
      * 当前流是否完结
      */
     protected boolean closed = false;
-
-    private Supplier<Map<String, String>> trailerSupplier;
     protected long remaining = -1;
+    private Supplier<Map<String, String>> trailerSupplier;
     private WriteListener writeListener;
 
     public BufferOutputStream(WriteBuffer writeBuffer) {
@@ -157,21 +154,6 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
         closed = true;
     }
 
-    protected final byte[] getHeaderNameBytes(String name) {
-        HeaderNameEnum headerNameEnum = HeaderNameEnum.HEADER_NAME_ENUM_MAP.get(name);
-        if (headerNameEnum != null) {
-            return headerNameEnum.getBytesWithColon();
-        }
-        byte[] extBytes = HEADER_NAME_EXT_MAP.get(name);
-        if (extBytes == null) {
-            synchronized (name) {
-                extBytes = getBytes(name + ":");
-                HEADER_NAME_EXT_MAP.put(name, extBytes);
-            }
-        }
-        return extBytes;
-    }
-
     protected final byte[] getBytes(String str) {
         return str.getBytes(StandardCharsets.US_ASCII);
     }
@@ -200,18 +182,13 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
         return chunkedSupport;
     }
 
-    protected enum HeaderWriteSource {
-        WRITE, FLUSH, CLOSE
+    public Supplier<Map<String, String>> getTrailerFields() {
+        return trailerSupplier;
     }
 
     public void setTrailerFields(Supplier<Map<String, String>> supplier) {
         this.trailerSupplier = supplier;
     }
-
-    public Supplier<Map<String, String>> getTrailerFields() {
-        return trailerSupplier;
-    }
-
 
     protected void writeLongString(long value) {
         if (value == 0) {
@@ -251,5 +228,9 @@ public abstract class BufferOutputStream extends OutputStream implements Reset {
             byte b = (byte) c;
             writeBuffer.writeByte(b);
         }
+    }
+
+    protected enum HeaderWriteSource {
+        WRITE, FLUSH, CLOSE
     }
 }
