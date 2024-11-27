@@ -68,8 +68,6 @@ public enum HeaderNameEnum {
     Sec_WebSocket_Version("Sec-WebSocket-Version"),
     HTTP2_SETTINGS("HTTP2-Settings"),
     CONTENT_DISPOSITION("Content-Disposition");
-    public static final byte[] Content_Type_Bytes = "Content-Type:".getBytes();
-    public static final byte[] Content_Length_Bytes = "Content-Length:".getBytes();
 
     private final String name;
 

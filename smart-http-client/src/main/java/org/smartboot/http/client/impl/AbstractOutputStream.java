@@ -51,13 +51,14 @@ abstract class AbstractOutputStream extends BufferOutputStream {
         convertCookieToHeader(request);
 
         if (request.getContentType() != null) {
-            writeBuffer.write(HeaderNameEnum.Content_Type_Bytes);
+            writeString(HeaderNameEnum.CONTENT_TYPE.getName());
+            writeBuffer.writeByte((byte) ':');
             writeBuffer.write(getBytes(String.valueOf(request.getContentType())));
-            writeBuffer.write(Constant.CRLF_BYTES);
         }
 
         if (request.getContentLength() >= 0) {
-            writeBuffer.write(HeaderNameEnum.Content_Length_Bytes);
+            writeString(HeaderNameEnum.CONTENT_LENGTH.getName());
+            writeBuffer.writeByte((byte) ':');
             writeBuffer.write(getBytes(String.valueOf(request.getContentLength())));
             writeBuffer.write(Constant.CRLF_BYTES);
         } else if (chunkedSupport && source == HeaderWriteSource.WRITE) {

@@ -29,10 +29,12 @@ import java.util.concurrent.Semaphore;
  */
 final class HttpOutputStream extends AbstractOutputStream {
     private static final SimpleDateFormat sdf = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
+    private static final byte[] Content_Type_Bytes = "\r\nContent-Type:".getBytes();
+    private static final byte[] Content_Length_Bytes = "\r\nContent-Length:".getBytes();
     private static final Date currentDate = new Date(0);
     private static final Semaphore flushDateSemaphore = new Semaphore(1);
-    private static final byte[] CHUNKED = "Transfer-Encoding: chunked\r\n".getBytes();
-    private static final byte[] CHUNKED_2 = "Transfer-Encoding: chunked\r\n\r\n".getBytes();
+    private static final byte[] CHUNKED = "\r\nTransfer-Encoding: chunked\r\n".getBytes();
+    private static final byte[] CHUNKED_2 = "\r\nTransfer-Encoding: chunked\r\n\r\n".getBytes();
     private static byte[] SERVER_LINE = null;
     private static long expireTime;
     private static byte[] HEAD_PART_BYTES;
@@ -48,8 +50,8 @@ final class HttpOutputStream extends AbstractOutputStream {
             String serverLine =
                     HeaderNameEnum.SERVER.getName() + Constant.COLON_CHAR + configuration.serverName() + Constant.CRLF;
             SERVER_LINE = serverLine.getBytes();
-            HEAD_PART_BYTES = (HttpProtocolEnum.HTTP_11.getProtocol() + " 200 OK\r\n" + serverLine + "Date:Sun, 24 " +
-                    "Nov 2024 15:50:27 CST\r\n").getBytes();
+            HEAD_PART_BYTES = (HttpProtocolEnum.HTTP_11.getProtocol() + " 200 OK\r\n" + serverLine
+                    + "Date:Sun, 24 Nov 2024 15:50:27 CST").getBytes();
             flushDate();
         }
     }
@@ -62,7 +64,7 @@ final class HttpOutputStream extends AbstractOutputStream {
                 currentDate.setTime(currentTime);
                 String date = sdf.format(currentDate);
                 byte[] bytes = date.getBytes();
-                System.arraycopy(bytes, 0, HEAD_PART_BYTES, HEAD_PART_BYTES.length - 31, bytes.length);
+                System.arraycopy(bytes, 0, HEAD_PART_BYTES, HEAD_PART_BYTES.length - 29, bytes.length);
             } finally {
                 flushDateSemaphore.release();
             }
@@ -103,16 +105,16 @@ final class HttpOutputStream extends AbstractOutputStream {
                 writeBuffer.write(SERVER_LINE);
             }
             // Date
-            writeBuffer.write(HEAD_PART_BYTES, HEAD_PART_BYTES.length - 36, 36);
+            writeBuffer.write(HEAD_PART_BYTES, HEAD_PART_BYTES.length - 34, 34);
         }
 
         if (contentType != null) {
-            writeBuffer.write(HeaderNameEnum.Content_Type_Bytes);
+            writeBuffer.write(Content_Type_Bytes);
             writeString(contentType);
-            writeBuffer.write(Constant.CRLF_BYTES);
         }
+
         if (contentLength >= 0) {
-            writeBuffer.write(HeaderNameEnum.Content_Length_Bytes);
+            writeBuffer.write(Content_Length_Bytes);
             writeLongString(contentLength);
             if (hasHeader) {
                 writeBuffer.write(Constant.CRLF_BYTES);
@@ -126,7 +128,7 @@ final class HttpOutputStream extends AbstractOutputStream {
                 writeBuffer.write(CHUNKED_2);
             }
         } else if (!hasHeader) {
-            writeBuffer.write(Constant.CRLF_BYTES);
+            writeBuffer.write(Constant.CRLF_CRLF_BYTES);
         }
     }
 
