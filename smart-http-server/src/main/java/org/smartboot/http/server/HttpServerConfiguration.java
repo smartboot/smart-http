@@ -209,7 +209,7 @@ public class HttpServerConfiguration {
     public HttpServerConfiguration debug(boolean debug) {
         plugins.removeIf(plugin -> plugin instanceof StreamMonitorPlugin);
         if (debug) {
-            addPlugin(new StreamMonitorPlugin<>(StreamMonitorPlugin.BLUE_TEXT_INPUT_STREAM, StreamMonitorPlugin.RED_HEX_OUTPUT_STREAM));
+            addPlugin(new StreamMonitorPlugin<>(StreamMonitorPlugin.BLUE_TEXT_INPUT_STREAM, StreamMonitorPlugin.RED_TEXT_OUTPUT_STREAM));
         }
         return this;
     }
