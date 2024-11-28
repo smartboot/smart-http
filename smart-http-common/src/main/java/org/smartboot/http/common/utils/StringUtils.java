@@ -7,11 +7,7 @@
  ******************************************************************************/
 package org.smartboot.http.common.utils;
 
-import org.smartboot.http.common.enums.HeaderNameEnum;
-import org.smartboot.http.common.enums.HeaderValueEnum;
-
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -38,35 +34,14 @@ public class StringUtils {
      */
     public static final int INDEX_NOT_FOUND = -1;
     public static final List<StringCache>[] String_CACHE_EMPTY = new List[0];
-    public static final List<StringCache>[] String_CACHE_COMMON = new List[128];
-    public static final List<StringCache>[] String_CACHE_HEADER_NAME = new List[32];
-    public static final List<IntegerCache>[] INTEGER_CACHE_HTTP_STATUS_CODE = new List[8];
     private static final int CHAR_CACHE_MAX_LENGTH = 1024;
-    private static final ThreadLocal<char[]> charsCacheThreadLocal = ThreadLocal.withInitial(() -> new char[CHAR_CACHE_MAX_LENGTH]);
+    private static final ThreadLocal<char[]> charsCacheThreadLocal =
+            ThreadLocal.withInitial(() -> new char[CHAR_CACHE_MAX_LENGTH]);
 
 //    public static String convertToString(byte[] bytes, int length, List<StringCache>[] cacheList) {
 //        return convertToString(bytes, 0, length, cacheList);
 //    }
 
-    static {
-        for (int i = 0; i < INTEGER_CACHE_HTTP_STATUS_CODE.length; i++) {
-            INTEGER_CACHE_HTTP_STATUS_CODE[i] = new ArrayList<>(8);
-        }
-
-        for (int i = 0; i < String_CACHE_COMMON.length; i++) {
-            String_CACHE_COMMON[i] = new ArrayList<>(8);
-        }
-        for (int i = 0; i < String_CACHE_HEADER_NAME.length; i++) {
-            String_CACHE_HEADER_NAME[i] = new ArrayList<>(8);
-        }
-        for (HeaderNameEnum headerNameEnum : HeaderNameEnum.values()) {
-            addCache(String_CACHE_HEADER_NAME, headerNameEnum.getName());
-        }
-        for (HeaderValueEnum headerNameEnum : HeaderValueEnum.values()) {
-            addCache(String_CACHE_COMMON, headerNameEnum.getName());
-        }
-
-    }
 
     public StringUtils() {
         super();
@@ -76,30 +51,6 @@ public class StringUtils {
         return str == null ? null : str.trim();
     }
 
-    public static int convertToInteger(ByteBuffer buffer, int offset, int length, List<IntegerCache>[] cacheList) {
-        offset = buffer.arrayOffset() + offset;
-        byte[] bytes = buffer.array();
-        if (length >= cacheList.length) {
-            return Integer.parseInt(new String(bytes, offset, length, StandardCharsets.US_ASCII));
-        }
-        List<IntegerCache> list = cacheList[length];
-        for (int i = list.size() - 1; i > -1; i--) {
-            IntegerCache cache = list.get(i);
-            if (equals(cache.bytes, bytes, offset)) {
-                return cache.value;
-            }
-        }
-        synchronized (list) {
-            for (IntegerCache cache : list) {
-                if (equals(cache.bytes, bytes, offset)) {
-                    return cache.value;
-                }
-            }
-            String str = new String(bytes, offset, length, StandardCharsets.US_ASCII);
-            list.add(new IntegerCache(str.getBytes(), Integer.parseInt(str)));
-            return Integer.parseInt(str);
-        }
-    }
 
     public static String convertToString(ByteBuffer buffer, int offset, int length) {
         return convertToString(buffer, offset, length, String_CACHE_EMPTY);
@@ -109,7 +60,8 @@ public class StringUtils {
         return convertToString(buffer, offset, length, cacheList, false);
     }
 
-    public static String convertToString(ByteBuffer buffer, int offset, int length, List<StringCache>[] cacheList, boolean readonly) {
+    public static String convertToString(ByteBuffer buffer, int offset, int length, List<StringCache>[] cacheList,
+                                         boolean readonly) {
         if (length == 0) {
             return "";
         }
@@ -185,7 +137,8 @@ public class StringUtils {
         return regionMatches(cs1, false, 0, cs2, 0, Math.max(cs1.length(), cs2.length()));
     }
 
-    private static boolean regionMatches(final CharSequence cs, final boolean ignoreCase, final int thisStart, final CharSequence substring, final int start, final int length) {
+    private static boolean regionMatches(final CharSequence cs, final boolean ignoreCase, final int thisStart,
+                                         final CharSequence substring, final int start, final int length) {
         if (cs instanceof String && substring instanceof String) {
             return ((String) cs).regionMatches(ignoreCase, thisStart, (String) substring, start, length);
         } else {
@@ -300,7 +253,8 @@ public class StringUtils {
         return splitWorker(str, separatorChars, -1, true);
     }
 
-    private static String[] splitWorker(final String str, final String separatorChars, final int max, final boolean preserveAllTokens) {
+    private static String[] splitWorker(final String str, final String separatorChars, final int max,
+                                        final boolean preserveAllTokens) {
 
         if (str == null) {
             return null;
@@ -382,7 +336,8 @@ public class StringUtils {
         return list.toArray(new String[list.size()]);
     }
 
-    public static String[] tokenizeToStringArray(String str, String delimiters, boolean trimTokens, boolean ignoreEmptyTokens) {
+    public static String[] tokenizeToStringArray(String str, String delimiters, boolean trimTokens,
+                                                 boolean ignoreEmptyTokens) {
 
         if (str == null) {
             return null;
@@ -504,16 +459,6 @@ public class StringUtils {
         final String value;
 
         public StringCache(byte[] bytes, String value) {
-            this.bytes = bytes;
-            this.value = value;
-        }
-    }
-
-    static class IntegerCache {
-        final byte[] bytes;
-        final int value;
-
-        public IntegerCache(byte[] bytes, int value) {
             this.bytes = bytes;
             this.value = value;
         }
