@@ -47,7 +47,7 @@ final class Http2OutputStream extends AbstractOutputStream {
         //转换Cookie
         convertCookieToHeader();
         // Create HEADERS frame
-        response.setHeader(":status", String.valueOf(response.getHttpStatus()));
+        response.setHeader(":status", String.valueOf(response.getHttpStatus().value()));
 
         List<ByteBuffer> buffers = HttpUtils.HPackEncoder(http2Session.getHpackEncoder(), response.getHeaders());
 
