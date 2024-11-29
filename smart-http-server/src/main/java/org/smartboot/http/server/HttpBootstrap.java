@@ -15,7 +15,6 @@ import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.server.impl.Http2RequestImpl;
 import org.smartboot.http.server.impl.HttpMessageProcessor;
 import org.smartboot.http.server.impl.HttpRequestProtocol;
-import org.smartboot.socket.buffer.BufferPagePool;
 import org.smartboot.socket.transport.AioQuickServer;
 
 import java.io.IOException;
@@ -44,8 +43,6 @@ public class HttpBootstrap {
      * Http服务端口号
      */
     private int port = 8080;
-    private BufferPagePool readBufferPool;
-    private BufferPagePool writeBufferPool;
     private boolean started = false;
 
     public HttpBootstrap() {
@@ -80,7 +77,8 @@ public class HttpBootstrap {
             }
 
             @Override
-            public void handle(HttpRequest request, HttpResponse response, CompletableFuture<Object> completableFuture) throws Throwable {
+            public void handle(HttpRequest request, HttpResponse response,
+                               CompletableFuture<Object> completableFuture) throws Throwable {
                 httpHandler.handle(request, response, completableFuture);
             }
         });
@@ -122,9 +120,6 @@ public class HttpBootstrap {
         }
         started = true;
         initByteCache();
-        readBufferPool = new BufferPagePool(configuration.getReadPageSize(), 1, false);
-        writeBufferPool = new BufferPagePool(configuration.getWritePageSize(), configuration.getWritePageNum(),
-                true);
 
         configuration.getPlugins().forEach(processor::addPlugin);
 
@@ -132,7 +127,7 @@ public class HttpBootstrap {
         server.setThreadNum(configuration.getThreadNum())
                 .setBannerEnabled(false)
                 .setReadBufferSize(configuration.getReadBufferSize())
-                .setBufferPagePool(readBufferPool, writeBufferPool)
+                .setBufferPagePool(configuration.getReadBufferPool(), configuration.getWriteBufferPool())
                 .setWriteBuffer(configuration.getWriteBufferSize(), 16);
         if (!configuration.isLowMemory()) {
             server.disableLowMemory();
@@ -181,12 +176,6 @@ public class HttpBootstrap {
         if (server != null) {
             server.shutdown();
             server = null;
-        }
-        if (readBufferPool != null) {
-            readBufferPool.release();
-        }
-        if (writeBufferPool != null) {
-            writeBufferPool.release();
         }
     }
 }

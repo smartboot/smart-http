@@ -13,6 +13,7 @@ import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
 import org.smartboot.http.server.HttpServerHandler;
 import org.smartboot.http.server.handler.HttpRouteHandler;
+import org.smartboot.socket.buffer.BufferPagePool;
 
 import java.io.IOException;
 
@@ -32,9 +33,12 @@ public class Bootstrap {
             }
         });
         int cpuNum = Runtime.getRuntime().availableProcessors();
+        BufferPagePool readBufferPool = new BufferPagePool(1, false);
+        BufferPagePool writeBufferPool = new BufferPagePool(cpuNum, true);
+
         // 定义服务器接受的消息类型以及各类消息对应的处理器
         HttpBootstrap bootstrap = new HttpBootstrap();
-        bootstrap.configuration().threadNum(cpuNum).debug(false).headerLimiter(0).readBufferSize(1024 * 4).writeBufferSize(1024 * 4).readMemoryPool(16384 * 1024 * 4).writeMemoryPool(10 * 1024 * 1024 * cpuNum, cpuNum);
+        bootstrap.configuration().threadNum(cpuNum).debug(false).headerLimiter(0).readBufferSize(1024 * 4).writeBufferSize(1024 * 4).setReadBufferPool(readBufferPool).setWriteBufferPool(writeBufferPool);
         bootstrap.httpHandler(routeHandle).setPort(8080).start();
     }
 }

@@ -13,6 +13,7 @@ import org.smartboot.http.common.utils.ByteTree;
 import org.smartboot.http.common.utils.StringUtils;
 import org.smartboot.http.server.impl.Request;
 import org.smartboot.http.server.waf.WafConfiguration;
+import org.smartboot.socket.buffer.BufferPagePool;
 import org.smartboot.socket.extension.plugins.Plugin;
 import org.smartboot.socket.extension.plugins.SslPlugin;
 import org.smartboot.socket.extension.plugins.StreamMonitorPlugin;
@@ -62,10 +63,7 @@ public class HttpServerConfiguration {
      * 服务线程数
      */
     private int threadNum = Math.max(Runtime.getRuntime().availableProcessors(), 2);
-    private int writePageSize;
-    private int writePageNum = threadNum;
     private String host;
-    private int readPageSize;
     /**
      * 解析的header数量上限
      */
@@ -95,7 +93,8 @@ public class HttpServerConfiguration {
     private long maxRequestSize = Integer.MAX_VALUE;
 
     private boolean lowMemory = false;
-
+    private BufferPagePool readBufferPool;
+    private BufferPagePool writeBufferPool;
     private AsynchronousChannelGroup group;
 
     private HttpServerHandler httpServerHandler = new HttpServerHandler() {
@@ -115,20 +114,6 @@ public class HttpServerConfiguration {
 
     private final WafConfiguration wafConfiguration = new WafConfiguration();
 
-    public HttpServerConfiguration readMemoryPool(int totalBytes) {
-        this.readPageSize = totalBytes;
-        return this;
-    }
-
-    int getReadPageSize() {
-        return readPageSize;
-    }
-
-    public HttpServerConfiguration writeMemoryPool(int totalBytes, int shards) {
-        this.writePageSize = totalBytes / shards;
-        this.writePageNum = shards;
-        return this;
-    }
 
     int getReadBufferSize() {
         return readBufferSize;
@@ -152,14 +137,6 @@ public class HttpServerConfiguration {
     public HttpServerConfiguration threadNum(int threadNum) {
         this.threadNum = threadNum;
         return this;
-    }
-
-    int getWritePageSize() {
-        return writePageSize;
-    }
-
-    int getWritePageNum() {
-        return writePageNum;
     }
 
     int getWriteBufferSize() {
@@ -209,7 +186,8 @@ public class HttpServerConfiguration {
     public HttpServerConfiguration debug(boolean debug) {
         plugins.removeIf(plugin -> plugin instanceof StreamMonitorPlugin);
         if (debug) {
-            addPlugin(new StreamMonitorPlugin<>(StreamMonitorPlugin.BLUE_TEXT_INPUT_STREAM, StreamMonitorPlugin.RED_TEXT_OUTPUT_STREAM));
+            addPlugin(new StreamMonitorPlugin<>(StreamMonitorPlugin.BLUE_TEXT_INPUT_STREAM,
+                    StreamMonitorPlugin.RED_TEXT_OUTPUT_STREAM));
         }
         return this;
     }
@@ -329,6 +307,24 @@ public class HttpServerConfiguration {
 
     boolean isLowMemory() {
         return lowMemory;
+    }
+
+    public BufferPagePool getReadBufferPool() {
+        return readBufferPool;
+    }
+
+    public HttpServerConfiguration setReadBufferPool(BufferPagePool readBufferPool) {
+        this.readBufferPool = readBufferPool;
+        return this;
+    }
+
+    public BufferPagePool getWriteBufferPool() {
+        return writeBufferPool;
+    }
+
+    public HttpServerConfiguration setWriteBufferPool(BufferPagePool writeBufferPool) {
+        this.writeBufferPool = writeBufferPool;
+        return this;
     }
 
     public HttpServerConfiguration setLowMemory(boolean lowMemory) {
