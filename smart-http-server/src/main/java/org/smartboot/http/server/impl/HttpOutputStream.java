@@ -127,7 +127,7 @@ final class HttpOutputStream extends AbstractOutputStream {
             } else {
                 writeBuffer.write(CHUNKED_2);
             }
-        } else if (!hasHeader) {
+        } else if (hasHeader) {
             writeBuffer.write(Constant.CRLF_BYTES);
         } else {
             writeBuffer.write(Constant.CRLF_CRLF_BYTES);
