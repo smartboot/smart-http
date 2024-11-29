@@ -5,7 +5,7 @@
     <parent>
         <artifactId>smart-http-parent</artifactId>
         <groupId>io.github.smartboot.http</groupId>
-        <version>2.1</version>
+        <version>2.2</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>smart-http-restful-mybatis</artifactId>
@@ -25,13 +25,13 @@
         <dependency>
             <groupId>io.github.smartboot.http</groupId>
             <artifactId>smart-http-server</artifactId>
-            <version>2.1</version>
+            <version>2.2</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>io.github.smartboot.http</groupId>
             <artifactId>smart-http-restful</artifactId>
-            <version>2.1</version>
+            <version>2.2</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
