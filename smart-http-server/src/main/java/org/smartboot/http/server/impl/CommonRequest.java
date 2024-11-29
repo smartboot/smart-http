@@ -188,11 +188,12 @@ public abstract class CommonRequest implements Reset {
         }
         HeaderValue headerValue = headers.get(lowCaseHeader);
         if (headerValue == null) {
+            headerSize++;
             headers.put(lowCaseHeader, new HeaderValue(headerName, value));
         } else {
-            headerValue.setNextValue(new HeaderValue(headerName, value));
+            headerValue.setName(headerName);
+            headerValue.setValue(value);
         }
-        headerSize++;
     }
 
     public final void setHeader(String headerName, String value) {
