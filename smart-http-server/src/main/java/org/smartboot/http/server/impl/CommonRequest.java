@@ -200,12 +200,12 @@ public abstract class CommonRequest implements Reset {
     }
 
     final void addHeader(String lowCaseHeader, String headerName, String value) {
-        HeaderValue oldValue = headers.remove(lowCaseHeader);
+        HeaderValue oldValue = headers.get(lowCaseHeader);
         if (oldValue != null) {
             while (oldValue.getNextValue() != null) {
                 oldValue = oldValue.getNextValue();
             }
-            oldValue.setNextValue(new HeaderValue(null, value));
+            oldValue.setNextValue(new HeaderValue(headerName, value));
             headerSize++;
         } else {
             setHeader(lowCaseHeader, headerName, value);
