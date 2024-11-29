@@ -193,6 +193,12 @@ public abstract class CommonRequest implements Reset {
         } else {
             headerValue.setName(headerName);
             headerValue.setValue(value);
+            HeaderValue nextValue = headerValue.getNextValue();
+            while (nextValue != null) {
+                headerSize--;
+                nextValue = nextValue.getNextValue();
+            }
+            headerValue.setNextValue(null);
         }
     }
 

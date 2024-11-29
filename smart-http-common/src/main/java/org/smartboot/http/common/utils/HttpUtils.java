@@ -136,9 +136,9 @@ public class HttpUtils {
             if (entry.getKey().charAt(0) != ':') {
                 continue;
             }
-            System.out.println("encode: " + entry.getKey() + ":" + entry.getValue().getValue());
             HeaderValue headerValue = entry.getValue();
             while (headerValue != null) {
+                System.out.println("encode: " + entry.getKey() + ":" + entry.getValue().getValue());
                 encoder.header(entry.getKey().toLowerCase(), headerValue.getValue());
                 while (!encoder.encode(buffer)) {
                     buffer.flip();
@@ -153,9 +153,10 @@ public class HttpUtils {
             if (entry.getKey().charAt(0) == ':') {
                 continue;
             }
-            System.out.println("encode: " + entry.getKey() + ":" + entry.getValue().getValue());
+
             HeaderValue headerValue = entry.getValue();
             while (headerValue != null) {
+                System.out.println("encode: " + entry.getKey() + ":" + headerValue.getValue());
                 encoder.header(entry.getKey().toLowerCase(), headerValue.getValue());
                 while (!encoder.encode(buffer)) {
                     buffer.flip();

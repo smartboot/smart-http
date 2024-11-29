@@ -17,7 +17,9 @@ import java.util.List;
 import java.util.Set;
 
 public class PushBuilderImpl implements PushBuilder {
-    public static final List<String> IGNORE_HEADERS = Arrays.asList("if-match", "if-none-match", "if-modified-since", "if-unmodified-since", "if-range", "range", "proxy-authorization", "from", "user-agent", "range", "expect", "max-forwards", "proxy-authenticate", "proxy-authorization", "age", "cache-control", "clear-site-data");
+    public static final List<String> IGNORE_HEADERS = Arrays.asList("if-match", "if-none-match", "if-modified-since",
+            "if-unmodified-since", "if-range", "range", "proxy-authorization", "from", "user-agent", "range", "expect"
+            , "max-forwards", "proxy-authenticate", "proxy-authorization", "age", "cache-control", "clear-site-data");
     private static final Set<String> UNSUPPORTED_METHODS = new HashSet<>(Arrays.asList("", "POST", "PUT", "DELETE",
             "CONNECT", "OPTIONS", "TRACE"));
     private final Http2RequestImpl pushRequest;
@@ -29,7 +31,8 @@ public class PushBuilderImpl implements PushBuilder {
     public PushBuilderImpl(int streamId, Http2ResponseImpl response, Http2Session session) {
         this.streamId = streamId;
         this.pushRequest = new Http2RequestImpl(session.getPushStreamId().addAndGet(2), session, true);
-        response.getCookies().forEach(cookie -> pushRequest.addHeader(HeaderNameEnum.COOKIE.getLowCaseName(), HeaderNameEnum.COOKIE.getName(), cookie.toString()));
+        response.getCookies().forEach(cookie -> pushRequest.addHeader(HeaderNameEnum.COOKIE.getLowCaseName(),
+                HeaderNameEnum.COOKIE.getName(), cookie.getName() + "=" + cookie.getValue()));
 
         method(HttpMethodEnum.GET.getMethod());
     }
@@ -86,7 +89,8 @@ public class PushBuilderImpl implements PushBuilder {
 //                } catch (InterruptedException e) {
 //                    throw new RuntimeException(e);
 //                }
-//                pushRequest.getSession().getRequest().getConfiguration().getHttp2ServerHandler().handleHttpRequest(pushRequest);
+//                pushRequest.getSession().getRequest().getConfiguration().getHttp2ServerHandler().handleHttpRequest
+//                (pushRequest);
 //            }
 //        });
         if (StringUtils.isBlank(path)) {
@@ -107,8 +111,10 @@ public class PushBuilderImpl implements PushBuilder {
             pushRequest.setHeader(":authority", pushRequest.getSession().getRequest().getHost());
             pushRequest.setUri(path);
             pushRequest.setRequestURI(path);
-            List<ByteBuffer> buffers = HttpUtils.HPackEncoder(pushRequest.getSession().getHpackEncoder(), pushRequest.getHeaders());
-            PushPromiseFrame frame = new PushPromiseFrame(streamId, buffers.size() > 1 ? 0 : Http2Frame.FLAG_END_HEADERS, 0);
+            List<ByteBuffer> buffers = HttpUtils.HPackEncoder(pushRequest.getSession().getHpackEncoder(),
+                    pushRequest.getHeaders());
+            PushPromiseFrame frame = new PushPromiseFrame(streamId, buffers.size() > 1 ? 0 :
+                    Http2Frame.FLAG_END_HEADERS, 0);
             frame.setPromisedStream(pushRequest.getStreamId());
             if (!buffers.isEmpty()) {
                 frame.setFragment(buffers.get(0));
