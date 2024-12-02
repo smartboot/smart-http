@@ -153,6 +153,7 @@ final class HttpMessageProcessor extends AbstractMessageProcessor<AbstractRespon
                     throw new RuntimeException(e);
                 }
                 decoderUnit.setState(DecoderUnit.STATE_BODY);
+                responseHandler.onBodyStream(session.readBuffer(), response);
                 return;
             case DecodeState.STATE_FINISH:
                 if (executorService == null) {

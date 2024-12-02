@@ -32,8 +32,8 @@ import java.nio.charset.Charset;
 public class DefaultHttpResponseHandler extends ResponseHandler {
     private static final ResponseHandler DEFAULT_HANDLER = new ResponseHandler() {
         @Override
-        public void onBodyStream(ByteBuffer buffer, AbstractResponse request) {
-
+        public void onBodyStream(ByteBuffer buffer, AbstractResponse response) {
+            response.getFuture().complete(response);
         }
     };
     private ResponseHandler responseHandler;
