@@ -129,6 +129,14 @@ public class HttpPostTest {
             }
         });
 
+        routeHandle.route("/empty", new HttpServerHandler() {
+            @Override
+            public void handle(HttpRequest request, HttpResponse response) throws Throwable {
+                System.out.println(request.getParameters());
+                response.setContentLength(0);
+            }
+        });
+
         httpBootstrap = new HttpBootstrap();
         httpBootstrap.httpHandler(routeHandle).setPort(8080).start();
 
@@ -281,6 +289,19 @@ public class HttpPostTest {
             String resp = httpClient.post("/body").header().setContentLength(jsonBytes.length).setContentType(
                     "application/json").done().body().write(jsonBytes).flush().done().done().get().body();
             Assert.assertEquals(resp, jsonBytes.length + new String(jsonBytes));
+        };
+        doRequest(new HttpClient("http://127.0.0.1:8080"), consumer);
+        doRequest(new HttpClient("https://127.0.0.1:8888"), consumer);
+    }
+
+    @Test
+    public void testEmpty() throws Throwable {
+        Consumer consumer = httpClient -> {
+            httpClient.configuration().debug(true);
+            byte[] jsonBytes = "{\"a\":1,\"b\":\"123\"}".getBytes(StandardCharsets.UTF_8);
+            org.smartboot.http.client.HttpResponse resp = httpClient.post("/empty").header().setContentLength(jsonBytes.length).setContentType(
+                    "application/json").done().body().write(jsonBytes).flush().done().done().get();
+            Assert.assertEquals(0, resp.getContentLength());
         };
         doRequest(new HttpClient("http://127.0.0.1:8080"), consumer);
         doRequest(new HttpClient("https://127.0.0.1:8888"), consumer);
