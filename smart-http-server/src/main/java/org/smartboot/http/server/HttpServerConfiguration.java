@@ -29,7 +29,7 @@ import java.util.List;
  * @version V1.0 , 2021/2/22
  */
 public class HttpServerConfiguration {
-    public static final String VERSION = "2.3";
+    public static final String VERSION = "2.4";
 
     /**
      * 缓存
