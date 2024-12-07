@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -29,6 +30,7 @@ import java.util.concurrent.Semaphore;
  */
 final class HttpOutputStream extends AbstractOutputStream {
     private static final SimpleDateFormat sdf = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
+    private static final TimeZone GMT_ZONE = TimeZone.getTimeZone("GMT");
     private static final byte[] Content_Type_Bytes = "\r\nContent-Type:".getBytes();
     private static final byte[] Content_Length_Bytes = "\r\nContent-Length:".getBytes();
     private static final Date currentDate = new Date(0);
@@ -52,6 +54,7 @@ final class HttpOutputStream extends AbstractOutputStream {
             SERVER_LINE = serverLine.getBytes();
             HEAD_PART_BYTES = (HttpProtocolEnum.HTTP_11.getProtocol() + " 200 OK\r\n" + serverLine
                     + "Date:Sun, 24 Nov 2024 15:50:27 CST").getBytes();
+            TimeZone.setDefault(TimeZone.getTimeZone("GMT"));
             flushDate();
         }
     }
@@ -62,6 +65,7 @@ final class HttpOutputStream extends AbstractOutputStream {
             try {
                 expireTime = currentTime + 1000;
                 currentDate.setTime(currentTime);
+                sdf.setTimeZone(GMT_ZONE);
                 String date = sdf.format(currentDate);
                 byte[] bytes = date.getBytes();
                 System.arraycopy(bytes, 0, HEAD_PART_BYTES, HEAD_PART_BYTES.length - 29, bytes.length);
