@@ -138,7 +138,7 @@ public class HttpUtils {
             }
             HeaderValue headerValue = entry.getValue();
             while (headerValue != null) {
-                System.out.println("encode: " + entry.getKey() + ":" + entry.getValue().getValue());
+                //todo: System.out.println("encode: " + entry.getKey() + ":" + entry.getValue().getValue());
                 encoder.header(entry.getKey().toLowerCase(), headerValue.getValue());
                 while (!encoder.encode(buffer)) {
                     buffer.flip();
