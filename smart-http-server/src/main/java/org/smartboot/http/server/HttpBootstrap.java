@@ -71,10 +71,6 @@ public class HttpBootstrap {
     public HttpBootstrap httpHandler(HttpServerHandler httpHandler) {
         processor.httpServerHandler(httpHandler);
         processor.http2ServerHandler(new Http2ServerHandler() {
-            @Override
-            protected void onHeaderComplete(Http2RequestImpl request) throws IOException {
-                super.onHeaderComplete(request);
-            }
 
             @Override
             public void handle(HttpRequest request, HttpResponse response,

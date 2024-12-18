@@ -3,6 +3,7 @@ package org.smartboot.http.server.impl;
 import org.smartboot.http.common.HeaderValue;
 import org.smartboot.http.common.Reset;
 import org.smartboot.http.common.enums.HttpMethodEnum;
+import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.io.BodyInputStream;
 import org.smartboot.http.common.io.ReadListener;
 import org.smartboot.http.common.multipart.MultipartConfig;
@@ -35,6 +36,7 @@ public class Http2RequestImpl extends CommonRequest implements HttpRequest, Rese
         this.streamId = streamId;
         this.session = session;
         response = new Http2ResponseImpl(streamId, this, push);
+        setProtocol(HttpProtocolEnum.HTTP_2);
     }
 
 

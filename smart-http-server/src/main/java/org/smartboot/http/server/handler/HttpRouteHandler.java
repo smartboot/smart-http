@@ -8,6 +8,7 @@
 
 package org.smartboot.http.server.handler;
 
+import org.smartboot.http.common.enums.HttpProtocolEnum;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.common.logging.Logger;
 import org.smartboot.http.common.logging.LoggerFactory;
@@ -52,7 +53,7 @@ public final class HttpRouteHandler extends HttpServerHandler {
 
     @Override
     public void onHeaderComplete(Request request) throws IOException {
-        ServerHandler httpServerHandler = matchHandler(request);
+        ServerHandler httpServerHandler = matchHandler(request.getRequestURI());
         //注册 URI 与 Handler 的映射关系
         request.getConfiguration().getUriByteTree().addNode(request.getUri(), httpServerHandler);
         //更新本次请求的实际 Handler
@@ -67,8 +68,13 @@ public final class HttpRouteHandler extends HttpServerHandler {
     }
 
     @Override
-    public void handle(HttpRequest request, HttpResponse response, CompletableFuture<Object> completableFuture) throws IOException {
-        throw new UnsupportedOperationException();
+    public void handle(HttpRequest request, HttpResponse response, CompletableFuture<Object> completableFuture) throws Throwable {
+        if (request.getProtocol() == HttpProtocolEnum.HTTP_2) {
+            ServerHandler httpServerHandler = matchHandler(request.getRequestURI());
+            httpServerHandler.handle(request, response, completableFuture);
+        } else {
+            throw new UnsupportedOperationException();
+        }
     }
 
     /**
@@ -83,8 +89,7 @@ public final class HttpRouteHandler extends HttpServerHandler {
         return this;
     }
 
-    private HttpServerHandler matchHandler(Request request) {
-        String uri = request.getRequestURI();
+    private HttpServerHandler matchHandler(String uri) {
         if (uri == null) {
             return defaultHandler;
         }
